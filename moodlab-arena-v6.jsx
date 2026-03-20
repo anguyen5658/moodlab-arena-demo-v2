@@ -345,6 +345,8 @@ export default function MoodLabArena() {
   const [kickDiveAnim, setKickDiveAnim] = useState(null); // keeper dive zone
 
   const [kickCharging, setKickCharging] = useState(false);
+  const [actionTimer, setActionTimer] = useState(3); // 3s countdown for actions
+  const actionTimerRef = useRef(null);
   const kickChargeInterval = useRef(null);
   const [kickComment, setKickComment] = useState("");
   const [kickSweetMin, setKickSweetMin] = useState(70); // random sweet spot per round
@@ -460,6 +462,29 @@ export default function MoodLabArena() {
   useEffect(() => { const t=setInterval(()=>{setTick(p=>p+1);if(gameActive&&gameActive.id==="finalkick"&&kickState&&Math.random()<0.3)spawnAudienceBubble();},1000); return()=>clearInterval(t); }, [gameActive,kickState]);
   useEffect(() => { const t=setInterval(()=>setMainStage(p=>(p+1)%3),5000); return()=>clearInterval(t); }, []);
   useEffect(() => { const t=setInterval(()=>setTickerOffset(p=>p-0.5),30); return()=>clearInterval(t); }, []);
+
+  // ── 3s Action Timer for shoot/save_dive ──
+  useEffect(() => {
+    if(kickState==="shoot"||kickState==="save_dive") {
+      setActionTimer(3);
+      if(actionTimerRef.current) clearInterval(actionTimerRef.current);
+      actionTimerRef.current = setInterval(()=>{
+        setActionTimer(p=>{
+          if(p<=1) {
+            clearInterval(actionTimerRef.current); actionTimerRef.current=null;
+            // Auto-action: random zone
+            if(kickState==="shoot") { const rz=Math.floor(Math.random()*6); kickSelectZone(rz); playFx("error"); setCommentary("Too slow! Auto-kick! 🐌"); }
+            else if(kickState==="save_dive") { const rz=Math.floor(Math.random()*6); kickDive(rz); playFx("error"); setCommentary("Too slow! Random dive! 🐌"); }
+            return 0;
+          }
+          return p-1;
+        });
+      },1000);
+    } else {
+      if(actionTimerRef.current){clearInterval(actionTimerRef.current);actionTimerRef.current=null;}
+    }
+    return()=>{if(actionTimerRef.current){clearInterval(actionTimerRef.current);actionTimerRef.current=null;}};
+  }, [kickState]);
 
   // Bot chat
   useEffect(() => {
@@ -1846,7 +1871,7 @@ export default function MoodLabArena() {
 
       {/* ═══ TAB BAR ═══ */}
       <div style={{display:"flex",gap:0,margin:"0 14px 12px",borderRadius:12,overflow:"hidden",...GLASS_CLEAR}}>
-        {[{id:"games",label:"🎮 Games",count:PLAY_GAMES.length},{id:"leaderboard",label:"🏆 Leaderboard",count:null}].map(t=>(
+        {[{id:"games",label:"🎮 Games",count:PLAY_GAMES.length},{id:"tournament",label:"⚽ Tournament",count:null},{id:"leaderboard",label:"🏆 Board",count:null}].map(t=>(
           <div key={t.id} onClick={()=>{playFx("nav");setArcadeTab(t.id);}} style={{
             flex:1,padding:"10px 0",textAlign:"center",cursor:"pointer",
             background:arcadeTab===t.id?`${C.cyan}12`:"transparent",
@@ -1901,6 +1926,58 @@ export default function MoodLabArena() {
               <div style={{fontSize:8,fontWeight:700,color:C.gold,padding:"3px 8px",borderRadius:6,...LG.tinted(C.gold)}}>🏆 3 Tournaments</div>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* ═══ TOURNAMENT TAB ═══ */}
+      {arcadeTab==="tournament" && (
+        <div style={{padding:"0 14px",animation:"fadeIn 0.3s ease"}}>
+          {/* World Cup 2026 Card */}
+          <div onClick={()=>{playFx("select");setWcPhase("team_select");}} style={{
+            padding:"16px",borderRadius:16,cursor:"pointer",marginBottom:10,
+            background:`linear-gradient(135deg, ${C.gold}12, ${C.cyan}06, ${C.bg2})`,
+            border:`1px solid ${C.gold}25`,boxShadow:`0 0 20px ${C.gold}08`,
+          }}>
+            <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:8}}>
+              <span style={{fontSize:28}}>🏆</span>
+              <div>
+                <div style={{fontSize:14,fontWeight:900,color:C.gold}}>World Cup 2026</div>
+                <div style={{fontSize:9,color:C.text2}}>48 Teams · Group Stage + Knockout</div>
+              </div>
+              <div style={{marginLeft:"auto",fontSize:8,fontWeight:800,color:C.green,padding:"3px 8px",borderRadius:6,background:`${C.green}15`,border:`1px solid ${C.green}25`}}>OPEN</div>
+            </div>
+            <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:6}}>
+              <span style={{fontSize:7,padding:"2px 6px",borderRadius:4,background:`${C.gold}10`,color:C.gold,fontWeight:700}}>🥇 50K pts</span>
+              <span style={{fontSize:7,padding:"2px 6px",borderRadius:4,background:`rgba(192,192,192,0.1)`,color:"#C0C0C0",fontWeight:700}}>🥈 25K</span>
+              <span style={{fontSize:7,padding:"2px 6px",borderRadius:4,background:`rgba(205,127,50,0.1)`,color:"#CD7F32",fontWeight:700}}>🥉 10K</span>
+            </div>
+            <div style={{fontSize:8,color:C.text3}}>DEMO: Unlimited entries · Choose your nation</div>
+          </div>
+
+          {/* Join as Fan */}
+          <div onClick={()=>{playFx("tap");notify("👀 Spectator mode coming soon!",C.cyan);}} style={{
+            padding:"12px 14px",borderRadius:14,cursor:"pointer",
+            background:`${C.cyan}06`,border:`1px solid ${C.cyan}15`,
+            display:"flex",alignItems:"center",gap:10,
+          }}>
+            <span style={{fontSize:20}}>👀</span>
+            <div>
+              <div style={{fontSize:11,fontWeight:700,color:C.cyan}}>Join as Fan</div>
+              <div style={{fontSize:8,color:C.text3}}>Watch live matches · Pick a side · Chat & react</div>
+            </div>
+            <div style={{marginLeft:"auto",fontSize:12,color:`${C.cyan}40`}}>›</div>
+          </div>
+
+          {/* Active tournament status */}
+          {wcPhase && wcTeam && (
+            <div onClick={()=>{playFx("nav");}} style={{
+              marginTop:10,padding:"10px 14px",borderRadius:12,
+              background:`${C.green}08`,border:`1px solid ${C.green}20`,
+            }}>
+              <div style={{fontSize:9,fontWeight:800,color:C.green}}>🟢 ACTIVE TOURNAMENT</div>
+              <div style={{fontSize:8,color:C.text2,marginTop:2}}>{wcTeam.flag} {wcTeam.name} — {wcPhase==="group_stage"?"Group Stage":wcPhase==="knockout"?"Knockout":"In Progress"}</div>
+            </div>
+          )}
         </div>
       )}
 
@@ -2521,17 +2598,14 @@ export default function MoodLabArena() {
                   {/* ── Glow behind avatars ── */}
                   <div style={{position:"absolute",left:0,top:0,width:"40%",height:"100%",background:`radial-gradient(ellipse at 20% 50%, ${C.cyan}12, transparent 70%)`,pointerEvents:"none"}}/>
                   <div style={{position:"absolute",right:0,top:0,width:"40%",height:"100%",background:`radial-gradient(ellipse at 80% 50%, ${C.red}12, transparent 70%)`,pointerEvents:"none"}}/>
-                  {/* YOU */}
+                  {/* YOU — avatar with flag badge */}
                   <div style={{flex:1,display:"flex",alignItems:"center",gap:8,padding:"10px 12px",background:`linear-gradient(135deg, ${C.cyan}08, transparent)`}}>
-                    {gameActive?.wcMode && wcTeam ? (
-                      <div style={{width:50,height:50,borderRadius:14,display:"flex",alignItems:"center",justifyContent:"center",border:`2px solid ${C.cyan}50`,background:`${C.cyan}10`,flexShrink:0,boxShadow:`0 0 16px ${C.cyan}30`,fontSize:30}}>
-                        {wcTeam.flag}
-                      </div>
-                    ) : (
-                      <div style={{width:50,height:50,borderRadius:14,overflow:"hidden",border:`2px solid ${C.cyan}50`,background:`${C.cyan}10`,flexShrink:0,boxShadow:`0 0 16px ${C.cyan}30`}}>
+                    <div style={{position:"relative",flexShrink:0}}>
+                      <div style={{width:50,height:50,borderRadius:14,overflow:"hidden",border:`2px solid ${C.cyan}50`,background:`${C.cyan}10`,boxShadow:`0 0 16px ${C.cyan}30`}}>
                         <img src={PLAYER_IMG} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}} onError={(e)=>{e.target.outerHTML='<div style="font-size:28px;text-align:center;padding-top:8px">😎</div>';}}/>
                       </div>
-                    )}
+                      {gameActive?.wcMode && wcTeam && <div style={{position:"absolute",bottom:-3,right:-3,fontSize:16,filter:"drop-shadow(0 1px 2px rgba(0,0,0,0.8))"}}>{wcTeam.flag}</div>}
+                    </div>
                     <div style={{minWidth:0}}>
                       <div style={{fontSize:11,fontWeight:800,color:C.cyan}}>{gameActive?.wcMode && wcTeam ? wcTeam.name : "Steve"}</div>
                       <div style={{fontSize:7,color:C.text3}}>{getDeviceShort()} · Lv.24</div>
@@ -2544,17 +2618,14 @@ export default function MoodLabArena() {
                     <div style={{display:"flex",gap:3,marginTop:2}}>{[0,1,2,3,4].map(r=>(<div key={r} style={{width:5,height:5,borderRadius:"50%",background:r<kickRound?C.cyan:r===kickRound?C.gold:`${C.text3}30`,boxShadow:r===kickRound?`0 0 6px ${C.gold}`:""}}/>))}</div>
                     <div style={{fontSize:13,fontWeight:900,color:C.gold,textShadow:`0 0 10px ${C.gold}50`,marginTop:2}}>VS</div>
                   </div>
-                  {/* AI */}
+                  {/* AI — avatar with flag badge */}
                   <div style={{flex:1,display:"flex",alignItems:"center",flexDirection:"row-reverse",gap:8,padding:"10px 12px",background:`linear-gradient(225deg, ${C.red}08, transparent)`}}>
-                    {gameActive?.wcMode ? (
-                      <div style={{width:50,height:50,borderRadius:14,display:"flex",alignItems:"center",justifyContent:"center",border:`2px solid ${C.red}50`,background:`${C.red}10`,flexShrink:0,boxShadow:`0 0 16px ${C.red}30`,fontSize:30}}>
-                        {kickOpponent.current.emoji}
-                      </div>
-                    ) : (
-                      <div style={{width:50,height:50,borderRadius:14,overflow:"hidden",border:`2px solid ${C.red}50`,background:`${C.red}10`,flexShrink:0,boxShadow:`0 0 16px ${C.red}30`}}>
+                    <div style={{position:"relative",flexShrink:0}}>
+                      <div style={{width:50,height:50,borderRadius:14,overflow:"hidden",border:`2px solid ${C.red}50`,background:`${C.red}10`,boxShadow:`0 0 16px ${C.red}30`}}>
                         <img src={kickOpponent.current.img} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}} onError={(e)=>{e.target.outerHTML='<div style="font-size:28px;text-align:center;padding-top:8px">'+kickOpponent.current.emoji+'</div>';}}/>
                       </div>
-                    )}
+                      {gameActive?.wcMode && <div style={{position:"absolute",bottom:-3,left:-3,fontSize:16,filter:"drop-shadow(0 1px 2px rgba(0,0,0,0.8))"}}>{kickOpponent.current.emoji}</div>}
+                    </div>
                     <div style={{textAlign:"right",minWidth:0}}>
                       <div style={{fontSize:11,fontWeight:800,color:C.red,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{kickOpponent.current.name}</div>
                       <div style={{fontSize:7,color:C.text3}}>{kickOpponent.current.rank} · {kickOpponent.current.record}</div>
@@ -2809,11 +2880,13 @@ export default function MoodLabArena() {
                 </div>
               )}
 
-              {/* ═══ SHOOT instruction ═══ */}
+              {/* ═══ SHOOT instruction + timer ═══ */}
               {kickState==="shoot" && (
-                <div style={{textAlign:"center",animation:"gentleFloat 2s infinite"}}>
-                  <div style={{fontSize:13,color:C.text2,fontWeight:600}}>👆 Pick your corner</div>
-                  <div style={{fontSize:9,color:C.text3,marginTop:2}}>Choose wisely... AI keeper is watching 👀</div>
+                <div style={{textAlign:"center"}}>
+                  <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
+                    <span style={{fontSize:11,color:C.text2,fontWeight:600}}>👆 Pick your corner</span>
+                    <span style={{fontSize:12,fontWeight:900,color:actionTimer<=1?C.red:C.gold,minWidth:20,animation:actionTimer<=1?"pulse 0.5s infinite":"none"}}>{actionTimer}s</span>
+                  </div>
                 </div>
               )}
 
@@ -2847,13 +2920,14 @@ export default function MoodLabArena() {
                 </div>
               )}
 
-              {/* ═══ SAVE DIVE instruction ═══ */}
+              {/* ═══ SAVE DIVE instruction + timer ═══ */}
               {kickState==="save_dive" && (
                 <div style={{textAlign:"center"}}>
-                  <div style={{fontSize:16,fontWeight:900,color:C.orange,animation:"countPulse 0.4s infinite",textShadow:`0 0 15px ${C.orange}60`}}>
-                    DIVE NOW! 🧤💨
+                  <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
+                    <span style={{fontSize:13,fontWeight:900,color:C.orange,animation:"countPulse 0.4s infinite",textShadow:`0 0 15px ${C.orange}60`}}>🧤 DIVE NOW!</span>
+                    <span style={{fontSize:14,fontWeight:900,color:actionTimer<=1?C.red:C.gold,animation:actionTimer<=1?"pulse 0.5s infinite":"none"}}>{actionTimer}s</span>
                   </div>
-                  <div style={{fontSize:10,color:C.text3,marginTop:2}}>👆 TAP a zone!</div>
+                  <div style={{fontSize:8,color:C.text3,marginTop:1}}>👆 TAP a zone!</div>
                 </div>
               )}
 
@@ -2896,12 +2970,13 @@ export default function MoodLabArena() {
                       💰 ×{pool.rewardMult} {pool.label} · {getDeviceShort()}
                     </div>
                     <div style={{display:"flex",gap:10,justifyContent:"center"}}>
-                      <div onClick={()=>{startKick();playFx("whistle");}} style={{
+                      {/* No rematch in tournament mode */}
+                      {!gameActive?.wcMode && <div onClick={()=>{startKick();playFx("whistle");}} style={{
                         padding:"12px 28px",borderRadius:12,cursor:"pointer",
                         background:`linear-gradient(135deg, ${C.cyan}18, ${C.cyan}06)`,
                         border:`1px solid ${C.cyan}30`,fontSize:14,fontWeight:800,color:C.cyan,
                         boxShadow:`0 0 15px ${C.cyan}10`,
-                      }}>🔄 Rematch</div>
+                      }}>🔄 Rematch</div>}
                       <div onClick={()=>{kickEndGame();playFx("crowd");}} style={{
                         padding:"12px 28px",borderRadius:12,cursor:"pointer",
                         background:`linear-gradient(135deg, ${C.green}18, ${C.green}06)`,
@@ -2945,8 +3020,8 @@ export default function MoodLabArena() {
                     flex:1,padding:"5px 6px",borderRadius:8,textAlign:"center",
                     background:audienceSide==="you"?`${C.cyan}15`:"transparent",border:`1px solid ${audienceSide==="you"?C.cyan+"30":"transparent"}`,
                   }}>
-                    <div style={{fontSize:9,fontWeight:800,color:audienceSide==="you"?C.cyan:C.text3}}>😎 Steve</div>
-                    <div style={{fontSize:7,color:C.text3}}>👥 {sideFans.you} fans</div>
+                    <div style={{fontSize:9,fontWeight:800,color:audienceSide==="you"?C.cyan:C.text3}}>{gameActive?.wcMode&&wcTeam?wcTeam.flag:""} 😎 Steve</div>
+                    <div style={{fontSize:7,color:C.text3}}>👥 {sideFans.you}</div>
                   </div>
                   {/* SWITCH BUTTON — tap to start puff meter */}
                   <div style={{width:70,textAlign:"center"}}>
@@ -2984,7 +3059,7 @@ export default function MoodLabArena() {
                     background:audienceSide==="ai"?`${C.red}15`:"transparent",border:`1px solid ${audienceSide==="ai"?C.red+"30":"transparent"}`,
                   }}>
                     <div style={{fontSize:9,fontWeight:800,color:audienceSide==="ai"?C.red:C.text3}}>{kickOpponent.current.emoji} {kickOpponent.current.name.split(" ")[0]}</div>
-                    <div style={{fontSize:7,color:C.text3}}>👥 {sideFans.ai} fans</div>
+                    <div style={{fontSize:7,color:C.text3}}>👥 {sideFans.ai}</div>
                   </div>
                 </div>
 
@@ -3310,9 +3385,10 @@ export default function MoodLabArena() {
               <div style={{position:"absolute",bottom:16,left:16,right:16,zIndex:5,animation:"fadeIn 0.3s ease"}}>
                 <div onClick={wcConfirmTeam} style={{
                   padding:"12px 0",borderRadius:14,textAlign:"center",cursor:"pointer",
-                  background:`linear-gradient(135deg, ${C.cyan}20, ${C.gold}15)`,
-                  border:`1px solid ${C.cyan}30`,
-                  boxShadow:`0 0 30px ${C.cyan}15`,
+                  background:`linear-gradient(135deg, ${C.cyan}40, ${C.gold}30)`,
+                  border:`2px solid ${C.cyan}60`,
+                  boxShadow:`0 0 30px ${C.cyan}25`,
+                  backdropFilter:"blur(8px)",
                 }}>
                   <div style={{fontSize:14,fontWeight:900,color:C.cyan}}>
                     CONFIRM {wcTeam.flag} {wcTeam.name.toUpperCase()}
