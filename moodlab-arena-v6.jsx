@@ -279,6 +279,8 @@ export default function MoodLabArena() {
   const [matchIntro, setMatchIntro] = useState(null); // null | {stage:"enter"|"stats"|"countdown"|"go", count:3}
   const [commentatorText, setCommentatorText] = useState("");
   const [dimLights, setDimLights] = useState(false); // dims during puff charge
+  const [puffBubbles, setPuffBubbles] = useState([]); // floating puff bubbles during charge
+  const [audienceBubbles, setAudienceBubbles] = useState([]); // random audience puff bubbles
 
   // ── Audience Side System ──
   const [audienceSide, setAudienceSide] = useState("you"); // "you" | "ai"
@@ -354,7 +356,7 @@ export default function MoodLabArena() {
   const activeInput = getActiveInputInfo();
 
   // ── EFFECTS ──
-  useEffect(() => { const t=setInterval(()=>setTick(p=>p+1),1000); return()=>clearInterval(t); }, []);
+  useEffect(() => { const t=setInterval(()=>{setTick(p=>p+1);if(gameActive&&gameActive.id==="finalkick"&&kickState&&Math.random()<0.3)spawnAudienceBubble();},1000); return()=>clearInterval(t); }, [gameActive,kickState]);
   useEffect(() => { const t=setInterval(()=>setMainStage(p=>(p+1)%3),5000); return()=>clearInterval(t); }, []);
   useEffect(() => { const t=setInterval(()=>setTickerOffset(p=>p-0.5),30); return()=>clearInterval(t); }, []);
 
@@ -612,6 +614,16 @@ export default function MoodLabArena() {
   // Check if blinker territory (held 4.5s+, power is dropping fast)
   const isPuffBlinker = useRef(false);
 
+  // ── Bubble spawner during puff charge ──
+  const spawnPuffBubble = () => {
+    const b = {id:Date.now()+Math.random(),x:35+Math.random()*30,y:100,size:4+Math.random()*8,dur:1.5+Math.random()*1.5,color:[C.cyan,C.green,C.lime,"rgba(255,255,255,0.3)"][Math.floor(Math.random()*4)]};
+    setPuffBubbles(p=>[...p.slice(-15),b]);
+  };
+  const spawnAudienceBubble = () => {
+    const b = {id:Date.now()+Math.random(),x:5+Math.random()*90,y:60+Math.random()*30,size:2+Math.random()*5,dur:2+Math.random()*2,color:[C.cyan+"40",C.pink+"30",C.gold+"30",C.purple+"30"][Math.floor(Math.random()*4)]};
+    setAudienceBubbles(p=>[...p.slice(-10),b]);
+  };
+
   const kickStartCharge = () => {
     if(kickState!=="power"||kickAim===null||kickCharging) return;
     setKickCharging(true); setKickPower(0); setDimLights(true);
@@ -622,6 +634,11 @@ export default function MoodLabArena() {
       const elapsed = (Date.now() - puffStartTime.current) / 1000;
       const pwr = getPuffPower(elapsed);
       setKickPower(pwr);
+
+      // Spawn puff bubbles during charge (every ~200ms)
+      if(Math.random()<0.4) spawnPuffBubble();
+      // Random audience bubbles (less frequent)
+      if(Math.random()<0.1) spawnAudienceBubble();
 
       // Update commentary based on zone
       if(elapsed > 4.5 && !isPuffBlinker.current) {
@@ -646,6 +663,7 @@ export default function MoodLabArena() {
   const kickStopCharge = () => {
     if(!kickCharging) return;
     setKickCharging(false); setDimLights(false);
+    setTimeout(()=>{setPuffBubbles([]);setAudienceBubbles([]);},2000); // cleanup after float
     if(kickChargeInterval.current){clearInterval(kickChargeInterval.current);kickChargeInterval.current=null;}
     const elapsed = (Date.now() - puffStartTime.current) / 1000;
     const wasBlinker = elapsed >= 4.5;
@@ -1746,8 +1764,8 @@ export default function MoodLabArena() {
   // ═════════════════════════════════════════
   const overlayStyle = {position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,background:"rgba(5,5,16,0.97)",backdropFilter:"blur(16px)",display:"flex",flexDirection:"column",overflowY:"auto"};
   const overlayBack = (onClose) => (
-    <div onClick={onClose} style={{position:"absolute",top:16,left:16,zIndex:10,cursor:"pointer",padding:"6px 12px",borderRadius:8,background:`${C.text3}08`,border:`1px solid ${C.border}`}}>
-      <span style={{fontSize:12,fontWeight:600,color:C.text2}}>← Back</span>
+    <div onClick={onClose} style={{position:"absolute",top:8,left:10,zIndex:250,cursor:"pointer",padding:"5px 10px",borderRadius:8,background:`rgba(6,8,15,0.7)`,backdropFilter:"blur(8px)",border:`1px solid ${C.border}`}}>
+      <span style={{fontSize:11,fontWeight:600,color:C.text2}}>← Back</span>
     </div>
   );
 
@@ -1895,6 +1913,24 @@ export default function MoodLabArena() {
               }}/>
             ))}
 
+            {/* ═══ PUFF BUBBLES (during charge) ═══ */}
+            {puffBubbles.length>0 && puffBubbles.map(b=>(
+              <div key={b.id} style={{position:"absolute",left:`${b.x}%`,bottom:`${b.y}%`,width:b.size,height:b.size,
+                borderRadius:"50%",background:b.color,border:`1px solid rgba(255,255,255,0.15)`,
+                zIndex:206,pointerEvents:"none",opacity:0.6,
+                animation:`bubbleFloat ${b.dur}s ease-out forwards`,
+              }}/>
+            ))}
+
+            {/* ═══ AUDIENCE BUBBLES (random ambient) ═══ */}
+            {audienceBubbles.length>0 && audienceBubbles.map(b=>(
+              <div key={b.id} style={{position:"absolute",left:`${b.x}%`,bottom:`${b.y}%`,width:b.size,height:b.size,
+                borderRadius:"50%",background:b.color,
+                zIndex:204,pointerEvents:"none",opacity:0.3,
+                animation:`bubbleFloat ${b.dur}s ease-out forwards`,
+              }}/>
+            ))}
+
             {/* ═══ PUFF WAVE ═══ */}
             {puffWaveActive && <div style={{position:"absolute",bottom:0,left:0,right:0,height:"100%",zIndex:208,pointerEvents:"none",
               background:`linear-gradient(0deg, rgba(0,229,255,0.08) 0%, rgba(127,255,0,0.04) 30%, transparent 60%)`,
@@ -1905,76 +1941,105 @@ export default function MoodLabArena() {
               </div>
             </div>}
 
-            {/* ═══ AI COMMENTATOR BAR ═══ */}
-            {commentatorText && <div style={{position:"absolute",top:4,left:10,right:10,zIndex:215,padding:"5px 12px",borderRadius:10,
-              ...GLASS_CLEAR,textAlign:"center",animation:"fadeIn 0.3s ease",
-            }}>
-              <span style={{fontSize:8,fontWeight:700,color:C.gold}}>🎙️ </span>
-              <span style={{fontSize:9,fontWeight:600,color:C.text,fontStyle:"italic"}}>{commentatorText}</span>
+            {/* ═══ AI COMMENTATOR — AVATAR + SPEECH BUBBLE ═══ */}
+            {commentatorText && <div style={{position:"absolute",top:6,left:8,right:8,zIndex:215,display:"flex",alignItems:"flex-start",gap:6,animation:"fadeIn 0.3s ease",pointerEvents:"none"}}>
+              {/* Commentator avatar */}
+              <div style={{width:28,height:28,borderRadius:"50%",background:`linear-gradient(135deg, ${C.gold}30, ${C.gold}10)`,border:`2px solid ${C.gold}50`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,boxShadow:`0 0 10px ${C.gold}20`}}>
+                <span style={{fontSize:14}}>🎙️</span>
+              </div>
+              {/* Speech bubble */}
+              <div style={{position:"relative",flex:1,padding:"5px 10px",borderRadius:"4px 12px 12px 12px",background:`rgba(255,217,61,0.08)`,border:`1px solid ${C.gold}25`,backdropFilter:"blur(8px)"}}>
+                {/* Bubble pointer */}
+                <div style={{position:"absolute",left:-5,top:8,width:0,height:0,borderTop:"4px solid transparent",borderBottom:"4px solid transparent",borderRight:`5px solid ${C.gold}25`}}/>
+                <span style={{fontSize:9,fontWeight:600,color:C.text,fontStyle:"italic",lineHeight:1.3}}>{commentatorText}</span>
+              </div>
             </div>}
 
-            {/* ═══ MATCH INTRO OVERLAY ═══ */}
+            {/* ═══ MATCH INTRO — COMBINED VS + STATS + COUNTDOWN ═══ */}
             {matchIntro && (
               <div style={{position:"absolute",inset:0,zIndex:220,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
-                background:"rgba(0,0,0,0.85)",backdropFilter:"blur(10px)",animation:"fadeIn 0.3s ease",
+                background:`radial-gradient(ellipse at 50% 30%, rgba(0,229,255,0.06) 0%, transparent 50%),
+                  radial-gradient(ellipse at 50% 70%, rgba(255,217,61,0.04) 0%, transparent 50%),
+                  rgba(4,8,18,0.92)`,
+                backdropFilter:"blur(12px)",animation:"fadeIn 0.3s ease",
               }}>
-                {matchIntro.stage==="enter" && (
-                  <div style={{textAlign:"center",animation:"fadeIn 0.5s ease"}}>
-                    <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:30}}>
-                      <div style={{animation:"slideInLeft 0.8s ease",textAlign:"center"}}>
-                        <div style={{fontSize:50,marginBottom:4}}>😎</div>
-                        <div style={{fontSize:14,fontWeight:900,color:C.cyan}}>Steve</div>
-                        <div style={{fontSize:8,color:C.text3}}>Lv.24 · {getDeviceShort()}</div>
+                {/* Stadium spotlight beams */}
+                <div style={{position:"absolute",top:0,left:"20%",width:2,height:"40%",background:`linear-gradient(180deg, ${C.cyan}25, transparent)`,filter:"blur(3px)"}}/>
+                <div style={{position:"absolute",top:0,right:"20%",width:2,height:"40%",background:`linear-gradient(180deg, ${C.red}25, transparent)`,filter:"blur(3px)"}}/>
+
+                {/* Title badge */}
+                <div style={{marginBottom:16,padding:"4px 16px",borderRadius:20,background:`${C.gold}12`,border:`1px solid ${C.gold}30`}}>
+                  <span style={{fontSize:9,fontWeight:800,color:C.gold,letterSpacing:3}}>🏆 FINAL KICK CHAMPIONSHIP</span>
+                </div>
+
+                {/* ── VS PLAYERS — Always visible ── */}
+                <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:20,marginBottom:16}}>
+                  {/* Player left */}
+                  <div style={{textAlign:"center",animation:"slideInLeft 0.8s ease"}}>
+                    <div style={{width:60,height:60,borderRadius:16,overflow:"hidden",border:`2px solid ${C.cyan}60`,background:`${C.cyan}10`,margin:"0 auto 6px",boxShadow:`0 0 20px ${C.cyan}30`}}>
+                      <img src={PLAYER_IMG} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}} onError={(e)=>{e.target.outerHTML='<div style="font-size:32px;text-align:center;padding-top:10px">😎</div>';}}/>
+                    </div>
+                    <div style={{fontSize:14,fontWeight:900,color:C.cyan,textShadow:`0 0 10px ${C.cyan}40`}}>Steve</div>
+                    <div style={{fontSize:8,color:C.text3}}>Lv.24 · {getDeviceShort()}</div>
+                  </div>
+
+                  {/* VS center — shows countdown when active */}
+                  <div style={{textAlign:"center",minWidth:50}}>
+                    {(matchIntro.stage==="countdown") ? (
+                      <div style={{fontSize:60,fontWeight:900,color:C.gold,textShadow:`0 0 40px ${C.gold}60`,animation:"countPulse 0.8s ease",lineHeight:1}}>
+                        {matchIntro.count}
                       </div>
-                      <div style={{fontSize:28,fontWeight:900,color:C.gold,textShadow:`0 0 20px ${C.gold}60`,animation:"countPulse 1s infinite"}}>VS</div>
-                      <div style={{animation:"slideInRight 0.8s ease",textAlign:"center"}}>
-                        <div style={{fontSize:50,marginBottom:4}}>{kickOpponent.current.emoji}</div>
-                        <div style={{fontSize:14,fontWeight:900,color:C.red}}>{kickOpponent.current.name}</div>
-                        <div style={{fontSize:8,color:C.text3}}>{kickOpponent.current.rank}</div>
+                    ) : matchIntro.stage==="go" ? (
+                      <div style={{fontSize:24,fontWeight:900,color:C.green,textShadow:`0 0 20px ${C.green}60`,animation:"countPulse 0.5s ease",lineHeight:1}}>
+                        ⚽
                       </div>
+                    ) : (
+                      <div style={{fontSize:24,fontWeight:900,color:C.gold,textShadow:`0 0 20px ${C.gold}60`,animation:"countPulse 1.5s infinite"}}>VS</div>
+                    )}
+                  </div>
+
+                  {/* Player right */}
+                  <div style={{textAlign:"center",animation:"slideInRight 0.8s ease"}}>
+                    <div style={{width:60,height:60,borderRadius:16,overflow:"hidden",border:`2px solid ${C.red}60`,background:`${C.red}10`,margin:"0 auto 6px",boxShadow:`0 0 20px ${C.red}30`}}>
+                      <img src={kickOpponent.current.img} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}} onError={(e)=>{e.target.outerHTML='<div style="font-size:32px;text-align:center;padding-top:10px">'+kickOpponent.current.emoji+'</div>';}}/>
                     </div>
-                    <div style={{fontSize:9,color:C.gold,marginTop:16,letterSpacing:3}}>🏆 FINAL KICK CHAMPIONSHIP</div>
+                    <div style={{fontSize:14,fontWeight:900,color:C.red,textShadow:`0 0 10px ${C.red}40`}}>{kickOpponent.current.name}</div>
+                    <div style={{fontSize:8,color:C.text3}}>{kickOpponent.current.rank} · {kickOpponent.current.record}</div>
+                  </div>
+                </div>
+
+                {/* ── STATS — Slides up after enter ── */}
+                {(matchIntro.stage==="stats"||matchIntro.stage==="countdown"||matchIntro.stage==="go") && (
+                  <div style={{width:"80%",maxWidth:280,padding:"10px 14px",borderRadius:14,...GLASS_CLEAR,animation:"fadeIn 0.5s ease",marginBottom:12}}>
+                    <div style={{fontSize:8,fontWeight:800,color:C.gold,marginBottom:8,textAlign:"center",letterSpacing:2}}>📊 HEAD TO HEAD</div>
+                    {[
+                      ["72%","Win Rate",(45+Math.floor(Math.random()*20))+"%"],
+                      ["420","Goals",kickOpponent.current.record.split("-")[0]],
+                      ["69","Blinkers 💀",Math.floor(Math.random()*30)+""],
+                      ["2.9s","Avg Puff",(2.5+Math.random()).toFixed(1)+"s"],
+                    ].map(([l,mid,r],i)=>(
+                      <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4,padding:"2px 0",borderBottom:i<3?`1px solid ${C.border}`:"none"}}>
+                        <span style={{fontSize:11,fontWeight:800,color:C.cyan,minWidth:35}}>{l}</span>
+                        <span style={{fontSize:8,color:C.text3,flex:1,textAlign:"center"}}>{mid}</span>
+                        <span style={{fontSize:11,fontWeight:800,color:C.red,minWidth:35,textAlign:"right"}}>{r}</span>
+                      </div>
+                    ))}
                   </div>
                 )}
-                {matchIntro.stage==="stats" && (
-                  <div style={{textAlign:"center",animation:"fadeIn 0.4s ease",width:"80%",maxWidth:300}}>
-                    <div style={{fontSize:10,fontWeight:800,color:C.gold,marginBottom:12,letterSpacing:2}}>📊 MATCH STATS</div>
-                    <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}>
-                      <span style={{fontSize:11,fontWeight:800,color:C.cyan}}>72%</span>
-                      <span style={{fontSize:9,color:C.text3}}>Win Rate</span>
-                      <span style={{fontSize:11,fontWeight:800,color:C.red}}>{45+Math.floor(Math.random()*20)}%</span>
-                    </div>
-                    <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}>
-                      <span style={{fontSize:11,fontWeight:800,color:C.cyan}}>420</span>
-                      <span style={{fontSize:9,color:C.text3}}>Total Goals</span>
-                      <span style={{fontSize:11,fontWeight:800,color:C.red}}>{kickOpponent.current.record.split("-")[0]}</span>
-                    </div>
-                    <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}>
-                      <span style={{fontSize:11,fontWeight:800,color:C.cyan}}>69</span>
-                      <span style={{fontSize:9,color:C.text3}}>Blinkers 💀</span>
-                      <span style={{fontSize:11,fontWeight:800,color:C.red}}>{Math.floor(Math.random()*30)}</span>
-                    </div>
-                    <div style={{display:"flex",justifyContent:"space-between"}}>
-                      <span style={{fontSize:11,fontWeight:800,color:C.cyan}}>2.9s</span>
-                      <span style={{fontSize:9,color:C.text3}}>Avg Puff</span>
-                      <span style={{fontSize:11,fontWeight:800,color:C.red}}>{(2.5+Math.random()).toFixed(1)}s</span>
-                    </div>
-                  </div>
-                )}
-                {matchIntro.stage==="countdown" && (
-                  <div style={{textAlign:"center"}}>
-                    <div style={{fontSize:80,fontWeight:900,color:C.gold,textShadow:`0 0 40px ${C.gold}60`,animation:"countPulse 0.8s ease",lineHeight:1}}>
-                      {matchIntro.count}
-                    </div>
-                  </div>
-                )}
+
+                {/* ── GO text ── */}
                 {matchIntro.stage==="go" && (
-                  <div style={{textAlign:"center",animation:"fadeIn 0.2s ease"}}>
-                    <div style={{fontSize:36,fontWeight:900,color:C.green,textShadow:`0 0 30px ${C.green}60`,animation:"countPulse 0.5s ease"}}>
-                      ⚽ KICK OFF!
+                  <div style={{animation:"fadeIn 0.2s ease",marginTop:4}}>
+                    <div style={{fontSize:28,fontWeight:900,color:C.green,textShadow:`0 0 30px ${C.green}60`,animation:"countPulse 0.5s ease",textAlign:"center"}}>
+                      KICK OFF!
                     </div>
                   </div>
                 )}
+
+                {/* Crowd watching count */}
+                <div style={{marginTop:12,fontSize:8,color:C.text3}}>
+                  👁️ {120+Math.floor(Math.random()*80)} watching · 🏟️ Round of 16
+                </div>
               </div>
             )}
 
@@ -3168,6 +3233,7 @@ export default function MoodLabArena() {
         @keyframes puffWaveSweep{0%{transform:translateY(100%);opacity:0}20%{opacity:1}80%{opacity:0.6}100%{transform:translateY(-20%);opacity:0}}
         @keyframes slideInLeft{from{transform:translateX(-80px);opacity:0}to{transform:translateX(0);opacity:1}}
         @keyframes slideInRight{from{transform:translateX(80px);opacity:0}to{transform:translateX(0);opacity:1}}
+        @keyframes bubbleFloat{0%{transform:translateY(0) scale(1);opacity:0.6}50%{opacity:0.4}100%{transform:translateY(-200px) scale(0.3) translateX(20px);opacity:0}}
         *{-webkit-tap-highlight-color:transparent;user-select:none;box-sizing:border-box}
         input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
         input[type=number]{-moz-appearance:textfield}
