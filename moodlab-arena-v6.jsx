@@ -441,6 +441,7 @@ export default function MoodLabArena() {
   const [wcDrawAnim, setWcDrawAnim] = useState(false);   // group draw animation active
   const [wcGroupResult, setWcGroupResult] = useState(null); // after group stage — "advance"|"eliminated"
   const [wcFinalResult, setWcFinalResult] = useState(null); // "gold"|"silver"|"bronze"|"fourth"|"group"
+  const [wcViewTab, setWcViewTab] = useState("mygroup"); // "mygroup" | "allgroups" | "bracket"
 
   // ── Derived ──
   const wcDays = Math.max(0, Math.floor((new Date("2026-06-11") - new Date()) / 86400000));
@@ -1100,6 +1101,7 @@ export default function MoodLabArena() {
     setTimeout(() => {
       setWcDrawAnim(false);
       setWcPhase("group_stage");
+      setWcViewTab("mygroup");
     }, 3000);
   };
 
@@ -3117,7 +3119,8 @@ export default function MoodLabArena() {
             radial-gradient(ellipse at 50% 20%, ${gc}15 0%, transparent 50%),
             radial-gradient(ellipse at 20% 80%, ${gc}08 0%, transparent 40%),
             radial-gradient(ellipse at 80% 80%, rgba(168,85,247,0.05) 0%, transparent 40%),
-            linear-gradient(180deg, #040812 0%, #0a1628 40%, #0d1f20 70%, #061210 100%)
+            radial-gradient(ellipse at 50% 20%, rgba(0,229,255,0.06) 0%, transparent 50%),
+            linear-gradient(180deg, #04081A 0%, #0a1630 40%, #0d1f35 70%, #061018 100%)
           `}}/>
           <div style={{position:"absolute",top:0,left:"20%",width:3,height:"30%",background:`linear-gradient(180deg, ${gc}25, transparent)`,filter:"blur(4px)",animation:"pulse 3s infinite"}}/>
           <div style={{position:"absolute",top:0,right:"20%",width:3,height:"30%",background:`linear-gradient(180deg, ${gc}25, transparent)`,filter:"blur(4px)",animation:"pulse 3s infinite 1s"}}/>
@@ -3252,9 +3255,9 @@ export default function MoodLabArena() {
       return (
         <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:110,overflow:"hidden"}}>
           <div style={{position:"absolute",inset:0,background:`
-            radial-gradient(ellipse at 50% 10%, ${C.gold}10 0%, transparent 50%),
-            radial-gradient(ellipse at 30% 90%, ${C.cyan}05 0%, transparent 40%),
-            linear-gradient(180deg, #030610 0%, #0a1020 30%, #080818 100%)
+            radial-gradient(ellipse at 50% 20%, rgba(0,229,255,0.06) 0%, transparent 50%),
+            radial-gradient(ellipse at 20% 80%, rgba(96,165,250,0.04) 0%, transparent 40%),
+            linear-gradient(180deg, #04081A 0%, #0a1630 40%, #0d1f35 70%, #061018 100%)
           `}}/>
           {/* Stadium lights */}
           {[...Array(6)].map((_,i)=>(
@@ -3327,7 +3330,7 @@ export default function MoodLabArena() {
     if(wcPhase === "group_draw" && wcTournament) {
       return (
         <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:110,overflow:"hidden",
-          background:"linear-gradient(180deg, #020408 0%, #0a1428 50%, #061018 100%)",
+          background:`radial-gradient(ellipse at 50% 20%, rgba(0,229,255,0.06) 0%, transparent 50%), radial-gradient(ellipse at 20% 80%, rgba(96,165,250,0.04) 0%, transparent 40%), linear-gradient(180deg, #04081A 0%, #0a1630 40%, #0d1f35 70%, #061018 100%)`,
           display:"flex",alignItems:"center",justifyContent:"center",
         }}>
           <div style={{textAlign:"center",animation:"fadeIn 0.5s ease"}}>
@@ -3370,17 +3373,35 @@ export default function MoodLabArena() {
       return (
         <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:110,overflow:"hidden"}}>
           <div style={{position:"absolute",inset:0,background:`
-            radial-gradient(ellipse at 50% 20%, ${C.gold}08 0%, transparent 50%),
-            linear-gradient(180deg, #030610 0%, #0a1020 40%, #080818 100%)
+            radial-gradient(ellipse at 50% 20%, rgba(0,229,255,0.06) 0%, transparent 50%),
+            radial-gradient(ellipse at 20% 80%, rgba(96,165,250,0.04) 0%, transparent 40%),
+            linear-gradient(180deg, #04081A 0%, #0a1630 40%, #0d1f35 70%, #061018 100%)
           `}}/>
           {overlayBack(wcExitTournament)}
 
-          <div style={{position:"relative",zIndex:2,height:"100%",display:"flex",flexDirection:"column",padding:"48px 14px 20px",overflowY:"auto"}}>
-            <div style={{textAlign:"center",marginBottom:12}}>
+          <div style={{position:"relative",zIndex:2,height:"100%",display:"flex",flexDirection:"column",padding:"48px 14px 20px"}}>
+            <div style={{textAlign:"center",marginBottom:8}}>
               <div style={{fontSize:10,fontWeight:800,color:C.gold,letterSpacing:2}}>🏆 WORLD CUP 2026 — GROUP {wcTournament.group}</div>
               <div style={{fontSize:8,color:C.text3,marginTop:2}}>Playing as {wcTeam?.flag} {wcTeam?.name}</div>
             </div>
 
+            {/* Tab bar */}
+            <div style={{display:"flex",gap:0,marginBottom:10,borderBottom:`1px solid ${C.border}`}}>
+              {[{key:"mygroup",label:"Your Group"},{key:"allgroups",label:"All Groups"},{key:"bracket",label:"Bracket"}].map(tab=>(
+                <div key={tab.key} onClick={()=>{playFx("nav");setWcViewTab(tab.key);}} style={{
+                  flex:1,textAlign:"center",padding:"3px 0",cursor:"pointer",
+                  fontSize:8,fontWeight:wcViewTab===tab.key?800:600,
+                  color:wcViewTab===tab.key?C.cyan:C.text3,
+                  borderBottom:wcViewTab===tab.key?`2px solid ${C.cyan}`:"2px solid transparent",
+                  transition:"all 0.2s",
+                }}>{tab.label}</div>
+              ))}
+            </div>
+
+            <div style={{flex:1,overflowY:"auto"}}>
+
+            {/* ── YOUR GROUP TAB ── */}
+            {wcViewTab === "mygroup" && (<>
             {/* Group standings table */}
             <div style={{padding:"10px 12px",borderRadius:14,...GLASS_CARD,marginBottom:12}}>
               <div style={{fontSize:9,fontWeight:800,color:C.text2,marginBottom:6}}>STANDINGS</div>
@@ -3461,6 +3482,85 @@ export default function MoodLabArena() {
                 </div>
               );
             })}
+            </>)}
+
+            {/* ── ALL GROUPS TAB ── */}
+            {wcViewTab === "allgroups" && (()=>{
+              // Generate all 12 groups (A-L) using WC_GROUPS data with seeded random standings
+              const groupLetters = Object.keys(WC_GROUPS);
+              return groupLetters.map(letter => {
+                const teamIds = WC_GROUPS[letter];
+                const teams = teamIds.map(id => WC_TEAMS.find(t => t.id === id)).filter(Boolean);
+                const isUserGroup = letter === wcTournament.group;
+                // For user's group use real standings, for others generate fake ones
+                const standings = isUserGroup ? st : teams.map((t, ti) => {
+                  // Deterministic fake points based on team rating + letter code
+                  const seed = letter.charCodeAt(0) * 7 + ti * 13;
+                  const pts = t.rating >= 4 ? (seed % 3 === 0 ? 9 : seed % 2 === 0 ? 7 : 6) :
+                              t.rating >= 3 ? (seed % 3 === 0 ? 6 : seed % 2 === 0 ? 4 : 3) :
+                              (seed % 3 === 0 ? 3 : seed % 2 === 0 ? 1 : 0);
+                  return { ...t, pts };
+                }).sort((a, b) => b.pts - a.pts);
+                return (
+                  <div key={letter} style={{marginBottom:10,padding:"8px 10px",borderRadius:12,...GLASS_CARD,border:isUserGroup?`1px solid ${C.cyan}25`:undefined}}>
+                    <div style={{fontSize:9,fontWeight:800,color:isUserGroup?C.cyan:C.gold,marginBottom:5,letterSpacing:1}}>GROUP {letter}{isUserGroup?" (YOUR GROUP)":""}</div>
+                    {standings.map((t, i) => (
+                      <div key={t.id} style={{display:"flex",alignItems:"center",gap:6,padding:"2px 0",borderBottom:i<standings.length-1?`1px solid ${C.border}`:"none"}}>
+                        <div style={{width:14,fontSize:7,fontWeight:700,color:i<2?C.green:C.text3}}>{i+1}</div>
+                        <span style={{fontSize:12}}>{t.flag}</span>
+                        <span style={{flex:1,fontSize:8,fontWeight:t.id===wcTeam?.id?800:600,color:t.id===wcTeam?.id?C.cyan:C.text}}>{t.name}</span>
+                        <span style={{fontSize:8,fontWeight:700,color:C.gold,width:20,textAlign:"right"}}>{t.pts}</span>
+                      </div>
+                    ))}
+                  </div>
+                );
+              });
+            })()}
+
+            {/* ── BRACKET TAB ── */}
+            {wcViewTab === "bracket" && (()=>{
+              const bracketRounds = ["R32","R16","QF","SF","Final"];
+              // Generate fake bracket matchups from group winners/runners
+              const groupLetters = Object.keys(WC_GROUPS);
+              const fakeSlots = groupLetters.flatMap(letter => {
+                const teamIds = WC_GROUPS[letter];
+                const teams = teamIds.map(id => WC_TEAMS.find(t => t.id === id)).filter(Boolean);
+                return teams.slice(0, 2); // top 2 per group
+              });
+              return (
+                <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                  <div style={{fontSize:8,color:C.text3,textAlign:"center",marginBottom:4}}>48 Teams -- Top 2 per group advance to R32</div>
+                  {bracketRounds.map((roundName, rIdx) => {
+                    const matchCount = rIdx === 0 ? 16 : rIdx === 1 ? 8 : rIdx === 2 ? 4 : rIdx === 3 ? 2 : 1;
+                    const isActive = rIdx === 0;
+                    return (
+                      <div key={roundName} style={{padding:"6px 10px",borderRadius:10,...GLASS_CARD,border:isActive?`1px solid ${C.gold}20`:undefined}}>
+                        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:4}}>
+                          <div style={{fontSize:9,fontWeight:800,color:isActive?C.gold:C.text2,letterSpacing:1}}>{roundName}</div>
+                          <div style={{fontSize:7,color:C.text3}}>{matchCount} matches</div>
+                        </div>
+                        <div style={{display:"flex",flexWrap:"wrap",gap:3}}>
+                          {[...Array(Math.min(matchCount, 8))].map((_, mi) => {
+                            const t1 = fakeSlots[(rIdx * 7 + mi * 2) % fakeSlots.length];
+                            const t2 = fakeSlots[(rIdx * 7 + mi * 2 + 1) % fakeSlots.length];
+                            return (
+                              <div key={mi} style={{display:"flex",alignItems:"center",gap:2,padding:"2px 5px",borderRadius:6,background:"rgba(255,255,255,0.03)",border:`1px solid ${C.border}`,fontSize:7}}>
+                                <span style={{fontSize:10}}>{t1?.flag}</span>
+                                <span style={{color:C.text3,fontWeight:700}}>v</span>
+                                <span style={{fontSize:10}}>{t2?.flag}</span>
+                              </div>
+                            );
+                          })}
+                          {matchCount > 8 && <div style={{fontSize:7,color:C.text3,padding:"2px 5px",display:"flex",alignItems:"center"}}>+{matchCount - 8} more</div>}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()}
+
+            </div>{/* end scrollable wrapper */}
           </div>
         </div>
       );
@@ -3473,8 +3573,9 @@ export default function MoodLabArena() {
       return (
         <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:110,overflow:"hidden"}}>
           <div style={{position:"absolute",inset:0,background:`
-            radial-gradient(ellipse at 50% 20%, ${C.gold}10 0%, transparent 50%),
-            linear-gradient(180deg, #020408 0%, #0c1830 40%, #081020 100%)
+            radial-gradient(ellipse at 50% 20%, rgba(0,229,255,0.06) 0%, transparent 50%),
+            radial-gradient(ellipse at 20% 80%, rgba(96,165,250,0.04) 0%, transparent 40%),
+            linear-gradient(180deg, #04081A 0%, #0a1630 40%, #0d1f35 70%, #061018 100%)
           `}}/>
           {overlayBack(wcExitTournament)}
 
@@ -3546,8 +3647,9 @@ export default function MoodLabArena() {
         }}>
           <div style={{position:"absolute",inset:0,background:`
             radial-gradient(ellipse at 50% 30%, ${accentColor}15 0%, transparent 50%),
-            radial-gradient(ellipse at 50% 70%, ${accentColor}08 0%, transparent 50%),
-            linear-gradient(180deg, #020408 0%, #0a1428 50%, #061018 100%)
+            radial-gradient(ellipse at 50% 20%, rgba(0,229,255,0.06) 0%, transparent 50%),
+            radial-gradient(ellipse at 20% 80%, rgba(96,165,250,0.04) 0%, transparent 40%),
+            linear-gradient(180deg, #04081A 0%, #0a1630 40%, #0d1f35 70%, #061018 100%)
           `}}/>
           {/* Gold rays for champion */}
           {isGold && [...Array(8)].map((_,i)=>(
