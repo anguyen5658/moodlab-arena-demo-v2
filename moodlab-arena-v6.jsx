@@ -278,7 +278,7 @@ export default function MoodLabArena() {
     {u:"Fan_420",m:"LET'S GO STEVE! 🔥",c:C.cyan,t:Date.now()-10000},
     {u:"PuffQueen",m:"Sweet spot this round 💨👑",c:C.pink,t:Date.now()-5000},
   ],ai:[
-    {u:"BotFan1",m:kickOpponent.current?.name+" got this 🤖",c:C.red,t:Date.now()-8000},
+    {u:"BotFan1",m:"AI got this 🤖",c:C.red,t:Date.now()-8000},
     {u:"Skeptic",m:"No way human wins lol 💀",c:C.orange,t:Date.now()-3000},
   ]});
   const [sideFans, setSideFans] = useState({you:Math.floor(8+Math.random()*15), ai:Math.floor(5+Math.random()*12)});
