@@ -418,6 +418,24 @@ export default function MoodLabArena() {
     if(duelState==="shoot"){const you=Math.floor(200+Math.random()*300),ai=Math.floor(400+Math.random()*400);const win=you<ai;setDuelResult({win,you,ai});setDuelState("result");if(win){setCoins(c=>c+50);notify("🤠 YOU WIN! +50",C.green);}else notify("💀 AI faster!",C.red);}
     else if(duelState&&duelState!=="shoot"&&duelState!=="result"){setDuelResult({foul:true});setDuelState("result");notify("⚠ FOUL!",C.red);}
   };
+  // ── Sound FX (component level so game logic can use it) ──
+  const playFx = useCallback((type) => {
+    try {
+      const ac = new (window.AudioContext||window.webkitAudioContext)();
+      const osc = ac.createOscillator();
+      const gain = ac.createGain();
+      osc.connect(gain); gain.connect(ac.destination);
+      if(type==="kick"){osc.type="sine";osc.frequency.setValueAtTime(220,ac.currentTime);osc.frequency.exponentialRampToValueAtTime(880,ac.currentTime+0.15);gain.gain.setValueAtTime(0.3,ac.currentTime);gain.gain.exponentialRampToValueAtTime(0.01,ac.currentTime+0.2);osc.start();osc.stop(ac.currentTime+0.2);}
+      else if(type==="goal"){osc.type="square";osc.frequency.setValueAtTime(523,ac.currentTime);osc.frequency.setValueAtTime(659,ac.currentTime+0.1);osc.frequency.setValueAtTime(784,ac.currentTime+0.2);gain.gain.setValueAtTime(0.2,ac.currentTime);gain.gain.exponentialRampToValueAtTime(0.01,ac.currentTime+0.4);osc.start();osc.stop(ac.currentTime+0.4);}
+      else if(type==="save"){osc.type="sawtooth";osc.frequency.setValueAtTime(300,ac.currentTime);osc.frequency.exponentialRampToValueAtTime(100,ac.currentTime+0.3);gain.gain.setValueAtTime(0.15,ac.currentTime);gain.gain.exponentialRampToValueAtTime(0.01,ac.currentTime+0.3);osc.start();osc.stop(ac.currentTime+0.3);}
+      else if(type==="whistle"){osc.type="sine";osc.frequency.setValueAtTime(2800,ac.currentTime);osc.frequency.setValueAtTime(3200,ac.currentTime+0.15);osc.frequency.setValueAtTime(2800,ac.currentTime+0.3);gain.gain.setValueAtTime(0.12,ac.currentTime);gain.gain.exponentialRampToValueAtTime(0.01,ac.currentTime+0.5);osc.start();osc.stop(ac.currentTime+0.5);}
+      else if(type==="crowd"){const n=ac.createBufferSource();const b=ac.createBuffer(1,ac.sampleRate*0.6,ac.sampleRate);const d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*0.15*Math.sin(i/d.length*Math.PI);n.buffer=b;const g2=ac.createGain();g2.gain.setValueAtTime(0.3,ac.currentTime);g2.gain.exponentialRampToValueAtTime(0.01,ac.currentTime+0.6);n.connect(g2);g2.connect(ac.destination);n.start();}
+      else if(type==="win"){[0,0.15,0.3,0.45].forEach((t,i)=>{const o2=ac.createOscillator();const g2=ac.createGain();o2.connect(g2);g2.connect(ac.destination);o2.type="square";o2.frequency.setValueAtTime([523,659,784,1047][i],ac.currentTime+t);g2.gain.setValueAtTime(0.15,ac.currentTime+t);g2.gain.exponentialRampToValueAtTime(0.01,ac.currentTime+t+0.2);o2.start(ac.currentTime+t);o2.stop(ac.currentTime+t+0.2);});}
+      else if(type==="laugh"){[0,0.08,0.16,0.24,0.32,0.4].forEach((t,i)=>{const o2=ac.createOscillator();const g2=ac.createGain();o2.connect(g2);g2.connect(ac.destination);o2.type="sine";o2.frequency.setValueAtTime(i%2===0?400:500,ac.currentTime+t);g2.gain.setValueAtTime(0.12,ac.currentTime+t);g2.gain.exponentialRampToValueAtTime(0.01,ac.currentTime+t+0.1);o2.start(ac.currentTime+t);o2.stop(ac.currentTime+t+0.1);});}
+      else if(type==="charge"){osc.type="sine";osc.frequency.setValueAtTime(200,ac.currentTime);osc.frequency.exponentialRampToValueAtTime(1200,ac.currentTime+1.5);gain.gain.setValueAtTime(0.08,ac.currentTime);gain.gain.setValueAtTime(0.08,ac.currentTime+1.4);gain.gain.exponentialRampToValueAtTime(0.01,ac.currentTime+1.5);osc.start();osc.stop(ac.currentTime+1.5);}
+    } catch(e){}
+  }, []);
+
   // ── Final Kick Logic ──
   const getDevicePool = () => DEVICE_POOLS[(DEVICE_MODELS.find(d=>d.id===deviceModel)||DEVICE_MODELS[5]).pool] || DEVICE_POOLS.open;
   const getDeviceShort = () => (DEVICE_MODELS.find(d=>d.id===deviceModel)||DEVICE_MODELS[5]).short;
@@ -1397,27 +1415,7 @@ export default function MoodLabArena() {
         const SAVE_TAUNTS = ["AI's got the ball... 👀","Keeper mode: ON 🧤","Don't let it in! 😬","Quick reflexes or nah? 🤣","This one's SPICY 🌶️"];
         const SAVE_CHEERS = ["DENIED! 🚫🧤","WALL MODE ACTIVATED 🧱","NOT TODAY! 😤","BRICK WALL ENERGY 💪","AI IS CRYING RN 😭"];
         const CONCEDE_REACT = ["Bruh... 💀","That one hurt 😂","AI said 'sit down' 😤","Pain. Just pain. 🥲","Keeper had lag 📡"];
-        const WIN_MSGS = ["YOU'RE GOATED! 🐐","CHAMPION VIBES ONLY 👑","W AFTER W AFTER W 🔥","AI NEEDS THERAPY 😂","UNMATCHED. UNDEFEATED. 💎"];
-        const LOSE_MSGS = ["GG... next time 😤","AI was tweaking fr 💀","Blame the controller 🎮","Keeper was HIGH key asleep 😂","Run it back! 🔄"];
-        const pick = (arr) => arr[Math.floor(Math.random()*arr.length)];
 
-        // Sound FX helper
-        const playFx = (type) => {
-          try {
-            const ac = new (window.AudioContext||window.webkitAudioContext)();
-            const osc = ac.createOscillator();
-            const gain = ac.createGain();
-            osc.connect(gain); gain.connect(ac.destination);
-            if(type==="kick"){osc.type="sine";osc.frequency.setValueAtTime(220,ac.currentTime);osc.frequency.exponentialRampToValueAtTime(880,ac.currentTime+0.15);gain.gain.setValueAtTime(0.3,ac.currentTime);gain.gain.exponentialRampToValueAtTime(0.01,ac.currentTime+0.2);osc.start();osc.stop(ac.currentTime+0.2);}
-            else if(type==="goal"){osc.type="square";osc.frequency.setValueAtTime(523,ac.currentTime);osc.frequency.setValueAtTime(659,ac.currentTime+0.1);osc.frequency.setValueAtTime(784,ac.currentTime+0.2);gain.gain.setValueAtTime(0.2,ac.currentTime);gain.gain.exponentialRampToValueAtTime(0.01,ac.currentTime+0.4);osc.start();osc.stop(ac.currentTime+0.4);}
-            else if(type==="save"){osc.type="sawtooth";osc.frequency.setValueAtTime(300,ac.currentTime);osc.frequency.exponentialRampToValueAtTime(100,ac.currentTime+0.3);gain.gain.setValueAtTime(0.15,ac.currentTime);gain.gain.exponentialRampToValueAtTime(0.01,ac.currentTime+0.3);osc.start();osc.stop(ac.currentTime+0.3);}
-            else if(type==="whistle"){osc.type="sine";osc.frequency.setValueAtTime(2800,ac.currentTime);osc.frequency.setValueAtTime(3200,ac.currentTime+0.15);osc.frequency.setValueAtTime(2800,ac.currentTime+0.3);gain.gain.setValueAtTime(0.12,ac.currentTime);gain.gain.exponentialRampToValueAtTime(0.01,ac.currentTime+0.5);osc.start();osc.stop(ac.currentTime+0.5);}
-            else if(type==="crowd"){const n=ac.createBufferSource();const b=ac.createBuffer(1,ac.sampleRate*0.6,ac.sampleRate);const d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*0.15*Math.sin(i/d.length*Math.PI);n.buffer=b;const g2=ac.createGain();g2.gain.setValueAtTime(0.3,ac.currentTime);g2.gain.exponentialRampToValueAtTime(0.01,ac.currentTime+0.6);n.connect(g2);g2.connect(ac.destination);n.start();}
-            else if(type==="win"){[0,0.15,0.3,0.45].forEach((t,i)=>{const o=ac.createOscillator();const g=ac.createGain();o.connect(g);g.connect(ac.destination);o.type="square";o.frequency.setValueAtTime([523,659,784,1047][i],ac.currentTime+t);g.gain.setValueAtTime(0.15,ac.currentTime+t);g.gain.exponentialRampToValueAtTime(0.01,ac.currentTime+t+0.2);o.start(ac.currentTime+t);o.stop(ac.currentTime+t+0.2);});}
-            else if(type==="laugh"){[0,0.08,0.16,0.24,0.32,0.4].forEach((t,i)=>{const o=ac.createOscillator();const g=ac.createGain();o.connect(g);g.connect(ac.destination);o.type="sine";o.frequency.setValueAtTime(i%2===0?400:500,ac.currentTime+t);g.gain.setValueAtTime(0.12,ac.currentTime+t);g.gain.exponentialRampToValueAtTime(0.01,ac.currentTime+t+0.1);o.start(ac.currentTime+t);o.stop(ac.currentTime+t+0.1);});}
-            else if(type==="charge"){osc.type="sine";osc.frequency.setValueAtTime(200,ac.currentTime);osc.frequency.exponentialRampToValueAtTime(1200,ac.currentTime+1.5);gain.gain.setValueAtTime(0.08,ac.currentTime);gain.gain.setValueAtTime(0.08,ac.currentTime+1.4);gain.gain.exponentialRampToValueAtTime(0.01,ac.currentTime+1.5);osc.start();osc.stop(ac.currentTime+1.5);}
-          } catch(e){}
-        };
 
         // Crowd emojis floating
         const crowdEmojis = ["🎉","🔥","😤","💨","🤣","😱","👏","🥳","💀","😂","🙌","⚡"];
