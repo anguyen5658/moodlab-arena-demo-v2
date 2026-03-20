@@ -2322,7 +2322,9 @@ export default function MoodLabArena() {
                     {kickCharging && <span style={{fontSize:10,fontWeight:900,color:zoneColor,fontFamily:"monospace"}}>{elapsed.toFixed(1)}s</span>}
                   </div>
                   {/* Power bar with puff zone markers */}
-                  <div style={{height:24,borderRadius:12,background:`rgba(255,255,255,0.04)`,overflow:"hidden",border:`1px solid ${kickCharging?zoneColor+"40":"rgba(255,255,255,0.08)"}`,position:"relative",transition:"border-color 0.2s"}}>
+                  <div style={{height:28,borderRadius:14,background:`rgba(255,255,255,0.04)`,overflow:"hidden",border:`2px solid ${kickCharging?zoneColor+"60":"rgba(255,255,255,0.1)"}`,position:"relative",transition:"border-color 0.2s",boxShadow:kickCharging?`0 0 15px ${zoneColor}25`:"none",
+                    animation:!kickCharging?"countPulse 2s infinite":"none",
+                  }}>
                     {/* Sweet spot highlight zone */}
                     <div style={{position:"absolute",left:`${kickSweetMin}%`,width:`${kickSweetMax-kickSweetMin}%`,height:"100%",background:`${C.green}08`,borderLeft:`1px solid ${C.green}30`,borderRight:`1px solid ${C.green}30`}}/>
                     <div style={{position:"absolute",left:`${kickSweetMin+2}%`,top:2,fontSize:7,color:`${C.green}50`,fontWeight:800}}>SWEET</div>
@@ -2350,7 +2352,7 @@ export default function MoodLabArena() {
                     <span style={{fontSize:6,color:C.green,fontWeight:700}}>PERFECT 💨</span>
                     <span style={{fontSize:6,color:C.red}}>BLINKER 💀</span>
                   </div>
-                  {/* Hold-to-puff button */}
+                  {/* Hold-to-puff button — larger, visually connected to bar */}
                   <div
                     onMouseDown={()=>{kickStartCharge();playFx("charge");}}
                     onMouseUp={kickStopCharge}
@@ -2358,27 +2360,32 @@ export default function MoodLabArena() {
                     onTouchStart={(e)=>{e.preventDefault();kickStartCharge();playFx("charge");}}
                     onTouchEnd={kickStopCharge}
                     style={{
-                      marginTop:8,padding:kickCharging?"14px 20px":"12px 20px",borderRadius:14,cursor:"pointer",textAlign:"center",
+                      marginTop:6,padding:kickCharging?"16px 20px":"14px 20px",borderRadius:16,cursor:"pointer",textAlign:"center",
                       background:kickCharging
                         ? `linear-gradient(135deg, ${zoneColor}30, ${zoneColor}10)`
-                        : `linear-gradient(135deg, ${inpInfo.color}20, ${inpInfo.color}08)`,
-                      border:`1px solid ${kickCharging?zoneColor+"50":inpInfo.color+"35"}`,
-                      fontSize:14,fontWeight:900,
+                        : `linear-gradient(135deg, ${inpInfo.color}25, ${inpInfo.color}08)`,
+                      border:`2px solid ${kickCharging?zoneColor+"60":inpInfo.color+"40"}`,
+                      fontSize:15,fontWeight:900,
                       color:kickCharging?zoneColor:inpInfo.color,
-                      animation:kickCharging?"none":"countPulse 1s infinite",
-                      boxShadow:kickCharging?`0 0 25px ${zoneColor}25`:`0 0 15px ${inpInfo.color}12`,
-                      transform:kickCharging?"scale(1.03)":"scale(1)",
+                      animation:kickCharging?"none":"countPulse 1.2s infinite",
+                      boxShadow:kickCharging?`0 0 30px ${zoneColor}30, inset 0 0 20px ${zoneColor}08`:`0 0 20px ${inpInfo.color}15`,
+                      transform:kickCharging?"scale(1.05)":"scale(1)",
                       transition:"all 0.15s",
                       userSelect:"none",WebkitUserSelect:"none",
+                      position:"relative",overflow:"hidden",
                     }}
                   >
-                    {kickCharging
-                      ? (zone==="perfect"?"🎯 RELEASE NOW!":isPuffBlinker.current?"💀 BLINKER! LET GO!":zone==="good"?"💨 Almost... keep going!":"💨 PUFFING... "+elapsed.toFixed(1)+"s")
-                      : (inp==="puff"?"💨 HOLD TO PUFF":"🔘 HOLD TO CHARGE")}
-                    <div style={{fontSize:7,color:`${kickCharging?zoneColor:inpInfo.color}70`,marginTop:2}}>
+                    {/* Fill progress behind button text */}
+                    {kickCharging && <div style={{position:"absolute",left:0,top:0,bottom:0,width:`${kickPower}%`,background:`${zoneColor}12`,transition:"width 0.06s linear",borderRadius:16}}/>}
+                    <div style={{position:"relative",zIndex:1}}>
                       {kickCharging
-                        ? (zone==="perfect"?"2.5-3.5s = Sweet Spot!":"Hold for 2.5-3.5s for PERFECT puff")
-                        : "Hold & release in the SWEET SPOT 💨👑"}
+                        ? (zone==="perfect"?"🎯 RELEASE NOW!":isPuffBlinker.current?"💀 BLINKER! LET GO!":zone==="good"?"💨 Almost... keep going!":"💨 PUFFING... "+elapsed.toFixed(1)+"s")
+                        : (inp==="puff"?"💨 HOLD TO PUFF":"🔘 HOLD TO CHARGE")}
+                      <div style={{fontSize:8,color:`${kickCharging?zoneColor:inpInfo.color}80`,marginTop:3}}>
+                        {kickCharging
+                          ? (zone==="perfect"?`🎯 ${elapsed.toFixed(1)}s — SWEET SPOT! RELEASE!`:`${elapsed.toFixed(1)}s — Hold for 2.5-3.5s`)
+                          : "Hold & release in the SWEET SPOT 💨👑"}
+                      </div>
                     </div>
                   </div>
                 </div>
