@@ -2211,8 +2211,10 @@ export default function MoodLabArena() {
 
             {matchmaking.stage==="found" && (
               <div style={{animation:"fadeIn 0.4s ease"}}>
-                <div style={{fontSize:40,marginBottom:8,animation:"countPulse 0.5s ease"}}>⚡</div>
-                <div style={{fontSize:18,fontWeight:800,color:C.green,marginBottom:4}}>OPPONENT FOUND!</div>
+                <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,marginBottom:4}}>
+                  <span style={{fontSize:20,animation:"countPulse 0.5s ease"}}>⚡</span>
+                  <span style={{fontSize:16,fontWeight:800,color:C.green}}>OPPONENT FOUND!</span>
+                </div>
                 <div style={{fontSize:14,fontWeight:700,color:C.text}}>{matchmaking.opp}</div>
                 <div style={{display:"flex",gap:5,justifyContent:"center",marginTop:8}}>
                   <span style={{fontSize:8,fontWeight:700,color:pool.color,padding:"3px 10px",borderRadius:20,...LG.tinted(pool.color)}}>⚖️ Fair Match</span>
@@ -2792,8 +2794,10 @@ export default function MoodLabArena() {
               {/* ═══ BONUS OFFER ═══ */}
               {kickState==="bonus_offer" && (
                 <div style={{textAlign:"center",animation:"fadeIn 0.4s ease",padding:"8px 0"}}>
-                  <div style={{fontSize:36,marginBottom:6,animation:"gentleFloat 1s infinite"}}>⚡🎰⚡</div>
-                  <div style={{fontSize:16,fontWeight:900,color:C.gold,marginBottom:4,textShadow:`0 0 15px ${C.gold}40`}}>BONUS SHOT!</div>
+                  <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,marginBottom:4}}>
+                    <span style={{fontSize:18,animation:"gentleFloat 1s infinite"}}>⚡🎰⚡</span>
+                    <span style={{fontSize:14,fontWeight:900,color:C.gold,textShadow:`0 0 15px ${C.gold}40`}}>BONUS SHOT!</span>
+                  </div>
                   <div style={{fontSize:11,color:C.text2,marginBottom:4}}>Tighter sweet spot · Double score if you nail it!</div>
                   <div style={{fontSize:9,color:C.text3,marginBottom:12,fontStyle:"italic"}}>"{kickOpponent.current.name}: 'No way you hit this one' 😏"</div>
                   <div style={{display:"flex",gap:10,justifyContent:"center"}}>
@@ -2811,12 +2815,14 @@ export default function MoodLabArena() {
                 </div>
               )}
 
-              {/* ═══ SAVE READY — Big dramatic ═══ */}
+              {/* ═══ SAVE READY ═══ */}
               {kickState==="save_ready" && (
                 <div style={{textAlign:"center",animation:"fadeIn 0.4s ease"}}>
-                  <div style={{fontSize:40,marginBottom:8,animation:"gentleFloat 1.5s infinite"}}>🧤</div>
-                  <div style={{fontSize:16,fontWeight:900,color:C.orange,marginBottom:4,textShadow:`0 0 15px ${C.orange}40`}}>YOUR TURN TO SAVE</div>
-                  <div style={{fontSize:10,color:C.text3,marginBottom:12,fontStyle:"italic"}}>"AI is stepping up... look confident 😤"</div>
+                  <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,marginBottom:4}}>
+                    <span style={{fontSize:18}}>🧤</span>
+                    <span style={{fontSize:14,fontWeight:900,color:C.orange,textShadow:`0 0 15px ${C.orange}40`}}>YOUR TURN TO SAVE</span>
+                  </div>
+                  <div style={{fontSize:9,color:C.text3,marginBottom:10,fontStyle:"italic"}}>"AI is stepping up... look confident 😤"</div>
                   <div onClick={()=>{kickSaveStart();playFx("whistle");playFx("success");}} style={{
                     padding:"14px 36px",borderRadius:14,cursor:"pointer",
                     background:`linear-gradient(135deg, ${C.orange}20, ${C.orange}08)`,
