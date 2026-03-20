@@ -465,39 +465,96 @@ export default function MoodLabArena() {
     setKickAim(zone);
     setKickState("power");
     setKickPower(0);
-    setKickComment(pick(["Now PUFF it! 💨","Send it to the moon 🌙","How hard can you blow? 😏","Full lungs energy 🫁"]));
+    setKickComment(pick(["Now PUFF it! 💨","Hold that puff... 🫁","How long can you go? 😏","Full lungs energy 💨","Inhale... and HOLD 🌬️"]));
     const inp = gameActive?.activeInput;
     if(inp==="tap"||!inp) {
-      const autoPwr = 60+Math.floor(Math.random()*30);
+      const autoPwr = 55+Math.floor(Math.random()*30);
       setKickPower(autoPwr);
       setTimeout(()=>kickExecute(zone, autoPwr), 600);
     }
   };
 
-  // Hold-to-charge: start charging on press, stop on release
+  // ── PUFF DURATION SYSTEM ──
+  // Power curve based on hold duration (mirrors real device puff timing):
+  //   0-0.5s  = TAP (0-15%)        — barely a puff
+  //   0.5-1.5s = SHORT (15-40%)    — quick hit
+  //   1.5-2.5s = GOOD (40-70%)     — solid puff
+  //   2.5-3.5s = PERFECT (70-95%)  — sweet spot 💨👑
+  //   3.5-4.5s = LONG (95→75%)     — held too long, power drops
+  //   5s+      = BLINKER (→30%)    — device cutoff! ball goes wild 💀
+  const puffStartTime = useRef(0);
+  const PUFF_PERFECT_MIN = 70, PUFF_PERFECT_MAX = 95;
+
+  const getPuffPower = (elapsed) => {
+    // elapsed in seconds
+    if(elapsed < 0.5) return Math.round(elapsed / 0.5 * 15); // 0-15%
+    if(elapsed < 1.5) return Math.round(15 + (elapsed-0.5)/1.0 * 25); // 15-40%
+    if(elapsed < 2.5) return Math.round(40 + (elapsed-1.5)/1.0 * 30); // 40-70%
+    if(elapsed < 3.5) return Math.round(70 + (elapsed-2.5)/1.0 * 25); // 70-95% SWEET SPOT
+    if(elapsed < 4.5) return Math.round(95 - (elapsed-3.5)/1.0 * 20); // 95→75% dropping
+    if(elapsed < 5.0) return Math.round(75 - (elapsed-4.5)/0.5 * 45); // 75→30% BLINKER ZONE
+    return 30; // capped at blinker
+  };
+
+  const getPuffZone = (power) => {
+    if(power >= PUFF_PERFECT_MIN && power <= PUFF_PERFECT_MAX) return "perfect";
+    if(power >= 40 && power < PUFF_PERFECT_MIN) return "good";
+    if(power >= 15 && power < 40) return "short";
+    if(power < 15) return "tap";
+    return "long"; // shouldn't happen with the curve, but safety
+  };
+
+  // Check if blinker territory (held 4.5s+, power is dropping fast)
+  const isPuffBlinker = useRef(false);
+
   const kickStartCharge = () => {
     if(kickState!=="power"||kickAim===null||kickCharging) return;
     setKickCharging(true); setKickPower(0);
+    puffStartTime.current = Date.now();
+    isPuffBlinker.current = false;
+
     kickChargeInterval.current = setInterval(()=>{
-      setKickPower(p=>{
-        const next = Math.min(p + 2 + Math.random()*2, 100);
-        if(next>=100){clearInterval(kickChargeInterval.current);kickChargeInterval.current=null;}
-        return next;
-      });
-    }, 40);
+      const elapsed = (Date.now() - puffStartTime.current) / 1000;
+      const pwr = getPuffPower(elapsed);
+      setKickPower(pwr);
+
+      // Update commentary based on zone
+      if(elapsed > 4.5 && !isPuffBlinker.current) {
+        isPuffBlinker.current = true;
+        setKickComment(pick(["BLINKER! 💀 You hit the cutoff!","Bro your lungs ok?? 🫁💀","DEVICE SAYS STOP 🚨","That's a blinker hit my guy 😂"]));
+        playFx("laugh");
+      } else if(elapsed > 3.5 && elapsed <= 4.5) {
+        setKickComment("Too long! Power dropping... 📉😬");
+      } else if(elapsed > 2.5 && elapsed <= 3.5) {
+        setKickComment(pick(["💨👑 SWEET SPOT! Release NOW!","PERFECT PUFF ZONE! 🎯","THIS IS IT! LET GO! 🔥"]));
+      } else if(elapsed > 1.5 && elapsed <= 2.5) {
+        setKickComment("Keep going... almost there 💨");
+      }
+
+      // Auto-stop at 5.5s (blinker max)
+      if(elapsed >= 5.5) {
+        kickStopCharge();
+      }
+    }, 50);
   };
+
   const kickStopCharge = () => {
     if(!kickCharging) return;
     setKickCharging(false);
     if(kickChargeInterval.current){clearInterval(kickChargeInterval.current);kickChargeInterval.current=null;}
-    // Use current power level to execute kick
+    const elapsed = (Date.now() - puffStartTime.current) / 1000;
+    const wasBlinker = elapsed >= 4.5;
+
     setKickPower(p=>{
-      setTimeout(()=>kickExecute(kickAim, p), 200);
-      return p;
+      // Add minor intensity variance (+/- 5%)
+      const intensity = (Math.random()-0.5)*10;
+      const finalPwr = Math.max(5, Math.min(100, p + intensity));
+      setTimeout(()=>kickExecute(kickAim, Math.round(finalPwr), wasBlinker, elapsed), 200);
+      return Math.round(finalPwr);
     });
   };
 
-  const kickExecute = (zone, power) => {
+  const kickExecute = (zone, power, wasBlinker=false, holdTime=0) => {
     const pool = getDevicePool();
     const aiSaveZone = Math.floor(Math.random()*6);
     setKickAiZone(aiSaveZone);
@@ -505,21 +562,40 @@ export default function MoodLabArena() {
     setKickState("flight");
     playFx("kick");
 
+    const puffZone = getPuffZone(power);
     const sameZone = zone === aiSaveZone;
-    const aiSaves = sameZone && Math.random() < pool.aiSave;
-    const finalSave = aiSaves && (power < 85 || Math.random() < 0.5);
 
-    const pwrLabel = power>=90?"ROCKET 🚀":power>=70?"Strong 💪":power>=40?"Decent 👌":"Weak 😬";
-    setKickBallAnim({zone, power, result: finalSave ? "saved" : "goal"});
+    // Puff zone determines AI save chance + miss chance
+    let aiSaveChance = pool.aiSave;
+    let missChance = 0; // ball goes over/wide
+    if(puffZone==="tap"){ aiSaveChance=0.60; missChance=0; }
+    else if(puffZone==="short"){ aiSaveChance=0.40; }
+    else if(puffZone==="good"){ aiSaveChance=0.25; }
+    else if(puffZone==="perfect"){ aiSaveChance=0.10; } // sweet spot = almost unstoppable
+    if(wasBlinker){ missChance=0.60; aiSaveChance=0.05; } // blinker = wild shot, usually misses
+    else if(power>95){ missChance=0.35; aiSaveChance=0.08; } // danger zone
+
+    const missed = Math.random() < missChance;
+    const aiSaves = !missed && sameZone && Math.random() < aiSaveChance;
+    const isGoal = !missed && !aiSaves;
+
+    const holdLabel = holdTime>=4.5?"BLINKER 💀":holdTime>=2.5?`${holdTime.toFixed(1)}s PERFECT 💨`:holdTime>=1.5?`${holdTime.toFixed(1)}s`:holdTime>0?`${holdTime.toFixed(1)}s quick`:"";
+    setKickBallAnim({zone, power, result: missed?"missed":aiSaves?"saved":"goal", wasBlinker});
 
     setTimeout(()=>{
-      if(!finalSave) {
+      if(missed) {
+        playFx("laugh"); playFx("crowd");
+        if(wasBlinker) setKickComment(pick(["BLINKER SHOT! Ball left the stadium 💀😂","Your lungs said goodbye, so did the ball 🫁💨","That puff was so long the ball evaporated 🌫️","Blinker = automatic L bro 😭",""+kickOpponent.current.name+": 'Did you just blinker??' 🤣"]));
+        else setKickComment(pick(["OVER THE BAR! Too much power 😂","Ball said 'I'm out' ✈️💀","That shot is still flying somewhere 🚀","Bro aimed for the moon fr 🌙😭",""+kickOpponent.current.avatar+" is laughing at you rn"]));
+      } else if(isGoal) {
         setKickScore(s=>({...s, you:s.you+1}));
         playFx("goal"); playFx("crowd");
-        setKickComment(pick(["GOLAZOOO! 🔥🔥","SHEEEESH! 🥶","NET GO BRRR 😤","That ball had SMOKE on it 💨",""+pwrLabel+" and IN!","Keeper's still looking 😂","ABSOLUTE BANGER 💥","The crowd goes WILD 🙌"]));
+        if(puffZone==="perfect") setKickComment(pick(["PERFECT PUFF GOAL! 💨👑🔥","SWEET SPOT MERCHANT! Unstoppable!","That "+holdLabel+" puff was CLINICAL 🎯","The puff-to-goal pipeline is REAL 💨→⚽","Keeper didn't stand a CHANCE 🧤💀"]));
+        else setKickComment(pick(["GOLAZOOO! 🔥🔥","SHEEEESH! 🥶","NET GO BRRR 😤","That ball had SMOKE on it 💨",""+holdLabel+" puff = GOAL!","Keeper's still looking 😂","ABSOLUTE BANGER 💥"]));
       } else {
         playFx("save");
-        setKickComment(pick([""+kickOpponent.current.name+" says 'nah' 🧤","Saved... pain 💀","Keeper ate that 😤","Should've puffed harder bro 💨","The disrespect 😂",""+kickOpponent.current.avatar+" blocked your dreams"]));
+        if(puffZone==="tap") setKickComment(pick(["That wasn't a kick, that was a PASS 😂","Bro barely puffed 💨... more like a sigh","Even "+kickOpponent.current.name+" felt bad saving that 🥲","0.3 second puff energy 💀"]));
+        else setKickComment(pick([""+kickOpponent.current.name+" says 'nah' 🧤","Saved... try a longer puff next time 💨","Keeper ate that "+holdLabel+" puff 😤",""+kickOpponent.current.avatar+" blocked your dreams"]));
       }
       setKickState("shoot_result");
       setTimeout(()=>{
@@ -1602,17 +1678,19 @@ export default function MoodLabArena() {
 
                   {/* ═══ RESULT OVERLAY — Big & Fun ═══ */}
                   {isResult && kickBallAnim && (()=>{
+                    const isMiss = kickBallAnim.result==="missed";
                     const isGoal = kickBallAnim.result==="goal";
                     const youScored = isShootPhase && isGoal;
-                    const youSaved = isSavePhase && !isGoal;
+                    const youSaved = isSavePhase && !isGoal && !isMiss;
+                    const youMissed = isShootPhase && isMiss;
                     const good = youScored || youSaved;
                     return (
                       <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",zIndex:10,
                         background:good?`radial-gradient(circle, ${C.green}20, rgba(0,0,0,0.7))`:`radial-gradient(circle, ${C.red}15, rgba(0,0,0,0.7))`,
                         animation:"fadeIn 0.2s ease",
                       }}>
-                        <div style={{fontSize:28,fontWeight:900,color:good?C.green:C.red,textShadow:`0 0 30px ${good?C.green:C.red}`,animation:"countPulse 0.5s ease"}}>
-                          {youScored?"⚽ GOLAZO!":youSaved?"🧤 DENIED!":isShootPhase?"🧤 Saved!":"⚽ AI Scores!"}
+                        <div style={{fontSize:28,fontWeight:900,color:youMissed?C.gold:good?C.green:C.red,textShadow:`0 0 30px ${youMissed?C.gold:good?C.green:C.red}`,animation:"countPulse 0.5s ease"}}>
+                          {youMissed?(kickBallAnim.wasBlinker?"💀 BLINKER!":"🚀 MISS!"):youScored?"⚽ GOLAZO!":youSaved?"🧤 DENIED!":isShootPhase?"🧤 Saved!":"⚽ AI Scores!"}
                         </div>
                         <div style={{fontSize:10,color:C.text2,marginTop:4,fontStyle:"italic"}}>
                           {good?pick(youScored?GOAL_CHEERS:SAVE_CHEERS):pick(CONCEDE_REACT)}
@@ -1628,36 +1706,52 @@ export default function MoodLabArena() {
                 {kickState==="shoot" && <div style={{width:6,height:6,borderRadius:"50%",background:`${C.text}20`,boxShadow:`0 0 8px ${C.text}10`}}/>}
               </div>
 
-              {/* ═══ PUFF INTENSITY METER — Hold to charge ═══ */}
-              {kickState==="power" && inp!=="tap" && (
+              {/* ═══ PUFF DURATION METER — Hold to puff ═══ */}
+              {kickState==="power" && inp!=="tap" && (()=>{
+                const zone = getPuffZone(kickPower);
+                const elapsed = kickCharging ? (Date.now()-puffStartTime.current)/1000 : 0;
+                const zoneColor = zone==="perfect"?C.green:zone==="good"?C.cyan:zone==="short"?C.gold:zone==="tap"?C.text3:C.red;
+                const zoneLabel = zone==="perfect"?"💨👑 PERFECT PUFF":zone==="good"?"Good puff 👌":zone==="short"?"Short puff":zone==="tap"?"Barely a puff":"Too long! 📉";
+                const barColor = kickPower>=PUFF_PERFECT_MIN&&kickPower<=PUFF_PERFECT_MAX
+                  ? `linear-gradient(90deg, ${C.cyan}, ${C.green}, ${C.gold})`
+                  : kickPower>PUFF_PERFECT_MAX
+                    ? `linear-gradient(90deg, ${C.cyan}, ${C.green}, ${C.gold}, ${C.red})`
+                    : `linear-gradient(90deg, ${C.cyan}, ${C.green})`;
+                return (
                 <div style={{width:goalW,animation:"fadeIn 0.3s ease"}}>
-                  <div style={{fontSize:10,fontWeight:700,color:C.text3,textAlign:"center",marginBottom:4}}>
-                    {kickCharging ? "CHARGING... 🫁💨" : "SHOT POWER"}
+                  {/* Duration timer + zone label */}
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:3,padding:"0 2px"}}>
+                    <span style={{fontSize:9,fontWeight:800,color:zoneColor}}>{kickCharging?zoneLabel:"PUFF DURATION"}</span>
+                    {kickCharging && <span style={{fontSize:10,fontWeight:900,color:zoneColor,fontFamily:"monospace"}}>{elapsed.toFixed(1)}s</span>}
                   </div>
-                  {/* Power bar with intensity zones */}
-                  <div style={{height:22,borderRadius:12,background:`rgba(255,255,255,0.04)`,overflow:"hidden",border:`1px solid rgba(255,255,255,0.08)`,position:"relative"}}>
+                  {/* Power bar with puff zone markers */}
+                  <div style={{height:24,borderRadius:12,background:`rgba(255,255,255,0.04)`,overflow:"hidden",border:`1px solid ${kickCharging?zoneColor+"40":"rgba(255,255,255,0.08)"}`,position:"relative",transition:"border-color 0.2s"}}>
+                    {/* Sweet spot highlight zone */}
+                    <div style={{position:"absolute",left:`${PUFF_PERFECT_MIN}%`,width:`${PUFF_PERFECT_MAX-PUFF_PERFECT_MIN}%`,height:"100%",background:`${C.green}08`,borderLeft:`1px solid ${C.green}30`,borderRight:`1px solid ${C.green}30`}}/>
+                    <div style={{position:"absolute",left:`${PUFF_PERFECT_MIN+2}%`,top:2,fontSize:7,color:`${C.green}50`,fontWeight:800}}>SWEET</div>
+                    {/* Fill bar */}
                     <div style={{
                       height:"100%",width:`${kickPower}%`,
-                      background: kickPower>=90 ? `linear-gradient(90deg, ${C.cyan}, ${C.green}, ${C.gold}, ${C.red})` :
-                                  kickPower>=60 ? `linear-gradient(90deg, ${C.cyan}, ${C.green}, ${C.gold})` :
-                                  `linear-gradient(90deg, ${C.cyan}, ${C.green})`,
-                      borderRadius:12,transition:"width 0.08s linear",
-                      boxShadow: kickCharging ? `0 0 20px ${kickPower>=80?C.gold:C.cyan}50` : `0 0 12px ${C.cyan}30`,
+                      background:barColor,
+                      borderRadius:12,transition:"width 0.06s linear",
+                      boxShadow:kickCharging?`0 0 20px ${zoneColor}40`:`0 0 8px ${C.cyan}20`,
                     }}/>
-                    {kickPower>0 && <div style={{position:"absolute",right:8,top:"50%",transform:"translateY(-50%)",fontSize:11,fontWeight:900,color:"#fff",textShadow:"0 0 4px rgba(0,0,0,0.8)"}}>
-                      {Math.round(kickPower)}% {kickPower>=90?"🔥":kickPower>=70?"💪":kickPower>=40?"👌":""}
+                    {/* Power % label */}
+                    {kickPower>8 && <div style={{position:"absolute",right:8,top:"50%",transform:"translateY(-50%)",fontSize:11,fontWeight:900,color:"#fff",textShadow:"0 0 4px rgba(0,0,0,0.9)"}}>
+                      {Math.round(kickPower)}%
                     </div>}
                     {/* Zone markers */}
-                    <div style={{position:"absolute",top:0,left:"40%",width:1,height:"100%",background:`rgba(255,255,255,0.1)`}}/>
-                    <div style={{position:"absolute",top:0,left:"70%",width:1,height:"100%",background:`rgba(255,255,255,0.1)`}}/>
-                    <div style={{position:"absolute",top:0,left:"90%",width:1,height:"100%",background:`${C.red}30`}}/>
+                    <div style={{position:"absolute",top:0,left:"15%",width:1,height:"100%",background:`rgba(255,255,255,0.06)`}}/>
+                    <div style={{position:"absolute",top:0,left:"40%",width:1,height:"100%",background:`rgba(255,255,255,0.08)`}}/>
+                    <div style={{position:"absolute",top:0,left:`${PUFF_PERFECT_MAX}%`,width:1,height:"100%",background:`${C.red}30`}}/>
                   </div>
-                  {/* Intensity labels */}
-                  <div style={{display:"flex",justifyContent:"space-between",marginTop:2,padding:"0 4px"}}>
-                    <span style={{fontSize:7,color:C.text3}}>Weak 😬</span>
-                    <span style={{fontSize:7,color:C.text3}}>Decent 👌</span>
-                    <span style={{fontSize:7,color:C.gold}}>Strong 💪</span>
-                    <span style={{fontSize:7,color:C.red}}>ROCKET 🚀</span>
+                  {/* Duration zone labels */}
+                  <div style={{display:"flex",justifyContent:"space-between",marginTop:2,padding:"0 2px"}}>
+                    <span style={{fontSize:6,color:C.text3}}>TAP</span>
+                    <span style={{fontSize:6,color:C.text3}}>SHORT</span>
+                    <span style={{fontSize:6,color:C.text3}}>GOOD</span>
+                    <span style={{fontSize:6,color:C.green,fontWeight:700}}>PERFECT 💨</span>
+                    <span style={{fontSize:6,color:C.red}}>BLINKER 💀</span>
                   </div>
                   {/* Hold-to-puff button */}
                   <div
@@ -1667,29 +1761,32 @@ export default function MoodLabArena() {
                     onTouchStart={(e)=>{e.preventDefault();kickStartCharge();playFx("charge");}}
                     onTouchEnd={kickStopCharge}
                     style={{
-                      marginTop:10,padding: kickCharging?"16px 24px":"14px 24px",borderRadius:14,cursor:"pointer",textAlign:"center",
-                      background: kickCharging
-                        ? `linear-gradient(135deg, ${inpInfo.color}35, ${inpInfo.color}15)`
+                      marginTop:8,padding:kickCharging?"14px 20px":"12px 20px",borderRadius:14,cursor:"pointer",textAlign:"center",
+                      background:kickCharging
+                        ? `linear-gradient(135deg, ${zoneColor}30, ${zoneColor}10)`
                         : `linear-gradient(135deg, ${inpInfo.color}20, ${inpInfo.color}08)`,
-                      border:`1px solid ${kickCharging?inpInfo.color+"60":inpInfo.color+"35"}`,
-                      fontSize:15,fontWeight:900,color:inpInfo.color,
-                      animation: kickCharging ? "none" : "countPulse 1s infinite",
-                      boxShadow: kickCharging ? `0 0 30px ${inpInfo.color}30` : `0 0 20px ${inpInfo.color}15`,
-                      textShadow:`0 0 10px ${inpInfo.color}40`,
-                      transform: kickCharging ? "scale(1.02)" : "scale(1)",
-                      transition:"transform 0.15s, background 0.15s, box-shadow 0.15s",
-                      userSelect:"none", WebkitUserSelect:"none",
+                      border:`1px solid ${kickCharging?zoneColor+"50":inpInfo.color+"35"}`,
+                      fontSize:14,fontWeight:900,
+                      color:kickCharging?zoneColor:inpInfo.color,
+                      animation:kickCharging?"none":"countPulse 1s infinite",
+                      boxShadow:kickCharging?`0 0 25px ${zoneColor}25`:`0 0 15px ${inpInfo.color}12`,
+                      transform:kickCharging?"scale(1.03)":"scale(1)",
+                      transition:"all 0.15s",
+                      userSelect:"none",WebkitUserSelect:"none",
                     }}
                   >
                     {kickCharging
-                      ? (kickPower>=90?"🔥 MAX POWER!":kickPower>=60?"💨 KEEP GOING!":"💨 PUFFING...")
+                      ? (zone==="perfect"?"🎯 RELEASE NOW!":isPuffBlinker.current?"💀 BLINKER! LET GO!":zone==="good"?"💨 Almost... keep going!":"💨 PUFFING... "+elapsed.toFixed(1)+"s")
                       : (inp==="puff"?"💨 HOLD TO PUFF":"🔘 HOLD TO CHARGE")}
-                    <div style={{fontSize:8,color:`${inpInfo.color}80`,marginTop:2}}>
-                      {kickCharging?"Release to kick!":"Hold & release at peak power"}
+                    <div style={{fontSize:7,color:`${kickCharging?zoneColor:inpInfo.color}70`,marginTop:2}}>
+                      {kickCharging
+                        ? (zone==="perfect"?"2.5-3.5s = Sweet Spot!":"Hold for 2.5-3.5s for PERFECT puff")
+                        : "Hold & release in the SWEET SPOT 💨👑"}
                     </div>
                   </div>
                 </div>
-              )}
+                );
+              })()}
 
               {/* ═══ SHOOT instruction ═══ */}
               {kickState==="shoot" && (
