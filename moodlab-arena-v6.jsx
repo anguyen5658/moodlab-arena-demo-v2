@@ -478,6 +478,13 @@ export default function MoodLabArena() {
       else if(type==="whistle"){osc.type="sine";osc.frequency.setValueAtTime(2800,ac.currentTime);osc.frequency.setValueAtTime(3200,ac.currentTime+0.15);osc.frequency.setValueAtTime(2800,ac.currentTime+0.3);gain.gain.setValueAtTime(0.12,ac.currentTime);gain.gain.exponentialRampToValueAtTime(0.01,ac.currentTime+0.5);osc.start();osc.stop(ac.currentTime+0.5);}
       else if(type==="crowd"){const n=ac.createBufferSource();const b=ac.createBuffer(1,ac.sampleRate*0.6,ac.sampleRate);const d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*0.15*Math.sin(i/d.length*Math.PI);n.buffer=b;const g2=ac.createGain();g2.gain.setValueAtTime(0.3,ac.currentTime);g2.gain.exponentialRampToValueAtTime(0.01,ac.currentTime+0.6);n.connect(g2);g2.connect(ac.destination);n.start();}
       else if(type==="charge"){osc.type="sine";osc.frequency.setValueAtTime(200,ac.currentTime);osc.frequency.exponentialRampToValueAtTime(1200,ac.currentTime+1.5);gain.gain.setValueAtTime(0.08,ac.currentTime);gain.gain.setValueAtTime(0.08,ac.currentTime+1.4);gain.gain.exponentialRampToValueAtTime(0.01,ac.currentTime+1.5);osc.start();osc.stop(ac.currentTime+1.5);}
+      // ── UI tap sounds ──
+      else if(type==="tap"){osc.type="sine";osc.frequency.setValueAtTime(800,ac.currentTime);osc.frequency.exponentialRampToValueAtTime(600,ac.currentTime+0.06);gain.gain.setValueAtTime(0.08,ac.currentTime);gain.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+0.08);osc.start();osc.stop(ac.currentTime+0.08);}
+      else if(type==="select"){osc.type="sine";osc.frequency.setValueAtTime(600,ac.currentTime);osc.frequency.setValueAtTime(900,ac.currentTime+0.05);gain.gain.setValueAtTime(0.1,ac.currentTime);gain.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+0.12);osc.start();osc.stop(ac.currentTime+0.12);}
+      else if(type==="nav"){osc.type="sine";osc.frequency.setValueAtTime(440,ac.currentTime);osc.frequency.exponentialRampToValueAtTime(660,ac.currentTime+0.08);gain.gain.setValueAtTime(0.06,ac.currentTime);gain.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+0.1);osc.start();osc.stop(ac.currentTime+0.1);}
+      else if(type==="back"){osc.type="sine";osc.frequency.setValueAtTime(660,ac.currentTime);osc.frequency.exponentialRampToValueAtTime(330,ac.currentTime+0.1);gain.gain.setValueAtTime(0.06,ac.currentTime);gain.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+0.12);osc.start();osc.stop(ac.currentTime+0.12);}
+      else if(type==="success"){osc.type="sine";osc.frequency.setValueAtTime(523,ac.currentTime);osc.frequency.setValueAtTime(659,ac.currentTime+0.08);osc.frequency.setValueAtTime(784,ac.currentTime+0.16);gain.gain.setValueAtTime(0.1,ac.currentTime);gain.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+0.25);osc.start();osc.stop(ac.currentTime+0.25);}
+      else if(type==="error"){osc.type="square";osc.frequency.setValueAtTime(200,ac.currentTime);osc.frequency.setValueAtTime(150,ac.currentTime+0.1);gain.gain.setValueAtTime(0.06,ac.currentTime);gain.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+0.15);osc.start();osc.stop(ac.currentTime+0.15);}
     } catch(e){}
   }, [audioOn]);
 
@@ -842,6 +849,7 @@ export default function MoodLabArena() {
 
   // Bonus shot: accept or skip
   const kickAcceptBonus = () => {
+    playFx("success");
     setKickBonusUsed(true); setKickBonusActive(true); setKickBonusAvail(false);
     // Bonus has a TIGHTER sweet spot (harder)
     const holdMin = 2.2 + Math.random()*0.6;
@@ -898,6 +906,7 @@ export default function MoodLabArena() {
   };
 
   const kickSkipBonus = () => {
+    playFx("tap");
     setKickBonusAvail(false);
     setKickState("final");
   };
@@ -1055,7 +1064,7 @@ export default function MoodLabArena() {
       <div>
         <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:6,marginBottom:12}}>
           {PLAY_GAMES.map(g=>(
-            <div key={g.id} onClick={()=>{setZone("arcade");setArenaView("hub");setSelectedGame(g);}} style={{textAlign:"center",padding:"8px 4px",borderRadius:10,background:`${g.color}06`,border:`1px solid ${g.color}10`,position:"relative",cursor:"pointer",transition:"all 0.2s"}}>
+            <div key={g.id} onClick={()=>{playFx("select");setZone("arcade");setArenaView("hub");setSelectedGame(g);}} style={{textAlign:"center",padding:"8px 4px",borderRadius:10,background:`${g.color}06`,border:`1px solid ${g.color}10`,position:"relative",cursor:"pointer",transition:"all 0.2s"}}>
               <div style={{fontSize:20,filter:`drop-shadow(0 0 5px ${g.color}40)`,marginBottom:3}}>{g.emoji}</div>
               <div style={{fontSize:8,fontWeight:700,color:g.color}}>{g.name.split(" ")[0]}</div>
               <div style={{fontSize:7,color:C.text3,marginTop:1}}>{g.type}</div>
@@ -1164,7 +1173,7 @@ export default function MoodLabArena() {
     const zoneMap = {arcade:Z.arcade,stage:Z.stage,oracle:Z.oracle,wall:Z.wall,worldcup:{primary:C.gold,name:"World Cup 2026",icon:"⚽",sub:"Limited Event"}};
     const z = zoneMap[viewKey];
     if (!z) return null;
-    const enterZone = viewKey === "worldcup" ? ()=>notify("World Cup hub coming soon!",C.gold) : ()=>{setZone(viewKey);setArenaView("hub");};
+    const enterZone = viewKey === "worldcup" ? ()=>notify("World Cup hub coming soon!",C.gold) : ()=>{playFx("nav");setZone(viewKey);setArenaView("hub");};
 
     return (
       <div style={{position:"fixed",inset:0,overflow:"hidden"}}>
@@ -1179,7 +1188,7 @@ export default function MoodLabArena() {
 
         {/* Back button — below header + ticker */}
         <div style={{position:"absolute",top:72,left:14,zIndex:12}}>
-          <div onClick={walkBack} style={{display:"inline-flex",alignItems:"center",gap:6,cursor:"pointer",padding:"7px 14px",borderRadius:100,...GLASS_CLEAR}}>
+          <div onClick={()=>{playFx("back");walkBack();}} style={{display:"inline-flex",alignItems:"center",gap:6,cursor:"pointer",padding:"7px 14px",borderRadius:100,...GLASS_CLEAR}}>
             <span style={{fontSize:12,color:C.text2}}>←</span>
             <span style={{fontSize:11,fontWeight:600,color:C.text2}}>Lobby</span>
           </div>
@@ -1233,7 +1242,7 @@ export default function MoodLabArena() {
             {[{id:"control",l:"Control",i:"🎛",c:C.cyan},{id:"arena",l:"Arena",i:"🎮",c:C.cyan},{id:"live",l:"Live",i:"📡",c:C.pink},{id:"me",l:"Me",i:"👤",c:C.purple}].map(t=>{
               const active = tab===t.id;
               return (
-                <div key={t.id} onClick={()=>{if(t.id!=="arena"){notify("Coming Soon — Arena Demo Only",C.cyan);return;}setTab(t.id);setZone(null);setArenaView("hub");}} style={{
+                <div key={t.id} onClick={()=>{playFx("nav");if(t.id!=="arena"){notify("Coming Soon — Arena Demo Only",C.cyan);return;}setTab(t.id);setZone(null);setArenaView("hub");}} style={{
                   display:"flex",alignItems:"center",gap:active?5:0,
                   padding:active?"7px 14px":"7px 10px",
                   borderRadius:100,cursor:"pointer",
@@ -1371,7 +1380,7 @@ export default function MoodLabArena() {
         {/* ═══ INVISIBLE TAP ZONES ═══ */}
         <div style={{position:"absolute",top:0,left:0,right:0,bottom:60,zIndex:10,pointerEvents:"none"}}>
           {HUB_TAP_ZONES.map(t => (
-            <div key={t.key} onClick={()=>walkTo(t.key)} style={{
+            <div key={t.key} onClick={()=>{playFx("nav");walkTo(t.key);}} style={{
               position:"absolute",
               top:t.top, left:t.left||undefined, right:t.right||undefined,
               width:t.width, height:t.height,
@@ -1389,7 +1398,7 @@ export default function MoodLabArena() {
             {[{id:"control",l:"Control",i:"🎛",c:C.cyan},{id:"arena",l:"Arena",i:"🎮",c:C.cyan},{id:"live",l:"Live",i:"📡",c:C.pink},{id:"me",l:"Me",i:"👤",c:C.purple}].map(t=>{
               const active = tab===t.id;
               return (
-                <div key={t.id} onClick={()=>{if(t.id!=="arena"){notify("Coming Soon — Arena Demo Only",C.cyan);return;}setTab(t.id);setZone(null);setArenaView("hub");}} style={{
+                <div key={t.id} onClick={()=>{playFx("nav");if(t.id!=="arena"){notify("Coming Soon — Arena Demo Only",C.cyan);return;}setTab(t.id);setZone(null);setArenaView("hub");}} style={{
                   display:"flex",alignItems:"center",gap:active?5:0,
                   padding:active?"7px 14px":"7px 10px",
                   borderRadius:100,cursor:"pointer",
@@ -1417,7 +1426,7 @@ export default function MoodLabArena() {
     const z = Z[zKey];
     return (
       <div style={{padding:"0 14px",marginBottom:16}}>
-        <div onClick={()=>{setZone(null);setSelectedGame(null);setArenaView("hub");}} style={{display:"inline-flex",alignItems:"center",gap:6,cursor:"pointer",marginBottom:12,padding:"6px 12px",borderRadius:8,background:`${C.text3}06`,border:`1px solid ${C.border}`}}>
+        <div onClick={()=>{playFx("back");setZone(null);setSelectedGame(null);setArenaView("hub");}} style={{display:"inline-flex",alignItems:"center",gap:6,cursor:"pointer",marginBottom:12,padding:"6px 12px",borderRadius:8,background:`${C.text3}06`,border:`1px solid ${C.border}`}}>
           <span style={{fontSize:14,color:C.text2}}>←</span>
           <span style={{fontSize:11,fontWeight:600,color:C.text2}}>Arena</span>
         </div>
@@ -1458,7 +1467,7 @@ export default function MoodLabArena() {
       {/* ═══ TAB BAR ═══ */}
       <div style={{display:"flex",gap:0,margin:"0 14px 12px",borderRadius:12,overflow:"hidden",...GLASS_CLEAR}}>
         {[{id:"games",label:"🎮 Games",count:PLAY_GAMES.length},{id:"leaderboard",label:"🏆 Leaderboard",count:null}].map(t=>(
-          <div key={t.id} onClick={()=>setArcadeTab(t.id)} style={{
+          <div key={t.id} onClick={()=>{playFx("nav");setArcadeTab(t.id);}} style={{
             flex:1,padding:"10px 0",textAlign:"center",cursor:"pointer",
             background:arcadeTab===t.id?`${C.cyan}12`:"transparent",
             borderBottom:arcadeTab===t.id?`2px solid ${C.cyan}`:`2px solid transparent`,
@@ -1475,7 +1484,7 @@ export default function MoodLabArena() {
       {arcadeTab==="games" && (
         <div style={{padding:"0 14px",animation:"fadeIn 0.3s ease"}}>
           {PLAY_GAMES.map((g,i)=>(
-            <div key={g.id} onClick={()=>setSelectedGame(g)} style={{
+            <div key={g.id} onClick={()=>{playFx("select");setSelectedGame(g);}} style={{
               display:"flex",alignItems:"center",gap:12,padding:"12px 14px",borderRadius:16,marginBottom:8,cursor:"pointer",
               background:`linear-gradient(135deg, ${g.color}08, ${C.bg2} 70%)`,
               border:`1px solid ${g.color}15`,
@@ -1764,7 +1773,7 @@ export default function MoodLabArena() {
   // ═════════════════════════════════════════
   const overlayStyle = {position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,background:"rgba(5,5,16,0.97)",backdropFilter:"blur(16px)",display:"flex",flexDirection:"column",overflowY:"auto"};
   const overlayBack = (onClose) => (
-    <div onClick={onClose} style={{position:"absolute",top:8,left:10,zIndex:250,cursor:"pointer",padding:"5px 10px",borderRadius:8,background:`rgba(6,8,15,0.7)`,backdropFilter:"blur(8px)",border:`1px solid ${C.border}`}}>
+    <div onClick={()=>{playFx("back");onClose();}} style={{position:"absolute",top:8,left:10,zIndex:250,cursor:"pointer",padding:"5px 10px",borderRadius:8,background:`rgba(6,8,15,0.7)`,backdropFilter:"blur(8px)",border:`1px solid ${C.border}`}}>
       <span style={{fontSize:11,fontWeight:600,color:C.text2}}>← Back</span>
     </div>
   );
@@ -2404,7 +2413,7 @@ export default function MoodLabArena() {
                   <div style={{fontSize:40,marginBottom:8,animation:"gentleFloat 1.5s infinite"}}>🧤</div>
                   <div style={{fontSize:16,fontWeight:900,color:C.orange,marginBottom:4,textShadow:`0 0 15px ${C.orange}40`}}>YOUR TURN TO SAVE</div>
                   <div style={{fontSize:10,color:C.text3,marginBottom:12,fontStyle:"italic"}}>"AI is stepping up... look confident 😤"</div>
-                  <div onClick={()=>{kickSaveStart();playFx("whistle");}} style={{
+                  <div onClick={()=>{kickSaveStart();playFx("whistle");playFx("success");}} style={{
                     padding:"14px 36px",borderRadius:14,cursor:"pointer",
                     background:`linear-gradient(135deg, ${C.orange}20, ${C.orange}08)`,
                     border:`1px solid ${C.orange}35`,
@@ -2499,6 +2508,7 @@ export default function MoodLabArena() {
               <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:3,padding:"4px 8px",...GLASS_CLEAR,borderRadius:"12px 12px 0 0"}}>
                 {[{e:"😂"},{e:"👏"},{e:"😱"},{e:"🔥"},{e:"💀"},{e:"😘"},{e:"👋"},{e:"💨"}].map((r,i)=>(
                   <div key={i} onClick={()=>{
+                    playFx("tap");
                     const msg = {u:"You",m:r.e,c:audienceSide==="you"?C.cyan:C.red,t:Date.now()};
                     setSideChat(p=>({...p,[audienceSide]:[...p[audienceSide],msg]}));
                     setFloatingReactions(p=>[...p,{id:Date.now()+i,emoji:r.e,x:20+Math.random()*60,dur:1.5+Math.random()}]);
@@ -2509,7 +2519,7 @@ export default function MoodLabArena() {
                     {r.e}
                   </div>
                 ))}
-                <div onClick={()=>setAudioOn(!audioOn)} style={{width:30,height:30,borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:12,marginLeft:2,background:audioOn?`${C.green}10`:`${C.red}10`,border:`1px solid ${audioOn?C.green+"20":C.red+"20"}`}}>
+                <div onClick={()=>{playFx("tap");setAudioOn(!audioOn);}} style={{width:30,height:30,borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:12,marginLeft:2,background:audioOn?`${C.green}10`:`${C.red}10`,border:`1px solid ${audioOn?C.green+"20":C.red+"20"}`}}>
                   {audioOn?"🔊":"🔇"}
                 </div>
               </div>
@@ -2569,7 +2579,7 @@ export default function MoodLabArena() {
                 {/* ── TAB BAR: Chat | Stats ── */}
                 <div style={{display:"flex",borderBottom:`1px solid ${C.border}`}}>
                   {[{id:"chat",label:"💬 Chat",icon:"💬"},{id:"stats",label:"📊 Stats",icon:"📊"}].map(t=>(
-                    <div key={t.id} onClick={()=>setGameBottomTab(t.id)} style={{
+                    <div key={t.id} onClick={()=>{playFx("nav");setGameBottomTab(t.id);}} style={{
                       flex:1,padding:"5px 0",textAlign:"center",cursor:"pointer",
                       borderBottom:gameBottomTab===t.id?`2px solid ${gameBottomTab==="chat"?C.green:C.gold}`:`2px solid transparent`,
                     }}>
@@ -2734,7 +2744,7 @@ export default function MoodLabArena() {
                 {l:"🎲 Random Match",m:"random",desc:"Find a same-device opponent",sub:"⚖️ Fair match · "+pool.label},
                 {l:"👫 Invite Friend",m:"invite",desc:"Challenge a friend",sub:"Share link · Play together"},
               ].map(b=>(
-                <div key={b.m} onClick={()=>startMatch(selectedGame,b.m)} style={{
+                <div key={b.m} onClick={()=>{playFx("select");startMatch(selectedGame,b.m);}} style={{
                   display:"flex",alignItems:"center",gap:12,padding:"14px 16px",borderRadius:14,cursor:"pointer",
                   ...LG.tinted(gc),
                   transition:"all 0.2s",
@@ -3216,7 +3226,7 @@ export default function MoodLabArena() {
           {[{id:"control",l:"Control",i:"🎛",c:C.cyan},{id:"arena",l:"Arena",i:"🎮",c:C.cyan},{id:"live",l:"Live",i:"📡",c:C.pink},{id:"me",l:"Me",i:"👤",c:C.purple}].map(t=>{
             const active = tab===t.id;
             return (
-              <div key={t.id} onClick={()=>{if(t.id!=="arena"){notify("Coming Soon — Arena Demo Only",C.cyan);return;}setTab(t.id);setZone(null);setArenaView("hub");}} style={{
+              <div key={t.id} onClick={()=>{playFx("nav");if(t.id!=="arena"){notify("Coming Soon — Arena Demo Only",C.cyan);return;}setTab(t.id);setZone(null);setArenaView("hub");}} style={{
                 display:"flex",alignItems:"center",gap:active?5:0,
                 padding:active?"7px 14px":"7px 10px",
                 borderRadius:100,cursor:"pointer",
