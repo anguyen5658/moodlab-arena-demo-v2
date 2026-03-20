@@ -691,7 +691,14 @@ export default function MoodLabArena() {
   };
 
   const startKick = () => {
-    kickOpponent.current = pick(AI_OPPONENTS);
+    const baseOpp = pick(AI_OPPONENTS);
+    // If user has a team selected (quick play), assign opponent a random nation too
+    if(wcTeam && !gameActive?.wcMode) {
+      const oppTeam = pick(WC_TEAMS.filter(t=>t.id!==wcTeam.id));
+      kickOpponent.current = {...baseOpp, emoji:oppTeam.flag, name:oppTeam.name+" "+baseOpp.name, oppTeam};
+    } else {
+      kickOpponent.current = baseOpp;
+    }
     setKickState("shoot"); setKickRound(0); setKickScore({you:0,ai:0});
     setKickAim(null); setKickPower(0); setKickAiZone(null);
     setKickSaveZone(null); setKickBallAnim(null); setKickDiveAnim(null);
@@ -3233,6 +3240,20 @@ export default function MoodLabArena() {
               <span style={{fontSize:9,fontWeight:700,color:C.text2}}>How to Play</span>
             </div>
 
+            {/* ═══ TEAM PICKER (for Quick Play) ═══ */}
+            <div onClick={()=>{playFx("tap");setWcPhase("team_select_quick");}} style={{
+              display:"flex",alignItems:"center",gap:8,padding:"6px 12px",borderRadius:10,cursor:"pointer",marginBottom:8,
+              background:wcTeam?`${C.cyan}08`:`rgba(255,255,255,0.03)`,border:`1px solid ${wcTeam?C.cyan+"25":C.border}`,
+              width:"100%",maxWidth:340,
+            }}>
+              <span style={{fontSize:18}}>{wcTeam?wcTeam.flag:"🏳️"}</span>
+              <div style={{flex:1}}>
+                <div style={{fontSize:9,fontWeight:700,color:wcTeam?C.cyan:C.text3}}>{wcTeam?wcTeam.name:"Choose Your Team"}</div>
+                <div style={{fontSize:7,color:C.text3}}>Tap to {wcTeam?"change":"select"} nation</div>
+              </div>
+              <span style={{fontSize:10,color:C.text3}}>›</span>
+            </div>
+
             {/* ═══ SECTION A: QUICK PLAY ═══ */}
             <div style={{width:"100%",maxWidth:340,marginBottom:12}}>
               <div style={{fontSize:10,fontWeight:800,color:C.text2,letterSpacing:1.5,marginBottom:6}}>⚡ QUICK PLAY</div>
@@ -3404,8 +3425,9 @@ export default function MoodLabArena() {
     // Hide WC overlay when actively playing a match (game screen takes over)
     if(gameActive && gameActive.wcMode) return null;
 
-    // ═══ TEAM SELECTION ═══
-    if(wcPhase === "team_select") {
+    // ═══ TEAM SELECTION (Tournament or Quick Play) ═══
+    if(wcPhase === "team_select" || wcPhase === "team_select_quick") {
+      const isQuickMode = wcPhase === "team_select_quick";
       const confeds = WC_CONFEDERATIONS;
       return (
         <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:110,overflow:"hidden"}}>
@@ -3424,9 +3446,9 @@ export default function MoodLabArena() {
           <div style={{position:"relative",zIndex:2,height:"100%",display:"flex",flexDirection:"column",padding:"48px 12px 16px"}}>
             {/* Title */}
             <div style={{textAlign:"center",marginBottom:12}}>
-              <div style={{fontSize:11,fontWeight:800,color:C.gold,letterSpacing:2,textShadow:`0 0 15px ${C.gold}40`}}>🏆 WORLD CUP 2026</div>
+              <div style={{fontSize:11,fontWeight:800,color:C.gold,letterSpacing:2,textShadow:`0 0 15px ${C.gold}40`}}>{isQuickMode?"⚡ QUICK PLAY":"🏆 WORLD CUP 2026"}</div>
               <div style={{fontSize:16,fontWeight:900,color:C.text,marginTop:2}}>Choose Your Team</div>
-              <div style={{fontSize:9,color:C.text3,marginTop:3}}>50 nations · Select your squad and fight for glory</div>
+              <div style={{fontSize:9,color:C.text3,marginTop:3}}>{isQuickMode?"Pick a nation for your match":"50 nations · Select your squad and fight for glory"}</div>
             </div>
 
             {/* Team grid — scrollable */}
@@ -3463,7 +3485,7 @@ export default function MoodLabArena() {
             {/* Confirm button — fixed bottom */}
             {wcTeam && (
               <div style={{position:"absolute",bottom:16,left:16,right:16,zIndex:5,animation:"fadeIn 0.3s ease"}}>
-                <div onClick={wcConfirmTeam} style={{
+                <div onClick={()=>{if(isQuickMode){playFx("success");setWcPhase(null);}else{wcConfirmTeam();}}} style={{
                   padding:"12px 0",borderRadius:14,textAlign:"center",cursor:"pointer",
                   background:`linear-gradient(135deg, ${C.cyan}40, ${C.gold}30)`,
                   border:`2px solid ${C.cyan}60`,
