@@ -35,7 +35,7 @@ const Z = {
 const C = {
   bg:"#050510", bg2:"#0a0a20", bg3:"#0f0f2a", card:"#12123a",
   border:"rgba(255,255,255,0.06)", border2:"rgba(255,255,255,0.12)",
-  text:"#F0EEFF", text2:"#8B85B8", text3:"#4A4570",
+  text:"#F0EEFF", text2:"#A8A3D0", text3:"#6E6A95",
   cyan:"#00E5FF", gold:"#FFD93D", pink:"#FF4D8D", purple:"#C084FC",
   orange:"#FB923C", red:"#FF4444", green:"#34D399", lime:"#7FFF00", blue:"#60A5FA",
   glass:"rgba(255,255,255,0.03)", glassBorder:"rgba(255,255,255,0.08)",
