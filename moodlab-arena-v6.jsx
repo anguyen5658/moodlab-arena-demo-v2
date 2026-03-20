@@ -349,6 +349,9 @@ export default function MoodLabArena() {
   const actionTimerRef = useRef(null);
   const [showHowToPlay, setShowHowToPlay] = useState(false);
   const [wcDeviceInput, setWcDeviceInput] = useState(null); // device input locked for tournament
+  const [fanMode, setFanMode] = useState(null); // null | "team_select" | "device_select" | "watching"
+  const [fanTeam, setFanTeam] = useState(null); // fan's chosen team
+  const [fanDevice, setFanDevice] = useState(null); // fan's device control
   const kickChargeInterval = useRef(null);
   const [kickComment, setKickComment] = useState("");
   const [kickSweetMin, setKickSweetMin] = useState(70); // random sweet spot per round
@@ -1991,7 +1994,7 @@ export default function MoodLabArena() {
           </div>
 
           {/* Join as Fan */}
-          <div onClick={()=>{playFx("tap");notify("👀 Spectator mode coming soon!",C.cyan);}} style={{
+          <div onClick={()=>{playFx("select");setFanMode("team_select");}} style={{
             padding:"12px 14px",borderRadius:14,cursor:"pointer",
             background:`${C.cyan}06`,border:`1px solid ${C.cyan}15`,
             display:"flex",alignItems:"center",gap:10,
@@ -3242,24 +3245,19 @@ export default function MoodLabArena() {
       const isFinalkick = selectedGame.id === "finalkick";
       return (
         <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden"}}>
-          {/* Stadium background */}
+          {/* Background — matching other pages */}
           <div style={{position:"absolute",inset:0,background:`
-            radial-gradient(ellipse at 50% 20%, ${gc}15 0%, transparent 50%),
-            radial-gradient(ellipse at 20% 80%, ${gc}08 0%, transparent 40%),
-            radial-gradient(ellipse at 80% 80%, rgba(168,85,247,0.05) 0%, transparent 40%),
             radial-gradient(ellipse at 50% 20%, rgba(0,229,255,0.06) 0%, transparent 50%),
+            radial-gradient(ellipse at 20% 80%, rgba(96,165,250,0.04) 0%, transparent 40%),
             linear-gradient(180deg, #06101E 0%, #0c1a38 40%, #102240 70%, #081830 100%)
           `}}/>
-          <div style={{position:"absolute",top:0,left:"20%",width:3,height:"30%",background:`linear-gradient(180deg, ${gc}25, transparent)`,filter:"blur(4px)",animation:"pulse 3s infinite"}}/>
-          <div style={{position:"absolute",top:0,right:"20%",width:3,height:"30%",background:`linear-gradient(180deg, ${gc}25, transparent)`,filter:"blur(4px)",animation:"pulse 3s infinite 1s"}}/>
-          <div style={{position:"absolute",bottom:0,left:0,right:0,height:"20%",background:`linear-gradient(180deg, transparent, rgba(34,197,94,0.06) 50%, rgba(34,197,94,0.10))`,pointerEvents:"none"}}/>
 
           {overlayBack(()=>setSelectedGame(null))}
 
           <div style={{position:"relative",zIndex:2,display:"flex",flexDirection:"column",alignItems:"center",height:"100%",padding:"50px 16px 20px",overflowY:"auto"}}>
             {/* Game header */}
-            <div style={{width:70,height:70,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",background:`radial-gradient(circle, ${gc}15, ${gc}05)`,border:`2px solid ${gc}30`,boxShadow:`0 0 40px ${gc}20`,marginBottom:8,animation:"gentleFloat 3s infinite"}}>
-              <span style={{fontSize:36,filter:`drop-shadow(0 0 15px ${gc}40)`}}>{selectedGame.emoji}</span>
+            <div style={{width:60,height:60,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",background:`${gc}10`,border:`2px solid ${gc}25`,marginBottom:8}}>
+              <span style={{fontSize:30}}>{selectedGame.emoji}</span>
             </div>
             <div style={{fontSize:20,fontWeight:900,color:C.text,textShadow:`0 0 20px ${gc}30`,marginBottom:3}}>{selectedGame.name}</div>
             <div style={{fontSize:10,color:C.text2,marginBottom:6,maxWidth:280,textAlign:"center"}}>{selectedGame.desc}</div>
@@ -3591,6 +3589,167 @@ export default function MoodLabArena() {
   };
 
   // ── WORLD CUP OVERLAY ──
+  // ═══ FAN MODE OVERLAY ═══
+  const renderFanMode = () => {
+    if(!fanMode) return null;
+    const bgStyle = {position:"absolute",inset:0,background:`
+      radial-gradient(ellipse at 50% 20%, rgba(0,229,255,0.06) 0%, transparent 50%),
+      radial-gradient(ellipse at 20% 80%, rgba(96,165,250,0.04) 0%, transparent 40%),
+      linear-gradient(180deg, #06101E 0%, #0c1a38 40%, #102240 70%, #081830 100%)
+    `};
+
+    // ── FAN: Choose Team ──
+    if(fanMode === "team_select") {
+      const confeds = [...new Set(WC_TEAMS.map(t=>t.confederation))];
+      return (
+        <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:110,overflow:"hidden"}}>
+          <div style={bgStyle}/>
+          {overlayBack(()=>setFanMode(null))}
+          <div style={{position:"relative",zIndex:2,height:"100%",display:"flex",flexDirection:"column",padding:"44px 14px 20px",overflowY:"auto"}}>
+            <div style={{textAlign:"center",marginBottom:12}}>
+              <div style={{fontSize:24,marginBottom:4}}>👀</div>
+              <div style={{fontSize:14,fontWeight:900,color:C.text}}>Join as Fan</div>
+              <div style={{fontSize:9,color:C.text3,marginTop:3}}>Choose a team to support · Watch live matches</div>
+            </div>
+            {confeds.map(conf=>(
+              <div key={conf} style={{marginBottom:10}}>
+                <div style={{fontSize:8,fontWeight:800,color:C.text3,letterSpacing:1,marginBottom:4,padding:"0 4px"}}>{conf}</div>
+                <div style={{display:"grid",gridTemplateColumns:"repeat(5, 1fr)",gap:4}}>
+                  {WC_TEAMS.filter(t=>t.confederation===conf).map(t=>(
+                    <div key={t.id} onClick={()=>{playFx("select");setFanTeam(t);}} style={{
+                      padding:"6px 2px",borderRadius:8,cursor:"pointer",textAlign:"center",
+                      background:fanTeam?.id===t.id?`${C.cyan}15`:`rgba(255,255,255,0.02)`,
+                      border:`1px solid ${fanTeam?.id===t.id?C.cyan+"40":C.border}`,
+                      transition:"all 0.15s",
+                    }}>
+                      <div style={{fontSize:18}}>{t.flag}</div>
+                      <div style={{fontSize:6,color:fanTeam?.id===t.id?C.cyan:C.text3,fontWeight:600,marginTop:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{t.name}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+            {fanTeam && (
+              <div style={{position:"sticky",bottom:0,padding:"10px 0",background:`linear-gradient(0deg, #06101E, transparent)`}}>
+                <div onClick={()=>{playFx("success");setFanMode("device_select");}} style={{
+                  padding:"12px 0",borderRadius:14,textAlign:"center",cursor:"pointer",
+                  background:`linear-gradient(135deg, ${C.cyan}40, ${C.gold}30)`,
+                  border:`2px solid ${C.cyan}60`,backdropFilter:"blur(8px)",
+                }}>
+                  <div style={{fontSize:13,fontWeight:900,color:C.cyan}}>SUPPORT {fanTeam.flag} {fanTeam.name.toUpperCase()}</div>
+                  <div style={{fontSize:8,color:C.text3,marginTop:2}}>Next: choose your device</div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    // ── FAN: Choose Device ──
+    if(fanMode === "device_select") {
+      return (
+        <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:110,overflow:"hidden",display:"flex",alignItems:"center",justifyContent:"center"}}>
+          <div style={bgStyle}/>
+          {overlayBack(()=>setFanMode("team_select"))}
+          <div style={{position:"relative",zIndex:2,width:"88%",maxWidth:360,textAlign:"center"}}>
+            <div style={{fontSize:40,marginBottom:6}}>{fanTeam?.flag}</div>
+            <div style={{fontSize:14,fontWeight:900,color:C.text,marginBottom:2}}>Fan of {fanTeam?.name}</div>
+            <div style={{fontSize:10,fontWeight:700,color:C.cyan,marginBottom:4}}>👀 SPECTATOR MODE</div>
+            <div style={{fontSize:9,color:C.text3,marginBottom:14}}>Choose device to match with live games using this control</div>
+            <div style={{display:"flex",flexDirection:"column",gap:8}}>
+              {INPUT_TYPES.map(t=>(
+                <div key={t.id} onClick={()=>{
+                  playFx("success"); setFanDevice(t.id); setFanMode("watching");
+                  notify(`👀 Watching as ${fanTeam?.flag} ${fanTeam?.name} fan! (${t.label})`,C.cyan);
+                }} style={{
+                  padding:"12px 14px",borderRadius:14,cursor:"pointer",display:"flex",alignItems:"center",gap:10,
+                  background:`linear-gradient(135deg, ${t.color}08, ${t.color}03)`,border:`1px solid ${t.color}20`,
+                }}>
+                  <div style={{width:36,height:36,borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",background:`${t.color}12`,border:`1px solid ${t.color}20`,fontSize:18}}>{t.icon}</div>
+                  <div style={{flex:1,textAlign:"left"}}>
+                    <div style={{fontSize:12,fontWeight:700,color:t.color}}>{t.label}</div>
+                    <div style={{fontSize:8,color:C.text3}}>{t.desc}</div>
+                  </div>
+                  <span style={{fontSize:14,color:`${t.color}40`}}>›</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ── FAN: Watching lobby ──
+    if(fanMode === "watching") {
+      const matchingGames = [
+        {home:pick(WC_TEAMS).flag+" "+pick(WC_TEAMS).name, away:pick(WC_TEAMS).flag+" "+pick(WC_TEAMS).name, score:"1-0", phase:"Group A · R2", viewers:42+Math.floor(Math.random()*80), live:true},
+        {home:pick(WC_TEAMS).flag+" "+pick(WC_TEAMS).name, away:pick(WC_TEAMS).flag+" "+pick(WC_TEAMS).name, score:"0-0", phase:"Group C · R1", viewers:18+Math.floor(Math.random()*30), live:true},
+        {home:pick(WC_TEAMS).flag+" "+pick(WC_TEAMS).name, away:pick(WC_TEAMS).flag+" "+pick(WC_TEAMS).name, score:"--", phase:"Quarterfinal", viewers:0, live:false},
+      ];
+      const devLabel = INPUT_TYPES.find(t=>t.id===fanDevice)?.label||"Puff";
+      return (
+        <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:110,overflow:"hidden"}}>
+          <div style={bgStyle}/>
+          {overlayBack(()=>{setFanMode(null);setFanTeam(null);setFanDevice(null);})}
+          <div style={{position:"relative",zIndex:2,height:"100%",display:"flex",flexDirection:"column",padding:"44px 14px 20px",overflowY:"auto"}}>
+            <div style={{textAlign:"center",marginBottom:14}}>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,marginBottom:4}}>
+                <span style={{fontSize:24}}>{fanTeam?.flag}</span>
+                <span style={{fontSize:14,fontWeight:900,color:C.text}}>Fan Zone</span>
+              </div>
+              <div style={{fontSize:9,color:C.text3}}>Supporting {fanTeam?.name} · {devLabel} matches</div>
+            </div>
+
+            {/* Live matches to watch */}
+            <div style={{fontSize:9,fontWeight:800,color:C.gold,letterSpacing:1,marginBottom:6}}>🔴 LIVE MATCHES</div>
+            {matchingGames.filter(g=>g.live).map((g,i)=>(
+              <div key={i} onClick={()=>{playFx("tap");notify("👀 Spectating... (demo)",C.cyan);}} style={{
+                padding:"12px 14px",borderRadius:14,marginBottom:8,cursor:"pointer",
+                ...GLASS_CARD,transition:"all 0.2s",
+              }}>
+                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:4}}>
+                  <div style={{fontSize:10,fontWeight:700,color:C.text}}>{g.home}</div>
+                  <div style={{fontSize:12,fontWeight:900,color:C.gold}}>{g.score}</div>
+                  <div style={{fontSize:10,fontWeight:700,color:C.text,textAlign:"right"}}>{g.away}</div>
+                </div>
+                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                  <span style={{fontSize:7,color:C.text3}}>{g.phase}</span>
+                  <div style={{display:"flex",alignItems:"center",gap:4}}>
+                    <div style={{width:5,height:5,borderRadius:"50%",background:C.red,animation:"pulse 1.5s infinite"}}/>
+                    <span style={{fontSize:7,color:C.red,fontWeight:700}}>LIVE</span>
+                    <span style={{fontSize:7,color:C.text3}}>👁️ {g.viewers}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            {/* Upcoming */}
+            <div style={{fontSize:9,fontWeight:800,color:C.text3,letterSpacing:1,marginBottom:6,marginTop:4}}>⏳ UPCOMING</div>
+            {matchingGames.filter(g=>!g.live).map((g,i)=>(
+              <div key={i} style={{padding:"10px 14px",borderRadius:12,marginBottom:6,...GLASS_CARD,opacity:0.6}}>
+                <div style={{fontSize:10,fontWeight:600,color:C.text2}}>{g.home} vs {g.away}</div>
+                <div style={{fontSize:7,color:C.text3,marginTop:2}}>{g.phase} · Starts soon</div>
+              </div>
+            ))}
+
+            {/* Fan chat preview */}
+            <div style={{marginTop:8,padding:"10px 14px",borderRadius:14,...GLASS_CARD}}>
+              <div style={{fontSize:9,fontWeight:800,color:C.cyan,marginBottom:4}}>💬 FAN CHAT</div>
+              {["LET'S GO "+fanTeam?.name+"! 🔥","Anyone watching the group match?","Sweet spot merchant in match 2 😂","This keeper is INSANE 🧤"].map((m,i)=>(
+                <div key={i} style={{fontSize:7,color:C.text2,marginBottom:2}}>
+                  <span style={{fontWeight:700,color:i===0?C.cyan:C.text3}}>Fan_{100+i*23} </span>{m}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    return null;
+  };
+
   const renderWorldCup = () => {
     if(!wcPhase) return null;
     // Hide WC overlay when actively playing a match (game screen takes over)
@@ -4519,6 +4678,7 @@ export default function MoodLabArena() {
       {/* Overlays */}
       {renderGameOverlay()}
       {renderWorldCup()}
+      {renderFanMode()}
       {renderVibeCheck()}
       {renderSpin()}
       {renderPuffLock()}
