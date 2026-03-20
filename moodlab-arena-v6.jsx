@@ -2300,16 +2300,12 @@ export default function MoodLabArena() {
       const pool = getDevicePool();
       return (
         <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden"}}>
-          {/* Stadium background */}
+          {/* Background — matching other pages */}
           <div style={{position:"absolute",inset:0,background:`
-            radial-gradient(ellipse at 50% 30%, ${gc}12 0%, transparent 50%),
-            radial-gradient(ellipse at 30% 70%, ${C.purple}06 0%, transparent 40%),
-            radial-gradient(ellipse at 70% 70%, ${gc}06 0%, transparent 40%),
+            radial-gradient(ellipse at 50% 20%, rgba(0,229,255,0.06) 0%, transparent 50%),
+            radial-gradient(ellipse at 20% 80%, rgba(96,165,250,0.04) 0%, transparent 40%),
             linear-gradient(180deg, #06101E 0%, #0c1a38 40%, #102240 70%, #081830 100%)
           `}}/>
-          {/* Light beams */}
-          <div style={{position:"absolute",top:0,left:"25%",width:3,height:"40%",background:`linear-gradient(180deg, ${gc}30, transparent)`,filter:"blur(6px)",animation:"pulse 2s infinite"}}/>
-          <div style={{position:"absolute",top:0,right:"25%",width:3,height:"40%",background:`linear-gradient(180deg, ${gc}30, transparent)`,filter:"blur(6px)",animation:"pulse 2s infinite 0.7s"}}/>
           {/* Ambient particles */}
           {[...Array(12)].map((_,i)=>(
             <div key={i} style={{position:"absolute",left:`${Math.random()*100}%`,top:`${Math.random()*100}%`,width:2,height:2,borderRadius:"50%",background:gc,opacity:0.1+Math.random()*0.15,animation:`pulse ${2+Math.random()*3}s infinite ${Math.random()*2}s`}}/>
