@@ -414,6 +414,9 @@ export default function MoodLabArena() {
   const [primaryInput, setPrimaryInput] = useState("puff");
   const [tapEnabled, setTapEnabled] = useState(true);
   const [showInputPanel, setShowInputPanel] = useState(false);
+  const [showBlePopup, setShowBlePopup] = useState(false);
+  const [bleConnected, setBleConnected] = useState(false);
+  const [bleScanning, setBleScanning] = useState(false);
   const [showAskPrompt, setShowAskPrompt] = useState(null);
   const [sessionInput, setSessionInput] = useState(null);
   const [inputPulse, setInputPulse] = useState(false);
@@ -1897,10 +1900,12 @@ export default function MoodLabArena() {
     {name:"TheLobster",emoji:"🦞",stat:"199 goals",detail:"Win rate: exactly 50%",color:C.red,badge:"⚖️ Balanced"},
   ];
   const FUN_STATS = [
-    {label:"Total Blinkers Today",value:"1,247",emoji:"💀",color:C.red,sub:"Players' lungs: questionable"},
-    {label:"Longest Perfect Streak",value:"23",emoji:"💨",color:C.green,sub:"by ChillMaster42"},
-    {label:"Funniest Miss",value:"0.1s puff",emoji:"😂",color:C.gold,sub:"Ball didn't even move"},
-    {label:"Most Rematches",value:"47",emoji:"🔄",color:C.cyan,sub:"BlazedPanda vs AI (addiction?)"},
+    {label:"Arcade Games Today",value:"3,847",emoji:"🎮",color:C.cyan,sub:"Final Kick: 2,100 · Hot Potato: 890"},
+    {label:"Blinkers Today",value:"1,247",emoji:"💀",color:C.red,sub:"That's 1,247 trips to the moon 🌙"},
+    {label:"Perfect Puffs",value:"8,420",emoji:"💨",color:C.green,sub:"Sweet spot merchants are out here"},
+    {label:"Active Players Now",value:"856",emoji:"👥",color:C.gold,sub:"142 in Final Kick · 89 in Puff Pong"},
+    {label:"Longest Win Streak",value:"23",emoji:"🔥",color:C.orange,sub:"ChillMaster42 is on FIRE"},
+    {label:"Funniest Blinker",value:"0.1s tap",emoji:"😂",color:C.pink,sub:"Ball didn't even move lmao"},
   ];
 
   const renderArcade = () => (
@@ -2052,7 +2057,7 @@ export default function MoodLabArena() {
           </div>
 
           {/* Player rankings */}
-          <div style={{fontSize:10,fontWeight:800,color:C.gold,marginBottom:8}}>🏆 ALL-TIME ARCADE RANKINGS</div>
+          <div style={{fontSize:10,fontWeight:800,color:C.gold,marginBottom:8}}>🏆 ARCADE HALL OF FAME</div>
           {ARCADE_LEADERBOARD.map((p,i)=>(
             <div key={i} style={{
               display:"flex",alignItems:"center",gap:10,padding:"10px 12px",borderRadius:12,marginBottom:6,
@@ -4382,6 +4387,78 @@ export default function MoodLabArena() {
   };
 
   // Puff Lock-In
+  // ═══ BLE DEVICE CONNECT POPUP ═══
+  const renderBlePopup = () => {
+    if(!showBlePopup) return null;
+    const devices = [
+      {name:"Cali Clear S2",model:"CC S2",battery:"87%",emoji:"📱",connected:bleConnected},
+      {name:"Cali Clear S1",model:"CC S1",battery:"--",emoji:"📱",connected:false},
+    ];
+    return (
+      <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:260,display:"flex",alignItems:"center",justifyContent:"center"}}>
+        <div onClick={()=>setShowBlePopup(false)} style={{position:"absolute",inset:0,background:"rgba(5,5,16,0.85)",backdropFilter:"blur(10px)"}}/>
+        <div style={{position:"relative",width:"88%",maxWidth:340,
+          background:`radial-gradient(ellipse at 50% 20%, rgba(0,229,255,0.06) 0%, transparent 50%), linear-gradient(180deg, #06101E 0%, #0c1a38 50%, #102240 100%)`,
+          borderRadius:22,border:`1px solid ${C.border2}`,padding:"20px 18px",animation:"fadeIn 0.3s ease",
+        }}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+            <div>
+              <div style={{fontSize:14,fontWeight:900,color:C.text}}>Connect Device</div>
+              <div style={{fontSize:9,color:C.text3,marginTop:2}}>Bluetooth Low Energy (BLE)</div>
+            </div>
+            <div onClick={()=>setShowBlePopup(false)} style={{width:28,height:28,borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",background:`rgba(255,255,255,0.06)`,border:`1px solid ${C.border}`,fontSize:12,color:C.text3}}>✕</div>
+          </div>
+
+          {/* Status */}
+          <div style={{padding:"8px 12px",borderRadius:10,marginBottom:12,display:"flex",alignItems:"center",gap:8,
+            background:bleConnected?`${C.green}08`:`${C.orange}06`,border:`1px solid ${bleConnected?C.green+"20":C.orange+"15"}`,
+          }}>
+            <div style={{width:8,height:8,borderRadius:"50%",background:bleConnected?C.green:C.orange,animation:bleConnected?"":"pulse 1.5s infinite"}}/>
+            <div style={{fontSize:10,fontWeight:700,color:bleConnected?C.green:C.orange}}>{bleConnected?"Connected":"Not Connected"}</div>
+          </div>
+
+          {/* Device list */}
+          <div style={{fontSize:8,fontWeight:700,color:C.text3,letterSpacing:1,marginBottom:6}}>DEVICES</div>
+          {devices.map((d,i)=>(
+            <div key={i} onClick={()=>{
+              if(!d.connected){
+                playFx("select");setBleScanning(true);
+                setTimeout(()=>{setBleScanning(false);setBleConnected(true);playFx("success");notify(`✅ ${d.name} connected!`,C.green);},2000);
+              }
+            }} style={{
+              display:"flex",alignItems:"center",gap:10,padding:"10px 12px",borderRadius:12,marginBottom:6,cursor:"pointer",
+              background:d.connected?`${C.green}08`:`rgba(255,255,255,0.02)`,border:`1px solid ${d.connected?C.green+"20":C.border}`,
+            }}>
+              <div style={{width:36,height:36,borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",background:`${C.cyan}10`,border:`1px solid ${C.cyan}15`,fontSize:18}}>{d.emoji}</div>
+              <div style={{flex:1}}>
+                <div style={{fontSize:11,fontWeight:700,color:d.connected?C.green:C.text}}>{d.name}</div>
+                <div style={{fontSize:8,color:C.text3}}>{d.model} · Battery: {d.battery}</div>
+              </div>
+              {d.connected ? (
+                <div style={{fontSize:8,fontWeight:700,color:C.green,padding:"3px 8px",borderRadius:6,background:`${C.green}12`}}>✓ Active</div>
+              ) : (
+                <div style={{fontSize:8,fontWeight:700,color:C.cyan,padding:"3px 8px",borderRadius:6,background:`${C.cyan}10`,border:`1px solid ${C.cyan}20`}}>Connect</div>
+              )}
+            </div>
+          ))}
+
+          {/* Scan button */}
+          <div onClick={()=>{
+            playFx("tap");setBleScanning(true);
+            setTimeout(()=>{setBleScanning(false);notify("🔍 Scan complete",C.cyan);},2500);
+          }} style={{
+            padding:"10px 0",borderRadius:12,textAlign:"center",cursor:"pointer",marginTop:6,
+            background:bleScanning?`${C.cyan}12`:`rgba(255,255,255,0.03)`,border:`1px solid ${bleScanning?C.cyan+"30":C.border}`,
+          }}>
+            <div style={{fontSize:11,fontWeight:700,color:bleScanning?C.cyan:C.text2}}>
+              {bleScanning?"🔄 Scanning...":"🔍 Scan for Devices"}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const renderPuffLock = () => {
     if(!puffLocking) return null;
     return (
@@ -4647,8 +4724,8 @@ export default function MoodLabArena() {
           <div style={{display:"flex",alignItems:"center",gap:3,padding:"3px 8px",borderRadius:100,background:`${C.gold}08`,border:`1px solid ${C.gold}15`}}>
             <span style={{fontSize:10}}>🪙</span><span style={{fontSize:11,fontWeight:800,color:C.gold,fontFamily:"'Courier New',monospace"}}>{coins.toLocaleString()}</span>
           </div>
-          <div style={{display:"flex",alignItems:"center",gap:3,padding:"3px 8px",borderRadius:100,background:`${C.green}08`,border:`1px solid ${C.green}15`}}>
-            <div style={{width:5,height:5,borderRadius:"50%",background:C.green}}/><span style={{fontSize:9,fontWeight:600,color:C.green}}>BLE</span>
+          <div onClick={()=>{playFx("tap");setShowBlePopup(true);}} style={{display:"flex",alignItems:"center",gap:3,padding:"3px 8px",borderRadius:100,cursor:"pointer",background:bleConnected?`${C.green}08`:`${C.text3}08`,border:`1px solid ${bleConnected?C.green+"15":C.text3+"15"}`}}>
+            <div style={{width:5,height:5,borderRadius:"50%",background:bleConnected?C.green:C.text3,animation:bleConnected?"":"pulse 2s infinite"}}/><span style={{fontSize:9,fontWeight:600,color:bleConnected?C.green:C.text3}}>{bleConnected?"BLE":"BLE"}</span>
           </div>
         </div>
       </div>
@@ -4689,12 +4766,15 @@ export default function MoodLabArena() {
       {/* Universal inline chat — above nav when toggled on */}
       {chatPanel ? <div style={{position:"fixed",bottom:66,left:10,right:10,zIndex:54,maxWidth:410,margin:"0 auto",animation:"panelSlideUp 0.3s ease both"}}>
         <div style={{borderRadius:18,overflow:"hidden",...GLASS_CARD}}>
-          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"8px 12px",borderBottom:`1px solid ${C.border}`}}>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"6px 12px",borderBottom:`1px solid ${C.border}`}}>
             <div style={{display:"flex",alignItems:"center",gap:5}}>
-              <span style={{fontSize:12,fontWeight:800,color:C.text}}>💬 Chat</span>
-              <div style={{display:"flex",alignItems:"center",gap:3}}>
+              <span style={{fontSize:11,fontWeight:800,color:C.text}}>💬</span>
+              <span style={{fontSize:8,fontWeight:700,color:C.cyan,padding:"2px 6px",borderRadius:4,background:`${C.cyan}10`,border:`1px solid ${C.cyan}15`}}>
+                {arenaView==="hub"?"🏠 Hub Lobby":arenaView==="arcade"?"🎮 Arcade":arenaView==="stage"?"🎪 Stage":arenaView==="oracle"?"🔮 Oracle":arenaView==="wall"?"🧱 Wall":"🏟️ Arena"}
+              </span>
+              <div style={{display:"flex",alignItems:"center",gap:2}}>
                 <div style={{width:4,height:4,borderRadius:"50%",background:C.green,animation:"pulse 2s infinite"}}/>
-                <span style={{fontSize:9,fontWeight:700,color:C.green}}>{playersNow.toLocaleString()}</span>
+                <span style={{fontSize:8,fontWeight:700,color:C.green}}>{playersNow.toLocaleString()}</span>
               </div>
             </div>
           </div>
@@ -4725,6 +4805,7 @@ export default function MoodLabArena() {
       {renderVibeCheck()}
       {renderSpin()}
       {renderPuffLock()}
+      {renderBlePopup()}
       {renderInputPanel()}
       {renderAskPrompt()}
 
