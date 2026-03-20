@@ -777,18 +777,45 @@ export default function MoodLabArena() {
     playFx("crowd");
   };
 
-  // Audience side switch
-  const switchSide = () => {
+  // Audience side switch — requires a BLINKER PUFF (5s hold) to switch!
+  const [switchPuffing, setSwitchPuffing] = useState(false);
+  const [switchPuffProgress, setSwitchPuffProgress] = useState(0);
+  const switchPuffTimer = useRef(null);
+
+  const startSwitchPuff = () => {
+    if(switchPuffing) return;
+    setSwitchPuffing(true); setSwitchPuffProgress(0);
+    switchPuffTimer.current = setInterval(()=>{
+      setSwitchPuffProgress(p=>{
+        if(p>=100){
+          clearInterval(switchPuffTimer.current); switchPuffTimer.current=null;
+          // Blinker reached! Execute switch
+          setTimeout(()=>executeSwitchSide(), 200);
+          return 100;
+        }
+        return p+2; // fills in ~2.5s (simulated blinker, not full 5s for demo UX)
+      });
+    },50);
+  };
+  const stopSwitchPuff = () => {
+    setSwitchPuffing(false);
+    if(switchPuffTimer.current){clearInterval(switchPuffTimer.current);switchPuffTimer.current=null;}
+    if(switchPuffProgress<100){
+      setSwitchPuffProgress(0);
+      if(switchPuffProgress>20) notify("💨 Hold longer to switch! Need a full puff 🫁",C.gold);
+    }
+  };
+  const executeSwitchSide = () => {
+    setSwitchPuffing(false); setSwitchPuffProgress(0);
     const newSide = audienceSide==="you"?"ai":"you";
     setAudienceSide(newSide);
     setAudienceSwitchCount(c=>c+1);
-    if(!audienceTraitor && audienceSwitchCount>=0) { setAudienceTraitor(true); }
-    // Add traitor message to BOTH chats
-    const traitorMsg = {u:"⚠ SYSTEM",m:`🐍 A fan just switched to ${newSide==="you"?"Steve":"AI"}'s side!`,c:C.gold,t:Date.now()};
+    setAudienceTraitor(true);
+    const traitorMsg = {u:"⚠ SYSTEM",m:`🐍 A fan puffed a BLINKER to switch to ${newSide==="you"?"Steve":"AI"}'s side! 💀`,c:C.gold,t:Date.now()};
     setSideChat(p=>({you:[...p.you,traitorMsg],ai:[...p.ai,traitorMsg]}));
     setSideFans(p=>({...p,[audienceSide]:Math.max(1,p[audienceSide]-1),[newSide]:p[newSide]+1}));
     playFx("laugh");
-    notify("🐍 TRAITOR! You switched sides!",C.gold);
+    notify("🐍 BLINKER SWITCH! You're a traitor now!",C.gold);
   };
 
   const kickSkipBonus = () => {
@@ -1666,20 +1693,68 @@ export default function MoodLabArena() {
   // Game detail / matchmaking
   const renderGameOverlay = () => {
     if(matchmaking) {
+      const gc = matchmaking.game.color;
+      const pool = getDevicePool();
       return (
-        <div style={overlayStyle}>{overlayBack(()=>setMatchmaking(null))}
-          <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",textAlign:"center",padding:20}}>
-            <div style={{fontSize:48,marginBottom:16,animation:"breathe 1.5s infinite"}}>{matchmaking.game.emoji}</div>
-            <div style={{fontSize:18,fontWeight:900,color:C.text,marginBottom:8}}>{matchmaking.game.name}</div>
-            {matchmaking.stage==="searching" && <div>
-              <div style={{display:"flex",gap:6,justifyContent:"center",marginBottom:12}}>
-                <span style={{fontSize:9,fontWeight:700,color:getDevicePool().color,padding:"2px 8px",borderRadius:20,background:`${getDevicePool().color}12`,border:`1px solid ${getDevicePool().color}20`}}>⚖️ {getDevicePool().label}</span>
-                <span style={{fontSize:9,fontWeight:700,color:C.text3,padding:"2px 8px",borderRadius:20,background:`${C.text3}08`}}>{getDeviceShort()}</span>
+        <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden"}}>
+          {/* Stadium background */}
+          <div style={{position:"absolute",inset:0,background:`
+            radial-gradient(ellipse at 50% 30%, ${gc}12 0%, transparent 50%),
+            radial-gradient(ellipse at 30% 70%, ${C.purple}06 0%, transparent 40%),
+            radial-gradient(ellipse at 70% 70%, ${gc}06 0%, transparent 40%),
+            linear-gradient(180deg, #040812 0%, #0a1628 40%, #0d1520 70%, #061210 100%)
+          `}}/>
+          {/* Light beams */}
+          <div style={{position:"absolute",top:0,left:"25%",width:3,height:"40%",background:`linear-gradient(180deg, ${gc}30, transparent)`,filter:"blur(6px)",animation:"pulse 2s infinite"}}/>
+          <div style={{position:"absolute",top:0,right:"25%",width:3,height:"40%",background:`linear-gradient(180deg, ${gc}30, transparent)`,filter:"blur(6px)",animation:"pulse 2s infinite 0.7s"}}/>
+          {/* Ambient particles */}
+          {[...Array(12)].map((_,i)=>(
+            <div key={i} style={{position:"absolute",left:`${Math.random()*100}%`,top:`${Math.random()*100}%`,width:2,height:2,borderRadius:"50%",background:gc,opacity:0.1+Math.random()*0.15,animation:`pulse ${2+Math.random()*3}s infinite ${Math.random()*2}s`}}/>
+          ))}
+          {/* Grass */}
+          <div style={{position:"absolute",bottom:0,left:0,right:0,height:"20%",background:`linear-gradient(180deg, transparent, rgba(34,197,94,0.06) 50%, rgba(34,197,94,0.10))`,pointerEvents:"none"}}/>
+
+          {overlayBack(()=>setMatchmaking(null))}
+
+          <div style={{position:"relative",zIndex:2,flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",height:"100%",textAlign:"center",padding:20}}>
+            {/* Game icon with glow */}
+            <div style={{width:80,height:80,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",background:`radial-gradient(circle, ${gc}15, ${gc}05)`,border:`2px solid ${gc}25`,boxShadow:`0 0 40px ${gc}20`,marginBottom:16,animation:"gentleFloat 2s infinite"}}>
+              <span style={{fontSize:40,filter:`drop-shadow(0 0 10px ${gc}40)`}}>{matchmaking.game.emoji}</span>
+            </div>
+
+            <div style={{fontSize:20,fontWeight:900,color:C.text,textShadow:`0 0 15px ${gc}30`,marginBottom:6}}>{matchmaking.game.name}</div>
+
+            {matchmaking.stage==="searching" && (
+              <div style={{animation:"fadeIn 0.3s ease"}}>
+                {/* Device badges */}
+                <div style={{display:"flex",gap:5,justifyContent:"center",marginBottom:14}}>
+                  <span style={{fontSize:8,fontWeight:700,color:pool.color,padding:"3px 10px",borderRadius:20,...LG.tinted(pool.color)}}>⚖️ {pool.label}</span>
+                  <span style={{fontSize:8,fontWeight:700,color:C.text2,padding:"3px 10px",borderRadius:20,...LG.tinted(C.text3)}}>{getDeviceShort()}</span>
+                </div>
+                {/* Searching animation */}
+                <div style={{fontSize:14,color:C.text2,marginBottom:16,fontWeight:600}}>
+                  {matchmaking.mode==="random"?"Finding same-device opponent...":"Finding opponent..."}
+                </div>
+                <div style={{position:"relative",width:50,height:50,margin:"0 auto"}}>
+                  <div style={{width:50,height:50,border:`3px solid ${gc}15`,borderTopColor:gc,borderRadius:"50%",animation:"spin 0.8s linear infinite"}}/>
+                  <div style={{position:"absolute",inset:6,border:`2px solid ${gc}10`,borderBottomColor:`${gc}60`,borderRadius:"50%",animation:"spin 1.2s linear infinite reverse"}}/>
+                </div>
+                <div style={{fontSize:10,color:C.text3,marginTop:12,fontStyle:"italic"}}>"Scanning the arena for worthy opponents... 👀"</div>
               </div>
-              <div style={{fontSize:13,color:C.text2,marginBottom:16}}>Finding {matchmaking.mode==="random"?"same-device":""}  opponent...</div>
-              <div style={{width:32,height:32,border:`3px solid ${C.cyan}30`,borderTopColor:C.cyan,borderRadius:"50%",animation:"spin 0.8s linear infinite",margin:"0 auto"}}/>
-            </div>}
-            {matchmaking.stage==="found" && <div style={{fontSize:16,fontWeight:700,color:C.green,animation:"fadeIn 0.3s ease"}}>{matchmaking.opp}<div style={{fontSize:11,color:C.text3,marginTop:4}}>⚖️ Fair Match · Starting...</div></div>}
+            )}
+
+            {matchmaking.stage==="found" && (
+              <div style={{animation:"fadeIn 0.4s ease"}}>
+                <div style={{fontSize:40,marginBottom:8,animation:"countPulse 0.5s ease"}}>⚡</div>
+                <div style={{fontSize:18,fontWeight:800,color:C.green,marginBottom:4}}>OPPONENT FOUND!</div>
+                <div style={{fontSize:14,fontWeight:700,color:C.text}}>{matchmaking.opp}</div>
+                <div style={{display:"flex",gap:5,justifyContent:"center",marginTop:8}}>
+                  <span style={{fontSize:8,fontWeight:700,color:pool.color,padding:"3px 10px",borderRadius:20,...LG.tinted(pool.color)}}>⚖️ Fair Match</span>
+                  <span style={{fontSize:8,fontWeight:700,color:C.green,padding:"3px 10px",borderRadius:20,...LG.tinted(C.green)}}>✓ Same Device Pool</span>
+                </div>
+                <div style={{fontSize:10,color:C.text3,marginTop:10}}>Starting match... 🔥</div>
+              </div>
+            )}
           </div>
         </div>
       );
@@ -2194,9 +2269,16 @@ export default function MoodLabArena() {
                       <div style={{flex:1,background:C.red}}/>
                     </div>
                     <div style={{fontSize:6,color:C.text3,marginTop:1}}>CROWD</div>
-                    {/* Switch button */}
-                    <div onClick={switchSide} style={{fontSize:7,color:C.gold,cursor:"pointer",marginTop:1}}>
-                      🔄 Switch {audienceTraitor?"🐍":""}
+                    {/* Switch button — hold to puff blinker */}
+                    <div
+                      onMouseDown={startSwitchPuff} onMouseUp={stopSwitchPuff} onMouseLeave={stopSwitchPuff}
+                      onTouchStart={(e)=>{e.preventDefault();startSwitchPuff();}} onTouchEnd={stopSwitchPuff}
+                      style={{fontSize:7,color:switchPuffing?C.red:C.gold,cursor:"pointer",marginTop:1,fontWeight:700,userSelect:"none",WebkitUserSelect:"none",position:"relative"}}
+                    >
+                      {switchPuffing ? "💨 PUFFING..." : "🔄 Hold to Switch"} {audienceTraitor?"🐍":""}
+                      {switchPuffing && <div style={{position:"absolute",bottom:-3,left:0,right:0,height:2,borderRadius:1,background:`${C.text3}20`}}>
+                        <div style={{height:"100%",width:`${switchPuffProgress}%`,background:switchPuffProgress>=80?C.red:C.gold,borderRadius:1,transition:"width 0.05s linear"}}/>
+                      </div>}
                     </div>
                   </div>
                   {/* AI side */}
