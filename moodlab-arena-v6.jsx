@@ -1942,16 +1942,16 @@ export default function MoodLabArena() {
             </div>}
 
             {/* ═══ AI COMMENTATOR — AVATAR + SPEECH BUBBLE ═══ */}
-            {commentatorText && <div style={{position:"absolute",top:6,left:8,right:8,zIndex:215,display:"flex",alignItems:"flex-start",gap:6,animation:"fadeIn 0.3s ease",pointerEvents:"none"}}>
+            {commentatorText && <div style={{position:"absolute",top:36,left:8,right:8,zIndex:215,display:"flex",alignItems:"flex-start",gap:6,animation:"fadeIn 0.3s ease",pointerEvents:"none"}}>
               {/* Commentator avatar */}
-              <div style={{width:28,height:28,borderRadius:"50%",background:`linear-gradient(135deg, ${C.gold}30, ${C.gold}10)`,border:`2px solid ${C.gold}50`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,boxShadow:`0 0 10px ${C.gold}20`}}>
-                <span style={{fontSize:14}}>🎙️</span>
+              <div style={{width:24,height:24,borderRadius:"50%",background:`linear-gradient(135deg, ${C.gold}30, ${C.gold}10)`,border:`2px solid ${C.gold}50`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,boxShadow:`0 0 10px ${C.gold}20`}}>
+                <span style={{fontSize:12}}>🎙️</span>
               </div>
               {/* Speech bubble */}
-              <div style={{position:"relative",flex:1,padding:"5px 10px",borderRadius:"4px 12px 12px 12px",background:`rgba(255,217,61,0.08)`,border:`1px solid ${C.gold}25`,backdropFilter:"blur(8px)"}}>
+              <div style={{position:"relative",flex:1,padding:"4px 10px",borderRadius:"4px 12px 12px 12px",background:`rgba(255,217,61,0.08)`,border:`1px solid ${C.gold}25`,backdropFilter:"blur(8px)"}}>
                 {/* Bubble pointer */}
-                <div style={{position:"absolute",left:-5,top:8,width:0,height:0,borderTop:"4px solid transparent",borderBottom:"4px solid transparent",borderRight:`5px solid ${C.gold}25`}}/>
-                <span style={{fontSize:9,fontWeight:600,color:C.text,fontStyle:"italic",lineHeight:1.3}}>{commentatorText}</span>
+                <div style={{position:"absolute",left:-5,top:7,width:0,height:0,borderTop:"4px solid transparent",borderBottom:"4px solid transparent",borderRight:`5px solid ${C.gold}25`}}/>
+                <span style={{fontSize:8,fontWeight:600,color:C.text,fontStyle:"italic",lineHeight:1.3}}>{commentatorText}</span>
               </div>
             </div>}
 
@@ -2092,7 +2092,7 @@ export default function MoodLabArena() {
             <div style={{position:"relative",zIndex:2,flex:1,display:"flex",flexDirection:"column",alignItems:"center",padding:"38px 14px 52px",height:"100%",overflowY:"auto"}}>
 
               {/* ═══ VS ARENA HEADER WITH CHARACTER IMAGES ═══ */}
-              <div style={{width:"100%",maxWidth:390,marginTop:28,marginBottom:6}}>
+              <div style={{width:"100%",maxWidth:390,marginTop:38,marginBottom:6}}>
                 <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,marginBottom:5}}>
                   <span style={{fontSize:8,fontWeight:800,color:C.gold,letterSpacing:2}}>🏆 FINAL KICK</span>
                   <span style={{fontSize:7,fontWeight:700,color:pool.color,padding:"2px 8px",borderRadius:20,...LG.tinted(pool.color)}}>⚖️ {pool.label}</span>
