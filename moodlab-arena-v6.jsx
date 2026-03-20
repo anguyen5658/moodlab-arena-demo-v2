@@ -598,18 +598,17 @@ export default function MoodLabArena() {
     const puffZone = getPuffZone(power);
     const sameZone = zone === aiSaveZone;
 
-    // Puff zone determines AI save chance + miss chance
-    let aiSaveChance = pool.aiSave;
-    let missChance = 0; // ball goes over/wide
-    if(puffZone==="tap"){ aiSaveChance=0.60; missChance=0; }
-    else if(puffZone==="short"){ aiSaveChance=0.40; }
-    else if(puffZone==="good"){ aiSaveChance=0.25; }
-    else if(puffZone==="perfect"){ aiSaveChance=0.10; } // sweet spot = almost unstoppable
-    if(wasBlinker){ missChance=0.60; aiSaveChance=0.05; } // blinker = wild shot, usually misses
-    else if(power>95){ missChance=0.35; aiSaveChance=0.08; } // danger zone
+    // Outside sweet spot = automatic lose. Only perfect puffs can score.
+    let aiSaveChance = 1.0; // default: saved
+    let missChance = 0;
+    let autoFail = false;
+    if(puffZone==="perfect"){ aiSaveChance=pool.aiSave; } // sweet spot = real chance to score
+    else { autoFail=true; } // tap/short/good/long = instant fail
+    if(wasBlinker){ missChance=1.0; autoFail=true; } // blinker = always miss
+    else if(puffZone==="long"){ missChance=0.6; autoFail=true; } // held too long = mostly miss
 
-    const missed = Math.random() < missChance;
-    const aiSaves = !missed && sameZone && Math.random() < aiSaveChance;
+    const missed = autoFail ? (Math.random() < Math.max(missChance, 0.4)) : false; // non-sweet: 40%+ miss, rest saved
+    const aiSaves = !missed && (autoFail || (sameZone && Math.random() < aiSaveChance));
     const isGoal = !missed && !aiSaves;
 
     const holdLabel = holdTime>=4.5?"BLINKER 💀":holdTime>=2.5?`${holdTime.toFixed(1)}s PERFECT 💨`:holdTime>=1.5?`${holdTime.toFixed(1)}s`:holdTime>0?`${holdTime.toFixed(1)}s quick`:"";
