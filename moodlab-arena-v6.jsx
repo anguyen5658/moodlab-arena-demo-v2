@@ -267,7 +267,8 @@ export default function MoodLabArena() {
   const [kickBonusActive, setKickBonusActive] = useState(false); // currently in bonus shot
   const [kickStats, setKickStats] = useState({goals:0,saves:0,perfects:0,blinkers:0,misses:0});
   const [kickChatOn, setKickChatOn] = useState(true); // chat panel ON by default in game
-  const [audioOn, setAudioOn] = useState(true); // master audio toggle
+  const [audioOn, setAudioOn] = useState(true);
+  const [arcadeTab, setArcadeTab] = useState("games"); // "games" | "leaderboard"
 
   // ── Device ──
   const [deviceModel, setDeviceModel] = useState("cc_s2");
@@ -891,7 +892,7 @@ export default function MoodLabArena() {
       <div>
         <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:6,marginBottom:12}}>
           {PLAY_GAMES.map(g=>(
-            <div key={g.id} style={{textAlign:"center",padding:"8px 4px",borderRadius:10,background:`${g.color}06`,border:`1px solid ${g.color}10`,position:"relative"}}>
+            <div key={g.id} onClick={()=>{setZone("arcade");setArenaView("hub");setSelectedGame(g);}} style={{textAlign:"center",padding:"8px 4px",borderRadius:10,background:`${g.color}06`,border:`1px solid ${g.color}10`,position:"relative",cursor:"pointer",transition:"all 0.2s"}}>
               <div style={{fontSize:20,filter:`drop-shadow(0 0 5px ${g.color}40)`,marginBottom:3}}>{g.emoji}</div>
               <div style={{fontSize:8,fontWeight:700,color:g.color}}>{g.name.split(" ")[0]}</div>
               <div style={{fontSize:7,color:C.text3,marginTop:1}}>{g.type}</div>
@@ -1268,34 +1269,134 @@ export default function MoodLabArena() {
     );
   };
 
+  // Fun leaderboard stats data
+  const ARCADE_LEADERBOARD = [
+    {name:"ChillMaster42",emoji:"👑",stat:"847 goals",detail:"Perfect puff rate: 72%",color:C.gold,badge:"🐐 GOAT"},
+    {name:"VibeKing",emoji:"😎",stat:"623 goals",detail:"Blinker count: 0 (legend)",color:C.pink,badge:"🧘 Zen"},
+    {name:"NeonQueen",emoji:"👸",stat:"591 goals",detail:"Longest puff streak: 14",color:C.purple,badge:"👸 Queen"},
+    {name:"Steve",emoji:"🌟",stat:"420 goals",detail:"Blinker count: 69 (nice)",color:C.cyan,badge:"💨 Stoner",you:true},
+    {name:"BlazedPanda",emoji:"🐼",stat:"318 goals",detail:"Most misses: 47 (lol)",color:C.green,badge:"🎯 Tryhard"},
+    {name:"PuffDaddy",emoji:"💨",stat:"290 goals",detail:"Avg puff: 2.8s (precise)",color:C.orange,badge:"🫁 Lungs"},
+    {name:"CloudNine99",emoji:"☁️",stat:"245 goals",detail:"Blinker rate: 31% 💀",color:C.blue,badge:"💀 Blinker King"},
+    {name:"TheLobster",emoji:"🦞",stat:"199 goals",detail:"Win rate: exactly 50%",color:C.red,badge:"⚖️ Balanced"},
+  ];
+  const FUN_STATS = [
+    {label:"Total Blinkers Today",value:"1,247",emoji:"💀",color:C.red,sub:"Players' lungs: questionable"},
+    {label:"Longest Perfect Streak",value:"23",emoji:"💨",color:C.green,sub:"by ChillMaster42"},
+    {label:"Funniest Miss",value:"0.1s puff",emoji:"😂",color:C.gold,sub:"Ball didn't even move"},
+    {label:"Most Rematches",value:"47",emoji:"🔄",color:C.cyan,sub:"BlazedPanda vs AI (addiction?)"},
+  ];
+
   const renderArcade = () => (
     <div style={{position:"relative"}}>
       <div style={{position:"absolute",top:-40,left:"50%",transform:"translateX(-50%)",width:300,height:200,borderRadius:"50%",background:`radial-gradient(circle, ${Z.arcade.glow.replace("0.35","0.1")}, transparent 70%)`,pointerEvents:"none"}}/>
       {renderZoneHeader("arcade")}
-      <div style={{padding:"0 14px"}}>
-        {PLAY_GAMES.map(g=>(
-          <div key={g.id} onClick={()=>setSelectedGame(g)} style={{
-            display:"flex",alignItems:"center",gap:14,padding:"14px",borderRadius:14,marginBottom:8,cursor:"pointer",
-            background:`radial-gradient(ellipse at 0% 50%, ${g.color}06, ${C.bg2} 60%)`,
-            border:`1px solid ${g.color}12`,transition:"all 0.3s",
+
+      {/* ═══ TAB BAR ═══ */}
+      <div style={{display:"flex",gap:0,margin:"0 14px 12px",borderRadius:12,overflow:"hidden",...GLASS_CLEAR}}>
+        {[{id:"games",label:"🎮 Games",count:PLAY_GAMES.length},{id:"leaderboard",label:"🏆 Leaderboard",count:null}].map(t=>(
+          <div key={t.id} onClick={()=>setArcadeTab(t.id)} style={{
+            flex:1,padding:"10px 0",textAlign:"center",cursor:"pointer",
+            background:arcadeTab===t.id?`${C.cyan}12`:"transparent",
+            borderBottom:arcadeTab===t.id?`2px solid ${C.cyan}`:`2px solid transparent`,
+            transition:"all 0.2s",
           }}>
-            <div style={{width:48,height:48,borderRadius:14,display:"flex",alignItems:"center",justifyContent:"center",fontSize:26,background:`${g.color}0A`,border:`1px solid ${g.color}18`,flexShrink:0,filter:`drop-shadow(0 0 6px ${g.color}30)`}}>{g.emoji}</div>
-            <div style={{flex:1,minWidth:0}}>
-              <div style={{display:"flex",alignItems:"center",gap:6}}>
-                <span style={{fontSize:14,fontWeight:800,color:C.text}}>{g.name}</span>
-                {g.hot && <span style={{fontSize:8,fontWeight:800,color:C.red,padding:"1px 5px",borderRadius:3,background:`${C.red}15`}}>HOT</span>}
-              </div>
-              <div style={{fontSize:10,color:C.text3,marginTop:2}}>{g.desc}</div>
-              <div style={{display:"flex",gap:4,marginTop:6}}>
-                <span style={{fontSize:9,fontWeight:600,color:g.color,padding:"2px 6px",borderRadius:4,background:`${g.color}10`}}>{g.type}</span>
-                <span style={{fontSize:9,fontWeight:600,color:C.text3,padding:"2px 6px",borderRadius:4,background:`${C.text3}08`}}>👥{g.players}</span>
-                <span style={{fontSize:9,fontWeight:600,color:C.text3,padding:"2px 6px",borderRadius:4,background:`${C.text3}08`}}>⏱{g.time}</span>
-              </div>
+            <div style={{fontSize:11,fontWeight:arcadeTab===t.id?800:600,color:arcadeTab===t.id?C.cyan:C.text3}}>
+              {t.label} {t.count!==null?<span style={{fontSize:8,opacity:0.7}}>({t.count})</span>:null}
             </div>
-            <div style={{fontSize:14,color:C.text3}}>›</div>
           </div>
         ))}
       </div>
+
+      {/* ═══ GAMES TAB ═══ */}
+      {arcadeTab==="games" && (
+        <div style={{padding:"0 14px",animation:"fadeIn 0.3s ease"}}>
+          {PLAY_GAMES.map((g,i)=>(
+            <div key={g.id} onClick={()=>setSelectedGame(g)} style={{
+              display:"flex",alignItems:"center",gap:12,padding:"12px 14px",borderRadius:16,marginBottom:8,cursor:"pointer",
+              background:`linear-gradient(135deg, ${g.color}08, ${C.bg2} 70%)`,
+              border:`1px solid ${g.color}15`,
+              boxShadow:`0 2px 12px ${g.color}06`,
+              transition:"all 0.2s",animation:`fadeIn 0.3s ease ${i*0.05}s both`,
+            }}>
+              <div style={{width:50,height:50,borderRadius:14,display:"flex",alignItems:"center",justifyContent:"center",fontSize:28,
+                background:`radial-gradient(circle, ${g.color}15, ${g.color}05)`,border:`1px solid ${g.color}20`,
+                flexShrink:0,filter:`drop-shadow(0 0 8px ${g.color}30)`,boxShadow:`0 0 16px ${g.color}10`}}>
+                {g.emoji}
+              </div>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{display:"flex",alignItems:"center",gap:6}}>
+                  <span style={{fontSize:14,fontWeight:800,color:C.text}}>{g.name}</span>
+                  {g.hot && <span style={{fontSize:7,fontWeight:800,color:C.red,padding:"1px 5px",borderRadius:4,background:`${C.red}15`,border:`1px solid ${C.red}20`,animation:"pulse 2s infinite"}}>🔥 HOT</span>}
+                </div>
+                <div style={{fontSize:10,color:C.text3,marginTop:2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{g.desc}</div>
+                <div style={{display:"flex",gap:4,marginTop:5}}>
+                  <span style={{fontSize:8,fontWeight:700,color:g.color,padding:"2px 7px",borderRadius:6,...LG.tinted(g.color)}}>{g.type}</span>
+                  <span style={{fontSize:8,fontWeight:600,color:C.text3,padding:"2px 7px",borderRadius:6,background:`${C.text3}06`}}>👥 {g.players}</span>
+                  <span style={{fontSize:8,fontWeight:600,color:C.text3,padding:"2px 7px",borderRadius:6,background:`${C.text3}06`}}>⏱ {g.time}</span>
+                </div>
+              </div>
+              <div style={{fontSize:16,color:`${g.color}40`,fontWeight:300}}>›</div>
+            </div>
+          ))}
+          {/* Active players */}
+          <div style={{padding:"10px 14px",borderRadius:14,marginBottom:8,...LG.tinted(C.cyan)}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+              <div>
+                <div style={{fontSize:9,fontWeight:800,color:C.cyan}}>🟢 856 PLAYING NOW</div>
+                <div style={{fontSize:8,color:C.text3,marginTop:2}}>Wild West Duel trending · 234 active</div>
+              </div>
+              <div style={{fontSize:8,fontWeight:700,color:C.gold,padding:"3px 8px",borderRadius:6,...LG.tinted(C.gold)}}>🏆 3 Tournaments</div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ═══ LEADERBOARD TAB ═══ */}
+      {arcadeTab==="leaderboard" && (
+        <div style={{padding:"0 14px",animation:"fadeIn 0.3s ease"}}>
+          {/* Fun community stats */}
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6,marginBottom:12}}>
+            {FUN_STATS.map((s,i)=>(
+              <div key={i} style={{padding:"10px",borderRadius:12,...LG.tinted(s.color),animation:`fadeIn 0.3s ease ${i*0.1}s both`}}>
+                <div style={{display:"flex",alignItems:"center",gap:4,marginBottom:3}}>
+                  <span style={{fontSize:16}}>{s.emoji}</span>
+                  <span style={{fontSize:16,fontWeight:900,color:s.color}}>{s.value}</span>
+                </div>
+                <div style={{fontSize:8,fontWeight:700,color:C.text}}>{s.label}</div>
+                <div style={{fontSize:7,color:C.text3,marginTop:1,fontStyle:"italic"}}>{s.sub}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Player rankings */}
+          <div style={{fontSize:10,fontWeight:800,color:C.gold,marginBottom:8}}>🏆 ALL-TIME ARCADE RANKINGS</div>
+          {ARCADE_LEADERBOARD.map((p,i)=>(
+            <div key={i} style={{
+              display:"flex",alignItems:"center",gap:10,padding:"10px 12px",borderRadius:12,marginBottom:6,
+              background:p.you?`linear-gradient(135deg, ${C.cyan}10, ${C.cyan}04)`:`${C.bg2}`,
+              border:`1px solid ${p.you?C.cyan+"25":C.border}`,
+              animation:`fadeIn 0.3s ease ${i*0.05}s both`,
+            }}>
+              <div style={{width:24,fontSize:i<3?14:10,fontWeight:800,color:i<3?C.gold:C.text3,textAlign:"center"}}>
+                {i<3?["🥇","🥈","🥉"][i]:"#"+(i+1)}
+              </div>
+              <span style={{fontSize:18}}>{p.emoji}</span>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{display:"flex",alignItems:"center",gap:4}}>
+                  <span style={{fontSize:11,fontWeight:p.you?800:700,color:p.you?C.cyan:C.text}}>{p.name}</span>
+                  <span style={{fontSize:7,fontWeight:700,color:p.color,padding:"1px 5px",borderRadius:4,...LG.tinted(p.color)}}>{p.badge}</span>
+                </div>
+                <div style={{fontSize:8,color:C.text3,marginTop:1}}>{p.detail}</div>
+              </div>
+              <div style={{textAlign:"right"}}>
+                <div style={{fontSize:10,fontWeight:800,color:p.you?C.cyan:C.text2,fontFamily:"monospace"}}>{p.stat.split(" ")[0]}</div>
+                <div style={{fontSize:7,color:C.text3}}>{p.stat.split(" ").slice(1).join(" ")}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
       <div style={{height:80}}/>
     </div>
   );
