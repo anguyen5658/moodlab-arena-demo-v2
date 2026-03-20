@@ -257,11 +257,12 @@ export default function MoodLabArena() {
   const [kickBallAnim, setKickBallAnim] = useState(null); // {zone, power, result}
   const [kickDiveAnim, setKickDiveAnim] = useState(null); // keeper dive zone
 
+  const [kickCharging, setKickCharging] = useState(false); // puff hold-to-charge active
+  const kickChargeInterval = useRef(null);
+  const [kickComment, setKickComment] = useState(""); // current funny comment
+
   // ── Device ──
   const [deviceModel, setDeviceModel] = useState("cc_s2");
-
-  // ── Final Kick fun commentary ──
-  const kickCommentary = useRef("");
 
   // ── Social ──
   const [chatMessages, setChatMessages] = useState([
@@ -420,18 +421,33 @@ export default function MoodLabArena() {
   // ── Final Kick Logic ──
   const getDevicePool = () => DEVICE_POOLS[(DEVICE_MODELS.find(d=>d.id===deviceModel)||DEVICE_MODELS[5]).pool] || DEVICE_POOLS.open;
   const getDeviceShort = () => (DEVICE_MODELS.find(d=>d.id===deviceModel)||DEVICE_MODELS[5]).short;
+  const pick = (arr) => arr[Math.floor(Math.random()*arr.length)];
+
+  // AI Opponents pool
+  const AI_OPPONENTS = [
+    {name:"SmokeBot 3000",avatar:"🤖",rank:"#47",record:"142-89",taunt:"I don't even need lungs 💨"},
+    {name:"Sir Puffs-a-Lot",avatar:"🧐",rank:"#23",record:"201-67",taunt:"Indubitably, I shall save this"},
+    {name:"Baked Baker",avatar:"👨‍🍳",rank:"#88",record:"69-42",taunt:"420 saves per game bro"},
+    {name:"Goalkeeper Gary",avatar:"🦸",rank:"#12",record:"310-55",taunt:"These hands don't miss 🧤"},
+    {name:"Cloud Nine",avatar:"☁️",rank:"#31",record:"188-101",taunt:"Floating to victory~"},
+    {name:"The Lobster",avatar:"🦞",rank:"#99",record:"50-50",taunt:"I pinch, I save, I win 🦀"},
+  ];
+  const kickOpponent = useRef(AI_OPPONENTS[0]);
 
   const startKick = () => {
+    kickOpponent.current = pick(AI_OPPONENTS);
     setKickState("shoot"); setKickRound(0); setKickScore({you:0,ai:0});
     setKickAim(null); setKickPower(0); setKickAiZone(null);
     setKickSaveZone(null); setKickBallAnim(null); setKickDiveAnim(null);
+    setKickCharging(false); setKickComment(pick(["Let's gooo 🔥","Time to ball ⚽","No pressure 😅"]));
   };
 
   const kickSelectZone = (zone) => {
     if(kickState!=="shoot") return;
     setKickAim(zone);
     setKickState("power");
-    // For tap input: auto power after brief delay
+    setKickPower(0);
+    setKickComment(pick(["Now PUFF it! 💨","Send it to the moon 🌙","How hard can you blow? 😏","Full lungs energy 🫁"]));
     const inp = gameActive?.activeInput;
     if(inp==="tap"||!inp) {
       const autoPwr = 60+Math.floor(Math.random()*30);
@@ -440,12 +456,27 @@ export default function MoodLabArena() {
     }
   };
 
-  const kickChargePower = () => {
-    // Called on puff/button press — simulate power charge
-    if(kickState!=="power"||kickAim===null) return;
-    const pwr = 50+Math.floor(Math.random()*50); // Simulated — real device would measure
-    setKickPower(pwr);
-    setTimeout(()=>kickExecute(kickAim, pwr), 300);
+  // Hold-to-charge: start charging on press, stop on release
+  const kickStartCharge = () => {
+    if(kickState!=="power"||kickAim===null||kickCharging) return;
+    setKickCharging(true); setKickPower(0);
+    kickChargeInterval.current = setInterval(()=>{
+      setKickPower(p=>{
+        const next = Math.min(p + 2 + Math.random()*2, 100);
+        if(next>=100){clearInterval(kickChargeInterval.current);kickChargeInterval.current=null;}
+        return next;
+      });
+    }, 40);
+  };
+  const kickStopCharge = () => {
+    if(!kickCharging) return;
+    setKickCharging(false);
+    if(kickChargeInterval.current){clearInterval(kickChargeInterval.current);kickChargeInterval.current=null;}
+    // Use current power level to execute kick
+    setKickPower(p=>{
+      setTimeout(()=>kickExecute(kickAim, p), 200);
+      return p;
+    });
   };
 
   const kickExecute = (zone, power) => {
@@ -454,39 +485,43 @@ export default function MoodLabArena() {
     setKickAiZone(aiSaveZone);
     setKickDiveAnim(aiSaveZone);
     setKickState("flight");
+    playFx("kick");
 
-    // Determine if AI saves: same zone + random chance based on pool difficulty
     const sameZone = zone === aiSaveZone;
     const aiSaves = sameZone && Math.random() < pool.aiSave;
-    // High power reduces save chance slightly
     const finalSave = aiSaves && (power < 85 || Math.random() < 0.5);
 
+    const pwrLabel = power>=90?"ROCKET 🚀":power>=70?"Strong 💪":power>=40?"Decent 👌":"Weak 😬";
     setKickBallAnim({zone, power, result: finalSave ? "saved" : "goal"});
 
     setTimeout(()=>{
       if(!finalSave) {
         setKickScore(s=>({...s, you:s.you+1}));
-        notify("⚽ GOAL!",C.green);
+        playFx("goal"); playFx("crowd");
+        setKickComment(pick(["GOLAZOOO! 🔥🔥","SHEEEESH! 🥶","NET GO BRRR 😤","That ball had SMOKE on it 💨",""+pwrLabel+" and IN!","Keeper's still looking 😂","ABSOLUTE BANGER 💥","The crowd goes WILD 🙌"]));
       } else {
-        notify("🧤 Saved!",C.red);
+        playFx("save");
+        setKickComment(pick([""+kickOpponent.current.name+" says 'nah' 🧤","Saved... pain 💀","Keeper ate that 😤","Should've puffed harder bro 💨","The disrespect 😂",""+kickOpponent.current.avatar+" blocked your dreams"]));
       }
       setKickState("shoot_result");
-      // Transition to save phase after showing result
       setTimeout(()=>{
         setKickBallAnim(null); setKickDiveAnim(null); setKickAim(null);
         setKickState("save_ready");
-      }, 1500);
+        setKickComment(pick(["Your turn in goal 🧤","Don't let "+kickOpponent.current.name+" score 😤","Channel your inner wall 🧱","Time to earn that keeper badge 🏅"]));
+      }, 1800);
     }, 800);
   };
 
   const kickSaveStart = () => {
-    // AI picks where to kick
-    const pool = getDevicePool();
     const aiKickZone = Math.floor(Math.random()*6);
     setKickAiZone(aiKickZone);
     setKickState("save_countdown");
-    // Brief hint: flash a column region
-    setTimeout(()=>setKickState("save_dive"), 1200);
+    playFx("whistle");
+    setKickComment(pick([""+kickOpponent.current.name+" is lining up... 👀","Those eyes... which way? 🤔",""+kickOpponent.current.avatar+" whispers: '"+kickOpponent.current.taunt+"'","Trust your gut 🫁"]));
+    setTimeout(()=>{
+      setKickState("save_dive");
+      setKickComment(pick(["DIVE DIVE DIVE! 🧤","NOW! 💨","QUICK! PICK A SIDE!","LEFT OR RIGHT?! 😱"]));
+    }, 1200);
   };
 
   const kickDive = (zone) => {
@@ -494,11 +529,11 @@ export default function MoodLabArena() {
     setKickSaveZone(zone);
     setKickDiveAnim(zone);
     setKickState("save_result");
+    playFx("kick");
 
     const pool = getDevicePool();
     const aiKickZone = kickAiZone;
     const sameZone = zone === aiKickZone;
-    // AI scores if player dives wrong zone, or if right zone but AI overpowers
     const aiScores = !sameZone || (sameZone && Math.random() < (pool.aiScore - 0.20));
 
     setKickBallAnim({zone:aiKickZone, power:70, result: aiScores ? "goal" : "saved"});
@@ -506,16 +541,17 @@ export default function MoodLabArena() {
     setTimeout(()=>{
       if(aiScores) {
         setKickScore(s=>({...s, ai:s.ai+1}));
-        notify("⚽ AI Scores!",C.red);
+        playFx("laugh");
+        setKickComment(pick(["Bruh... 💀",""+kickOpponent.current.name+": 'Too easy' 😂","Wrong way lmaooo 🤣","Keeper had lag 📡","You dove like a fish... wrong fish 🐟",""+kickOpponent.current.avatar+" is doing a victory dance"]));
       } else {
-        notify("🧤 GREAT SAVE!",C.green);
+        playFx("goal"); playFx("crowd");
+        setKickComment(pick(["DENIED! 🚫🧤",""+kickOpponent.current.name+" is SHOOK 😱","BRICK WALL! 🧱","You read that like a BOOK 📖",""+kickOpponent.current.avatar+" is questioning life rn","WHAT A SAVE! Crowd goes crazy 🙌"]));
       }
-      // Move to round result
       setTimeout(()=>{
         setKickBallAnim(null); setKickDiveAnim(null);
         setKickSaveZone(null); setKickAiZone(null);
         kickAdvanceRound();
-      }, 1500);
+      }, 1800);
     }, 800);
   };
 
@@ -535,11 +571,12 @@ export default function MoodLabArena() {
     const pool = getDevicePool();
     const mult = pool.rewardMult;
     let reward = 0;
-    if(kickScore.you > kickScore.ai) { reward = Math.round(80 * mult); notify(`⚽ YOU WIN! +${reward} coins!`,C.green); }
-    else if(kickScore.you < kickScore.ai) { reward = Math.round(10 * mult); notify(`😢 Defeated. +${reward} coins`,C.red); }
+    if(kickScore.you > kickScore.ai) { reward = Math.round(80 * mult); notify(`⚽ YOU WIN! +${reward} coins!`,C.green); playFx("win"); }
+    else if(kickScore.you < kickScore.ai) { reward = Math.round(10 * mult); notify(`😢 +${reward} coins`,C.red); playFx("laugh"); }
     else { reward = Math.round(30 * mult); notify(`🤝 Draw! +${reward} coins`,C.gold); }
     setCoins(c=>c+reward);
-    setGameActive(null); setKickState(null);
+    setGameActive(null); setKickState(null); setKickCharging(false);
+    if(kickChargeInterval.current){clearInterval(kickChargeInterval.current);kickChargeInterval.current=null;}
   };
 
   const doSpin = () => {
@@ -1350,7 +1387,7 @@ export default function MoodLabArena() {
         const isShootPhase = ["shoot","power","flight","shoot_result"].includes(kickState);
         const isSavePhase = ["save_ready","save_countdown","save_dive","save_result"].includes(kickState);
         const isResult = kickState==="shoot_result"||kickState==="save_result";
-        const goalW = 320, goalH = 200;
+        const goalW = 300, goalH = 160;
         const zoneW = goalW/3, zoneH = goalH/2;
         const getBallPos = (z) => ({ x: KICK_ZONES[z].col * zoneW + zoneW/2, y: KICK_ZONES[z].row * zoneH + zoneH/2 });
 
@@ -1377,6 +1414,8 @@ export default function MoodLabArena() {
             else if(type==="whistle"){osc.type="sine";osc.frequency.setValueAtTime(2800,ac.currentTime);osc.frequency.setValueAtTime(3200,ac.currentTime+0.15);osc.frequency.setValueAtTime(2800,ac.currentTime+0.3);gain.gain.setValueAtTime(0.12,ac.currentTime);gain.gain.exponentialRampToValueAtTime(0.01,ac.currentTime+0.5);osc.start();osc.stop(ac.currentTime+0.5);}
             else if(type==="crowd"){const n=ac.createBufferSource();const b=ac.createBuffer(1,ac.sampleRate*0.6,ac.sampleRate);const d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*0.15*Math.sin(i/d.length*Math.PI);n.buffer=b;const g2=ac.createGain();g2.gain.setValueAtTime(0.3,ac.currentTime);g2.gain.exponentialRampToValueAtTime(0.01,ac.currentTime+0.6);n.connect(g2);g2.connect(ac.destination);n.start();}
             else if(type==="win"){[0,0.15,0.3,0.45].forEach((t,i)=>{const o=ac.createOscillator();const g=ac.createGain();o.connect(g);g.connect(ac.destination);o.type="square";o.frequency.setValueAtTime([523,659,784,1047][i],ac.currentTime+t);g.gain.setValueAtTime(0.15,ac.currentTime+t);g.gain.exponentialRampToValueAtTime(0.01,ac.currentTime+t+0.2);o.start(ac.currentTime+t);o.stop(ac.currentTime+t+0.2);});}
+            else if(type==="laugh"){[0,0.08,0.16,0.24,0.32,0.4].forEach((t,i)=>{const o=ac.createOscillator();const g=ac.createGain();o.connect(g);g.connect(ac.destination);o.type="sine";o.frequency.setValueAtTime(i%2===0?400:500,ac.currentTime+t);g.gain.setValueAtTime(0.12,ac.currentTime+t);g.gain.exponentialRampToValueAtTime(0.01,ac.currentTime+t+0.1);o.start(ac.currentTime+t);o.stop(ac.currentTime+t+0.1);});}
+            else if(type==="charge"){osc.type="sine";osc.frequency.setValueAtTime(200,ac.currentTime);osc.frequency.exponentialRampToValueAtTime(1200,ac.currentTime+1.5);gain.gain.setValueAtTime(0.08,ac.currentTime);gain.gain.setValueAtTime(0.08,ac.currentTime+1.4);gain.gain.exponentialRampToValueAtTime(0.01,ac.currentTime+1.5);osc.start();osc.stop(ac.currentTime+1.5);}
           } catch(e){}
         };
 
@@ -1431,59 +1470,56 @@ export default function MoodLabArena() {
 
             {overlayBack(()=>{setGameActive(null);setKickState(null);})}
 
-            <div style={{position:"relative",zIndex:2,flex:1,display:"flex",flexDirection:"column",alignItems:"center",padding:"50px 16px 20px",height:"100%",overflowY:"auto"}}>
+            <div style={{position:"relative",zIndex:2,flex:1,display:"flex",flexDirection:"column",alignItems:"center",padding:"44px 14px 16px",height:"100%",overflowY:"auto"}}>
 
-              {/* ═══ HEADER BAR ═══ */}
-              <div style={{width:"100%",maxWidth:360,marginBottom:12}}>
-                {/* Title with glow */}
-                <div style={{textAlign:"center",marginBottom:8}}>
-                  <div style={{fontSize:22,fontWeight:900,color:C.text,letterSpacing:1,textShadow:`0 0 20px ${C.cyan}40, 0 0 40px ${C.cyan}15`}}>⚽ FINAL KICK</div>
-                  <div style={{fontSize:9,color:C.text3,marginTop:2,letterSpacing:3}}>PENALTY SHOOTOUT</div>
+              {/* ═══ COMPACT TOURNAMENT HEADER + PLAYER SCOREBOARD ═══ */}
+              <div style={{width:"100%",maxWidth:380,marginBottom:4}}>
+                <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginBottom:4}}>
+                  <span style={{fontSize:8,fontWeight:800,color:C.gold,letterSpacing:2}}>🏆 FINAL KICK</span>
+                  <span style={{fontSize:7,fontWeight:700,color:pool.color,padding:"2px 7px",borderRadius:20,...LG.tinted(pool.color)}}>⚖️ {pool.label}</span>
+                  <span style={{fontSize:7,fontWeight:700,color:inpInfo.color,padding:"2px 7px",borderRadius:20,...LG.tinted(inpInfo.color)}}>{inpInfo.icon} {inpInfo.label}</span>
+                  <span style={{fontSize:7,fontWeight:700,color:C.text3,padding:"2px 7px",borderRadius:20,...LG.tinted(C.text3)}}>Ro16</span>
                 </div>
-
-                {/* Device + Fairness badges — glass style */}
-                <div style={{display:"flex",gap:5,justifyContent:"center",marginBottom:10}}>
-                  <span style={{fontSize:8,fontWeight:700,color:pool.color,padding:"3px 10px",borderRadius:20,...LG.tinted(pool.color)}}>⚖️ {pool.label}</span>
-                  <span style={{fontSize:8,fontWeight:700,color:inpInfo.color,padding:"3px 10px",borderRadius:20,...LG.tinted(inpInfo.color)}}>{inpInfo.icon} {inpInfo.label}</span>
-                  <span style={{fontSize:8,fontWeight:700,color:C.text2,padding:"3px 10px",borderRadius:20,...LG.tinted(C.text3)}}>{getDeviceShort()}</span>
-                </div>
-
-                {/* ═══ SCOREBOARD — Stadium style ═══ */}
-                <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:0,padding:"10px 0",borderRadius:16,...LG.tinted(C.cyan),marginBottom:8}}>
+                {/* ═══ PLAYER CARDS + SCOREBOARD ═══ */}
+                <div style={{display:"flex",alignItems:"center",gap:0,padding:"6px 6px",borderRadius:14,...LG.tinted(C.cyan)}}>
                   <div style={{flex:1,textAlign:"center"}}>
-                    <div style={{fontSize:11,fontWeight:800,color:C.cyan,marginBottom:2}}>YOU</div>
-                    <div style={{fontSize:36,fontWeight:900,color:"#fff",textShadow:`0 0 15px ${C.cyan}60`,lineHeight:1}}>{kickScore.you}</div>
+                    <div style={{fontSize:24,filter:`drop-shadow(0 0 6px ${C.cyan}40)`}}>😎</div>
+                    <div style={{fontSize:9,fontWeight:800,color:C.cyan}}>Steve</div>
+                    <div style={{fontSize:7,color:C.text3}}>{getDeviceShort()} · Lv.24</div>
+                    <div style={{fontSize:28,fontWeight:900,color:"#fff",textShadow:`0 0 12px ${C.cyan}60`,lineHeight:1,marginTop:2}}>{kickScore.you}</div>
                   </div>
-                  <div style={{width:40,textAlign:"center"}}>
-                    <div style={{fontSize:9,color:C.text3,marginBottom:4}}>R{kickRound+1}</div>
-                    <div style={{display:"flex",gap:3,justifyContent:"center"}}>
+                  <div style={{width:44,textAlign:"center"}}>
+                    <div style={{fontSize:7,color:C.text3}}>R{kickRound+1}/5</div>
+                    <div style={{display:"flex",gap:2,justifyContent:"center",marginTop:2}}>
                       {[0,1,2,3,4].map(r=>(
-                        <div key={r} style={{width:6,height:6,borderRadius:"50%",background:r<kickRound?C.cyan:r===kickRound?C.gold:`${C.text3}30`,boxShadow:r===kickRound?`0 0 6px ${C.gold}`:"none",transition:"all 0.3s"}}/>
+                        <div key={r} style={{width:5,height:5,borderRadius:"50%",background:r<kickRound?C.cyan:r===kickRound?C.gold:`${C.text3}30`,boxShadow:r===kickRound?`0 0 5px ${C.gold}`:"none",transition:"all 0.3s"}}/>
                       ))}
                     </div>
-                    <div style={{fontSize:18,color:C.text3,fontWeight:300,marginTop:2}}>vs</div>
+                    <div style={{fontSize:12,color:C.text3,fontWeight:300,marginTop:1}}>vs</div>
                   </div>
                   <div style={{flex:1,textAlign:"center"}}>
-                    <div style={{fontSize:11,fontWeight:800,color:C.red,marginBottom:2}}>AI</div>
-                    <div style={{fontSize:36,fontWeight:900,color:"#fff",textShadow:`0 0 15px ${C.red}60`,lineHeight:1}}>{kickScore.ai}</div>
+                    <div style={{fontSize:24,filter:`drop-shadow(0 0 6px ${C.red}40)`}}>{kickOpponent.current.avatar}</div>
+                    <div style={{fontSize:9,fontWeight:800,color:C.red,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:90}}>{kickOpponent.current.name}</div>
+                    <div style={{fontSize:7,color:C.text3}}>{kickOpponent.current.rank} · {kickOpponent.current.record}</div>
+                    <div style={{fontSize:28,fontWeight:900,color:"#fff",textShadow:`0 0 12px ${C.red}60`,lineHeight:1,marginTop:2}}>{kickScore.ai}</div>
                   </div>
                 </div>
               </div>
 
-              {/* ═══ PHASE LABEL with fun commentary ═══ */}
-              <div style={{textAlign:"center",marginBottom:8}}>
-                <div style={{fontSize:14,fontWeight:900,letterSpacing:2,color:isShootPhase?C.cyan:isSavePhase?C.orange:C.gold,textShadow:`0 0 15px ${isShootPhase?C.cyan:C.orange}40`}}>
+              {/* ═══ PHASE LABEL + LIVE COMMENTARY ═══ */}
+              <div style={{textAlign:"center",marginBottom:4}}>
+                <div style={{fontSize:13,fontWeight:900,letterSpacing:2,color:isShootPhase?C.cyan:isSavePhase?C.orange:C.gold,textShadow:`0 0 15px ${isShootPhase?C.cyan:C.orange}40`}}>
                   {isShootPhase ? "🦶 YOUR KICK" : isSavePhase ? "🧤 YOUR SAVE" : ""}
                 </div>
-                {(kickState==="shoot"||kickState==="save_ready"||kickState==="save_dive") && (
-                  <div style={{fontSize:11,color:C.text2,marginTop:4,fontStyle:"italic",animation:"fadeIn 0.5s ease"}}>
-                    "{kickState==="shoot"?pick(SHOOT_TAUNTS):pick(SAVE_TAUNTS)}"
+                {kickComment && (
+                  <div style={{fontSize:10,color:C.text2,marginTop:3,fontStyle:"italic",animation:"fadeIn 0.4s ease",maxWidth:300}}>
+                    "{kickComment}"
                   </div>
                 )}
               </div>
 
               {/* ═══ GOAL FRAME — 3D perspective ═══ */}
-              <div style={{perspective:"600px",marginBottom:12}}>
+              <div style={{perspective:"600px",marginBottom:4}}>
                 <div style={{
                   position:"relative",width:goalW,height:goalH,
                   border:`3px solid rgba(255,255,255,0.2)`,
@@ -1594,24 +1630,65 @@ export default function MoodLabArena() {
                 {kickState==="shoot" && <div style={{width:6,height:6,borderRadius:"50%",background:`${C.text}20`,boxShadow:`0 0 8px ${C.text}10`}}/>}
               </div>
 
-              {/* ═══ POWER METER — Gradient bar with glow ═══ */}
+              {/* ═══ PUFF INTENSITY METER — Hold to charge ═══ */}
               {kickState==="power" && inp!=="tap" && (
                 <div style={{width:goalW,animation:"fadeIn 0.3s ease"}}>
-                  <div style={{fontSize:10,fontWeight:700,color:C.text3,textAlign:"center",marginBottom:6}}>SHOT POWER</div>
-                  <div style={{height:16,borderRadius:10,background:`rgba(255,255,255,0.04)`,overflow:"hidden",border:`1px solid rgba(255,255,255,0.08)`,position:"relative"}}>
-                    <div style={{height:"100%",width:`${kickPower}%`,background:`linear-gradient(90deg, ${C.cyan}, ${C.green}, ${C.gold})`,borderRadius:10,transition:"width 0.3s",boxShadow:`0 0 12px ${C.cyan}40`}}/>
-                    {kickPower>0 && <div style={{position:"absolute",right:8,top:"50%",transform:"translateY(-50%)",fontSize:10,fontWeight:900,color:"#fff"}}>{kickPower}%</div>}
+                  <div style={{fontSize:10,fontWeight:700,color:C.text3,textAlign:"center",marginBottom:4}}>
+                    {kickCharging ? "CHARGING... 🫁💨" : "SHOT POWER"}
                   </div>
-                  <div onClick={()=>{kickChargePower();playFx("kick");}} style={{
-                    marginTop:12,padding:"14px 24px",borderRadius:14,cursor:"pointer",textAlign:"center",
-                    background:`linear-gradient(135deg, ${inpInfo.color}20, ${inpInfo.color}08)`,
-                    border:`1px solid ${inpInfo.color}35`,
-                    fontSize:15,fontWeight:900,color:inpInfo.color,
-                    animation:"countPulse 1s infinite",
-                    boxShadow:`0 0 20px ${inpInfo.color}15`,
-                    textShadow:`0 0 10px ${inpInfo.color}40`,
-                  }}>
-                    {inp==="puff"?"💨 PUFF for POWER!":"🔘 SMASH IT!"}
+                  {/* Power bar with intensity zones */}
+                  <div style={{height:22,borderRadius:12,background:`rgba(255,255,255,0.04)`,overflow:"hidden",border:`1px solid rgba(255,255,255,0.08)`,position:"relative"}}>
+                    <div style={{
+                      height:"100%",width:`${kickPower}%`,
+                      background: kickPower>=90 ? `linear-gradient(90deg, ${C.cyan}, ${C.green}, ${C.gold}, ${C.red})` :
+                                  kickPower>=60 ? `linear-gradient(90deg, ${C.cyan}, ${C.green}, ${C.gold})` :
+                                  `linear-gradient(90deg, ${C.cyan}, ${C.green})`,
+                      borderRadius:12,transition:"width 0.08s linear",
+                      boxShadow: kickCharging ? `0 0 20px ${kickPower>=80?C.gold:C.cyan}50` : `0 0 12px ${C.cyan}30`,
+                    }}/>
+                    {kickPower>0 && <div style={{position:"absolute",right:8,top:"50%",transform:"translateY(-50%)",fontSize:11,fontWeight:900,color:"#fff",textShadow:"0 0 4px rgba(0,0,0,0.8)"}}>
+                      {Math.round(kickPower)}% {kickPower>=90?"🔥":kickPower>=70?"💪":kickPower>=40?"👌":""}
+                    </div>}
+                    {/* Zone markers */}
+                    <div style={{position:"absolute",top:0,left:"40%",width:1,height:"100%",background:`rgba(255,255,255,0.1)`}}/>
+                    <div style={{position:"absolute",top:0,left:"70%",width:1,height:"100%",background:`rgba(255,255,255,0.1)`}}/>
+                    <div style={{position:"absolute",top:0,left:"90%",width:1,height:"100%",background:`${C.red}30`}}/>
+                  </div>
+                  {/* Intensity labels */}
+                  <div style={{display:"flex",justifyContent:"space-between",marginTop:2,padding:"0 4px"}}>
+                    <span style={{fontSize:7,color:C.text3}}>Weak 😬</span>
+                    <span style={{fontSize:7,color:C.text3}}>Decent 👌</span>
+                    <span style={{fontSize:7,color:C.gold}}>Strong 💪</span>
+                    <span style={{fontSize:7,color:C.red}}>ROCKET 🚀</span>
+                  </div>
+                  {/* Hold-to-puff button */}
+                  <div
+                    onMouseDown={()=>{kickStartCharge();playFx("charge");}}
+                    onMouseUp={kickStopCharge}
+                    onMouseLeave={kickStopCharge}
+                    onTouchStart={(e)=>{e.preventDefault();kickStartCharge();playFx("charge");}}
+                    onTouchEnd={kickStopCharge}
+                    style={{
+                      marginTop:10,padding: kickCharging?"16px 24px":"14px 24px",borderRadius:14,cursor:"pointer",textAlign:"center",
+                      background: kickCharging
+                        ? `linear-gradient(135deg, ${inpInfo.color}35, ${inpInfo.color}15)`
+                        : `linear-gradient(135deg, ${inpInfo.color}20, ${inpInfo.color}08)`,
+                      border:`1px solid ${kickCharging?inpInfo.color+"60":inpInfo.color+"35"}`,
+                      fontSize:15,fontWeight:900,color:inpInfo.color,
+                      animation: kickCharging ? "none" : "countPulse 1s infinite",
+                      boxShadow: kickCharging ? `0 0 30px ${inpInfo.color}30` : `0 0 20px ${inpInfo.color}15`,
+                      textShadow:`0 0 10px ${inpInfo.color}40`,
+                      transform: kickCharging ? "scale(1.02)" : "scale(1)",
+                      transition:"transform 0.15s, background 0.15s, box-shadow 0.15s",
+                      userSelect:"none", WebkitUserSelect:"none",
+                    }}
+                  >
+                    {kickCharging
+                      ? (kickPower>=90?"🔥 MAX POWER!":kickPower>=60?"💨 KEEP GOING!":"💨 PUFFING...")
+                      : (inp==="puff"?"💨 HOLD TO PUFF":"🔘 HOLD TO CHARGE")}
+                    <div style={{fontSize:8,color:`${inpInfo.color}80`,marginTop:2}}>
+                      {kickCharging?"Release to kick!":"Hold & release at peak power"}
+                    </div>
                   </div>
                 </div>
               )}
@@ -1666,25 +1743,38 @@ export default function MoodLabArena() {
                 const won = kickScore.you>kickScore.ai;
                 const draw = kickScore.you===kickScore.ai;
                 const resultColor = won?C.green:draw?C.gold:C.red;
-                if(won) try{playFx("win");playFx("crowd");}catch(e){}
+                const WIN_MSGS=["YOU'RE GOATED 🐐","CHAMPION VIBES 👑","AI NEEDS THERAPY 😂","UNMATCHED 💎",""+kickOpponent.current.name+" is crying rn 😭","Puff of champions 💨👑"];
+                const LOSE_MSGS=["GG next time 😤","Blame the controller 🎮",""+kickOpponent.current.name+" got lucky fr 💀","Keeper was HIGH key asleep 😂","Run it back! 🔄","That wasn't even fair bro 🤣"];
                 return (
                   <div style={{textAlign:"center",animation:"fadeIn 0.5s ease"}}>
-                    {/* Celebration emojis */}
-                    {won && <div style={{fontSize:30,marginBottom:8,animation:"gentleFloat 1s infinite"}}>🎉🏆🎉</div>}
-                    {!won && !draw && <div style={{fontSize:30,marginBottom:8}}>😤💀😂</div>}
-                    {draw && <div style={{fontSize:30,marginBottom:8}}>🤝⚽🤝</div>}
+                    {won && <div style={{fontSize:30,marginBottom:6,animation:"gentleFloat 1s infinite"}}>🎉🏆🎉</div>}
+                    {!won && !draw && <div style={{fontSize:30,marginBottom:6}}>😤💀😂</div>}
+                    {draw && <div style={{fontSize:30,marginBottom:6}}>🤝⚽🤝</div>}
 
-                    <div style={{fontSize:32,fontWeight:900,color:resultColor,marginBottom:4,textShadow:`0 0 30px ${resultColor}60`,animation:"countPulse 0.8s ease"}}>
+                    <div style={{fontSize:28,fontWeight:900,color:resultColor,marginBottom:4,textShadow:`0 0 30px ${resultColor}60`,animation:"countPulse 0.8s ease"}}>
                       {won?"YOU WIN!":draw?"DRAW!":"DEFEATED"}
                     </div>
-                    <div style={{fontSize:40,fontWeight:900,color:"#fff",marginBottom:4,textShadow:`0 0 20px ${resultColor}40`}}>
-                      {kickScore.you} — {kickScore.ai}
+
+                    {/* Final score with avatars */}
+                    <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:12,marginBottom:6}}>
+                      <div style={{textAlign:"center"}}>
+                        <div style={{fontSize:24}}>😎</div>
+                        <div style={{fontSize:9,color:C.cyan,fontWeight:700}}>Steve</div>
+                      </div>
+                      <div style={{fontSize:36,fontWeight:900,color:"#fff",textShadow:`0 0 20px ${resultColor}40`}}>
+                        {kickScore.you} — {kickScore.ai}
+                      </div>
+                      <div style={{textAlign:"center"}}>
+                        <div style={{fontSize:24}}>{kickOpponent.current.avatar}</div>
+                        <div style={{fontSize:9,color:C.red,fontWeight:700,maxWidth:60,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{kickOpponent.current.name}</div>
+                      </div>
                     </div>
-                    <div style={{fontSize:12,color:C.text2,marginBottom:8,fontStyle:"italic"}}>
-                      "{won?pick(WIN_MSGS):draw?"Fair game! Run it back? 🔄":pick(LOSE_MSGS)}"
+
+                    <div style={{fontSize:11,color:C.text2,marginBottom:6,fontStyle:"italic",maxWidth:280}}>
+                      "{won?pick(WIN_MSGS):draw?"Fair game! Both high af apparently 😂":pick(LOSE_MSGS)}"
                     </div>
-                    <div style={{fontSize:11,color:C.gold,marginBottom:16,padding:"4px 12px",borderRadius:20,...LG.tinted(C.gold)}}>
-                      💰 Reward: ×{pool.rewardMult} · {pool.label}
+                    <div style={{fontSize:10,color:C.gold,marginBottom:14,padding:"4px 14px",borderRadius:20,...LG.tinted(C.gold)}}>
+                      💰 ×{pool.rewardMult} {pool.label} · {getDeviceShort()}
                     </div>
                     <div style={{display:"flex",gap:10,justifyContent:"center"}}>
                       <div onClick={()=>{startKick();playFx("whistle");}} style={{
