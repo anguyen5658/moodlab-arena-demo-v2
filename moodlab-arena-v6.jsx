@@ -348,6 +348,7 @@ export default function MoodLabArena() {
   const [actionTimer, setActionTimer] = useState(3); // 3s countdown for actions
   const actionTimerRef = useRef(null);
   const [showHowToPlay, setShowHowToPlay] = useState(false);
+  const [wcDeviceInput, setWcDeviceInput] = useState(null); // device input locked for tournament
   const kickChargeInterval = useRef(null);
   const [kickComment, setKickComment] = useState("");
   const [kickSweetMin, setKickSweetMin] = useState(70); // random sweet spot per round
@@ -1098,6 +1099,13 @@ export default function MoodLabArena() {
   const wcConfirmTeam = () => {
     if(!wcTeam) return;
     playFx("success");
+    // Show device selection before group draw
+    setWcPhase("device_select");
+  };
+
+  const wcConfirmDevice = (inputId) => {
+    playFx("success");
+    setWcDeviceInput(inputId);
     setWcPhase("group_draw");
     setWcDrawAnim(true);
 
@@ -1151,13 +1159,12 @@ export default function MoodLabArena() {
       taunt: pick(["You have no chance!","We will win!","My team is the best!","Bring it on!","Easy match 😎"]),
     };
     setWcMatchday(matchIdx);
-    // Set game as Final Kick in WC mode
+    // Use locked tournament device input (no ask prompt)
     const fkGame = PLAY_GAMES.find(g => g.id === "finalkick");
-    resolveInputForGame(fkGame, (input) => {
-      setGameActive({ ...fkGame, activeInput: input, wcMode: true, wcMatchIdx: matchIdx });
-      startKick();
-      startMatchIntro(kickOpponent.current);
-    });
+    const input = wcDeviceInput || "puff";
+    setGameActive({ ...fkGame, activeInput: input, wcMode: true, wcMatchIdx: matchIdx });
+    startKick();
+    startMatchIntro(kickOpponent.current);
   };
 
   const wcFinishGroupMatch = (matchIdx, myScore, aiScore) => {
@@ -1251,11 +1258,10 @@ export default function MoodLabArena() {
       taunt: pick(["This is our moment!","You'll never take us down!","Knockout time!","Last chance, play hard!"]),
     };
     const fkGame = PLAY_GAMES.find(g => g.id === "finalkick");
-    resolveInputForGame(fkGame, (input) => {
-      setGameActive({ ...fkGame, activeInput: input, wcMode: true, wcKnockout: true, wcRoundIdx: wcBracket.currentRound });
-      startKick();
-      startMatchIntro(kickOpponent.current);
-    });
+    const input = wcDeviceInput || "puff";
+    setGameActive({ ...fkGame, activeInput: input, wcMode: true, wcKnockout: true, wcRoundIdx: wcBracket.currentRound });
+    startKick();
+    startMatchIntro(kickOpponent.current);
   };
 
   const wcFinishKnockoutMatch = (myScore, aiScore) => {
@@ -1325,6 +1331,27 @@ export default function MoodLabArena() {
 
   const wcExitTournament = () => {
     playFx("back");
+    // Pause tournament — keep state for continue later
+    setWcPhase(null);
+    // Don't clear wcTeam, wcTournament, wcBracket — user can resume
+    setWcGroupResult(null);
+    setWcDrawAnim(false);
+    notify("⏸️ Tournament paused — continue anytime!",C.gold);
+  };
+
+  const wcResumeTournament = () => {
+    playFx("nav");
+    if(wcBracket && wcBracket.currentRound < wcBracket.rounds.length) {
+      setWcPhase("knockout");
+    } else if(wcTournament && wcTournament.groupMatches.some(m=>!m.played)) {
+      setWcPhase("group_stage");
+    } else {
+      notify("No active tournament to resume",C.text3);
+    }
+  };
+
+  const wcAbandonTournament = () => {
+    playFx("back");
     setWcPhase(null);
     setWcTeam(null);
     setWcTournament(null);
@@ -1333,6 +1360,8 @@ export default function MoodLabArena() {
     setWcFinalResult(null);
     setWcGroupResult(null);
     setWcDrawAnim(false);
+    setWcDeviceInput(null);
+    notify("🏳️ Tournament abandoned",C.text3);
   };
 
   const doSpin = () => {
@@ -1975,14 +2004,28 @@ export default function MoodLabArena() {
             <div style={{marginLeft:"auto",fontSize:12,color:`${C.cyan}40`}}>›</div>
           </div>
 
-          {/* Active tournament status */}
-          {wcPhase && wcTeam && (
-            <div onClick={()=>{playFx("nav");}} style={{
-              marginTop:10,padding:"10px 14px",borderRadius:12,
+          {/* Active/paused tournament */}
+          {wcTeam && wcTournament && (
+            <div style={{marginTop:10,padding:"12px 14px",borderRadius:12,
               background:`${C.green}08`,border:`1px solid ${C.green}20`,
             }}>
-              <div style={{fontSize:9,fontWeight:800,color:C.green}}>🟢 ACTIVE TOURNAMENT</div>
-              <div style={{fontSize:8,color:C.text2,marginTop:2}}>{wcTeam.flag} {wcTeam.name} — {wcPhase==="group_stage"?"Group Stage":wcPhase==="knockout"?"Knockout":"In Progress"}</div>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:6}}>
+                <div>
+                  <div style={{fontSize:9,fontWeight:800,color:C.green}}>⏸️ TOURNAMENT PAUSED</div>
+                  <div style={{fontSize:8,color:C.text2,marginTop:2}}>{wcTeam.flag} {wcTeam.name} · {wcDeviceInput?INPUT_TYPES.find(t=>t.id===wcDeviceInput)?.icon:""} {wcDeviceInput||""}</div>
+                </div>
+                <div style={{fontSize:16}}>{wcTeam.flag}</div>
+              </div>
+              <div style={{display:"flex",gap:6}}>
+                <div onClick={()=>{playFx("success");wcResumeTournament();}} style={{
+                  flex:2,padding:"8px 0",borderRadius:8,textAlign:"center",cursor:"pointer",
+                  background:`${C.green}15`,border:`1px solid ${C.green}30`,fontSize:10,fontWeight:800,color:C.green,
+                }}>▶ Continue</div>
+                <div onClick={()=>{playFx("tap");wcAbandonTournament();}} style={{
+                  flex:1,padding:"8px 0",borderRadius:8,textAlign:"center",cursor:"pointer",
+                  background:`${C.red}08`,border:`1px solid ${C.red}20`,fontSize:10,fontWeight:700,color:C.red,
+                }}>Abandon</div>
+              </div>
             </div>
           )}
         </div>
@@ -3504,6 +3547,45 @@ export default function MoodLabArena() {
       );
     }
 
+    // ═══ DEVICE SELECTION FOR TOURNAMENT ═══
+    if(wcPhase === "device_select") {
+      return (
+        <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:110,overflow:"hidden",display:"flex",alignItems:"center",justifyContent:"center"}}>
+          <div style={{position:"absolute",inset:0,background:`
+            radial-gradient(ellipse at 50% 20%, rgba(0,229,255,0.06) 0%, transparent 50%),
+            radial-gradient(ellipse at 20% 80%, rgba(96,165,250,0.04) 0%, transparent 40%),
+            linear-gradient(180deg, #06101E 0%, #0c1a38 40%, #102240 70%, #081830 100%)
+          `}}/>
+          {overlayBack(()=>setWcPhase("team_select"))}
+          <div style={{position:"relative",zIndex:2,width:"88%",maxWidth:360,textAlign:"center"}}>
+            <div style={{fontSize:40,marginBottom:8}}>{wcTeam?.flag}</div>
+            <div style={{fontSize:16,fontWeight:900,color:C.text,marginBottom:2}}>{wcTeam?.name}</div>
+            <div style={{fontSize:10,fontWeight:800,color:C.gold,letterSpacing:2,marginBottom:16}}>🏆 WORLD CUP 2026</div>
+            <div style={{fontSize:12,fontWeight:700,color:C.text2,marginBottom:4}}>Choose Device Control</div>
+            <div style={{fontSize:8,color:C.text3,marginBottom:14}}>You'll be matched with players using the same input type</div>
+            <div style={{display:"flex",flexDirection:"column",gap:8}}>
+              {INPUT_TYPES.map(t=>(
+                <div key={t.id} onClick={()=>wcConfirmDevice(t.id)} style={{
+                  padding:"14px 16px",borderRadius:16,cursor:"pointer",display:"flex",alignItems:"center",gap:12,
+                  background:`linear-gradient(135deg, ${t.color}10, ${t.color}03)`,
+                  border:`1px solid ${t.color}25`,transition:"all 0.2s",
+                  boxShadow:`0 0 15px ${t.color}08`,
+                }}>
+                  <div style={{width:42,height:42,borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",background:`${t.color}15`,border:`1px solid ${t.color}25`,fontSize:22}}>{t.icon}</div>
+                  <div style={{flex:1,textAlign:"left"}}>
+                    <div style={{fontSize:13,fontWeight:800,color:t.color}}>{t.label}</div>
+                    <div style={{fontSize:8,color:C.text3}}>{t.desc}</div>
+                    <div style={{fontSize:7,color:C.text3+"80",marginTop:2}}>Pool: {t.id==="puff"?"High (2.5x rewards)":t.id==="dry_puff"?"Mid (1.5x rewards)":"Standard (1x rewards)"}</div>
+                  </div>
+                  <span style={{fontSize:16,color:`${t.color}40`}}>›</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     // ═══ GROUP DRAW ANIMATION ═══
     if(wcPhase === "group_draw" && wcTournament) {
       return (
@@ -4030,18 +4112,25 @@ export default function MoodLabArena() {
     return (
       <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:260,display:"flex",alignItems:"center",justifyContent:"center"}}>
         <div onClick={()=>{setShowAskPrompt(null);window._inputCb=null;}} style={{position:"absolute",inset:0,background:"rgba(5,5,16,0.85)",backdropFilter:"blur(10px)"}}/>
-        <div style={{position:"relative",width:"88%",maxWidth:340,background:`linear-gradient(135deg,#0D0D28,${C.bg2})`,borderRadius:22,border:`1px solid ${C.border2}`,padding:"22px 18px",animation:"fadeIn 0.3s ease"}}>
-          <div style={{textAlign:"center",marginBottom:18}}>
-            <div style={{fontSize:32,marginBottom:6}}>{game.emoji}</div>
-            <div style={{fontSize:15,fontWeight:900,color:C.text}}>{game.name}</div>
-            <div style={{fontSize:11,color:C.text3,marginTop:3}}>Choose your device control</div>
+        <div style={{position:"relative",width:"88%",maxWidth:340,
+          background:`radial-gradient(ellipse at 50% 20%, rgba(0,229,255,0.06) 0%, transparent 50%), linear-gradient(180deg, #06101E 0%, #0c1a38 50%, #102240 100%)`,
+          borderRadius:22,border:`1px solid ${C.border2}`,padding:"22px 18px",animation:"fadeIn 0.3s ease",boxShadow:"0 20px 60px rgba(0,0,0,0.5)",
+        }}>
+          <div style={{textAlign:"center",marginBottom:16}}>
+            <div style={{fontSize:28,marginBottom:4}}>{game.emoji}</div>
+            <div style={{fontSize:14,fontWeight:900,color:C.text}}>{game.name}</div>
+            <div style={{fontSize:10,color:C.text3,marginTop:3}}>Choose your device control</div>
+            <div style={{fontSize:8,color:C.text3+"80",marginTop:2}}>You'll be matched with players using the same input</div>
           </div>
-          <div style={{display:"flex",flexDirection:"column",gap:8}}>
+          <div style={{display:"flex",flexDirection:"column",gap:6}}>
             {INPUT_TYPES.filter(t=>{if(t.id==="puff"||t.id==="dry_puff") return supported.includes("puff"); return supported.includes(t.id);}).map(t=>(
-              <div key={t.id} onClick={()=>handleAskPick(t.id)} style={{padding:"12px 14px",borderRadius:12,cursor:"pointer",display:"flex",alignItems:"center",gap:10,background:`${t.color}06`,border:`1px solid ${t.color}18`,transition:"all 0.2s"}}>
-                <span style={{fontSize:22}}>{t.icon}</span>
-                <div style={{flex:1}}><div style={{fontSize:13,fontWeight:700,color:t.color}}>{t.label}</div><div style={{fontSize:9,color:C.text3}}>{t.desc}</div></div>
-                <span style={{fontSize:12,color:C.text3}}>→</span>
+              <div key={t.id} onClick={()=>handleAskPick(t.id)} style={{padding:"12px 14px",borderRadius:14,cursor:"pointer",display:"flex",alignItems:"center",gap:10,
+                background:`linear-gradient(135deg, ${t.color}08, ${t.color}03)`,border:`1px solid ${t.color}20`,transition:"all 0.2s",
+                boxShadow:`0 0 12px ${t.color}06`,
+              }}>
+                <div style={{width:36,height:36,borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",background:`${t.color}12`,border:`1px solid ${t.color}20`,fontSize:18}}>{t.icon}</div>
+                <div style={{flex:1}}><div style={{fontSize:12,fontWeight:700,color:t.color}}>{t.label}</div><div style={{fontSize:8,color:C.text3}}>{t.desc}</div></div>
+                <span style={{fontSize:14,color:`${t.color}40`}}>›</span>
               </div>
             ))}
           </div>
