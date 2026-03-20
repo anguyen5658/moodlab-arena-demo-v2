@@ -2247,7 +2247,7 @@ export default function MoodLabArena() {
             radial-gradient(ellipse at 50% 30%, ${gc}12 0%, transparent 50%),
             radial-gradient(ellipse at 30% 70%, ${C.purple}06 0%, transparent 40%),
             radial-gradient(ellipse at 70% 70%, ${gc}06 0%, transparent 40%),
-            linear-gradient(180deg, #040812 0%, #0a1628 40%, #0d1520 70%, #061210 100%)
+            linear-gradient(180deg, #06101E 0%, #0c1a38 40%, #102240 70%, #081830 100%)
           `}}/>
           {/* Light beams */}
           <div style={{position:"absolute",top:0,left:"25%",width:3,height:"40%",background:`linear-gradient(180deg, ${gc}30, transparent)`,filter:"blur(6px)",animation:"pulse 2s infinite"}}/>
@@ -2535,7 +2535,7 @@ export default function MoodLabArena() {
               radial-gradient(ellipse at 50% 0%, rgba(0,229,255,0.08) 0%, transparent 50%),
               radial-gradient(ellipse at 20% 80%, rgba(127,255,0,0.05) 0%, transparent 40%),
               radial-gradient(ellipse at 80% 80%, rgba(168,85,247,0.05) 0%, transparent 40%),
-              linear-gradient(180deg, #040812 0%, #0a1628 30%, #0d1f20 60%, #061210 100%)
+              linear-gradient(180deg, #06101E 0%, #0c1a38 30%, #102240 60%, #081830 100%)
             `}}/>
 
             {/* Stadium lights */}
@@ -3198,7 +3198,7 @@ export default function MoodLabArena() {
             radial-gradient(ellipse at 20% 80%, ${gc}08 0%, transparent 40%),
             radial-gradient(ellipse at 80% 80%, rgba(168,85,247,0.05) 0%, transparent 40%),
             radial-gradient(ellipse at 50% 20%, rgba(0,229,255,0.06) 0%, transparent 50%),
-            linear-gradient(180deg, #04081A 0%, #0a1630 40%, #0d1f35 70%, #061018 100%)
+            linear-gradient(180deg, #06101E 0%, #0c1a38 40%, #102240 70%, #081830 100%)
           `}}/>
           <div style={{position:"absolute",top:0,left:"20%",width:3,height:"30%",background:`linear-gradient(180deg, ${gc}25, transparent)`,filter:"blur(4px)",animation:"pulse 3s infinite"}}/>
           <div style={{position:"absolute",top:0,right:"20%",width:3,height:"30%",background:`linear-gradient(180deg, ${gc}25, transparent)`,filter:"blur(4px)",animation:"pulse 3s infinite 1s"}}/>
@@ -3330,7 +3330,7 @@ export default function MoodLabArena() {
             <div style={{position:"absolute",inset:0,zIndex:120,display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(0,0,0,0.7)",backdropFilter:"blur(6px)",animation:"fadeIn 0.2s ease"}}
               onClick={()=>setShowHowToPlay(false)}>
               <div onClick={(e)=>e.stopPropagation()} style={{width:"90%",maxWidth:360,maxHeight:"80%",borderRadius:20,overflow:"hidden",
-                background:`linear-gradient(180deg, #0a1630 0%, #0d1f35 50%, #061018 100%)`,
+                background:`linear-gradient(180deg, #0c1a38 0%, #102240 50%, #081830 100%)`,
                 border:`1px solid ${C.border}`,boxShadow:`0 20px 60px rgba(0,0,0,0.6), 0 0 30px ${selectedGame.color}10`,
               }}>
                 {/* Header */}
@@ -3412,7 +3412,7 @@ export default function MoodLabArena() {
           <div style={{position:"absolute",inset:0,background:`
             radial-gradient(ellipse at 50% 20%, rgba(0,229,255,0.06) 0%, transparent 50%),
             radial-gradient(ellipse at 20% 80%, rgba(96,165,250,0.04) 0%, transparent 40%),
-            linear-gradient(180deg, #04081A 0%, #0a1630 40%, #0d1f35 70%, #061018 100%)
+            linear-gradient(180deg, #06101E 0%, #0c1a38 40%, #102240 70%, #081830 100%)
           `}}/>
           {/* Stadium lights */}
           {[...Array(6)].map((_,i)=>(
@@ -3486,7 +3486,7 @@ export default function MoodLabArena() {
     if(wcPhase === "group_draw" && wcTournament) {
       return (
         <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:110,overflow:"hidden",
-          background:`radial-gradient(ellipse at 50% 20%, rgba(0,229,255,0.06) 0%, transparent 50%), radial-gradient(ellipse at 20% 80%, rgba(96,165,250,0.04) 0%, transparent 40%), linear-gradient(180deg, #04081A 0%, #0a1630 40%, #0d1f35 70%, #061018 100%)`,
+          background:`radial-gradient(ellipse at 50% 20%, rgba(0,229,255,0.06) 0%, transparent 50%), radial-gradient(ellipse at 20% 80%, rgba(96,165,250,0.04) 0%, transparent 40%), linear-gradient(180deg, #06101E 0%, #0c1a38 40%, #102240 70%, #081830 100%)`,
           display:"flex",alignItems:"center",justifyContent:"center",
         }}>
           <div style={{textAlign:"center",animation:"fadeIn 0.5s ease"}}>
@@ -3531,7 +3531,7 @@ export default function MoodLabArena() {
           <div style={{position:"absolute",inset:0,background:`
             radial-gradient(ellipse at 50% 20%, rgba(0,229,255,0.06) 0%, transparent 50%),
             radial-gradient(ellipse at 20% 80%, rgba(96,165,250,0.04) 0%, transparent 40%),
-            linear-gradient(180deg, #04081A 0%, #0a1630 40%, #0d1f35 70%, #061018 100%)
+            linear-gradient(180deg, #06101E 0%, #0c1a38 40%, #102240 70%, #081830 100%)
           `}}/>
           {overlayBack(wcExitTournament)}
 
@@ -3731,7 +3731,7 @@ export default function MoodLabArena() {
           <div style={{position:"absolute",inset:0,background:`
             radial-gradient(ellipse at 50% 20%, rgba(0,229,255,0.06) 0%, transparent 50%),
             radial-gradient(ellipse at 20% 80%, rgba(96,165,250,0.04) 0%, transparent 40%),
-            linear-gradient(180deg, #04081A 0%, #0a1630 40%, #0d1f35 70%, #061018 100%)
+            linear-gradient(180deg, #06101E 0%, #0c1a38 40%, #102240 70%, #081830 100%)
           `}}/>
           {overlayBack(wcExitTournament)}
 
@@ -3805,7 +3805,7 @@ export default function MoodLabArena() {
             radial-gradient(ellipse at 50% 30%, ${accentColor}15 0%, transparent 50%),
             radial-gradient(ellipse at 50% 20%, rgba(0,229,255,0.06) 0%, transparent 50%),
             radial-gradient(ellipse at 20% 80%, rgba(96,165,250,0.04) 0%, transparent 40%),
-            linear-gradient(180deg, #04081A 0%, #0a1630 40%, #0d1f35 70%, #061018 100%)
+            linear-gradient(180deg, #06101E 0%, #0c1a38 40%, #102240 70%, #081830 100%)
           `}}/>
           {/* Gold rays for champion */}
           {isGold && [...Array(8)].map((_,i)=>(
