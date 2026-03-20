@@ -1906,7 +1906,7 @@ export default function MoodLabArena() {
             </div>}
 
             {/* ═══ AI COMMENTATOR BAR ═══ */}
-            {commentatorText && <div style={{position:"absolute",top:36,left:10,right:10,zIndex:215,padding:"5px 12px",borderRadius:10,
+            {commentatorText && <div style={{position:"absolute",top:4,left:10,right:10,zIndex:215,padding:"5px 12px",borderRadius:10,
               ...GLASS_CLEAR,textAlign:"center",animation:"fadeIn 0.3s ease",
             }}>
               <span style={{fontSize:8,fontWeight:700,color:C.gold}}>🎙️ </span>
@@ -2027,52 +2027,55 @@ export default function MoodLabArena() {
             <div style={{position:"relative",zIndex:2,flex:1,display:"flex",flexDirection:"column",alignItems:"center",padding:"38px 14px 52px",height:"100%",overflowY:"auto"}}>
 
               {/* ═══ VS ARENA HEADER WITH CHARACTER IMAGES ═══ */}
-              <div style={{width:"100%",maxWidth:390,marginBottom:4}}>
-                <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,marginBottom:3}}>
-                  <span style={{fontSize:7,fontWeight:800,color:C.gold,letterSpacing:2}}>🏆 FINAL KICK</span>
-                  <span style={{fontSize:6,fontWeight:700,color:pool.color,padding:"2px 6px",borderRadius:20,...LG.tinted(pool.color)}}>⚖️ {pool.label}</span>
-                  <span style={{fontSize:6,fontWeight:700,color:inpInfo.color,padding:"2px 6px",borderRadius:20,...LG.tinted(inpInfo.color)}}>{inpInfo.icon} {inpInfo.label}</span>
-                  {kickBonusActive && <span style={{fontSize:6,fontWeight:800,color:C.gold,padding:"2px 6px",borderRadius:20,background:`${C.gold}20`,border:`1px solid ${C.gold}40`,animation:"pulse 1s infinite"}}>⚡ BONUS</span>}
+              <div style={{width:"100%",maxWidth:390,marginTop:28,marginBottom:6}}>
+                <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,marginBottom:5}}>
+                  <span style={{fontSize:8,fontWeight:800,color:C.gold,letterSpacing:2}}>🏆 FINAL KICK</span>
+                  <span style={{fontSize:7,fontWeight:700,color:pool.color,padding:"2px 8px",borderRadius:20,...LG.tinted(pool.color)}}>⚖️ {pool.label}</span>
+                  <span style={{fontSize:7,fontWeight:700,color:inpInfo.color,padding:"2px 8px",borderRadius:20,...LG.tinted(inpInfo.color)}}>{inpInfo.icon} {inpInfo.label}</span>
+                  {kickBonusActive && <span style={{fontSize:7,fontWeight:800,color:C.gold,padding:"2px 8px",borderRadius:20,background:`${C.gold}20`,border:`1px solid ${C.gold}40`,animation:"pulse 1s infinite"}}>⚡ BONUS</span>}
                 </div>
-                {/* ═══ ARENA VS CARD ═══ */}
-                <div style={{display:"flex",alignItems:"stretch",borderRadius:16,overflow:"hidden",...LG.tinted(C.cyan),position:"relative"}}>
-                  <div style={{position:"absolute",top:0,left:"50%",width:2,height:"100%",background:`linear-gradient(180deg, ${C.gold}40, ${C.gold}10)`,transform:"skewX(-8deg)",zIndex:3}}/>
+                {/* ═══ ARENA VS CARD — BIGGER ═══ */}
+                <div style={{display:"flex",alignItems:"stretch",borderRadius:18,overflow:"hidden",...LG.tinted(C.cyan),position:"relative",minHeight:80}}>
+                  <div style={{position:"absolute",top:0,left:"50%",width:2,height:"100%",background:`linear-gradient(180deg, ${C.gold}60, ${C.gold}10)`,transform:"skewX(-8deg)",zIndex:3}}/>
+                  {/* ── Glow behind avatars ── */}
+                  <div style={{position:"absolute",left:0,top:0,width:"40%",height:"100%",background:`radial-gradient(ellipse at 20% 50%, ${C.cyan}12, transparent 70%)`,pointerEvents:"none"}}/>
+                  <div style={{position:"absolute",right:0,top:0,width:"40%",height:"100%",background:`radial-gradient(ellipse at 80% 50%, ${C.red}12, transparent 70%)`,pointerEvents:"none"}}/>
                   {/* YOU */}
-                  <div style={{flex:1,display:"flex",alignItems:"center",gap:6,padding:"6px 8px",background:`linear-gradient(135deg, ${C.cyan}08, transparent)`}}>
-                    <div style={{width:36,height:36,borderRadius:10,overflow:"hidden",border:`2px solid ${C.cyan}40`,background:`${C.cyan}10`,flexShrink:0,boxShadow:`0 0 10px ${C.cyan}20`}}>
-                      <img src={PLAYER_IMG} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}} onError={(e)=>{e.target.outerHTML='<div style="font-size:24px;text-align:center;padding-top:6px">😎</div>';}}/>
+                  <div style={{flex:1,display:"flex",alignItems:"center",gap:8,padding:"10px 12px",background:`linear-gradient(135deg, ${C.cyan}08, transparent)`}}>
+                    <div style={{width:50,height:50,borderRadius:14,overflow:"hidden",border:`2px solid ${C.cyan}50`,background:`${C.cyan}10`,flexShrink:0,boxShadow:`0 0 16px ${C.cyan}30`}}>
+                      <img src={PLAYER_IMG} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}} onError={(e)=>{e.target.outerHTML='<div style="font-size:28px;text-align:center;padding-top:8px">😎</div>';}}/>
                     </div>
                     <div style={{minWidth:0}}>
-                      <div style={{fontSize:9,fontWeight:800,color:C.cyan}}>Steve</div>
-                      <div style={{fontSize:6,color:C.text3}}>{getDeviceShort()} · Lv.24</div>
-                      <div style={{fontSize:22,fontWeight:900,color:"#fff",textShadow:`0 0 10px ${C.cyan}60`,lineHeight:1,marginTop:1}}>{kickScore.you}</div>
+                      <div style={{fontSize:11,fontWeight:800,color:C.cyan}}>Steve</div>
+                      <div style={{fontSize:7,color:C.text3}}>{getDeviceShort()} · Lv.24</div>
+                      <div style={{fontSize:28,fontWeight:900,color:"#fff",textShadow:`0 0 12px ${C.cyan}60`,lineHeight:1,marginTop:2}}>{kickScore.you}</div>
                     </div>
                   </div>
                   {/* VS */}
-                  <div style={{width:32,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",zIndex:4}}>
-                    <div style={{fontSize:6,color:C.text3}}>R{kickRound+1}</div>
-                    <div style={{display:"flex",gap:2,marginTop:1}}>{[0,1,2,3,4].map(r=>(<div key={r} style={{width:4,height:4,borderRadius:"50%",background:r<kickRound?C.cyan:r===kickRound?C.gold:`${C.text3}30`}}/>))}</div>
-                    <div style={{fontSize:10,fontWeight:900,color:C.gold,textShadow:`0 0 6px ${C.gold}40`}}>VS</div>
+                  <div style={{width:40,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",zIndex:4}}>
+                    <div style={{fontSize:7,color:C.text3,fontWeight:700}}>R{kickRound+1}/5</div>
+                    <div style={{display:"flex",gap:3,marginTop:2}}>{[0,1,2,3,4].map(r=>(<div key={r} style={{width:5,height:5,borderRadius:"50%",background:r<kickRound?C.cyan:r===kickRound?C.gold:`${C.text3}30`,boxShadow:r===kickRound?`0 0 6px ${C.gold}`:""}}/>))}</div>
+                    <div style={{fontSize:13,fontWeight:900,color:C.gold,textShadow:`0 0 10px ${C.gold}50`,marginTop:2}}>VS</div>
                   </div>
                   {/* AI */}
-                  <div style={{flex:1,display:"flex",alignItems:"center",flexDirection:"row-reverse",gap:6,padding:"6px 8px",background:`linear-gradient(225deg, ${C.red}08, transparent)`}}>
-                    <div style={{width:36,height:36,borderRadius:10,overflow:"hidden",border:`2px solid ${C.red}40`,background:`${C.red}10`,flexShrink:0,boxShadow:`0 0 10px ${C.red}20`}}>
-                      <img src={kickOpponent.current.img} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}} onError={(e)=>{e.target.outerHTML='<div style="font-size:24px;text-align:center;padding-top:6px">'+kickOpponent.current.emoji+'</div>';}}/>
+                  <div style={{flex:1,display:"flex",alignItems:"center",flexDirection:"row-reverse",gap:8,padding:"10px 12px",background:`linear-gradient(225deg, ${C.red}08, transparent)`}}>
+                    <div style={{width:50,height:50,borderRadius:14,overflow:"hidden",border:`2px solid ${C.red}50`,background:`${C.red}10`,flexShrink:0,boxShadow:`0 0 16px ${C.red}30`}}>
+                      <img src={kickOpponent.current.img} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}} onError={(e)=>{e.target.outerHTML='<div style="font-size:28px;text-align:center;padding-top:8px">'+kickOpponent.current.emoji+'</div>';}}/>
                     </div>
                     <div style={{textAlign:"right",minWidth:0}}>
-                      <div style={{fontSize:9,fontWeight:800,color:C.red,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{kickOpponent.current.name}</div>
-                      <div style={{fontSize:6,color:C.text3}}>{kickOpponent.current.rank} · {kickOpponent.current.record}</div>
-                      <div style={{fontSize:22,fontWeight:900,color:"#fff",textShadow:`0 0 10px ${C.red}60`,lineHeight:1,marginTop:1}}>{kickScore.ai}</div>
+                      <div style={{fontSize:11,fontWeight:800,color:C.red,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{kickOpponent.current.name}</div>
+                      <div style={{fontSize:7,color:C.text3}}>{kickOpponent.current.rank} · {kickOpponent.current.record}</div>
+                      <div style={{fontSize:28,fontWeight:900,color:"#fff",textShadow:`0 0 12px ${C.red}60`,lineHeight:1,marginTop:2}}>{kickScore.ai}</div>
                     </div>
                   </div>
                 </div>
                 {/* Stats strip */}
-                <div style={{display:"flex",justifyContent:"center",gap:8,marginTop:2}}>
-                  <span style={{fontSize:6,color:C.text3}}>⚽{kickStats.goals}</span>
-                  <span style={{fontSize:6,color:C.text3}}>🧤{kickStats.saves}</span>
-                  <span style={{fontSize:6,color:C.green}}>💨{kickStats.perfects}</span>
-                  {kickStats.blinkers>0&&<span style={{fontSize:6,color:C.red}}>💀{kickStats.blinkers}</span>}
-                  {kickStats.misses>0&&<span style={{fontSize:6,color:C.gold}}>🚀{kickStats.misses}</span>}
+                <div style={{display:"flex",justifyContent:"center",gap:10,marginTop:4}}>
+                  <span style={{fontSize:7,color:C.text3}}>⚽{kickStats.goals}</span>
+                  <span style={{fontSize:7,color:C.text3}}>🧤{kickStats.saves}</span>
+                  <span style={{fontSize:7,color:C.green}}>💨{kickStats.perfects}</span>
+                  {kickStats.blinkers>0&&<span style={{fontSize:7,color:C.red}}>💀{kickStats.blinkers}</span>}
+                  {kickStats.misses>0&&<span style={{fontSize:7,color:C.gold}}>🚀{kickStats.misses}</span>}
                 </div>
               </div>
 
