@@ -2491,12 +2491,11 @@ export default function MoodLabArena() {
               </div>
             </div>}
 
-            {/* ═══ AI COMMENTATOR — AVATAR + SPEECH BUBBLE (right side, no overlap with back) ═══ */}
-            {commentatorText && <div style={{position:"absolute",top:8,left:80,right:8,zIndex:215,display:"flex",alignItems:"flex-start",gap:4,animation:"fadeIn 0.3s ease",pointerEvents:"none"}}>
-              {/* Speech bubble (compact) */}
-              <div style={{flex:1,padding:"4px 8px",borderRadius:10,background:`rgba(255,217,61,0.08)`,border:`1px solid ${C.gold}20`,backdropFilter:"blur(8px)",display:"flex",alignItems:"center",gap:4}}>
+            {/* ═══ AI COMMENTATOR — aligned with back button ═══ */}
+            {commentatorText && <div style={{position:"absolute",top:8,left:80,right:10,zIndex:215,display:"flex",alignItems:"center",animation:"fadeIn 0.3s ease",pointerEvents:"none"}}>
+              <div style={{flex:1,padding:"5px 10px",borderRadius:8,background:`rgba(6,8,15,0.7)`,backdropFilter:"blur(8px)",border:`1px solid ${C.border}`,display:"flex",alignItems:"center",gap:4}}>
                 <span style={{fontSize:10,flexShrink:0}}>🎙️</span>
-                <span style={{fontSize:7,fontWeight:600,color:C.text,fontStyle:"italic",lineHeight:1.2}}>{commentatorText}</span>
+                <span style={{fontSize:8,fontWeight:600,color:C.text,fontStyle:"italic",lineHeight:1.2}}>{commentatorText}</span>
               </div>
             </div>}
 
