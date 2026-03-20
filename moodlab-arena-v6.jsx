@@ -2836,11 +2836,12 @@ export default function MoodLabArena() {
 
               {/* ═══ SAVE COUNTDOWN — Tension ═══ */}
               {kickState==="save_countdown" && (
-                <div style={{textAlign:"center"}}>
-                  <div style={{fontSize:24,fontWeight:900,color:C.gold,animation:"breathe 0.5s infinite",textShadow:`0 0 20px ${C.gold}60`}}>
-                    AI winding up... 💨
+                <div style={{textAlign:"center",marginTop:4}}>
+                  <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
+                    <span style={{fontSize:14,animation:"breathe 0.5s infinite"}}>💨</span>
+                    <span style={{fontSize:12,fontWeight:900,color:C.gold,textShadow:`0 0 15px ${C.gold}40`}}>AI winding up...</span>
                   </div>
-                  <div style={{fontSize:10,color:C.text3,marginTop:4}}>Watch for the hint!</div>
+                  <div style={{fontSize:8,color:C.text3,marginTop:2}}>Watch for the hint!</div>
                 </div>
               )}
 
