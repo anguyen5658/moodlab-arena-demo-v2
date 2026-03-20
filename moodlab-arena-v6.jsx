@@ -268,7 +268,23 @@ export default function MoodLabArena() {
   const [kickStats, setKickStats] = useState({goals:0,saves:0,perfects:0,blinkers:0,misses:0});
   const [kickChatOn, setKickChatOn] = useState(true); // chat panel ON by default in game
   const [audioOn, setAudioOn] = useState(true);
-  const [arcadeTab, setArcadeTab] = useState("games"); // "games" | "leaderboard"
+  const [arcadeTab, setArcadeTab] = useState("games");
+
+  // ── Audience Side System ──
+  const [audienceSide, setAudienceSide] = useState("you"); // "you" | "ai"
+  const [audienceTraitor, setAudienceTraitor] = useState(false); // switched sides
+  const [audienceSwitchCount, setAudienceSwitchCount] = useState(0);
+  const [sideChat, setSideChat] = useState({you:[
+    {u:"Fan_420",m:"LET'S GO STEVE! 🔥",c:C.cyan,t:Date.now()-10000},
+    {u:"PuffQueen",m:"Sweet spot this round 💨👑",c:C.pink,t:Date.now()-5000},
+  ],ai:[
+    {u:"BotFan1",m:kickOpponent.current?.name+" got this 🤖",c:C.red,t:Date.now()-8000},
+    {u:"Skeptic",m:"No way human wins lol 💀",c:C.orange,t:Date.now()-3000},
+  ]});
+  const [sideFans, setSideFans] = useState({you:Math.floor(8+Math.random()*15), ai:Math.floor(5+Math.random()*12)});
+  const [kickPrediction, setKickPrediction] = useState(null); // "goal" | "save" | null
+  const [kickPredResult, setKickPredResult] = useState(null); // {correct:bool} for last prediction
+  const [gameBottomTab, setGameBottomTab] = useState("chat"); // "chat" | "stats"
 
   // ── Device ──
   const [deviceModel, setDeviceModel] = useState("cc_s2");
@@ -620,8 +636,16 @@ export default function MoodLabArena() {
         playFx("lose");
         if(wasBlinker) playFx("laugh");
         setKickStats(s=>({...s, misses:s.misses+1, blinkers:wasBlinker?s.blinkers+1:s.blinkers}));
-        if(wasBlinker) setKickComment(pick(["BLINKER SHOT! Ball left the stadium 💀😂","Your lungs said goodbye, so did the ball 🫁💨","That puff was so long the ball evaporated 🌫️","Blinker = automatic L bro 😭",""+kickOpponent.current.name+": 'Did you just blinker??' 🤣"]));
-        else setKickComment(pick(["OVER THE BAR! Too much power 😂","Ball said 'I'm out' ✈️💀","That shot is still flying somewhere 🚀","Bro aimed for the moon fr 🌙😭",""+kickOpponent.current.emoji+" is laughing at you rn"]));
+        if(wasBlinker) setKickComment(pick([
+          "BLINKER KICK! Your leg went full helicopter 🚁🦵","Lungs quit, leg quit, ball quit 💀😂",
+          "Puffed so long your leg forgot what year it is 🫁🦵💀","Blinker + kick = ball in orbit 🛸⚽",
+          "Your foot launched that into another dimension 🌀🦶",""+kickOpponent.current.name+": 'Bro your leg ok??' 🤣",
+        ]));
+        else setKickComment(pick([
+          "Leg went FULL SEND... over the bar 🦵🚀","Your foot aimed for the parking lot 😂🅿️",
+          "Ball said 'I'm moving to another game' ✈️⚽","Leg had too much energy, zero aim 🦵🎯💀",
+          "That kick is still in the atmosphere 🌍⚽","Your foot needs GPS fr 🦶📍😂",
+        ]));
       } else if(isGoal) {
         const pts = bonusMult;
         setKickScore(s=>({...s, you:s.you+pts}));
@@ -631,11 +655,31 @@ export default function MoodLabArena() {
         if(puffZone==="perfect") setKickComment(pick(["PERFECT PUFF GOAL! 💨👑🔥"+bonusTag,"SWEET SPOT MERCHANT! Unstoppable!"+bonusTag,"That "+holdLabel+" puff was CLINICAL 🎯"+bonusTag,"The puff-to-goal pipeline is REAL 💨→⚽","Keeper didn't stand a CHANCE 🧤💀"]));
         else setKickComment(pick(["GOLAZOOO! 🔥🔥"+bonusTag,"SHEEEESH! 🥶","NET GO BRRR 😤","That ball had SMOKE on it 💨",""+holdLabel+" puff = GOAL!"+bonusTag,"ABSOLUTE BANGER 💥"]));
       } else {
-        playFx("lose");
-        if(puffZone==="tap"||puffZone==="short") playFx("laugh"); // off sweet spot = laugh
-        if(puffZone==="tap") setKickComment(pick(["That wasn't a kick, that was a PASS 😂","Bro barely puffed 💨... more like a sigh","Even "+kickOpponent.current.name+" felt bad saving that 🥲","0.3 second puff energy 💀"]));
-        else if(puffZone==="short") setKickComment(pick(["Too short bro! 💨 Need longer puff!","Quick puff = easy save 😂",""+kickOpponent.current.name+" didn't even try 🥱","Hold longer next time! 🫁"]));
-        else setKickComment(pick([""+kickOpponent.current.name+" says 'nah' 🧤","Saved... try a longer puff next time 💨","Keeper ate that "+holdLabel+" puff 😤",""+kickOpponent.current.emoji+" blocked your dreams"]));
+        playFx("lose"); playFx("laugh");
+        if(puffZone==="tap") setKickComment(pick([
+          "Did your leg fall asleep?? 🦵💤","That wasn't a kick, that was a WHISPER 😂",
+          "Ball barely moved... are you ok? 🥲","Your foot said 'nah I'm good' 🦶😴",
+          "Was that a kick or a gentle caress? 💀","Bro tapped it like a sleeping baby 👶",
+          "Even the ball felt embarrassed 😂⚽","Weakest kick since grandma tried 👵",
+        ]));
+        else if(puffZone==="short") setKickComment(pick([
+          "Your leg gave up halfway through 🦵💀","Half-kick energy... commit bro! 😂",
+          "Leg said 'loading...' then crashed 📱💀","That kick had zero follow-through 🦶😬",
+          "Did you pull a hamstring mid-kick? 🤕","Leg.exe has stopped working 💻🦵",
+          "Your foot phoned it in fr 📞🦶","Kicked it like you're wearing flip flops 🩴😂",
+        ]));
+        else if(puffZone==="good") setKickComment(pick([
+          "Close but your leg chickened out! 🐔🦵","Almost had it... foot got shy 😳🦶",
+          "SO CLOSE! Leg needed 0.5s more juice 💀","Your kick was good, not GREAT 🦵📉",
+          "Foot was THIS close to glory 🤏😂","Almost sweet spot... almost 😤🦶",
+          "Leg says 'I tried my best' 🥲🦵","97% there... your foot fumbled the bag 💼💀",
+        ]));
+        else setKickComment(pick([
+          "Your leg went on vacation mid-kick ✈️🦵","Leg cramp at the worst moment?? 🤕😂",
+          "Foot overcooked it like burnt toast 🍞🦶💀","Leg held too long and forgot how to kick 🦵🤔",
+          "Your foot needs a timeout 🦶⏰","Leg said 'I'm done' before the ball 💀",
+          "That kick had boomer energy 👴🦵",""+kickOpponent.current.name+" is literally crying laughing 😂",
+        ]));
       }
       setKickState("shoot_result");
       setTimeout(()=>{
@@ -731,6 +775,20 @@ export default function MoodLabArena() {
     setKickAim(null); setKickPower(0);
     setKickComment(pick(["BONUS SHOT! Tighter sweet spot: "+holdMin.toFixed(1)+"-"+holdMax.toFixed(1)+"s ⚡","This one's HARDER! Nail the puff! 🎯","Double rewards if you score! 💰💰"]));
     playFx("crowd");
+  };
+
+  // Audience side switch
+  const switchSide = () => {
+    const newSide = audienceSide==="you"?"ai":"you";
+    setAudienceSide(newSide);
+    setAudienceSwitchCount(c=>c+1);
+    if(!audienceTraitor && audienceSwitchCount>=0) { setAudienceTraitor(true); }
+    // Add traitor message to BOTH chats
+    const traitorMsg = {u:"⚠ SYSTEM",m:`🐍 A fan just switched to ${newSide==="you"?"Steve":"AI"}'s side!`,c:C.gold,t:Date.now()};
+    setSideChat(p=>({you:[...p.you,traitorMsg],ai:[...p.ai,traitorMsg]}));
+    setSideFans(p=>({...p,[audienceSide]:Math.max(1,p[audienceSide]-1),[newSide]:p[newSide]+1}));
+    playFx("laugh");
+    notify("🐍 TRAITOR! You switched sides!",C.gold);
   };
 
   const kickSkipBonus = () => {
@@ -2097,107 +2155,125 @@ export default function MoodLabArena() {
               })()}
             </div>
 
-            {/* ═══ BOTTOM PANEL: Reactions + Chat/Stats ═══ */}
+            {/* ═══ BOTTOM PANEL: Side Pick + Reactions + Chat/Stats ═══ */}
             <div style={{position:"absolute",bottom:0,left:0,right:0,zIndex:20,display:"flex",flexDirection:"column"}}>
 
-              {/* ── INTERACTIVE REACTION BAR ── */}
-              <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:4,padding:"5px 10px",...GLASS_CLEAR,borderRadius:"12px 12px 0 0"}}>
-                {[
-                  {emoji:"😂",label:"Laugh"},{emoji:"👏",label:"Clap"},{emoji:"😱",label:"Shock"},
-                  {emoji:"🔥",label:"Fire"},{emoji:"💀",label:"Dead"},{emoji:"😘",label:"Kiss"},
-                  {emoji:"👋",label:"Slap"},{emoji:"💨",label:"Puff"},
-                ].map((r,i)=>(
+              {/* ── REACTION BAR + Audio ── */}
+              <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:3,padding:"4px 8px",...GLASS_CLEAR,borderRadius:"12px 12px 0 0"}}>
+                {[{e:"😂"},{e:"👏"},{e:"😱"},{e:"🔥"},{e:"💀"},{e:"😘"},{e:"👋"},{e:"💨"}].map((r,i)=>(
                   <div key={i} onClick={()=>{
-                    setChatMessages(p=>[...p,{u:"Steve",m:r.emoji,c:C.cyan,t:Date.now()}]);
-                    setFloatingReactions(p=>[...p,{id:Date.now()+i,emoji:r.emoji,x:20+Math.random()*60,dur:1.5+Math.random()}]);
-                    if(r.emoji==="😂") playFx("laugh");
-                  }} style={{
-                    width:32,height:32,borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",
-                    cursor:"pointer",fontSize:16,
-                    background:`rgba(255,255,255,0.04)`,border:`1px solid rgba(255,255,255,0.06)`,
-                    transition:"all 0.15s",
-                  }}>
-                    {r.emoji}
+                    const msg = {u:"You",m:r.e,c:audienceSide==="you"?C.cyan:C.red,t:Date.now()};
+                    setSideChat(p=>({...p,[audienceSide]:[...p[audienceSide],msg]}));
+                    setFloatingReactions(p=>[...p,{id:Date.now()+i,emoji:r.e,x:20+Math.random()*60,dur:1.5+Math.random()}]);
+                    if(r.e==="😂") playFx("laugh");
+                  }} style={{width:30,height:30,borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:14,background:`rgba(255,255,255,0.04)`,border:`1px solid rgba(255,255,255,0.06)`}}>
+                    {r.e}
                   </div>
                 ))}
-                {/* Audio toggle */}
-                <div onClick={()=>setAudioOn(!audioOn)} style={{
-                  width:32,height:32,borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",
-                  cursor:"pointer",fontSize:14,marginLeft:4,
-                  background:audioOn?`${C.green}10`:`${C.red}10`,
-                  border:`1px solid ${audioOn?C.green+"25":C.red+"25"}`,
-                }}>
+                <div onClick={()=>setAudioOn(!audioOn)} style={{width:30,height:30,borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:12,marginLeft:2,background:audioOn?`${C.green}10`:`${C.red}10`,border:`1px solid ${audioOn?C.green+"20":C.red+"20"}`}}>
                   {audioOn?"🔊":"🔇"}
                 </div>
               </div>
 
-              {/* ── CHAT / STATS PANEL ── */}
-              <div style={{...GLASS_CARD,maxHeight:kickChatOn?"35%":"40%",transition:"max-height 0.3s ease",display:"flex",flexDirection:"column"}}>
-                {/* Toggle header */}
-                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"5px 12px",borderBottom:`1px solid ${C.border}`}}>
-                  <div style={{display:"flex",alignItems:"center",gap:4}}>
-                    <span style={{fontSize:12}}>🪙</span>
-                    <span style={{fontSize:10,fontWeight:800,color:C.gold,fontFamily:"monospace"}}>{coins.toLocaleString()}</span>
-                    <span style={{fontSize:7,color:C.text3,marginLeft:4}}>⚽{kickStats.goals} 🧤{kickStats.saves} 💨{kickStats.perfects}</span>
+              {/* ── MAIN PANEL ── */}
+              <div style={{...GLASS_CARD,display:"flex",flexDirection:"column",maxHeight:"42%"}}>
+                {/* ── SIDE PICKER + CROWD BAR ── */}
+                <div style={{display:"flex",alignItems:"center",padding:"4px 8px",gap:4,borderBottom:`1px solid ${C.border}`}}>
+                  {/* Your side */}
+                  <div onClick={()=>{if(audienceSide!=="you")switchSide();}} style={{
+                    flex:1,padding:"4px 6px",borderRadius:8,cursor:"pointer",textAlign:"center",
+                    background:audienceSide==="you"?`${C.cyan}15`:"transparent",border:`1px solid ${audienceSide==="you"?C.cyan+"30":"transparent"}`,
+                  }}>
+                    <div style={{fontSize:8,fontWeight:800,color:audienceSide==="you"?C.cyan:C.text3}}>😎 Steve</div>
+                    <div style={{fontSize:7,color:C.text3}}>👥 {sideFans.you} fans</div>
                   </div>
-                  <div onClick={()=>setKickChatOn(!kickChatOn)} style={{padding:"2px 8px",borderRadius:16,cursor:"pointer",fontSize:8,fontWeight:700,color:kickChatOn?C.green:C.gold,...LG.tinted(kickChatOn?C.green:C.gold)}}>
-                    {kickChatOn?"💬 Chat":"📊 Stats"}
+                  {/* Crowd energy bar */}
+                  <div style={{width:60,textAlign:"center"}}>
+                    <div style={{height:4,borderRadius:2,background:`${C.text3}15`,overflow:"hidden",display:"flex"}}>
+                      <div style={{width:`${sideFans.you/(sideFans.you+sideFans.ai)*100}%`,background:C.cyan,transition:"width 0.5s"}}/>
+                      <div style={{flex:1,background:C.red}}/>
+                    </div>
+                    <div style={{fontSize:6,color:C.text3,marginTop:1}}>CROWD</div>
+                    {/* Switch button */}
+                    <div onClick={switchSide} style={{fontSize:7,color:C.gold,cursor:"pointer",marginTop:1}}>
+                      🔄 Switch {audienceTraitor?"🐍":""}
+                    </div>
+                  </div>
+                  {/* AI side */}
+                  <div onClick={()=>{if(audienceSide!=="ai")switchSide();}} style={{
+                    flex:1,padding:"4px 6px",borderRadius:8,cursor:"pointer",textAlign:"center",
+                    background:audienceSide==="ai"?`${C.red}15`:"transparent",border:`1px solid ${audienceSide==="ai"?C.red+"30":"transparent"}`,
+                  }}>
+                    <div style={{fontSize:8,fontWeight:800,color:audienceSide==="ai"?C.red:C.text3}}>{kickOpponent.current.emoji} {kickOpponent.current.name.split(" ")[0]}</div>
+                    <div style={{fontSize:7,color:C.text3}}>👥 {sideFans.ai} fans</div>
                   </div>
                 </div>
 
-                {/* Content */}
+                {/* ── TAB BAR: Chat | Stats ── */}
+                <div style={{display:"flex",borderBottom:`1px solid ${C.border}`}}>
+                  {[{id:"chat",label:"💬 Chat",icon:"💬"},{id:"stats",label:"📊 Stats",icon:"📊"}].map(t=>(
+                    <div key={t.id} onClick={()=>setGameBottomTab(t.id)} style={{
+                      flex:1,padding:"5px 0",textAlign:"center",cursor:"pointer",
+                      borderBottom:gameBottomTab===t.id?`2px solid ${gameBottomTab==="chat"?C.green:C.gold}`:`2px solid transparent`,
+                    }}>
+                      <span style={{fontSize:9,fontWeight:gameBottomTab===t.id?800:600,color:gameBottomTab===t.id?(t.id==="chat"?C.green:C.gold):C.text3}}>{t.label}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* ── CONTENT ── */}
                 <div style={{flex:1,overflowY:"auto",padding:"4px 10px 6px"}}>
-                  {kickChatOn ? (
-                    /* ── CHAT (same style as home) ── */
+                  {gameBottomTab==="chat" ? (
+                    /* ── SIDE CHAT ── */
                     <div>
-                      {chatMessages.slice(-6).map((m,i)=>(
-                        <div key={i} style={{display:"flex",alignItems:"flex-start",gap:6,marginBottom:3}}>
-                          <div style={{width:18,height:18,borderRadius:6,background:`${m.c||C.text3}15`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,flexShrink:0,marginTop:1}}>{m.u[0]}</div>
+                      <div style={{fontSize:7,fontWeight:700,color:audienceSide==="you"?C.cyan:C.red,marginBottom:3}}>
+                        {audienceSide==="you"?"😎 Steve's Fan Zone":""+kickOpponent.current.emoji+" "+kickOpponent.current.name+"'s Fan Zone"}
+                        {audienceTraitor && <span style={{marginLeft:4,fontSize:7,color:C.gold}}>🐍</span>}
+                      </div>
+                      {(sideChat[audienceSide]||[]).slice(-6).map((m,i)=>(
+                        <div key={i} style={{display:"flex",alignItems:"flex-start",gap:5,marginBottom:2,animation:"fadeIn 0.2s ease"}}>
+                          <div style={{width:16,height:16,borderRadius:5,background:`${m.c||C.text3}15`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:7,flexShrink:0}}>{m.u[0]}</div>
                           <div>
-                            <span style={{fontSize:8,fontWeight:700,color:m.c||C.text2}}>{m.u} </span>
-                            <span style={{fontSize:8,color:C.text3}}>{m.m}</span>
+                            <span style={{fontSize:7,fontWeight:700,color:m.c||C.text2}}>{m.u} </span>
+                            <span style={{fontSize:7,color:C.text3}}>{m.m}</span>
                           </div>
                         </div>
                       ))}
-                      {/* Emoji quick-send row */}
-                      <div style={{display:"flex",gap:3,marginTop:3,marginBottom:3}}>
-                        {["🔥","GG 👏","Let's go!","💀","😂","💨"].map((q,i)=>(
-                          <div key={i} onClick={()=>setChatMessages(p=>[...p,{u:"Steve",m:q,c:C.cyan,t:Date.now()}])} style={{
-                            padding:"2px 6px",borderRadius:6,cursor:"pointer",fontSize:7,fontWeight:600,color:C.text3,
+                      {/* Quick sends */}
+                      <div style={{display:"flex",gap:2,marginTop:3,marginBottom:3,flexWrap:"wrap"}}>
+                        {(audienceSide==="you"
+                          ?["LET'S GO! 🔥","SWEET SPOT! 💨","NAIL IT! 🎯","C'MON! 💪","😂😂😂","GG 👏"]
+                          :["NO CHANCE 🧤","SAVE IT! 🚫","TOO EASY 😂","BLOCK! 🧱","💀💀💀","W! 🏆"]
+                        ).map((q,i)=>(
+                          <div key={i} onClick={()=>setSideChat(p=>({...p,[audienceSide]:[...p[audienceSide],{u:"You",m:q,c:audienceSide==="you"?C.cyan:C.red,t:Date.now()}]}))} style={{
+                            padding:"2px 5px",borderRadius:5,cursor:"pointer",fontSize:6,fontWeight:600,color:C.text3,
                             background:`rgba(255,255,255,0.04)`,border:`1px solid ${C.border}`,
                           }}>{q}</div>
                         ))}
                       </div>
-                      <div style={{display:"flex",gap:4}}>
+                      <div style={{display:"flex",gap:3}}>
                         <input value={chatInput} onChange={e=>setChatInput(e.target.value)} onKeyDown={e=>{
-                          if(e.key==="Enter"&&chatInput.trim()){setChatMessages(p=>[...p,{u:"Steve",m:chatInput.trim(),c:C.cyan,t:Date.now()}]);setChatInput("");}
-                        }} placeholder="Say something..." style={{flex:1,background:`${C.text3}06`,border:`1px solid ${C.border}`,borderRadius:8,padding:"5px 8px",fontSize:9,color:C.text,outline:"none"}}/>
-                        <div onClick={()=>{if(chatInput.trim()){setChatMessages(p=>[...p,{u:"Steve",m:chatInput.trim(),c:C.cyan,t:Date.now()}]);setChatInput("");}}} style={{padding:"5px 10px",borderRadius:8,cursor:"pointer",fontSize:9,fontWeight:700,color:C.cyan,...LG.tinted(C.cyan)}}>Send</div>
+                          if(e.key==="Enter"&&chatInput.trim()){
+                            setSideChat(p=>({...p,[audienceSide]:[...p[audienceSide],{u:"You",m:chatInput.trim(),c:audienceSide==="you"?C.cyan:C.red,t:Date.now()}]}));
+                            setChatInput("");
+                            // 5% chance of chat leak!
+                            if(Math.random()<0.05){
+                              const otherSide=audienceSide==="you"?"ai":"you";
+                              setTimeout(()=>{
+                                setSideChat(p=>({...p,[otherSide]:[...p[otherSide],{u:"[LEAKED] 🔓",m:chatInput.trim(),c:C.gold,t:Date.now()}]}));
+                                notify("💀 Your message LEAKED to the other side!",C.gold);
+                              },2000);
+                            }
+                          }
+                        }} placeholder={audienceSide==="you"?"Cheer for Steve...":"Cheer for AI..."} style={{flex:1,background:`${C.text3}06`,border:`1px solid ${C.border}`,borderRadius:6,padding:"4px 7px",fontSize:8,color:C.text,outline:"none"}}/>
+                        <div onClick={()=>{if(chatInput.trim()){setSideChat(p=>({...p,[audienceSide]:[...p[audienceSide],{u:"You",m:chatInput.trim(),c:audienceSide==="you"?C.cyan:C.red,t:Date.now()}]}));setChatInput("");}}} style={{padding:"4px 8px",borderRadius:6,cursor:"pointer",fontSize:8,fontWeight:700,color:audienceSide==="you"?C.cyan:C.red,...LG.tinted(audienceSide==="you"?C.cyan:C.red)}}>Send</div>
                       </div>
                     </div>
                   ) : (
-                    /* ── EXPANDED STATS / RANKINGS ── */
+                    /* ── FUN STATS ── */
                     <div>
-                      <div style={{fontSize:8,fontWeight:800,color:C.gold,marginBottom:3}}>🏆 TOURNAMENT RANKINGS</div>
-                      {[
-                        {rank:1,name:"ChillMaster42",score:"2,847K",emoji:"👑"},
-                        {rank:2,name:"VibeKing",score:"2,654K",emoji:"😎"},
-                        {rank:3,name:"NeonQueen",score:"1,980K",emoji:"👸"},
-                        {rank:4,name:"PuffDaddy",score:"890K",emoji:"💨"},
-                        {rank:5,name:"BakedBaker",score:"720K",emoji:"👨‍🍳"},
-                        {rank:12,name:"Steve (You)",score:"420K",emoji:"🌟",you:true},
-                        {rank:13,name:"BlazedPanda",score:"350K",emoji:"🐼"},
-                        {rank:14,name:"CloudNine99",score:"245K",emoji:"☁️"},
-                      ].map((p,i)=>(
-                        <div key={i} style={{display:"flex",alignItems:"center",gap:5,padding:"2px 0",borderBottom:`1px solid ${C.border}`}}>
-                          <span style={{fontSize:7,fontWeight:800,color:p.rank<=3?C.gold:p.you?C.cyan:C.text3,width:18}}>{p.rank<=3?["🥇","🥈","🥉"][p.rank-1]:"#"+p.rank}</span>
-                          <span style={{fontSize:9}}>{p.emoji}</span>
-                          <span style={{fontSize:8,fontWeight:p.you?800:600,color:p.you?C.cyan:C.text,flex:1}}>{p.name}</span>
-                          <span style={{fontSize:7,fontWeight:700,color:C.text3,fontFamily:"monospace"}}>{p.score}</span>
-                        </div>
-                      ))}
-                      {/* Match stats cards */}
-                      <div style={{display:"flex",gap:6,marginTop:5,justifyContent:"center"}}>
+                      {/* Live match stats */}
+                      <div style={{display:"flex",gap:4,marginBottom:6,justifyContent:"center"}}>
                         {[
                           {v:kickStats.goals,l:"Goals",c:C.cyan,e:"⚽"},
                           {v:kickStats.saves,l:"Saves",c:C.orange,e:"🧤"},
@@ -2205,13 +2281,29 @@ export default function MoodLabArena() {
                           {v:kickStats.blinkers,l:"Blinker",c:C.red,e:"💀"},
                           {v:kickStats.misses,l:"Miss",c:C.gold,e:"🚀"},
                         ].map((s,i)=>(
-                          <div key={i} style={{textAlign:"center",padding:"4px 6px",borderRadius:8,...LG.tinted(s.c),flex:1}}>
-                            <div style={{fontSize:10}}>{s.e}</div>
-                            <div style={{fontSize:12,fontWeight:900,color:s.c}}>{s.v}</div>
+                          <div key={i} style={{textAlign:"center",padding:"4px 4px",borderRadius:8,...LG.tinted(s.c),flex:1}}>
+                            <div style={{fontSize:9}}>{s.e}</div>
+                            <div style={{fontSize:14,fontWeight:900,color:s.c}}>{s.v}</div>
                             <div style={{fontSize:5,color:C.text3}}>{s.l}</div>
                           </div>
                         ))}
                       </div>
+                      {/* Fun game facts */}
+                      <div style={{fontSize:8,fontWeight:800,color:C.gold,marginBottom:3}}>😂 FUN FACTS THIS MATCH</div>
+                      {[
+                        {fact:"Avg puff duration",val:(2.5+Math.random()).toFixed(1)+"s",e:"🫁"},
+                        {fact:"Times you almost blinked",val:""+(kickStats.blinkers+Math.floor(Math.random()*3)),e:"💀"},
+                        {fact:"Keeper's confidence level",val:kickScore.you>kickScore.ai?"Shattered 😂":"Sky high 😤",e:"🧤"},
+                        {fact:"Your leg energy",val:kickStats.goals>2?"On fire 🔥":"Questionable 🦵",e:"🦶"},
+                        {fact:"Crowd mood",val:sideFans.you>sideFans.ai?"HYPE 🔥":"Nervous 😬",e:"👥"},
+                        {fact:"Traitor switches",val:""+audienceSwitchCount+(audienceSwitchCount>0?" 🐍":""),e:"🔄"},
+                      ].map((f,i)=>(
+                        <div key={i} style={{display:"flex",alignItems:"center",gap:6,padding:"2px 0",borderBottom:`1px solid ${C.border}`}}>
+                          <span style={{fontSize:10}}>{f.e}</span>
+                          <span style={{fontSize:8,color:C.text,flex:1}}>{f.fact}</span>
+                          <span style={{fontSize:8,fontWeight:700,color:C.text2,fontFamily:"monospace"}}>{f.val}</span>
+                        </div>
+                      ))}
                     </div>
                   )}
                 </div>
