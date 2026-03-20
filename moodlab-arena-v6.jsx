@@ -270,6 +270,16 @@ export default function MoodLabArena() {
   const [audioOn, setAudioOn] = useState(true);
   const [arcadeTab, setArcadeTab] = useState("games");
 
+  // ── Visual Effects Engine ──
+  const [screenShake, setScreenShake] = useState(false);
+  const [screenFlash, setScreenFlash] = useState(null); // null | "goal" | "save" | "miss" | "blinker"
+  const [confettiParticles, setConfettiParticles] = useState([]);
+  const [smokeParticles, setSmokeParticles] = useState([]);
+  const [puffWaveActive, setPuffWaveActive] = useState(false);
+  const [matchIntro, setMatchIntro] = useState(null); // null | {stage:"enter"|"stats"|"countdown"|"go", count:3}
+  const [commentatorText, setCommentatorText] = useState("");
+  const [dimLights, setDimLights] = useState(false); // dims during puff charge
+
   // ── Audience Side System ──
   const [audienceSide, setAudienceSide] = useState("you"); // "you" | "ai"
   const [audienceTraitor, setAudienceTraitor] = useState(false); // switched sides
@@ -429,7 +439,7 @@ export default function MoodLabArena() {
       setMatchmaking({game,mode,stage:"searching",input});
       setTimeout(()=>{
         setMatchmaking(p=>p?{...p,stage:"found",opp:mode==="ai"?"🤖 AI Bot":mode==="random"?"🎲 Player_847":"👫 Minh"}:null);
-        setTimeout(()=>{setMatchmaking(null);setGameActive({...game,activeInput:input});if(game.id==="wildwest")startDuel();if(game.id==="finalkick")startKick();},1500);
+        setTimeout(()=>{setMatchmaking(null);setGameActive({...game,activeInput:input});if(game.id==="wildwest")startDuel();if(game.id==="finalkick"){startKick();startMatchIntro(kickOpponent.current);}},1500);
       },mode==="ai"?800:2200);
     });
   };
@@ -467,7 +477,53 @@ export default function MoodLabArena() {
       else if(type==="crowd"){const n=ac.createBufferSource();const b=ac.createBuffer(1,ac.sampleRate*0.6,ac.sampleRate);const d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*0.15*Math.sin(i/d.length*Math.PI);n.buffer=b;const g2=ac.createGain();g2.gain.setValueAtTime(0.3,ac.currentTime);g2.gain.exponentialRampToValueAtTime(0.01,ac.currentTime+0.6);n.connect(g2);g2.connect(ac.destination);n.start();}
       else if(type==="charge"){osc.type="sine";osc.frequency.setValueAtTime(200,ac.currentTime);osc.frequency.exponentialRampToValueAtTime(1200,ac.currentTime+1.5);gain.gain.setValueAtTime(0.08,ac.currentTime);gain.gain.setValueAtTime(0.08,ac.currentTime+1.4);gain.gain.exponentialRampToValueAtTime(0.01,ac.currentTime+1.5);osc.start();osc.stop(ac.currentTime+1.5);}
     } catch(e){}
-  }, []);
+  }, [audioOn]);
+
+  // ── Visual Effects Functions ──
+  const triggerFlash = (type) => { setScreenFlash(type); setTimeout(()=>setScreenFlash(null), 400); };
+  const triggerShake = () => { setScreenShake(true); setTimeout(()=>setScreenShake(false), 500); };
+  const spawnConfetti = (count=30,colors=[C.cyan,C.gold,C.green,C.pink,C.orange]) => {
+    const particles = Array.from({length:count},(_,i)=>({
+      id:Date.now()+i, x:30+Math.random()*40, y:-5, color:colors[Math.floor(Math.random()*colors.length)],
+      vx:(Math.random()-0.5)*4, vy:2+Math.random()*3, rot:Math.random()*360, size:3+Math.random()*5,
+    }));
+    setConfettiParticles(p=>[...p,...particles]);
+    setTimeout(()=>setConfettiParticles([]),3000);
+  };
+  const spawnSmoke = (count=8) => {
+    const puffs = Array.from({length:count},(_,i)=>({
+      id:Date.now()+i, x:20+Math.random()*60, y:70+Math.random()*20,
+      size:20+Math.random()*40, dur:2+Math.random()*2,
+    }));
+    setSmokeParticles(p=>[...p,...puffs]);
+    setTimeout(()=>setSmokeParticles([]),4000);
+  };
+  const triggerPuffWave = () => { setPuffWaveActive(true); spawnSmoke(15); setTimeout(()=>setPuffWaveActive(false),3000); };
+  const setCommentary = (text) => { setCommentatorText(text); };
+
+  // ── Match Intro Sequence ──
+  const startMatchIntro = (opponent) => {
+    setMatchIntro({stage:"enter",count:3});
+    setCommentary("The players are entering the field... 🏟️");
+    playFx("crowd");
+    setTimeout(()=>{
+      setMatchIntro({stage:"stats",count:3});
+      setCommentary("Let's see the stats! Who has the edge? 📊");
+    },2000);
+    setTimeout(()=>{
+      setMatchIntro({stage:"countdown",count:3});
+      setCommentary("HERE WE GO!");
+      playFx("whistle");
+    },4000);
+    setTimeout(()=>setMatchIntro(p=>p?{...p,count:2}:null),5000);
+    setTimeout(()=>setMatchIntro(p=>p?{...p,count:1}:null),6000);
+    setTimeout(()=>{
+      setMatchIntro({stage:"go",count:0});
+      setCommentary("⚽ KICK OFF! Let the game begin!");
+      triggerFlash("goal"); playFx("crowd");
+    },7000);
+    setTimeout(()=>setMatchIntro(null),8000);
+  };
 
   // ── Final Kick Logic ──
   const getDevicePool = () => DEVICE_POOLS[(DEVICE_MODELS.find(d=>d.id===deviceModel)||DEVICE_MODELS[5]).pool] || DEVICE_POOLS.open;
@@ -558,7 +614,7 @@ export default function MoodLabArena() {
 
   const kickStartCharge = () => {
     if(kickState!=="power"||kickAim===null||kickCharging) return;
-    setKickCharging(true); setKickPower(0);
+    setKickCharging(true); setKickPower(0); setDimLights(true);
     puffStartTime.current = Date.now();
     isPuffBlinker.current = false;
 
@@ -589,7 +645,7 @@ export default function MoodLabArena() {
 
   const kickStopCharge = () => {
     if(!kickCharging) return;
-    setKickCharging(false);
+    setKickCharging(false); setDimLights(false);
     if(kickChargeInterval.current){clearInterval(kickChargeInterval.current);kickChargeInterval.current=null;}
     const elapsed = (Date.now() - puffStartTime.current) / 1000;
     const wasBlinker = elapsed >= 4.5;
@@ -633,8 +689,8 @@ export default function MoodLabArena() {
     setTimeout(()=>{
       const bonusMult = kickBonusActive ? 2 : 1;
       if(missed) {
-        playFx("lose");
-        if(wasBlinker) playFx("laugh");
+        playFx("lose"); triggerFlash("miss"); triggerShake();
+        if(wasBlinker) { playFx("laugh"); spawnSmoke(12); setCommentary("BLINKER! The ball has left the PLANET! 🛸💀"); }
         setKickStats(s=>({...s, misses:s.misses+1, blinkers:wasBlinker?s.blinkers+1:s.blinkers}));
         if(wasBlinker) setKickComment(pick([
           "BLINKER KICK! Your leg went full helicopter 🚁🦵","Lungs quit, leg quit, ball quit 💀😂",
@@ -651,11 +707,14 @@ export default function MoodLabArena() {
         setKickScore(s=>({...s, you:s.you+pts}));
         setKickStats(s=>({...s, goals:s.goals+1, perfects:puffZone==="perfect"?s.perfects+1:s.perfects}));
         playFx("win"); playFx("crowd");
+        triggerFlash("goal"); triggerShake(); spawnConfetti(40); spawnSmoke(5);
+        setCommentary(pick(["WHAT A GOAL! The stadium ERUPTS! 🏟️🔥","The net RIPPLES! Keeper is STUNNED!","CLINICAL FINISH! The crowd goes WILD!","TOP BINS! Absolute SCENES in the stadium! 📸"]));
         const bonusTag = kickBonusActive ? " (×2 BONUS! 💰)" : "";
         if(puffZone==="perfect") setKickComment(pick(["PERFECT PUFF GOAL! 💨👑🔥"+bonusTag,"SWEET SPOT MERCHANT! Unstoppable!"+bonusTag,"That "+holdLabel+" puff was CLINICAL 🎯"+bonusTag,"The puff-to-goal pipeline is REAL 💨→⚽","Keeper didn't stand a CHANCE 🧤💀"]));
         else setKickComment(pick(["GOLAZOOO! 🔥🔥"+bonusTag,"SHEEEESH! 🥶","NET GO BRRR 😤","That ball had SMOKE on it 💨",""+holdLabel+" puff = GOAL!"+bonusTag,"ABSOLUTE BANGER 💥"]));
       } else {
-        playFx("lose"); playFx("laugh");
+        playFx("lose"); playFx("laugh"); triggerFlash("save");
+        setCommentary(pick(["SAVED! The keeper reads it perfectly!","Denied! That puff wasn't enough!","The goalkeeper says NO! 🧤","Not today! Better puff next time! 💨"]));
         if(puffZone==="tap") setKickComment(pick([
           "Did your leg fall asleep?? 🦵💤","That wasn't a kick, that was a WHISPER 😂",
           "Ball barely moved... are you ok? 🥲","Your foot said 'nah I'm good' 🦶😴",
@@ -725,11 +784,13 @@ export default function MoodLabArena() {
     setTimeout(()=>{
       if(aiScores) {
         setKickScore(s=>({...s, ai:s.ai+1}));
-        playFx("lose"); playFx("laugh");
+        playFx("lose"); playFx("laugh"); triggerFlash("miss"); triggerShake();
+        setCommentary(pick(["GOAL for the AI! The away fans celebrate!","It's in! Wrong way for the keeper!","The AI slots it home coolly!"]));
         setKickComment(pick(["Bruh... 💀",""+kickOpponent.current.name+": 'Too easy' 😂","Wrong way lmaooo 🤣","Keeper had lag 📡","You dove like a fish... wrong fish 🐟",""+kickOpponent.current.emoji+" is doing a victory dance"]));
       } else {
         setKickStats(s=>({...s, saves:s.saves+1}));
-        playFx("win"); playFx("crowd");
+        playFx("win"); playFx("crowd"); triggerFlash("save"); triggerShake(); spawnConfetti(20,[C.orange,C.gold,C.green]);
+        setCommentary(pick(["WHAT A SAVE! INCREDIBLE reflexes!","The keeper is a WALL! Denied!","PHENOMENAL stop! The crowd roars!"]));
         setKickComment(pick(["DENIED! 🚫🧤",""+kickOpponent.current.name+" is SHOOK 😱","BRICK WALL! 🧱","You read that like a BOOK 📖",""+kickOpponent.current.emoji+" is questioning life rn","WHAT A SAVE! Crowd goes crazy 🙌"]));
       }
       setTimeout(()=>{
@@ -1807,7 +1868,116 @@ export default function MoodLabArena() {
         const crowdEmojis = ["🎉","🔥","😤","💨","🤣","😱","👏","🥳","💀","😂","🙌","⚡"];
 
         return (
-          <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden"}}>
+          <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden",
+            animation:screenShake?"shake 0.4s ease":"none",
+            filter:dimLights?"brightness(0.6)":"brightness(1)",transition:"filter 0.3s",
+          }}>
+            {/* ═══ SCREEN FLASH OVERLAY ═══ */}
+            {screenFlash && <div style={{position:"absolute",inset:0,zIndex:200,pointerEvents:"none",opacity:0,
+              background:screenFlash==="goal"?"rgba(0,255,100,0.25)":screenFlash==="save"?"rgba(255,165,0,0.2)":screenFlash==="miss"?"rgba(255,50,50,0.2)":"rgba(255,0,0,0.3)",
+              animation:"flashOverlay 0.4s ease forwards",
+            }}/>}
+
+            {/* ═══ CONFETTI PARTICLES ═══ */}
+            {confettiParticles.length>0 && confettiParticles.map(p=>(
+              <div key={p.id} style={{position:"absolute",left:`${p.x}%`,top:`${p.y}%`,width:p.size,height:p.size*0.6,
+                background:p.color,borderRadius:1,transform:`rotate(${p.rot}deg)`,zIndex:210,pointerEvents:"none",
+                animation:`confettiFall ${1.5+Math.random()}s ease-out forwards`,
+              }}/>
+            ))}
+
+            {/* ═══ SMOKE PARTICLES ═══ */}
+            {smokeParticles.length>0 && smokeParticles.map(p=>(
+              <div key={p.id} style={{position:"absolute",left:`${p.x}%`,top:`${p.y}%`,width:p.size,height:p.size,
+                borderRadius:"50%",background:`radial-gradient(circle, rgba(255,255,255,0.06), transparent)`,
+                zIndex:205,pointerEvents:"none",filter:"blur(8px)",
+                animation:`smokeRise ${p.dur}s ease-out forwards`,
+              }}/>
+            ))}
+
+            {/* ═══ PUFF WAVE ═══ */}
+            {puffWaveActive && <div style={{position:"absolute",bottom:0,left:0,right:0,height:"100%",zIndex:208,pointerEvents:"none",
+              background:`linear-gradient(0deg, rgba(0,229,255,0.08) 0%, rgba(127,255,0,0.04) 30%, transparent 60%)`,
+              animation:"puffWaveSweep 3s ease forwards",
+            }}>
+              <div style={{position:"absolute",bottom:"20%",left:"50%",transform:"translateX(-50%)",fontSize:12,fontWeight:900,color:C.cyan,textShadow:`0 0 20px ${C.cyan}`,animation:"fadeIn 0.5s ease"}}>
+                🌊💨 PUFF WAVE! THE STADIUM IS CLOUDED! ☁️💨 🌊
+              </div>
+            </div>}
+
+            {/* ═══ AI COMMENTATOR BAR ═══ */}
+            {commentatorText && <div style={{position:"absolute",top:36,left:10,right:10,zIndex:215,padding:"5px 12px",borderRadius:10,
+              ...GLASS_CLEAR,textAlign:"center",animation:"fadeIn 0.3s ease",
+            }}>
+              <span style={{fontSize:8,fontWeight:700,color:C.gold}}>🎙️ </span>
+              <span style={{fontSize:9,fontWeight:600,color:C.text,fontStyle:"italic"}}>{commentatorText}</span>
+            </div>}
+
+            {/* ═══ MATCH INTRO OVERLAY ═══ */}
+            {matchIntro && (
+              <div style={{position:"absolute",inset:0,zIndex:220,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
+                background:"rgba(0,0,0,0.85)",backdropFilter:"blur(10px)",animation:"fadeIn 0.3s ease",
+              }}>
+                {matchIntro.stage==="enter" && (
+                  <div style={{textAlign:"center",animation:"fadeIn 0.5s ease"}}>
+                    <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:30}}>
+                      <div style={{animation:"slideInLeft 0.8s ease",textAlign:"center"}}>
+                        <div style={{fontSize:50,marginBottom:4}}>😎</div>
+                        <div style={{fontSize:14,fontWeight:900,color:C.cyan}}>Steve</div>
+                        <div style={{fontSize:8,color:C.text3}}>Lv.24 · {getDeviceShort()}</div>
+                      </div>
+                      <div style={{fontSize:28,fontWeight:900,color:C.gold,textShadow:`0 0 20px ${C.gold}60`,animation:"countPulse 1s infinite"}}>VS</div>
+                      <div style={{animation:"slideInRight 0.8s ease",textAlign:"center"}}>
+                        <div style={{fontSize:50,marginBottom:4}}>{kickOpponent.current.emoji}</div>
+                        <div style={{fontSize:14,fontWeight:900,color:C.red}}>{kickOpponent.current.name}</div>
+                        <div style={{fontSize:8,color:C.text3}}>{kickOpponent.current.rank}</div>
+                      </div>
+                    </div>
+                    <div style={{fontSize:9,color:C.gold,marginTop:16,letterSpacing:3}}>🏆 FINAL KICK CHAMPIONSHIP</div>
+                  </div>
+                )}
+                {matchIntro.stage==="stats" && (
+                  <div style={{textAlign:"center",animation:"fadeIn 0.4s ease",width:"80%",maxWidth:300}}>
+                    <div style={{fontSize:10,fontWeight:800,color:C.gold,marginBottom:12,letterSpacing:2}}>📊 MATCH STATS</div>
+                    <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}>
+                      <span style={{fontSize:11,fontWeight:800,color:C.cyan}}>72%</span>
+                      <span style={{fontSize:9,color:C.text3}}>Win Rate</span>
+                      <span style={{fontSize:11,fontWeight:800,color:C.red}}>{45+Math.floor(Math.random()*20)}%</span>
+                    </div>
+                    <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}>
+                      <span style={{fontSize:11,fontWeight:800,color:C.cyan}}>420</span>
+                      <span style={{fontSize:9,color:C.text3}}>Total Goals</span>
+                      <span style={{fontSize:11,fontWeight:800,color:C.red}}>{kickOpponent.current.record.split("-")[0]}</span>
+                    </div>
+                    <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}>
+                      <span style={{fontSize:11,fontWeight:800,color:C.cyan}}>69</span>
+                      <span style={{fontSize:9,color:C.text3}}>Blinkers 💀</span>
+                      <span style={{fontSize:11,fontWeight:800,color:C.red}}>{Math.floor(Math.random()*30)}</span>
+                    </div>
+                    <div style={{display:"flex",justifyContent:"space-between"}}>
+                      <span style={{fontSize:11,fontWeight:800,color:C.cyan}}>2.9s</span>
+                      <span style={{fontSize:9,color:C.text3}}>Avg Puff</span>
+                      <span style={{fontSize:11,fontWeight:800,color:C.red}}>{(2.5+Math.random()).toFixed(1)}s</span>
+                    </div>
+                  </div>
+                )}
+                {matchIntro.stage==="countdown" && (
+                  <div style={{textAlign:"center"}}>
+                    <div style={{fontSize:80,fontWeight:900,color:C.gold,textShadow:`0 0 40px ${C.gold}60`,animation:"countPulse 0.8s ease",lineHeight:1}}>
+                      {matchIntro.count}
+                    </div>
+                  </div>
+                )}
+                {matchIntro.stage==="go" && (
+                  <div style={{textAlign:"center",animation:"fadeIn 0.2s ease"}}>
+                    <div style={{fontSize:36,fontWeight:900,color:C.green,textShadow:`0 0 30px ${C.green}60`,animation:"countPulse 0.5s ease"}}>
+                      ⚽ KICK OFF!
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* ═══ STADIUM BACKGROUND ═══ */}
             <div style={{position:"absolute",inset:0,background:`
               radial-gradient(ellipse at 50% 0%, rgba(0,229,255,0.08) 0%, transparent 50%),
@@ -2241,6 +2411,8 @@ export default function MoodLabArena() {
                     setSideChat(p=>({...p,[audienceSide]:[...p[audienceSide],msg]}));
                     setFloatingReactions(p=>[...p,{id:Date.now()+i,emoji:r.e,x:20+Math.random()*60,dur:1.5+Math.random()}]);
                     if(r.e==="😂") playFx("laugh");
+                    // 💨 Puff emoji has 15% chance to trigger Puff Wave (simulating 10+ fans)
+                    if(r.e==="💨"&&Math.random()<0.15&&!puffWaveActive){triggerPuffWave();playFx("crowd");setCommentary("🌊 PUFF WAVE! "+sideFans.you+sideFans.ai+" fans puffed at once! THE STADIUM IS CLOUDED! ☁️");}
                   }} style={{width:30,height:30,borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:14,background:`rgba(255,255,255,0.04)`,border:`1px solid rgba(255,255,255,0.06)`}}>
                     {r.e}
                   </div>
@@ -2986,6 +3158,13 @@ export default function MoodLabArena() {
         @keyframes loadingBar{0%{width:0}100%{width:100%}}
         @keyframes panelSlideUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
         @keyframes glassFloatIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+        @keyframes shake{0%,100%{transform:translateX(0)}10%{transform:translateX(-4px) rotate(-0.5deg)}30%{transform:translateX(4px) rotate(0.5deg)}50%{transform:translateX(-3px)}70%{transform:translateX(3px)}90%{transform:translateX(-1px)}}
+        @keyframes flashOverlay{0%{opacity:0.8}100%{opacity:0}}
+        @keyframes confettiFall{0%{transform:translateY(0) rotate(0deg);opacity:1}100%{transform:translateY(400px) translateX(40px) rotate(720deg);opacity:0}}
+        @keyframes smokeRise{0%{transform:scale(0.5) translateY(0);opacity:0.15}50%{opacity:0.08}100%{transform:scale(2.5) translateY(-150px);opacity:0}}
+        @keyframes puffWaveSweep{0%{transform:translateY(100%);opacity:0}20%{opacity:1}80%{opacity:0.6}100%{transform:translateY(-20%);opacity:0}}
+        @keyframes slideInLeft{from{transform:translateX(-80px);opacity:0}to{transform:translateX(0);opacity:1}}
+        @keyframes slideInRight{from{transform:translateX(80px);opacity:0}to{transform:translateX(0);opacity:1}}
         *{-webkit-tap-highlight-color:transparent;user-select:none;box-sizing:border-box}
         input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
         input[type=number]{-moz-appearance:textfield}
