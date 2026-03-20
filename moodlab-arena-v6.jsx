@@ -3389,70 +3389,198 @@ export default function MoodLabArena() {
             )}
           </div>
 
-          {/* ═══ HOW TO PLAY POPUP ═══ */}
+          {/* ═══ HOW TO PLAY — MASSIVE VISUAL REDESIGN ═══ */}
           {showHowToPlay && (
-            <div style={{position:"absolute",inset:0,zIndex:120,display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(0,0,0,0.7)",backdropFilter:"blur(6px)",animation:"fadeIn 0.2s ease"}}
+            <div style={{position:"absolute",inset:0,zIndex:120,background:"rgba(0,0,0,0.75)",backdropFilter:"blur(8px)",animation:"fadeIn 0.2s ease",overflowY:"auto"}}
               onClick={()=>setShowHowToPlay(false)}>
-              <div onClick={(e)=>e.stopPropagation()} style={{width:"90%",maxWidth:360,maxHeight:"80%",borderRadius:20,overflow:"hidden",
-                background:`linear-gradient(180deg, #0c1a38 0%, #102240 50%, #081830 100%)`,
-                border:`1px solid ${C.border}`,boxShadow:`0 20px 60px rgba(0,0,0,0.6), 0 0 30px ${selectedGame.color}10`,
-              }}>
-                {/* Header */}
-                <div style={{padding:"14px 16px 10px",display:"flex",alignItems:"center",justifyContent:"space-between",borderBottom:`1px solid ${C.border}`}}>
-                  <div style={{display:"flex",alignItems:"center",gap:6}}>
-                    <span style={{fontSize:18}}>{selectedGame.emoji}</span>
-                    <span style={{fontSize:14,fontWeight:900,color:C.text}}>How to Play</span>
-                  </div>
-                  <div onClick={()=>setShowHowToPlay(false)} style={{width:28,height:28,borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",background:`rgba(255,255,255,0.06)`,border:`1px solid ${C.border}`,fontSize:12,color:C.text3}}>✕</div>
+              <div onClick={(e)=>e.stopPropagation()} style={{minHeight:"100%",padding:"16px 14px 30px"}}>
+
+                {/* Close button */}
+                <div onClick={()=>setShowHowToPlay(false)} style={{position:"sticky",top:8,float:"right",zIndex:5,width:32,height:32,borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",background:`rgba(6,16,30,0.9)`,border:`1px solid ${C.border}`,fontSize:14,color:C.text3,backdropFilter:"blur(8px)"}}>✕</div>
+
+                {/* Hero */}
+                <div style={{textAlign:"center",marginBottom:16,paddingTop:8}}>
+                  <div style={{fontSize:40,marginBottom:4}}>⚽</div>
+                  <div style={{fontSize:18,fontWeight:900,color:C.text}}>Final Kick</div>
+                  <div style={{fontSize:10,color:C.text2}}>1v1 Penalty Shootout Powered by Puff</div>
                 </div>
 
-                {/* Scrollable content */}
-                <div style={{padding:"12px 16px",overflowY:"auto",maxHeight:"calc(80vh - 80px)"}}>
-                  {selectedGame.id==="finalkick" ? (<>
-                    {/* Final Kick rules */}
+                {selectedGame.id==="finalkick" ? (<>
+
+                {/* ═══ SECTION 1: GAME FLOW DIAGRAM ═══ */}
+                <div style={{padding:"12px",borderRadius:16,...GLASS_CARD,marginBottom:12}}>
+                  <div style={{fontSize:9,fontWeight:800,color:C.gold,letterSpacing:2,marginBottom:8,textAlign:"center"}}>⚡ GAME FLOW</div>
+                  <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
                     {[
-                      {icon:"🎯",title:"Goal",desc:"5 rounds. Each round: you kick + you save. Most goals wins."},
-                      {icon:"💨",title:"Puff to Kick",desc:"Hold the puff button to charge power. Release in the SWEET SPOT zone (green) to score."},
-                      {icon:"🟢",title:"Sweet Spot",desc:"Only kicks in the sweet spot can score! Too short or too long = auto-miss. The zone shifts every round."},
-                      {icon:"⏱️",title:"3s Timer",desc:"You have 3 seconds to pick a zone. Too slow = random auto-action."},
-                      {icon:"🧤",title:"Save Phase",desc:"AI shoots at you. Tap a zone to dive and block the shot."},
-                      {icon:"💀",title:"Blinker",desc:"Hold puff for 5+ seconds = BLINKER. Ball goes wild. Maximum comedy. Everyone laughs."},
-                      {icon:"⚡",title:"Bonus Shot",desc:"50% chance after round 5. Tighter sweet spot but 2x reward if scored."},
-                      {icon:"👥",title:"Audience",desc:"Fans pick sides and chat. Puff a BLINKER to switch sides (🐍 TRAITOR badge!)."},
-                      {icon:"🏆",title:"Tournament",desc:"World Cup 2026: pick a nation, play group stage (3 matches), advance to knockout."},
-                    ].map((step,i)=>(
-                      <div key={i} style={{display:"flex",gap:10,marginBottom:10,alignItems:"flex-start"}}>
-                        <div style={{width:32,height:32,borderRadius:10,background:`${selectedGame.color}10`,border:`1px solid ${selectedGame.color}15`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0}}>{step.icon}</div>
-                        <div>
-                          <div style={{fontSize:11,fontWeight:800,color:C.text,marginBottom:1}}>{step.title}</div>
-                          <div style={{fontSize:9,color:C.text2,lineHeight:1.4}}>{step.desc}</div>
+                      {step:"1",icon:"👆",label:"Pick Zone",sub:"Choose where to kick",color:C.cyan,arrow:true},
+                      {step:"2",icon:"💨",label:"PUFF!",sub:"Hold & release in sweet spot",color:C.lime,arrow:true},
+                      {step:"3",icon:"⚽",label:"Goal or Miss?",sub:"Only perfect puffs score!",color:C.gold,arrow:true},
+                      {step:"4",icon:"🧤",label:"Save Phase",sub:"Block the AI's shot",color:C.orange,arrow:true},
+                      {step:"5",icon:"🔄",label:"Repeat x5",sub:"5 rounds total",color:C.purple,arrow:false},
+                    ].map((s,i)=>(
+                      <React.Fragment key={i}>
+                        <div style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"6px 10px",borderRadius:10,background:`${s.color}08`,border:`1px solid ${s.color}15`}}>
+                          <div style={{width:28,height:28,borderRadius:8,background:`${s.color}20`,border:`1px solid ${s.color}30`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,flexShrink:0}}>{s.icon}</div>
+                          <div style={{flex:1}}>
+                            <div style={{fontSize:10,fontWeight:800,color:s.color}}>{s.label}</div>
+                            <div style={{fontSize:7,color:C.text3}}>{s.sub}</div>
+                          </div>
+                          <div style={{width:18,height:18,borderRadius:"50%",background:`${s.color}15`,border:`1px solid ${s.color}30`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,fontWeight:900,color:s.color}}>{s.step}</div>
                         </div>
+                        {s.arrow && <div style={{fontSize:10,color:C.text3+"60",lineHeight:1}}>↓</div>}
+                      </React.Fragment>
+                    ))}
+                  </div>
+                </div>
+
+                {/* ═══ SECTION 2: PUFF POWER METER (big visual) ═══ */}
+                <div style={{padding:"12px",borderRadius:16,...GLASS_CARD,marginBottom:12}}>
+                  <div style={{fontSize:9,fontWeight:800,color:C.lime,letterSpacing:2,marginBottom:8,textAlign:"center"}}>💨 THE PUFF METER</div>
+                  <div style={{fontSize:8,color:C.text2,textAlign:"center",marginBottom:8}}>Hold to charge. Release in the GREEN zone to score!</div>
+
+                  {/* Big visual power bar */}
+                  <div style={{height:32,borderRadius:16,overflow:"hidden",display:"flex",marginBottom:6,border:`2px solid ${C.border}`}}>
+                    <div style={{width:"10%",background:`${C.text3}25`,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                      <span style={{fontSize:6,fontWeight:800,color:C.text3}}>TAP</span>
+                    </div>
+                    <div style={{width:"18%",background:`linear-gradient(90deg, ${C.text3}15, ${C.cyan}10)`,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                      <span style={{fontSize:6,fontWeight:700,color:C.text3}}>SHORT</span>
+                    </div>
+                    <div style={{width:"18%",background:`${C.cyan}15`,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                      <span style={{fontSize:6,fontWeight:700,color:C.cyan}}>GOOD</span>
+                    </div>
+                    <div style={{width:"22%",background:`linear-gradient(90deg, ${C.green}25, ${C.lime}30)`,display:"flex",alignItems:"center",justifyContent:"center",border:`2px solid ${C.green}50`,borderRadius:4,position:"relative"}}>
+                      <span style={{fontSize:7,fontWeight:900,color:C.green}}>PERFECT 💨</span>
+                    </div>
+                    <div style={{width:"16%",background:`${C.orange}15`,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                      <span style={{fontSize:6,fontWeight:700,color:C.orange}}>LONG</span>
+                    </div>
+                    <div style={{width:"16%",background:`${C.red}20`,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                      <span style={{fontSize:6,fontWeight:800,color:C.red}}>💀 BLINK</span>
+                    </div>
+                  </div>
+
+                  {/* Time labels */}
+                  <div style={{display:"flex",justifyContent:"space-between",padding:"0 2px",marginBottom:6}}>
+                    <span style={{fontSize:6,color:C.text3}}>0s</span>
+                    <span style={{fontSize:6,color:C.text3}}>1s</span>
+                    <span style={{fontSize:6,color:C.text3}}>2s</span>
+                    <span style={{fontSize:6,color:C.green,fontWeight:800}}>2.5-3.5s ✓</span>
+                    <span style={{fontSize:6,color:C.text3}}>4s</span>
+                    <span style={{fontSize:6,color:C.red}}>5s+</span>
+                  </div>
+
+                  {/* Outcome cards */}
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
+                    <div style={{padding:"8px",borderRadius:10,background:`${C.green}08`,border:`1px solid ${C.green}15`,textAlign:"center"}}>
+                      <div style={{fontSize:18,marginBottom:2}}>⚽</div>
+                      <div style={{fontSize:8,fontWeight:800,color:C.green}}>PERFECT = GOAL</div>
+                      <div style={{fontSize:7,color:C.text3}}>Only way to score!</div>
+                    </div>
+                    <div style={{padding:"8px",borderRadius:10,background:`${C.red}08`,border:`1px solid ${C.red}15`,textAlign:"center"}}>
+                      <div style={{fontSize:18,marginBottom:2}}>💀</div>
+                      <div style={{fontSize:8,fontWeight:800,color:C.red}}>BLINKER = MISS</div>
+                      <div style={{fontSize:7,color:C.text3}}>Ball goes to the moon 🌙</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* ═══ SECTION 3: GOAL ZONES VISUAL ═══ */}
+                <div style={{padding:"12px",borderRadius:16,...GLASS_CARD,marginBottom:12}}>
+                  <div style={{fontSize:9,fontWeight:800,color:C.cyan,letterSpacing:2,marginBottom:8,textAlign:"center"}}>🥅 GOAL ZONES</div>
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:3,marginBottom:6}}>
+                    {["↖ Top\nLeft","↑ Top\nCenter","↗ Top\nRight","↙ Bottom\nLeft","↓ Bottom\nCenter","↘ Bottom\nRight"].map((z,i)=>(
+                      <div key={i} style={{padding:"10px 4px",borderRadius:8,background:`${C.cyan}08`,border:`1px solid ${C.cyan}15`,textAlign:"center",fontSize:7,fontWeight:600,color:C.text2,whiteSpace:"pre-line",lineHeight:1.3}}>
+                        {z}
                       </div>
                     ))}
-
-                    {/* Puff zones visual */}
-                    <div style={{padding:"10px 12px",borderRadius:12,background:`rgba(255,255,255,0.03)`,border:`1px solid ${C.border}`,marginTop:4}}>
-                      <div style={{fontSize:8,fontWeight:800,color:C.gold,marginBottom:6,letterSpacing:1}}>💨 PUFF DURATION ZONES</div>
-                      <div style={{display:"flex",gap:2,height:16,borderRadius:8,overflow:"hidden",marginBottom:4}}>
-                        <div style={{flex:1,background:`${C.text3}30`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:6,fontWeight:700,color:C.text3}}>TAP</div>
-                        <div style={{flex:2,background:`${C.text3}20`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:6,fontWeight:700,color:C.text3}}>SHORT</div>
-                        <div style={{flex:2,background:`${C.cyan}20`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:6,fontWeight:700,color:C.cyan}}>GOOD</div>
-                        <div style={{flex:2,background:`${C.green}30`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:6,fontWeight:800,color:C.green}}>PERFECT</div>
-                        <div style={{flex:1,background:`${C.orange}20`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:6,fontWeight:700,color:C.orange}}>LONG</div>
-                        <div style={{flex:1,background:`${C.red}25`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:5,fontWeight:700,color:C.red}}>💀</div>
-                      </div>
-                      <div style={{fontSize:7,color:C.text3,textAlign:"center"}}>Hold 2.5-3.5s for PERFECT PUFF 💨👑</div>
+                  </div>
+                  <div style={{display:"flex",gap:6}}>
+                    <div style={{flex:1,padding:"6px",borderRadius:8,background:`${C.orange}06`,border:`1px solid ${C.orange}12`,textAlign:"center"}}>
+                      <div style={{fontSize:8,fontWeight:700,color:C.orange}}>⚽ KICK</div>
+                      <div style={{fontSize:7,color:C.text3}}>Choose where to aim</div>
                     </div>
-                  </>) : (
-                    /* Generic game rules */
-                    <div style={{textAlign:"center",padding:"20px 0"}}>
-                      <div style={{fontSize:40,marginBottom:8}}>{selectedGame.emoji}</div>
-                      <div style={{fontSize:12,fontWeight:700,color:C.text,marginBottom:4}}>{selectedGame.name}</div>
-                      <div style={{fontSize:10,color:C.text2,lineHeight:1.5}}>{selectedGame.desc}</div>
-                      <div style={{fontSize:9,color:C.text3,marginTop:12}}>Full rules coming soon!</div>
+                    <div style={{flex:1,padding:"6px",borderRadius:8,background:`${C.green}06`,border:`1px solid ${C.green}12`,textAlign:"center"}}>
+                      <div style={{fontSize:8,fontWeight:700,color:C.green}}>🧤 SAVE</div>
+                      <div style={{fontSize:7,color:C.text3}}>Dive to block shot</div>
                     </div>
-                  )}
+                  </div>
                 </div>
+
+                {/* ═══ SECTION 4: SPECIAL FEATURES ═══ */}
+                <div style={{padding:"12px",borderRadius:16,...GLASS_CARD,marginBottom:12}}>
+                  <div style={{fontSize:9,fontWeight:800,color:C.purple,letterSpacing:2,marginBottom:8,textAlign:"center"}}>✨ SPECIAL FEATURES</div>
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
+                    {[
+                      {icon:"⏱️",title:"3s Timer",desc:"Pick fast or auto-action!",color:C.gold},
+                      {icon:"⚡",title:"Bonus Shot",desc:"2x reward, harder puff",color:C.gold},
+                      {icon:"🌊",title:"Puff Wave",desc:"10+ fans puff at once!",color:C.cyan},
+                      {icon:"🐍",title:"Traitor",desc:"Switch sides = badge!",color:C.red},
+                    ].map((f,i)=>(
+                      <div key={i} style={{padding:"8px",borderRadius:10,background:`${f.color}06`,border:`1px solid ${f.color}12`,textAlign:"center"}}>
+                        <div style={{fontSize:16,marginBottom:2}}>{f.icon}</div>
+                        <div style={{fontSize:8,fontWeight:800,color:f.color}}>{f.title}</div>
+                        <div style={{fontSize:7,color:C.text3}}>{f.desc}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* ═══ SECTION 5: TOURNAMENT PATH ═══ */}
+                <div style={{padding:"12px",borderRadius:16,...GLASS_CARD,marginBottom:12}}>
+                  <div style={{fontSize:9,fontWeight:800,color:C.gold,letterSpacing:2,marginBottom:8,textAlign:"center"}}>🏆 TOURNAMENT PATH</div>
+                  <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:3,flexWrap:"wrap"}}>
+                    {[
+                      {label:"Group",sub:"3 matches",color:C.cyan},
+                      {label:"R32",sub:"Win to advance",color:C.blue},
+                      {label:"R16",sub:"Knockout",color:C.green},
+                      {label:"QF",sub:"Quarter",color:C.lime},
+                      {label:"SF",sub:"Semi",color:C.gold},
+                      {label:"FINAL",sub:"🏆",color:C.gold},
+                    ].map((r,i)=>(
+                      <React.Fragment key={i}>
+                        <div style={{padding:"5px 6px",borderRadius:8,background:`${r.color}10`,border:`1px solid ${r.color}20`,textAlign:"center",minWidth:40}}>
+                          <div style={{fontSize:8,fontWeight:800,color:r.color}}>{r.label}</div>
+                          <div style={{fontSize:6,color:C.text3}}>{r.sub}</div>
+                        </div>
+                        {i<5 && <span style={{fontSize:8,color:C.text3+"60"}}>→</span>}
+                      </React.Fragment>
+                    ))}
+                  </div>
+                  {/* Prizes */}
+                  <div style={{display:"flex",gap:4,marginTop:8,justifyContent:"center"}}>
+                    <div style={{padding:"4px 8px",borderRadius:6,background:`${C.gold}12`,border:`1px solid ${C.gold}20`,fontSize:7,fontWeight:700,color:C.gold}}>🥇 50K pts</div>
+                    <div style={{padding:"4px 8px",borderRadius:6,background:`rgba(192,192,192,0.08)`,border:`1px solid rgba(192,192,192,0.2)`,fontSize:7,fontWeight:700,color:"#C0C0C0"}}>🥈 25K</div>
+                    <div style={{padding:"4px 8px",borderRadius:6,background:`rgba(205,127,50,0.08)`,border:`1px solid rgba(205,127,50,0.2)`,fontSize:7,fontWeight:700,color:"#CD7F32"}}>🥉 10K</div>
+                  </div>
+                </div>
+
+                {/* ═══ SECTION 6: PRO TIPS ═══ */}
+                <div style={{padding:"12px",borderRadius:16,background:`${C.lime}06`,border:`1px solid ${C.lime}15`,marginBottom:8}}>
+                  <div style={{fontSize:9,fontWeight:800,color:C.lime,letterSpacing:2,marginBottom:6,textAlign:"center"}}>🧠 PRO TIPS</div>
+                  <div style={{display:"flex",flexDirection:"column",gap:4}}>
+                    {[
+                      "Sweet spot shifts EVERY round — stay focused!",
+                      "The bar fills FASTER at higher power — release early rather than late",
+                      "Blinker (5s+) = funniest moment but you MISS 💀",
+                      "Watch the AI's eyes during save — they sometimes hint the direction 👀",
+                    ].map((tip,i)=>(
+                      <div key={i} style={{display:"flex",gap:6,alignItems:"flex-start"}}>
+                        <span style={{fontSize:8,color:C.lime,fontWeight:900,flexShrink:0}}>💡</span>
+                        <span style={{fontSize:8,color:C.text2,lineHeight:1.3}}>{tip}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                </>) : (
+                  <div style={{textAlign:"center",padding:"30px 20px",...GLASS_CARD,borderRadius:16}}>
+                    <div style={{fontSize:48,marginBottom:10}}>{selectedGame.emoji}</div>
+                    <div style={{fontSize:14,fontWeight:800,color:C.text,marginBottom:4}}>{selectedGame.name}</div>
+                    <div style={{fontSize:10,color:C.text2,lineHeight:1.5}}>{selectedGame.desc}</div>
+                    <div style={{fontSize:9,color:C.text3,marginTop:16,padding:"8px 16px",borderRadius:8,background:`rgba(255,255,255,0.03)`,border:`1px solid ${C.border}`,display:"inline-block"}}>Full rules coming soon!</div>
+                  </div>
+                )}
               </div>
             </div>
           )}
