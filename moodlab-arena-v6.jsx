@@ -3688,19 +3688,17 @@ export default function MoodLabArena() {
     // ── FAN: Watching lobby ──
     if(fanMode === "watching") {
       const devLabel = INPUT_TYPES.find(t=>t.id===fanDevice)?.label||"Puff";
-      // Fixed match data (no re-render dance)
+      const fn = fanTeam?.name||"";
+      const ff = fanTeam?.flag||"🏳️";
+      // Generate matches involving the fan's team + a few others
+      const otherTeams = WC_TEAMS.filter(t=>t.id!==fanTeam?.id).slice(0,8);
       const liveMatches = [
-        {hf:"🇧🇷",hn:"Brazil",af:"🇩🇪",an:"Germany",score:"2-1",phase:"Group E · Match 2",viewers:127,round:3},
-        {hf:"🇺🇸",hn:"USA",af:"🇲🇽",an:"Mexico",score:"1-1",phase:"Group A · Match 3",viewers:89,round:4},
-        {hf:"🇫🇷",hn:"France",af:"🇦🇷",an:"Argentina",score:"0-0",phase:"Round of 16",viewers:234,round:5},
-        {hf:"🇯🇵",hn:"Japan",af:"🇰🇷",an:"South Korea",score:"3-2",phase:"Group F · Match 1",viewers:56,round:2},
-        {hf:"🇬🇧",hn:"England",af:"🇪🇸",an:"Spain",score:"1-0",phase:"Quarterfinal",viewers:312,round:6},
+        {hf:ff,hn:fn,af:otherTeams[0]?.flag,an:otherTeams[0]?.name,score:"1-0",phase:`Group ${fanTeam?.group||"A"} · Match 2`,viewers:87,round:3},
+        {hf:ff,hn:fn,af:otherTeams[1]?.flag,an:otherTeams[1]?.name,score:"0-0",phase:`Group ${fanTeam?.group||"A"} · Match 1`,viewers:42,round:2},
       ];
       const upcomingMatches = [
-        {hf:"🇮🇹",hn:"Italy",af:"🇵🇹",an:"Portugal",phase:"Group B · Match 2",time:"In 15 min"},
-        {hf:"🇳🇱",hn:"Netherlands",af:"🇭🇷",an:"Croatia",phase:"Group D · Match 3",time:"In 45 min"},
-        {hf:"🇻🇳",hn:"Vietnam",af:"🇨🇳",an:"China",phase:"Group L · Match 1",time:"In 1h 20m"},
-        {hf:"🇲🇦",hn:"Morocco",af:"🇳🇬",an:"Nigeria",phase:"Semifinal",time:"In 2h"},
+        {hf:ff,hn:fn,af:otherTeams[2]?.flag,an:otherTeams[2]?.name,phase:`Group ${fanTeam?.group||"A"} · Match 3`,time:"In 25 min"},
+        {hf:ff,hn:fn,af:otherTeams[3]?.flag,an:otherTeams[3]?.name,phase:"Round of 16",time:"In 2h"},
       ];
       // Enter a match as spectator
       const fanEnterMatch = (match) => {
