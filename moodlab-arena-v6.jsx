@@ -464,17 +464,17 @@ export default function MoodLabArena() {
   useEffect(() => { const t=setInterval(()=>setMainStage(p=>(p+1)%3),5000); return()=>clearInterval(t); }, []);
   useEffect(() => { const t=setInterval(()=>setTickerOffset(p=>p-0.5),30); return()=>clearInterval(t); }, []);
 
-  // ── 3s Action Timer for shoot/save_dive ──
+  // ── 3s Action Timer for shoot/power/save_dive ──
   useEffect(() => {
-    if(kickState==="shoot"||kickState==="save_dive") {
+    if(kickState==="shoot"||kickState==="save_dive"||kickState==="power") {
       setActionTimer(3);
       if(actionTimerRef.current) clearInterval(actionTimerRef.current);
       actionTimerRef.current = setInterval(()=>{
         setActionTimer(p=>{
           if(p<=1) {
             clearInterval(actionTimerRef.current); actionTimerRef.current=null;
-            // Auto-action: random zone
             if(kickState==="shoot") { const rz=Math.floor(Math.random()*6); kickSelectZone(rz); playFx("error"); setCommentary("Too slow! Auto-kick! 🐌"); }
+            else if(kickState==="power") { kickStopCharge(); playFx("error"); setCommentary("Time's up! Auto-release! ⏱️"); }
             else if(kickState==="save_dive") { const rz=Math.floor(Math.random()*6); kickDive(rz); playFx("error"); setCommentary("Too slow! Random dive! 🐌"); }
             return 0;
           }
@@ -530,9 +530,8 @@ export default function MoodLabArena() {
   const triggerInputPulse = () => { setInputPulse(true); setTimeout(()=>setInputPulse(false),600); };
 
   const resolveInputForGame = (game, callback) => {
-    if(inputMode==="auto"){const s=game?.inputs||["puff"];const p=s.includes("puff")?"puff":s[0];notify(`🤖 Auto → ${INPUT_TYPES.find(t=>t.id===p)?.icon} ${INPUT_TYPES.find(t=>t.id===p)?.label}`,C.cyan);callback(p);}
-    else if(inputMode==="fixed"){const s=game?.inputs||["puff"];if(s.includes(primaryInput))callback(primaryInput);else{const f=s[0];notify(`⚠ Fallback → ${INPUT_TYPES.find(t=>t.id===f)?.label}`,C.orange);callback(f);}}
-    else{setShowAskPrompt(game);window._inputCb=callback;}
+    // Always ask user to choose input method before each game
+    setShowAskPrompt(game);window._inputCb=callback;
   };
   const handleAskPick = (id) => { setSessionInput(id); setShowAskPrompt(null); triggerInputPulse(); if(window._inputCb){window._inputCb(id);window._inputCb=null;} };
 
@@ -2608,8 +2607,8 @@ export default function MoodLabArena() {
                       {gameActive?.wcMode && wcTeam && <div style={{position:"absolute",bottom:-3,right:-3,fontSize:16,filter:"drop-shadow(0 1px 2px rgba(0,0,0,0.8))"}}>{wcTeam.flag}</div>}
                     </div>
                     <div style={{minWidth:0}}>
-                      <div style={{fontSize:11,fontWeight:800,color:C.cyan}}>{gameActive?.wcMode && wcTeam ? wcTeam.name : "Steve"}</div>
-                      <div style={{fontSize:7,color:C.text3}}>{getDeviceShort()} · Lv.24</div>
+                      <div style={{fontSize:11,fontWeight:800,color:C.cyan}}>{gameActive?.wcMode&&wcTeam?wcTeam.flag+" ":""}Steve</div>
+                      <div style={{fontSize:7,color:C.text3}}>{gameActive?.wcMode&&wcTeam?wcTeam.name+" · ":""}{getDeviceShort()}</div>
                       <div style={{fontSize:28,fontWeight:900,color:"#fff",textShadow:`0 0 12px ${C.cyan}60`,lineHeight:1,marginTop:2}}>{kickScore.you}</div>
                     </div>
                   </div>
@@ -2628,8 +2627,8 @@ export default function MoodLabArena() {
                       {gameActive?.wcMode && <div style={{position:"absolute",bottom:-3,left:-3,fontSize:16,filter:"drop-shadow(0 1px 2px rgba(0,0,0,0.8))"}}>{kickOpponent.current.emoji}</div>}
                     </div>
                     <div style={{textAlign:"right",minWidth:0}}>
-                      <div style={{fontSize:11,fontWeight:800,color:C.red,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{kickOpponent.current.name}</div>
-                      <div style={{fontSize:7,color:C.text3}}>{kickOpponent.current.rank} · {kickOpponent.current.record}</div>
+                      <div style={{fontSize:11,fontWeight:800,color:C.red,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{gameActive?.wcMode?kickOpponent.current.emoji+" ":"" }{kickOpponent.current.name}</div>
+                      <div style={{fontSize:7,color:C.text3}}>{kickOpponent.current.rank}</div>
                       <div style={{fontSize:28,fontWeight:900,color:"#fff",textShadow:`0 0 12px ${C.red}60`,lineHeight:1,marginTop:2}}>{kickScore.ai}</div>
                     </div>
                   </div>
@@ -2783,10 +2782,13 @@ export default function MoodLabArena() {
                     : `linear-gradient(90deg, ${C.cyan}, ${C.green})`;
                 return (
                 <div style={{width:goalW,animation:"fadeIn 0.3s ease"}}>
-                  {/* Duration timer + zone label */}
+                  {/* Duration timer + zone label + action countdown */}
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:3,padding:"0 2px"}}>
                     <span style={{fontSize:9,fontWeight:800,color:zoneColor}}>{kickCharging?zoneLabel:"PUFF DURATION"}</span>
-                    {kickCharging && <span style={{fontSize:10,fontWeight:900,color:zoneColor,fontFamily:"monospace"}}>{elapsed.toFixed(1)}s</span>}
+                    <div style={{display:"flex",alignItems:"center",gap:4}}>
+                      {kickCharging && <span style={{fontSize:10,fontWeight:900,color:zoneColor,fontFamily:"monospace"}}>{elapsed.toFixed(1)}s</span>}
+                      {!kickCharging && <span style={{fontSize:10,fontWeight:900,color:actionTimer<=1?C.red:C.gold,animation:actionTimer<=1?"pulse 0.5s infinite":"none"}}>{actionTimer}s</span>}
+                    </div>
                   </div>
                   {/* Power bar with puff zone markers */}
                   <div style={{height:28,borderRadius:14,background:`rgba(255,255,255,0.04)`,overflow:"hidden",border:`2px solid ${kickCharging?zoneColor+"60":"rgba(255,255,255,0.1)"}`,position:"relative",transition:"border-color 0.2s",boxShadow:kickCharging?`0 0 15px ${zoneColor}25`:"none",
@@ -3972,46 +3974,25 @@ export default function MoodLabArena() {
           <div style={{width:36,height:4,borderRadius:2,background:`${C.text3}30`,margin:"0 auto 16px"}}/>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
             <div>
-              <div style={{fontSize:15,fontWeight:900,color:C.text}}>Device Input Method</div>
-              <div style={{fontSize:10,color:C.text3,marginTop:2}}>Arena Games + Live Shows</div>
+              <div style={{fontSize:15,fontWeight:900,color:C.text}}>Device Control</div>
+              <div style={{fontSize:10,color:C.text3,marginTop:2}}>Choose your preferred input · Selected before each game</div>
             </div>
             <div onClick={()=>setShowInputPanel(false)} style={{width:28,height:28,borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",background:`${C.text3}08`,border:`1px solid ${C.border}`,fontSize:12,color:C.text3}}>✕</div>
           </div>
-          <div style={{fontSize:9,fontWeight:700,color:C.text3,letterSpacing:1.5,marginBottom:6}}>MODE</div>
-          <div style={{display:"flex",gap:6,marginBottom:14}}>
-            {INPUT_MODES.map(m=>(
-              <div key={m.id} onClick={()=>{setInputMode(m.id);triggerInputPulse();if(m.id!=="ask")setSessionInput(null);}} style={{flex:1,padding:"10px 6px",borderRadius:12,cursor:"pointer",textAlign:"center",background:inputMode===m.id?`${m.color}10`:C.bg3,border:`1.5px solid ${inputMode===m.id?m.color+"40":C.border}`,transition:"all 0.25s"}}>
-                <div style={{fontSize:18,marginBottom:3}}>{m.icon}</div>
-                <div style={{fontSize:11,fontWeight:800,color:inputMode===m.id?m.color:C.text2}}>{m.label}</div>
-                <div style={{fontSize:7,color:C.text3,marginTop:2,lineHeight:1.3}}>{m.desc}</div>
+          <div style={{fontSize:9,fontWeight:700,color:C.text3,letterSpacing:1.5,marginBottom:6}}>DEVICE INPUTS</div>
+          <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:12}}>
+            {INPUT_TYPES.map(t=>(
+              <div key={t.id} onClick={()=>{setPrimaryInput(t.id);triggerInputPulse();}} style={{padding:"10px 12px",borderRadius:10,cursor:"pointer",display:"flex",alignItems:"center",gap:10,background:primaryInput===t.id?`${t.color}08`:C.bg3,border:`1.5px solid ${primaryInput===t.id?t.color+"35":C.border}`,transition:"all 0.25s"}}>
+                <div style={{width:34,height:34,borderRadius:9,display:"flex",alignItems:"center",justifyContent:"center",background:`${t.color}12`,border:`1px solid ${t.color}20`,fontSize:16}}>{t.icon}</div>
+                <div style={{flex:1}}><div style={{fontSize:12,fontWeight:700,color:primaryInput===t.id?t.color:C.text}}>{t.label}</div><div style={{fontSize:9,color:C.text3}}>{t.desc}</div></div>
+                {primaryInput===t.id && <div style={{width:18,height:18,borderRadius:"50%",background:t.color,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:"#000",fontWeight:900}}>✓</div>}
               </div>
             ))}
           </div>
-          {inputMode==="fixed" && (
-            <div>
-              <div style={{fontSize:9,fontWeight:700,color:C.text3,letterSpacing:1.5,marginBottom:6}}>PRIMARY INPUT</div>
-              <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:12}}>
-                {INPUT_TYPES.map(t=>(
-                  <div key={t.id} onClick={()=>{setPrimaryInput(t.id);triggerInputPulse();}} style={{padding:"10px 12px",borderRadius:10,cursor:"pointer",display:"flex",alignItems:"center",gap:10,background:primaryInput===t.id?`${t.color}08`:C.bg3,border:`1.5px solid ${primaryInput===t.id?t.color+"35":C.border}`,transition:"all 0.25s"}}>
-                    <div style={{width:34,height:34,borderRadius:9,display:"flex",alignItems:"center",justifyContent:"center",background:`${t.color}12`,border:`1px solid ${t.color}20`,fontSize:16}}>{t.icon}</div>
-                    <div style={{flex:1}}><div style={{fontSize:12,fontWeight:700,color:primaryInput===t.id?t.color:C.text}}>{t.label}</div><div style={{fontSize:9,color:C.text3}}>{t.desc}</div></div>
-                    {primaryInput===t.id && <div style={{width:18,height:18,borderRadius:"50%",background:t.color,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:"#000",fontWeight:900}}>✓</div>}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-          <div style={{padding:"10px 12px",borderRadius:10,background:C.bg3,border:`1px solid ${C.border}`,display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
-            <div style={{width:34,height:34,borderRadius:9,display:"flex",alignItems:"center",justifyContent:"center",background:`${C.text3}08`,fontSize:16}}>👆</div>
-            <div style={{flex:1}}><div style={{fontSize:12,fontWeight:700,color:C.text}}>On-Screen Tap</div><div style={{fontSize:9,color:C.text3}}>Supplementary only</div></div>
-            <div onClick={()=>{setTapEnabled(!tapEnabled);triggerInputPulse();}} style={{width:40,height:22,borderRadius:11,cursor:"pointer",padding:2,background:tapEnabled?C.green:`${C.text3}30`,transition:"all 0.25s",display:"flex",alignItems:"center",justifyContent:tapEnabled?"flex-end":"flex-start"}}>
-              <div style={{width:18,height:18,borderRadius:9,background:"#fff",transition:"all 0.25s",boxShadow:"0 1px 3px rgba(0,0,0,.3)"}}/>
-            </div>
-          </div>
-          <div style={{padding:"8px 12px",borderRadius:8,background:`${activeInput.color}05`,border:`1px solid ${activeInput.color}10`,display:"flex",alignItems:"center",gap:6}}>
-            <span style={{fontSize:13}}>{activeInput.icon}</span>
-            <div style={{fontSize:10,fontWeight:600,color:activeInput.color}}>
-              {inputMode==="auto"&&"Auto picks optimal input per game"}{inputMode==="fixed"&&`Always ${INPUT_TYPES.find(t=>t.id===primaryInput)?.label}`}{inputMode==="ask"&&"Will ask before each game"}
+          <div style={{padding:"8px 12px",borderRadius:8,background:`${(INPUT_TYPES.find(t=>t.id===primaryInput)||INPUT_TYPES[0]).color}05`,border:`1px solid ${(INPUT_TYPES.find(t=>t.id===primaryInput)||INPUT_TYPES[0]).color}10`,display:"flex",alignItems:"center",gap:6}}>
+            <span style={{fontSize:13}}>{(INPUT_TYPES.find(t=>t.id===primaryInput)||INPUT_TYPES[0]).icon}</span>
+            <div style={{fontSize:10,fontWeight:600,color:(INPUT_TYPES.find(t=>t.id===primaryInput)||INPUT_TYPES[0]).color}}>
+              You'll choose your input before each game starts
             </div>
           </div>
         </div>
@@ -4031,7 +4012,7 @@ export default function MoodLabArena() {
           <div style={{textAlign:"center",marginBottom:18}}>
             <div style={{fontSize:32,marginBottom:6}}>{game.emoji}</div>
             <div style={{fontSize:15,fontWeight:900,color:C.text}}>{game.name}</div>
-            <div style={{fontSize:11,color:C.text3,marginTop:3}}>Choose input for this game</div>
+            <div style={{fontSize:11,color:C.text3,marginTop:3}}>Choose your device control</div>
           </div>
           <div style={{display:"flex",flexDirection:"column",gap:8}}>
             {INPUT_TYPES.filter(t=>{if(t.id==="puff"||t.id==="dry_puff") return supported.includes("puff"); return supported.includes(t.id);}).map(t=>(
