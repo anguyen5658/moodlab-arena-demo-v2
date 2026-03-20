@@ -267,6 +267,7 @@ export default function MoodLabArena() {
   const [kickBonusActive, setKickBonusActive] = useState(false); // currently in bonus shot
   const [kickStats, setKickStats] = useState({goals:0,saves:0,perfects:0,blinkers:0,misses:0});
   const [kickChatOn, setKickChatOn] = useState(true); // chat panel ON by default in game
+  const [audioOn, setAudioOn] = useState(true); // master audio toggle
 
   // ── Device ──
   const [deviceModel, setDeviceModel] = useState("cc_s2");
@@ -427,9 +428,11 @@ export default function MoodLabArena() {
   };
   // ── Sound FX — real audio files + synthesized fallbacks ──
   const playAudio = useCallback((src, vol=0.5) => {
+    if(!audioOn) return;
     try { const a = new Audio(src); a.volume = vol; a.play().catch(()=>{}); } catch(e){}
-  }, []);
+  }, [audioOn]);
   const playFx = useCallback((type) => {
+    if(!audioOn) return;
     // Real audio files for key moments
     if(type==="laugh"){ playAudio("assets/arena/laugh.m4a", 0.6); return; }
     if(type==="win"){ playAudio("assets/arena/win.m4a", 0.7); return; }
@@ -614,7 +617,8 @@ export default function MoodLabArena() {
     setTimeout(()=>{
       const bonusMult = kickBonusActive ? 2 : 1;
       if(missed) {
-        playFx("laugh"); playFx("crowd");
+        playFx("lose");
+        if(wasBlinker) playFx("laugh");
         setKickStats(s=>({...s, misses:s.misses+1, blinkers:wasBlinker?s.blinkers+1:s.blinkers}));
         if(wasBlinker) setKickComment(pick(["BLINKER SHOT! Ball left the stadium 💀😂","Your lungs said goodbye, so did the ball 🫁💨","That puff was so long the ball evaporated 🌫️","Blinker = automatic L bro 😭",""+kickOpponent.current.name+": 'Did you just blinker??' 🤣"]));
         else setKickComment(pick(["OVER THE BAR! Too much power 😂","Ball said 'I'm out' ✈️💀","That shot is still flying somewhere 🚀","Bro aimed for the moon fr 🌙😭",""+kickOpponent.current.emoji+" is laughing at you rn"]));
@@ -622,13 +626,15 @@ export default function MoodLabArena() {
         const pts = bonusMult;
         setKickScore(s=>({...s, you:s.you+pts}));
         setKickStats(s=>({...s, goals:s.goals+1, perfects:puffZone==="perfect"?s.perfects+1:s.perfects}));
-        playFx("goal"); playFx("crowd");
+        playFx("win"); playFx("crowd");
         const bonusTag = kickBonusActive ? " (×2 BONUS! 💰)" : "";
         if(puffZone==="perfect") setKickComment(pick(["PERFECT PUFF GOAL! 💨👑🔥"+bonusTag,"SWEET SPOT MERCHANT! Unstoppable!"+bonusTag,"That "+holdLabel+" puff was CLINICAL 🎯"+bonusTag,"The puff-to-goal pipeline is REAL 💨→⚽","Keeper didn't stand a CHANCE 🧤💀"]));
         else setKickComment(pick(["GOLAZOOO! 🔥🔥"+bonusTag,"SHEEEESH! 🥶","NET GO BRRR 😤","That ball had SMOKE on it 💨",""+holdLabel+" puff = GOAL!"+bonusTag,"ABSOLUTE BANGER 💥"]));
       } else {
-        playFx("save");
+        playFx("lose");
+        if(puffZone==="tap"||puffZone==="short") playFx("laugh"); // off sweet spot = laugh
         if(puffZone==="tap") setKickComment(pick(["That wasn't a kick, that was a PASS 😂","Bro barely puffed 💨... more like a sigh","Even "+kickOpponent.current.name+" felt bad saving that 🥲","0.3 second puff energy 💀"]));
+        else if(puffZone==="short") setKickComment(pick(["Too short bro! 💨 Need longer puff!","Quick puff = easy save 😂",""+kickOpponent.current.name+" didn't even try 🥱","Hold longer next time! 🫁"]));
         else setKickComment(pick([""+kickOpponent.current.name+" says 'nah' 🧤","Saved... try a longer puff next time 💨","Keeper ate that "+holdLabel+" puff 😤",""+kickOpponent.current.emoji+" blocked your dreams"]));
       }
       setKickState("shoot_result");
@@ -679,7 +685,7 @@ export default function MoodLabArena() {
         setKickComment(pick(["Bruh... 💀",""+kickOpponent.current.name+": 'Too easy' 😂","Wrong way lmaooo 🤣","Keeper had lag 📡","You dove like a fish... wrong fish 🐟",""+kickOpponent.current.emoji+" is doing a victory dance"]));
       } else {
         setKickStats(s=>({...s, saves:s.saves+1}));
-        playFx("goal"); playFx("crowd");
+        playFx("win"); playFx("crowd");
         setKickComment(pick(["DENIED! 🚫🧤",""+kickOpponent.current.name+" is SHOOK 😱","BRICK WALL! 🧱","You read that like a BOOK 📖",""+kickOpponent.current.emoji+" is questioning life rn","WHAT A SAVE! Crowd goes crazy 🙌"]));
       }
       setTimeout(()=>{
@@ -1991,81 +1997,124 @@ export default function MoodLabArena() {
               })()}
             </div>
 
-            {/* ═══ BOTTOM PANEL: Chat + Stats + Nav ═══ */}
-            <div style={{position:"absolute",bottom:0,left:0,right:0,zIndex:20,display:"flex",flexDirection:"column",...GLASS_CARD,borderRadius:"16px 16px 0 0",maxHeight:kickChatOn?"40%":"30%",transition:"max-height 0.3s ease"}}>
-              {/* Toggle bar */}
-              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"6px 12px",borderBottom:`1px solid ${C.border}`}}>
-                <div style={{display:"flex",alignItems:"center",gap:4}}>
-                  <span style={{fontSize:14}}>🪙</span>
-                  <span style={{fontSize:11,fontWeight:800,color:C.gold,fontFamily:"monospace"}}>{coins.toLocaleString()}</span>
-                  <span style={{fontSize:7,color:C.text3,marginLeft:6}}>⚽{kickStats.goals} 🧤{kickStats.saves} 💨{kickStats.perfects}</span>
-                </div>
-                <div onClick={()=>setKickChatOn(!kickChatOn)} style={{padding:"3px 10px",borderRadius:20,cursor:"pointer",fontSize:9,fontWeight:700,color:kickChatOn?C.green:C.text3,...LG.tinted(kickChatOn?C.green:C.text3)}}>
-                  {kickChatOn?"💬 Chat ON":"📊 Stats"}
+            {/* ═══ BOTTOM PANEL: Reactions + Chat/Stats ═══ */}
+            <div style={{position:"absolute",bottom:0,left:0,right:0,zIndex:20,display:"flex",flexDirection:"column"}}>
+
+              {/* ── INTERACTIVE REACTION BAR ── */}
+              <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:4,padding:"5px 10px",...GLASS_CLEAR,borderRadius:"12px 12px 0 0"}}>
+                {[
+                  {emoji:"😂",label:"Laugh"},{emoji:"👏",label:"Clap"},{emoji:"😱",label:"Shock"},
+                  {emoji:"🔥",label:"Fire"},{emoji:"💀",label:"Dead"},{emoji:"😘",label:"Kiss"},
+                  {emoji:"👋",label:"Slap"},{emoji:"💨",label:"Puff"},
+                ].map((r,i)=>(
+                  <div key={i} onClick={()=>{
+                    setChatMessages(p=>[...p,{u:"Steve",m:r.emoji,c:C.cyan,t:Date.now()}]);
+                    setFloatingReactions(p=>[...p,{id:Date.now()+i,emoji:r.emoji,x:20+Math.random()*60,dur:1.5+Math.random()}]);
+                    if(r.emoji==="😂") playFx("laugh");
+                  }} style={{
+                    width:32,height:32,borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",
+                    cursor:"pointer",fontSize:16,
+                    background:`rgba(255,255,255,0.04)`,border:`1px solid rgba(255,255,255,0.06)`,
+                    transition:"all 0.15s",
+                  }}>
+                    {r.emoji}
+                  </div>
+                ))}
+                {/* Audio toggle */}
+                <div onClick={()=>setAudioOn(!audioOn)} style={{
+                  width:32,height:32,borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",
+                  cursor:"pointer",fontSize:14,marginLeft:4,
+                  background:audioOn?`${C.green}10`:`${C.red}10`,
+                  border:`1px solid ${audioOn?C.green+"25":C.red+"25"}`,
+                }}>
+                  {audioOn?"🔊":"🔇"}
                 </div>
               </div>
 
-              {/* Content area */}
-              <div style={{flex:1,overflowY:"auto",padding:"6px 12px 8px"}}>
-                {kickChatOn ? (
-                  /* ── CHAT WINDOW ── */
-                  <div>
-                    {chatMessages.slice(-5).map((m,i)=>(
-                      <div key={i} style={{display:"flex",gap:6,marginBottom:4,animation:"fadeIn 0.3s ease"}}>
-                        <span style={{fontSize:8,fontWeight:700,color:m.c||C.text2,flexShrink:0}}>{m.u}:</span>
-                        <span style={{fontSize:8,color:C.text3}}>{m.m}</span>
-                      </div>
-                    ))}
-                    <div style={{display:"flex",gap:6,marginTop:4}}>
-                      <input value={chatInput} onChange={e=>setChatInput(e.target.value)} onKeyDown={e=>{
-                        if(e.key==="Enter"&&chatInput.trim()){
-                          setChatMessages(p=>[...p,{u:"Steve",m:chatInput.trim(),c:C.cyan,t:Date.now()}]);
-                          setChatInput("");
-                        }
-                      }} placeholder="Type..." style={{flex:1,background:`${C.text3}08`,border:`1px solid ${C.border}`,borderRadius:8,padding:"4px 8px",fontSize:9,color:C.text,outline:"none"}}/>
-                      <div onClick={()=>{if(chatInput.trim()){setChatMessages(p=>[...p,{u:"Steve",m:chatInput.trim(),c:C.cyan,t:Date.now()}]);setChatInput("");}}} style={{padding:"4px 10px",borderRadius:8,cursor:"pointer",fontSize:9,fontWeight:700,color:C.cyan,...LG.tinted(C.cyan)}}>Send</div>
-                    </div>
+              {/* ── CHAT / STATS PANEL ── */}
+              <div style={{...GLASS_CARD,maxHeight:kickChatOn?"35%":"40%",transition:"max-height 0.3s ease",display:"flex",flexDirection:"column"}}>
+                {/* Toggle header */}
+                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"5px 12px",borderBottom:`1px solid ${C.border}`}}>
+                  <div style={{display:"flex",alignItems:"center",gap:4}}>
+                    <span style={{fontSize:12}}>🪙</span>
+                    <span style={{fontSize:10,fontWeight:800,color:C.gold,fontFamily:"monospace"}}>{coins.toLocaleString()}</span>
+                    <span style={{fontSize:7,color:C.text3,marginLeft:4}}>⚽{kickStats.goals} 🧤{kickStats.saves} 💨{kickStats.perfects}</span>
                   </div>
-                ) : (
-                  /* ── EXPANDED STATS / TOURNAMENT RANKINGS ── */
-                  <div>
-                    <div style={{fontSize:9,fontWeight:800,color:C.gold,marginBottom:4}}>🏆 TOURNAMENT RANKINGS</div>
-                    {[
-                      {rank:1,name:"ChillMaster42",score:"2,847K",emoji:"👑",you:false},
-                      {rank:2,name:"VibeKing",score:"2,654K",emoji:"😎",you:false},
-                      {rank:3,name:"NeonQueen",score:"1,980K",emoji:"👸",you:false},
-                      {rank:12,name:"Steve (You)",score:"420K",emoji:"🌟",you:true},
-                      {rank:13,name:"BlazedPanda",score:"350K",emoji:"🐼",you:false},
-                      {rank:14,name:"CloudNine99",score:"245K",emoji:"☁️",you:false},
-                    ].map((p,i)=>(
-                      <div key={i} style={{display:"flex",alignItems:"center",gap:6,padding:"3px 0",borderBottom:i<5?`1px solid ${C.border}`:"none"}}>
-                        <span style={{fontSize:8,fontWeight:800,color:p.rank<=3?C.gold:C.text3,width:16,textAlign:"center"}}>#{p.rank}</span>
-                        <span style={{fontSize:10}}>{p.emoji}</span>
-                        <span style={{fontSize:9,fontWeight:p.you?800:600,color:p.you?C.cyan:C.text,flex:1}}>{p.name}</span>
-                        <span style={{fontSize:8,fontWeight:700,color:C.text3,fontFamily:"monospace"}}>{p.score}</span>
+                  <div onClick={()=>setKickChatOn(!kickChatOn)} style={{padding:"2px 8px",borderRadius:16,cursor:"pointer",fontSize:8,fontWeight:700,color:kickChatOn?C.green:C.gold,...LG.tinted(kickChatOn?C.green:C.gold)}}>
+                    {kickChatOn?"💬 Chat":"📊 Stats"}
+                  </div>
+                </div>
+
+                {/* Content */}
+                <div style={{flex:1,overflowY:"auto",padding:"4px 10px 6px"}}>
+                  {kickChatOn ? (
+                    /* ── CHAT (same style as home) ── */
+                    <div>
+                      {chatMessages.slice(-6).map((m,i)=>(
+                        <div key={i} style={{display:"flex",alignItems:"flex-start",gap:6,marginBottom:3}}>
+                          <div style={{width:18,height:18,borderRadius:6,background:`${m.c||C.text3}15`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,flexShrink:0,marginTop:1}}>{m.u[0]}</div>
+                          <div>
+                            <span style={{fontSize:8,fontWeight:700,color:m.c||C.text2}}>{m.u} </span>
+                            <span style={{fontSize:8,color:C.text3}}>{m.m}</span>
+                          </div>
+                        </div>
+                      ))}
+                      {/* Emoji quick-send row */}
+                      <div style={{display:"flex",gap:3,marginTop:3,marginBottom:3}}>
+                        {["🔥","GG 👏","Let's go!","💀","😂","💨"].map((q,i)=>(
+                          <div key={i} onClick={()=>setChatMessages(p=>[...p,{u:"Steve",m:q,c:C.cyan,t:Date.now()}])} style={{
+                            padding:"2px 6px",borderRadius:6,cursor:"pointer",fontSize:7,fontWeight:600,color:C.text3,
+                            background:`rgba(255,255,255,0.04)`,border:`1px solid ${C.border}`,
+                          }}>{q}</div>
+                        ))}
                       </div>
-                    ))}
-                    {/* Match stats */}
-                    <div style={{display:"flex",gap:8,marginTop:6,justifyContent:"center"}}>
-                      <div style={{textAlign:"center",padding:"4px 8px",borderRadius:8,...LG.tinted(C.cyan)}}>
-                        <div style={{fontSize:14,fontWeight:900,color:C.cyan}}>{kickStats.goals}</div>
-                        <div style={{fontSize:6,color:C.text3}}>Goals</div>
-                      </div>
-                      <div style={{textAlign:"center",padding:"4px 8px",borderRadius:8,...LG.tinted(C.orange)}}>
-                        <div style={{fontSize:14,fontWeight:900,color:C.orange}}>{kickStats.saves}</div>
-                        <div style={{fontSize:6,color:C.text3}}>Saves</div>
-                      </div>
-                      <div style={{textAlign:"center",padding:"4px 8px",borderRadius:8,...LG.tinted(C.green)}}>
-                        <div style={{fontSize:14,fontWeight:900,color:C.green}}>{kickStats.perfects}</div>
-                        <div style={{fontSize:6,color:C.text3}}>Perfect</div>
-                      </div>
-                      <div style={{textAlign:"center",padding:"4px 8px",borderRadius:8,...LG.tinted(C.red)}}>
-                        <div style={{fontSize:14,fontWeight:900,color:C.red}}>{kickStats.blinkers}</div>
-                        <div style={{fontSize:6,color:C.text3}}>Blinker</div>
+                      <div style={{display:"flex",gap:4}}>
+                        <input value={chatInput} onChange={e=>setChatInput(e.target.value)} onKeyDown={e=>{
+                          if(e.key==="Enter"&&chatInput.trim()){setChatMessages(p=>[...p,{u:"Steve",m:chatInput.trim(),c:C.cyan,t:Date.now()}]);setChatInput("");}
+                        }} placeholder="Say something..." style={{flex:1,background:`${C.text3}06`,border:`1px solid ${C.border}`,borderRadius:8,padding:"5px 8px",fontSize:9,color:C.text,outline:"none"}}/>
+                        <div onClick={()=>{if(chatInput.trim()){setChatMessages(p=>[...p,{u:"Steve",m:chatInput.trim(),c:C.cyan,t:Date.now()}]);setChatInput("");}}} style={{padding:"5px 10px",borderRadius:8,cursor:"pointer",fontSize:9,fontWeight:700,color:C.cyan,...LG.tinted(C.cyan)}}>Send</div>
                       </div>
                     </div>
-                  </div>
-                )}
+                  ) : (
+                    /* ── EXPANDED STATS / RANKINGS ── */
+                    <div>
+                      <div style={{fontSize:8,fontWeight:800,color:C.gold,marginBottom:3}}>🏆 TOURNAMENT RANKINGS</div>
+                      {[
+                        {rank:1,name:"ChillMaster42",score:"2,847K",emoji:"👑"},
+                        {rank:2,name:"VibeKing",score:"2,654K",emoji:"😎"},
+                        {rank:3,name:"NeonQueen",score:"1,980K",emoji:"👸"},
+                        {rank:4,name:"PuffDaddy",score:"890K",emoji:"💨"},
+                        {rank:5,name:"BakedBaker",score:"720K",emoji:"👨‍🍳"},
+                        {rank:12,name:"Steve (You)",score:"420K",emoji:"🌟",you:true},
+                        {rank:13,name:"BlazedPanda",score:"350K",emoji:"🐼"},
+                        {rank:14,name:"CloudNine99",score:"245K",emoji:"☁️"},
+                      ].map((p,i)=>(
+                        <div key={i} style={{display:"flex",alignItems:"center",gap:5,padding:"2px 0",borderBottom:`1px solid ${C.border}`}}>
+                          <span style={{fontSize:7,fontWeight:800,color:p.rank<=3?C.gold:p.you?C.cyan:C.text3,width:18}}>{p.rank<=3?["🥇","🥈","🥉"][p.rank-1]:"#"+p.rank}</span>
+                          <span style={{fontSize:9}}>{p.emoji}</span>
+                          <span style={{fontSize:8,fontWeight:p.you?800:600,color:p.you?C.cyan:C.text,flex:1}}>{p.name}</span>
+                          <span style={{fontSize:7,fontWeight:700,color:C.text3,fontFamily:"monospace"}}>{p.score}</span>
+                        </div>
+                      ))}
+                      {/* Match stats cards */}
+                      <div style={{display:"flex",gap:6,marginTop:5,justifyContent:"center"}}>
+                        {[
+                          {v:kickStats.goals,l:"Goals",c:C.cyan,e:"⚽"},
+                          {v:kickStats.saves,l:"Saves",c:C.orange,e:"🧤"},
+                          {v:kickStats.perfects,l:"Perfect",c:C.green,e:"💨"},
+                          {v:kickStats.blinkers,l:"Blinker",c:C.red,e:"💀"},
+                          {v:kickStats.misses,l:"Miss",c:C.gold,e:"🚀"},
+                        ].map((s,i)=>(
+                          <div key={i} style={{textAlign:"center",padding:"4px 6px",borderRadius:8,...LG.tinted(s.c),flex:1}}>
+                            <div style={{fontSize:10}}>{s.e}</div>
+                            <div style={{fontSize:12,fontWeight:900,color:s.c}}>{s.v}</div>
+                            <div style={{fontSize:5,color:C.text3}}>{s.l}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
