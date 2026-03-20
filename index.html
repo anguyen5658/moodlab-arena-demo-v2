@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Mood Lab Arena</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; background: #050510; overflow: hidden; }
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+    #phone-frame {
+      width: 430px;
+      height: 932px;
+      border-radius: 40px;
+      overflow: hidden;
+      box-shadow: 0 0 60px rgba(0,229,255,0.08), 0 0 0 1px rgba(255,255,255,0.06);
+      position: relative;
+    }
+    #root {
+      width: 100%;
+      height: 100%;
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+    }
+    #root::-webkit-scrollbar { display: none; }
+    #error { color: #FF4444; padding: 20px; text-align: center; display: none; }
+    @media (max-width: 460px) {
+      #phone-frame {
+        width: 100vw;
+        height: 100vh;
+        border-radius: 0;
+        box-shadow: none;
+      }
+    }
+  </style>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+  <div id="phone-frame">
+    <div id="root"></div>
+    <div id="error"></div>
+  </div>
+  <script>
+    (async () => {
+      try {
+        const res = await fetch('./moodlab-arena-v6.jsx');
+        if (!res.ok) throw new Error(`Failed to load: ${res.status}`);
+        let code = await res.text();
+        // Convert ES module imports to global references
+        code = code.replace(
+          /import\s*\{([^}]+)\}\s*from\s*['"]react['"]\s*;?/g,
+          (_, imports) => {
+            const vars = imports.split(',').map(s => s.trim()).filter(Boolean);
+            return `const { ${vars.join(', ')} } = React;`;
+          }
+        );
+        // Find the default export component name
+        const exportMatch = code.match(/export\s+default\s+(?:function\s+)?(\w+)/);
+        if (exportMatch) {
+          code = code.replace(/export\s+default\s+(?:function\s+)?/, 'function ');
+          code += `\nReactDOM.createRoot(document.getElementById('root')).render(React.createElement(${exportMatch[1]}));`;
+        }
+        const transformed = Babel.transform(code, { presets: ['react'] }).code;
+        const script = document.createElement('script');
+        script.textContent = transformed;
+        document.body.appendChild(script);
+      } catch (e) {
+        const el = document.getElementById('error');
+        el.style.display = 'block';
+        el.textContent = `Error: ${e.message}`;
+        console.error(e);
+      }
+    })();
+  </script>
+</body>
+</html>
