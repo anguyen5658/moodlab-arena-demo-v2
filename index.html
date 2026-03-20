@@ -5,80 +5,58 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Mood Lab Arena</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body { height: 100%; background: #050510; overflow: hidden; }
-    body {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    *{margin:0;padding:0;box-sizing:border-box}
+    html,body{background:#050510;overflow:hidden;height:100%;width:100%}
+    /* Always show as mobile phone — centered on desktop */
+    #root{
+      width:430px;height:932px;
+      position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+      overflow:hidden;border-radius:0;
+      background:#050510;
     }
-    #phone-frame {
-      width: 430px;
-      height: 932px;
-      border-radius: 40px;
-      overflow: hidden;
-      box-shadow: 0 0 60px rgba(0,229,255,0.08), 0 0 0 1px rgba(255,255,255,0.06);
-      position: relative;
+    /* On actual mobile, fill the screen */
+    @media(max-width:430px){
+      #root{width:100%;height:100%;top:0;left:0;transform:none;position:relative;}
     }
-    #root {
-      width: 100%;
-      height: 100%;
-      overflow-y: auto;
-      overflow-x: hidden;
-      -webkit-overflow-scrolling: touch;
-    }
-    #root::-webkit-scrollbar { display: none; }
-    #error { color: #FF4444; padding: 20px; text-align: center; display: none; }
-    @media (max-width: 460px) {
-      #phone-frame {
-        width: 100vw;
-        height: 100vh;
-        border-radius: 0;
-        box-shadow: none;
-      }
+    /* On desktop, add phone frame look */
+    @media(min-width:431px){
+      #root{border-radius:40px;box-shadow:0 0 80px rgba(0,0,0,0.8),0 0 0 8px #1a1a2e,0 0 0 10px #333;}
     }
   </style>
+</head>
+<body>
+  <div id="root"></div>
   <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-</head>
-<body>
-  <div id="phone-frame">
-    <div id="root"></div>
-    <div id="error"></div>
-  </div>
   <script>
-    (async () => {
-      try {
-        const res = await fetch('./moodlab-arena-v6.jsx');
-        if (!res.ok) throw new Error(`Failed to load: ${res.status}`);
-        let code = await res.text();
-        // Convert ES module imports to global references
-        code = code.replace(
-          /import\s*\{([^}]+)\}\s*from\s*['"]react['"]\s*;?/g,
-          (_, imports) => {
-            const vars = imports.split(',').map(s => s.trim()).filter(Boolean);
-            return `const { ${vars.join(', ')} } = React;`;
-          }
+    // Fetch JSX, prepend React hook shim, transpile in-browser, render
+    fetch('moodlab-arena-v6.jsx?v=' + Date.now())
+      .then(r => r.text())
+      .then(jsx => {
+        // Replace the import statement with destructuring from React global
+        const code = jsx.replace(
+          /import\s*\{[^}]+\}\s*from\s*["']react["'];?/,
+          'const { useState, useRef, useEffect, useCallback } = React;'
+        ).replace(
+          /export\s+default\s+function/,
+          'function'
         );
-        // Find the default export component name
-        const exportMatch = code.match(/export\s+default\s+(?:function\s+)?(\w+)/);
-        if (exportMatch) {
-          code = code.replace(/export\s+default\s+(?:function\s+)?/, 'function ');
-          code += `\nReactDOM.createRoot(document.getElementById('root')).render(React.createElement(${exportMatch[1]}));`;
-        }
-        const transformed = Babel.transform(code, { presets: ['react'] }).code;
-        const script = document.createElement('script');
-        script.textContent = transformed;
-        document.body.appendChild(script);
-      } catch (e) {
-        const el = document.getElementById('error');
-        el.style.display = 'block';
-        el.textContent = `Error: ${e.message}`;
-        console.error(e);
-      }
-    })();
+        // Transpile JSX -> JS
+        const transformed = Babel.transform(code, {
+          presets: ['react'],
+          filename: 'moodlab-arena-v6.jsx',
+        }).code;
+        // Execute
+        const fn = new Function('React', 'ReactDOM', transformed + '\nreturn MoodLabArena;');
+        const App = fn(React, ReactDOM);
+        ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
+      })
+      .catch(err => {
+        document.getElementById('root').innerHTML =
+          '<pre style="color:#ff4444;padding:20px;font-size:14px;">Error loading app:\n' + err.message + '</pre>';
+        console.error(err);
+      });
   </script>
 </body>
 </html>
