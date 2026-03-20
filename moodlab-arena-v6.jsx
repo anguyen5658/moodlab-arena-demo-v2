@@ -173,6 +173,24 @@ const INPUT_TYPES = [
   { id:"button", label:"Button", icon:"🔘", desc:"Nút vật lý · BLE signal", color:C.purple },
 ];
 
+const DEVICE_MODELS = [
+  { id:"cc_s1", name:"Cali Clear Season 1", short:"CC S1", pool:"standard", emoji:"📱" },
+  { id:"cc_s2", name:"Cali Clear Season 2", short:"CC S2", pool:"standard", emoji:"📱" },
+  { id:"cc_s3", name:"Cali Clear Season 3", short:"CC S3", pool:"standard", emoji:"📱" },
+  { id:"cc_sel1", name:"Cali Clear Select S1", short:"CC Select S1", pool:"select", emoji:"✨" },
+  { id:"cc_sel2", name:"Cali Clear Select S2", short:"CC Select S2", pool:"select", emoji:"✨" },
+  { id:"none", name:"No Device", short:"Tap Only", pool:"open", emoji:"👆" },
+];
+const DEVICE_POOLS = {
+  select: { label:"Select Pool", color:C.gold, aiSave:0.38, aiScore:0.58, rewardMult:2 },
+  standard: { label:"Standard Pool", color:C.cyan, aiSave:0.30, aiScore:0.50, rewardMult:1.5 },
+  open: { label:"Open Pool", color:C.text3, aiSave:0.20, aiScore:0.40, rewardMult:1 },
+};
+const KICK_ZONES = [
+  { label:"↖", col:0, row:0 }, { label:"⬆", col:1, row:0 }, { label:"↗", col:2, row:0 },
+  { label:"↙", col:0, row:1 }, { label:"⬇", col:1, row:1 }, { label:"↘", col:2, row:1 },
+];
+
 const USER = { name:"Steve", level:24, xp:7450, xpNext:10000, tier:"Gold" };
 
 // ── TICKER FEED ──
@@ -227,6 +245,20 @@ export default function MoodLabArena() {
   // ── Duel ──
   const [duelState, setDuelState] = useState(null);
   const [duelResult, setDuelResult] = useState(null);
+
+  // ── Final Kick ──
+  const [kickState, setKickState] = useState(null); // null|"shoot"|"power"|"flight"|"shoot_result"|"save_ready"|"save_countdown"|"save_dive"|"save_result"|"round_result"|"final"
+  const [kickRound, setKickRound] = useState(0); // 0-4
+  const [kickScore, setKickScore] = useState({you:0, ai:0});
+  const [kickAim, setKickAim] = useState(null); // 0-5
+  const [kickPower, setKickPower] = useState(0); // 0-100
+  const [kickAiZone, setKickAiZone] = useState(null);
+  const [kickSaveZone, setKickSaveZone] = useState(null);
+  const [kickBallAnim, setKickBallAnim] = useState(null); // {zone, power, result}
+  const [kickDiveAnim, setKickDiveAnim] = useState(null); // keeper dive zone
+
+  // ── Device ──
+  const [deviceModel, setDeviceModel] = useState("cc_s2");
 
   // ── Social ──
   const [chatMessages, setChatMessages] = useState([
@@ -368,7 +400,7 @@ export default function MoodLabArena() {
       setMatchmaking({game,mode,stage:"searching",input});
       setTimeout(()=>{
         setMatchmaking(p=>p?{...p,stage:"found",opp:mode==="ai"?"🤖 AI Bot":mode==="random"?"🎲 Player_847":"👫 Minh"}:null);
-        setTimeout(()=>{setMatchmaking(null);setGameActive({...game,activeInput:input});if(game.id==="wildwest")startDuel();},1500);
+        setTimeout(()=>{setMatchmaking(null);setGameActive({...game,activeInput:input});if(game.id==="wildwest")startDuel();if(game.id==="finalkick")startKick();},1500);
       },mode==="ai"?800:2200);
     });
   };
@@ -382,6 +414,131 @@ export default function MoodLabArena() {
     if(duelState==="shoot"){const you=Math.floor(200+Math.random()*300),ai=Math.floor(400+Math.random()*400);const win=you<ai;setDuelResult({win,you,ai});setDuelState("result");if(win){setCoins(c=>c+50);notify("🤠 YOU WIN! +50",C.green);}else notify("💀 AI faster!",C.red);}
     else if(duelState&&duelState!=="shoot"&&duelState!=="result"){setDuelResult({foul:true});setDuelState("result");notify("⚠ FOUL!",C.red);}
   };
+  // ── Final Kick Logic ──
+  const getDevicePool = () => DEVICE_POOLS[(DEVICE_MODELS.find(d=>d.id===deviceModel)||DEVICE_MODELS[5]).pool] || DEVICE_POOLS.open;
+  const getDeviceShort = () => (DEVICE_MODELS.find(d=>d.id===deviceModel)||DEVICE_MODELS[5]).short;
+
+  const startKick = () => {
+    setKickState("shoot"); setKickRound(0); setKickScore({you:0,ai:0});
+    setKickAim(null); setKickPower(0); setKickAiZone(null);
+    setKickSaveZone(null); setKickBallAnim(null); setKickDiveAnim(null);
+  };
+
+  const kickSelectZone = (zone) => {
+    if(kickState!=="shoot") return;
+    setKickAim(zone);
+    setKickState("power");
+    // For tap input: auto power after brief delay
+    const inp = gameActive?.activeInput;
+    if(inp==="tap"||!inp) {
+      const autoPwr = 60+Math.floor(Math.random()*30);
+      setKickPower(autoPwr);
+      setTimeout(()=>kickExecute(zone, autoPwr), 600);
+    }
+  };
+
+  const kickChargePower = () => {
+    // Called on puff/button press — simulate power charge
+    if(kickState!=="power"||kickAim===null) return;
+    const pwr = 50+Math.floor(Math.random()*50); // Simulated — real device would measure
+    setKickPower(pwr);
+    setTimeout(()=>kickExecute(kickAim, pwr), 300);
+  };
+
+  const kickExecute = (zone, power) => {
+    const pool = getDevicePool();
+    const aiSaveZone = Math.floor(Math.random()*6);
+    setKickAiZone(aiSaveZone);
+    setKickDiveAnim(aiSaveZone);
+    setKickState("flight");
+
+    // Determine if AI saves: same zone + random chance based on pool difficulty
+    const sameZone = zone === aiSaveZone;
+    const aiSaves = sameZone && Math.random() < pool.aiSave;
+    // High power reduces save chance slightly
+    const finalSave = aiSaves && (power < 85 || Math.random() < 0.5);
+
+    setKickBallAnim({zone, power, result: finalSave ? "saved" : "goal"});
+
+    setTimeout(()=>{
+      if(!finalSave) {
+        setKickScore(s=>({...s, you:s.you+1}));
+        notify("⚽ GOAL!",C.green);
+      } else {
+        notify("🧤 Saved!",C.red);
+      }
+      setKickState("shoot_result");
+      // Transition to save phase after showing result
+      setTimeout(()=>{
+        setKickBallAnim(null); setKickDiveAnim(null); setKickAim(null);
+        setKickState("save_ready");
+      }, 1500);
+    }, 800);
+  };
+
+  const kickSaveStart = () => {
+    // AI picks where to kick
+    const pool = getDevicePool();
+    const aiKickZone = Math.floor(Math.random()*6);
+    setKickAiZone(aiKickZone);
+    setKickState("save_countdown");
+    // Brief hint: flash a column region
+    setTimeout(()=>setKickState("save_dive"), 1200);
+  };
+
+  const kickDive = (zone) => {
+    if(kickState!=="save_dive") return;
+    setKickSaveZone(zone);
+    setKickDiveAnim(zone);
+    setKickState("save_result");
+
+    const pool = getDevicePool();
+    const aiKickZone = kickAiZone;
+    const sameZone = zone === aiKickZone;
+    // AI scores if player dives wrong zone, or if right zone but AI overpowers
+    const aiScores = !sameZone || (sameZone && Math.random() < (pool.aiScore - 0.20));
+
+    setKickBallAnim({zone:aiKickZone, power:70, result: aiScores ? "goal" : "saved"});
+
+    setTimeout(()=>{
+      if(aiScores) {
+        setKickScore(s=>({...s, ai:s.ai+1}));
+        notify("⚽ AI Scores!",C.red);
+      } else {
+        notify("🧤 GREAT SAVE!",C.green);
+      }
+      // Move to round result
+      setTimeout(()=>{
+        setKickBallAnim(null); setKickDiveAnim(null);
+        setKickSaveZone(null); setKickAiZone(null);
+        kickAdvanceRound();
+      }, 1500);
+    }, 800);
+  };
+
+  const kickAdvanceRound = () => {
+    const nextRound = kickRound + 1;
+    if(nextRound >= 5) {
+      // Game over
+      setKickState("final");
+    } else {
+      setKickRound(nextRound);
+      setKickState("shoot");
+      setKickAim(null); setKickPower(0);
+    }
+  };
+
+  const kickEndGame = () => {
+    const pool = getDevicePool();
+    const mult = pool.rewardMult;
+    let reward = 0;
+    if(kickScore.you > kickScore.ai) { reward = Math.round(80 * mult); notify(`⚽ YOU WIN! +${reward} coins!`,C.green); }
+    else if(kickScore.you < kickScore.ai) { reward = Math.round(10 * mult); notify(`😢 Defeated. +${reward} coins`,C.red); }
+    else { reward = Math.round(30 * mult); notify(`🤝 Draw! +${reward} coins`,C.gold); }
+    setCoins(c=>c+reward);
+    setGameActive(null); setKickState(null);
+  };
+
   const doSpin = () => {
     if(spinning) return; setSpinning(true); setSpinResult(null);
     setSpinAngle(p=>p+1440+Math.random()*1440);
@@ -1145,8 +1302,15 @@ export default function MoodLabArena() {
           <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",textAlign:"center",padding:20}}>
             <div style={{fontSize:48,marginBottom:16,animation:"breathe 1.5s infinite"}}>{matchmaking.game.emoji}</div>
             <div style={{fontSize:18,fontWeight:900,color:C.text,marginBottom:8}}>{matchmaking.game.name}</div>
-            {matchmaking.stage==="searching" && <div><div style={{fontSize:13,color:C.text2,marginBottom:16}}>Finding opponent...</div><div style={{width:32,height:32,border:`3px solid ${C.cyan}30`,borderTopColor:C.cyan,borderRadius:"50%",animation:"spin 0.8s linear infinite",margin:"0 auto"}}/></div>}
-            {matchmaking.stage==="found" && <div style={{fontSize:16,fontWeight:700,color:C.green,animation:"fadeIn 0.3s ease"}}>{matchmaking.opp}<div style={{fontSize:11,color:C.text3,marginTop:4}}>Starting...</div></div>}
+            {matchmaking.stage==="searching" && <div>
+              <div style={{display:"flex",gap:6,justifyContent:"center",marginBottom:12}}>
+                <span style={{fontSize:9,fontWeight:700,color:getDevicePool().color,padding:"2px 8px",borderRadius:20,background:`${getDevicePool().color}12`,border:`1px solid ${getDevicePool().color}20`}}>⚖️ {getDevicePool().label}</span>
+                <span style={{fontSize:9,fontWeight:700,color:C.text3,padding:"2px 8px",borderRadius:20,background:`${C.text3}08`}}>{getDeviceShort()}</span>
+              </div>
+              <div style={{fontSize:13,color:C.text2,marginBottom:16}}>Finding {matchmaking.mode==="random"?"same-device":""}  opponent...</div>
+              <div style={{width:32,height:32,border:`3px solid ${C.cyan}30`,borderTopColor:C.cyan,borderRadius:"50%",animation:"spin 0.8s linear infinite",margin:"0 auto"}}/>
+            </div>}
+            {matchmaking.stage==="found" && <div style={{fontSize:16,fontWeight:700,color:C.green,animation:"fadeIn 0.3s ease"}}>{matchmaking.opp}<div style={{fontSize:11,color:C.text3,marginTop:4}}>⚖️ Fair Match · Starting...</div></div>}
           </div>
         </div>
       );
@@ -1169,6 +1333,188 @@ export default function MoodLabArena() {
                     <div><div style={{fontSize:28,fontWeight:900,color:C.red}}>💀 DEFEATED</div><div style={{fontSize:12,color:C.text3,marginTop:6}}>You: {duelResult.you}ms · AI: {duelResult.ai}ms</div></div>
                   }
                   <div onClick={()=>{startDuel();}} style={{marginTop:20,padding:"10px 24px",borderRadius:10,cursor:"pointer",background:`${C.gold}15`,border:`1px solid ${C.gold}30`,fontSize:13,fontWeight:700,color:C.gold}}>Rematch</div>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      }
+      // Final Kick ⚽
+      if(gameActive.id==="finalkick" && kickState) {
+        const pool = getDevicePool();
+        const inp = gameActive.activeInput;
+        const inpInfo = INPUT_TYPES.find(t=>t.id===inp)||INPUT_TYPES[0];
+        const isShootPhase = ["shoot","power","flight","shoot_result"].includes(kickState);
+        const isSavePhase = ["save_ready","save_countdown","save_dive","save_result"].includes(kickState);
+
+        const goalW = 280, goalH = 180;
+        const zoneW = goalW/3, zoneH = goalH/2;
+        const getBallPos = (z) => ({ x: KICK_ZONES[z].col * zoneW + zoneW/2, y: KICK_ZONES[z].row * zoneH + zoneH/2 });
+        const getKeepPos = (z) => {const col=KICK_ZONES[z].col; return col===0?"10%":col===1?"50%":"90%";};
+
+        return (
+          <div style={overlayStyle}>
+            {overlayBack(()=>{setGameActive(null);setKickState(null);})}
+            <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:20,gap:12}}>
+
+              {/* Header */}
+              <div style={{fontSize:10,fontWeight:800,color:C.cyan,letterSpacing:2,marginBottom:4}}>⚽ FINAL KICK</div>
+
+              {/* Device + Fairness badge */}
+              <div style={{display:"flex",gap:6,marginBottom:8}}>
+                <span style={{fontSize:9,fontWeight:700,color:pool.color,padding:"2px 8px",borderRadius:20,background:`${pool.color}12`,border:`1px solid ${pool.color}20`}}>⚖️ {pool.label}</span>
+                <span style={{fontSize:9,fontWeight:700,color:inpInfo.color,padding:"2px 8px",borderRadius:20,background:`${inpInfo.color}12`,border:`1px solid ${inpInfo.color}20`}}>{inpInfo.icon} {inpInfo.label}</span>
+                <span style={{fontSize:9,fontWeight:700,color:C.text3,padding:"2px 8px",borderRadius:20,background:`${C.text3}08`}}>{getDeviceShort()}</span>
+              </div>
+
+              {/* Scoreboard */}
+              <div style={{display:"flex",alignItems:"center",gap:16,marginBottom:8}}>
+                <div style={{textAlign:"center"}}>
+                  <div style={{fontSize:28,fontWeight:900,color:C.cyan}}>{kickScore.you}</div>
+                  <div style={{fontSize:9,fontWeight:700,color:C.text3}}>YOU</div>
+                </div>
+                <div style={{fontSize:12,color:C.text3,fontWeight:600}}>-</div>
+                <div style={{textAlign:"center"}}>
+                  <div style={{fontSize:28,fontWeight:900,color:C.red}}>{kickScore.ai}</div>
+                  <div style={{fontSize:9,fontWeight:700,color:C.text3}}>AI</div>
+                </div>
+              </div>
+
+              {/* Round indicators */}
+              <div style={{display:"flex",gap:6,marginBottom:12}}>
+                {[0,1,2,3,4].map(r=>(
+                  <div key={r} style={{width:10,height:10,borderRadius:"50%",background:r<kickRound?C.cyan:r===kickRound?C.gold:`${C.text3}30`,boxShadow:r===kickRound?`0 0 8px ${C.gold}60`:"none",transition:"all 0.3s"}}/>
+                ))}
+                <span style={{fontSize:9,color:C.text3,marginLeft:4}}>Round {kickRound+1}/5</span>
+              </div>
+
+              {/* Phase label */}
+              <div style={{fontSize:12,fontWeight:800,color:isShootPhase?C.cyan:C.orange,marginBottom:8,letterSpacing:1}}>
+                {isShootPhase ? "🦶 YOUR KICK" : isSavePhase ? "🧤 YOUR SAVE" : ""}
+              </div>
+
+              {/* ═══ GOAL FRAME ═══ */}
+              <div style={{position:"relative",width:goalW,height:goalH,border:`3px solid ${C.text3}40`,borderBottom:`3px solid ${C.green}60`,borderRadius:"8px 8px 0 0",background:`${C.text3}06`,overflow:"hidden"}}>
+
+                {/* Net lines */}
+                <div style={{position:"absolute",top:0,left:"33.3%",width:1,height:"100%",background:`${C.text3}15`}}/>
+                <div style={{position:"absolute",top:0,left:"66.6%",width:1,height:"100%",background:`${C.text3}15`}}/>
+                <div style={{position:"absolute",top:"50%",left:0,width:"100%",height:1,background:`${C.text3}15`}}/>
+
+                {/* Tap zones */}
+                {(kickState==="shoot"||kickState==="save_dive") && KICK_ZONES.map((z,i)=>(
+                  <div key={i} onClick={()=>kickState==="shoot"?kickSelectZone(i):kickDive(i)} style={{
+                    position:"absolute",
+                    left:z.col*zoneW, top:z.row*zoneH, width:zoneW, height:zoneH,
+                    display:"flex",alignItems:"center",justifyContent:"center",
+                    cursor:"pointer",
+                    background: kickAim===i ? `${C.cyan}25` : kickSaveZone===i ? `${C.orange}25` : "transparent",
+                    border: `1px solid ${kickAim===i||kickSaveZone===i ? C.cyan+"40" : "transparent"}`,
+                    transition:"all 0.2s",
+                    fontSize:20, color:`${C.text3}40`,
+                  }}>
+                    {z.label}
+                  </div>
+                ))}
+
+                {/* Ball animation */}
+                {kickBallAnim && (()=>{
+                  const bp = getBallPos(kickBallAnim.zone);
+                  return <div style={{
+                    position:"absolute",
+                    left:bp.x-14, top:bp.y-14,
+                    fontSize:28, zIndex:5,
+                    animation:"fadeIn 0.3s ease",
+                    filter: kickBallAnim.result==="goal" ? `drop-shadow(0 0 12px ${C.green})` : `drop-shadow(0 0 12px ${C.red})`,
+                  }}>⚽</div>;
+                })()}
+
+                {/* Keeper */}
+                {kickDiveAnim!==null && (()=>{
+                  const kx = getKeepPos(kickDiveAnim);
+                  return <div style={{
+                    position:"absolute",
+                    bottom:4, left:kx, transform:"translateX(-50%)",
+                    fontSize:32, zIndex:4,
+                    transition:"left 0.3s ease-out",
+                  }}>🧤</div>;
+                })()}
+
+                {/* Save countdown hint */}
+                {kickState==="save_countdown" && kickAiZone!==null && (()=>{
+                  const hintCol = KICK_ZONES[kickAiZone].col;
+                  return <div style={{
+                    position:"absolute",
+                    left:hintCol*zoneW, top:0, width:zoneW, height:"100%",
+                    background:`${C.orange}08`,
+                    animation:"pulse 0.5s infinite",
+                    pointerEvents:"none",
+                  }}/>;
+                })()}
+
+                {/* Result overlay on goal */}
+                {(kickState==="shoot_result"||kickState==="save_result") && kickBallAnim && (
+                  <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",zIndex:10,background:"rgba(0,0,0,0.5)"}}>
+                    <div style={{fontSize:24,fontWeight:900,color:kickBallAnim.result==="goal"?C.green:C.red,textShadow:`0 0 20px ${kickBallAnim.result==="goal"?C.green:C.red}`,animation:"fadeIn 0.2s ease"}}>
+                      {kickBallAnim.result==="goal" ? (isShootPhase?"⚽ GOAL!":"⚽ AI Scores!") : (isShootPhase?"🧤 Saved!":"🧤 GREAT SAVE!")}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Power meter (for puff/button) */}
+              {kickState==="power" && inp!=="tap" && (
+                <div style={{width:goalW,marginTop:8}}>
+                  <div style={{height:12,borderRadius:6,background:`${C.text3}15`,overflow:"hidden",border:`1px solid ${C.text3}20`}}>
+                    <div style={{height:"100%",width:`${kickPower}%`,background:`linear-gradient(90deg,${C.cyan},${C.green})`,borderRadius:6,transition:"width 0.3s"}}/>
+                  </div>
+                  <div onClick={kickChargePower} style={{marginTop:10,padding:"12px 24px",borderRadius:12,cursor:"pointer",textAlign:"center",background:`${inpInfo.color}15`,border:`1px solid ${inpInfo.color}30`,fontSize:14,fontWeight:800,color:inpInfo.color,animation:"pulse 0.8s infinite"}}>
+                    {inp==="puff"?"💨 PUFF for Power!":"🔘 PRESS for Power!"}
+                  </div>
+                </div>
+              )}
+
+              {/* Shoot instruction */}
+              {kickState==="shoot" && (
+                <div style={{fontSize:12,color:C.text2,marginTop:8,animation:"breathe 2s infinite"}}>
+                  👆 Tap a zone to aim your kick
+                </div>
+              )}
+
+              {/* Save ready */}
+              {kickState==="save_ready" && (
+                <div style={{textAlign:"center",marginTop:8}}>
+                  <div style={{fontSize:16,fontWeight:900,color:C.orange,marginBottom:8,animation:"breathe 1.5s infinite"}}>🧤 YOUR TURN TO SAVE</div>
+                  <div onClick={kickSaveStart} style={{padding:"12px 28px",borderRadius:12,cursor:"pointer",background:`${C.orange}15`,border:`1px solid ${C.orange}30`,fontSize:14,fontWeight:800,color:C.orange}}>Ready!</div>
+                </div>
+              )}
+
+              {/* Save countdown */}
+              {kickState==="save_countdown" && (
+                <div style={{fontSize:20,fontWeight:900,color:C.gold,marginTop:8,animation:"breathe 0.6s infinite"}}>
+                  AI winding up...
+                </div>
+              )}
+
+              {/* Save dive instruction */}
+              {kickState==="save_dive" && (
+                <div style={{fontSize:13,color:C.orange,marginTop:8,fontWeight:700,animation:"pulse 0.5s infinite"}}>
+                  👆 TAP a zone to DIVE!
+                </div>
+              )}
+
+              {/* Final result */}
+              {kickState==="final" && (
+                <div style={{textAlign:"center",marginTop:12,animation:"fadeIn 0.4s ease"}}>
+                  <div style={{fontSize:32,fontWeight:900,color:kickScore.you>kickScore.ai?C.green:kickScore.you<kickScore.ai?C.red:C.gold,marginBottom:4}}>
+                    {kickScore.you>kickScore.ai?"🏆 YOU WIN!":kickScore.you<kickScore.ai?"😢 DEFEATED":"🤝 DRAW"}
+                  </div>
+                  <div style={{fontSize:13,color:C.text3,marginBottom:4}}>{kickScore.you} - {kickScore.ai}</div>
+                  <div style={{fontSize:11,color:C.gold,marginBottom:16}}>Reward: ×{pool.rewardMult} ({pool.label})</div>
+                  <div style={{display:"flex",gap:10,justifyContent:"center"}}>
+                    <div onClick={()=>{startKick();}} style={{padding:"10px 24px",borderRadius:10,cursor:"pointer",background:`${C.cyan}15`,border:`1px solid ${C.cyan}30`,fontSize:13,fontWeight:700,color:C.cyan}}>Rematch</div>
+                    <div onClick={kickEndGame} style={{padding:"10px 24px",borderRadius:10,cursor:"pointer",background:`${C.green}15`,border:`1px solid ${C.green}30`,fontSize:13,fontWeight:700,color:C.green}}>Collect & Exit</div>
+                  </div>
                 </div>
               )}
             </div>
