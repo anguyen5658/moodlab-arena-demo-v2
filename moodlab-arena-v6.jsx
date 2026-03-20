@@ -151,6 +151,93 @@ const BADGES = [
   { name:"WC Champion", emoji:"🏆", earned:false },{ name:"Social", emoji:"🦋", earned:false },
 ];
 
+// ── WORLD CUP 2026 — NATIONAL TEAMS (48 qualified + Vietnam + China) ──
+const WC_TEAMS = [
+  // CONCACAF (Hosts + qualified)
+  {id:"usa",name:"USA",flag:"\u{1F1FA}\u{1F1F8}",group:"A",rating:4,confederation:"CONCACAF"},
+  {id:"mex",name:"Mexico",flag:"\u{1F1F2}\u{1F1FD}",group:"A",rating:3,confederation:"CONCACAF"},
+  {id:"can",name:"Canada",flag:"\u{1F1E8}\u{1F1E6}",group:"A",rating:3,confederation:"CONCACAF"},
+  // CONMEBOL
+  {id:"bra",name:"Brazil",flag:"\u{1F1E7}\u{1F1F7}",group:"F",rating:5,confederation:"CONMEBOL"},
+  {id:"arg",name:"Argentina",flag:"\u{1F1E6}\u{1F1F7}",group:"C",rating:5,confederation:"CONMEBOL"},
+  {id:"col",name:"Colombia",flag:"\u{1F1E8}\u{1F1F4}",group:"H",rating:4,confederation:"CONMEBOL"},
+  {id:"uru",name:"Uruguay",flag:"\u{1F1FA}\u{1F1FE}",group:"H",rating:4,confederation:"CONMEBOL"},
+  {id:"ecu",name:"Ecuador",flag:"\u{1F1EA}\u{1F1E8}",group:"G",rating:3,confederation:"CONMEBOL"},
+  {id:"per",name:"Peru",flag:"\u{1F1F5}\u{1F1EA}",group:"I",rating:3,confederation:"CONMEBOL"},
+  {id:"par",name:"Paraguay",flag:"\u{1F1F5}\u{1F1FE}",group:"L",rating:2,confederation:"CONMEBOL"},
+  // UEFA
+  {id:"ger",name:"Germany",flag:"\u{1F1E9}\u{1F1EA}",group:"F",rating:5,confederation:"UEFA"},
+  {id:"fra",name:"France",flag:"\u{1F1EB}\u{1F1F7}",group:"C",rating:5,confederation:"UEFA"},
+  {id:"eng",name:"England",flag:"\u{1F3F4}\u{E0067}\u{E0062}\u{E0065}\u{E006E}\u{E0067}\u{E007F}",group:"B",rating:5,confederation:"UEFA"},
+  {id:"esp",name:"Spain",flag:"\u{1F1EA}\u{1F1F8}",group:"E",rating:5,confederation:"UEFA"},
+  {id:"por",name:"Portugal",flag:"\u{1F1F5}\u{1F1F9}",group:"E",rating:5,confederation:"UEFA"},
+  {id:"ned",name:"Netherlands",flag:"\u{1F1F3}\u{1F1F1}",group:"D",rating:4,confederation:"UEFA"},
+  {id:"bel",name:"Belgium",flag:"\u{1F1E7}\u{1F1EA}",group:"D",rating:4,confederation:"UEFA"},
+  {id:"ita",name:"Italy",flag:"\u{1F1EE}\u{1F1F9}",group:"B",rating:4,confederation:"UEFA"},
+  {id:"cro",name:"Croatia",flag:"\u{1F1ED}\u{1F1F7}",group:"G",rating:4,confederation:"UEFA"},
+  {id:"den",name:"Denmark",flag:"\u{1F1E9}\u{1F1F0}",group:"J",rating:3,confederation:"UEFA"},
+  {id:"sui",name:"Switzerland",flag:"\u{1F1E8}\u{1F1ED}",group:"J",rating:3,confederation:"UEFA"},
+  {id:"aut",name:"Austria",flag:"\u{1F1E6}\u{1F1F9}",group:"K",rating:3,confederation:"UEFA"},
+  {id:"srb",name:"Serbia",flag:"\u{1F1F7}\u{1F1F8}",group:"K",rating:3,confederation:"UEFA"},
+  {id:"pol",name:"Poland",flag:"\u{1F1F5}\u{1F1F1}",group:"I",rating:3,confederation:"UEFA"},
+  {id:"sco",name:"Scotland",flag:"\u{1F3F4}\u{E0067}\u{E0062}\u{E0073}\u{E0063}\u{E0074}\u{E007F}",group:"L",rating:2,confederation:"UEFA"},
+  {id:"wal",name:"Wales",flag:"\u{1F3F4}\u{E0067}\u{E0062}\u{E0077}\u{E006C}\u{E0073}\u{E007F}",group:"L",rating:2,confederation:"UEFA"},
+  {id:"tur",name:"Turkey",flag:"\u{1F1F9}\u{1F1F7}",group:"K",rating:3,confederation:"UEFA"},
+  {id:"ukr",name:"Ukraine",flag:"\u{1F1FA}\u{1F1E6}",group:"I",rating:3,confederation:"UEFA"},
+  // AFC
+  {id:"jpn",name:"Japan",flag:"\u{1F1EF}\u{1F1F5}",group:"D",rating:4,confederation:"AFC"},
+  {id:"kor",name:"South Korea",flag:"\u{1F1F0}\u{1F1F7}",group:"G",rating:3,confederation:"AFC"},
+  {id:"aus",name:"Australia",flag:"\u{1F1E6}\u{1F1FA}",group:"B",rating:3,confederation:"AFC"},
+  {id:"ksa",name:"Saudi Arabia",flag:"\u{1F1F8}\u{1F1E6}",group:"F",rating:2,confederation:"AFC"},
+  {id:"irn",name:"Iran",flag:"\u{1F1EE}\u{1F1F7}",group:"C",rating:3,confederation:"AFC"},
+  {id:"qat",name:"Qatar",flag:"\u{1F1F6}\u{1F1E6}",group:"J",rating:2,confederation:"AFC"},
+  {id:"irq",name:"Iraq",flag:"\u{1F1EE}\u{1F1F6}",group:"J",rating:2,confederation:"AFC"},
+  {id:"uzb",name:"Uzbekistan",flag:"\u{1F1FA}\u{1F1FF}",group:"H",rating:2,confederation:"AFC"},
+  {id:"idn",name:"Indonesia",flag:"\u{1F1EE}\u{1F1E9}",group:"E",rating:1,confederation:"AFC"},
+  {id:"bhr",name:"Bahrain",flag:"\u{1F1E7}\u{1F1ED}",group:"L",rating:1,confederation:"AFC"},
+  // CAF
+  {id:"mar",name:"Morocco",flag:"\u{1F1F2}\u{1F1E6}",group:"F",rating:4,confederation:"CAF"},
+  {id:"sen",name:"Senegal",flag:"\u{1F1F8}\u{1F1F3}",group:"C",rating:4,confederation:"CAF"},
+  {id:"nga",name:"Nigeria",flag:"\u{1F1F3}\u{1F1EC}",group:"D",rating:3,confederation:"CAF"},
+  {id:"egy",name:"Egypt",flag:"\u{1F1EA}\u{1F1EC}",group:"G",rating:3,confederation:"CAF"},
+  {id:"cmr",name:"Cameroon",flag:"\u{1F1E8}\u{1F1F2}",group:"H",rating:3,confederation:"CAF"},
+  {id:"rsa",name:"South Africa",flag:"\u{1F1FF}\u{1F1E6}",group:"E",rating:2,confederation:"CAF"},
+  {id:"mli",name:"Mali",flag:"\u{1F1F2}\u{1F1F1}",group:"I",rating:2,confederation:"CAF"},
+  {id:"cod",name:"DR Congo",flag:"\u{1F1E8}\u{1F1E9}",group:"K",rating:2,confederation:"CAF"},
+  {id:"civ",name:"Ivory Coast",flag:"\u{1F1E8}\u{1F1EE}",group:"A",rating:3,confederation:"CAF"},
+  // OFC
+  {id:"nzl",name:"New Zealand",flag:"\u{1F1F3}\u{1F1FF}",group:"B",rating:2,confederation:"OFC"},
+  // BONUS TEAMS
+  {id:"vnm",name:"Vietnam",flag:"\u{1F1FB}\u{1F1F3}",group:"BONUS",rating:1,confederation:"AFC"},
+  {id:"chn",name:"China",flag:"\u{1F1E8}\u{1F1F3}",group:"BONUS",rating:2,confederation:"AFC"},
+];
+
+const WC_GROUPS = {
+  A:["usa","mex","can","civ"], B:["eng","ita","aus","nzl"], C:["arg","fra","irn","sen"],
+  D:["ned","bel","jpn","nga"], E:["esp","por","idn","rsa"], F:["bra","ger","ksa","mar"],
+  G:["cro","kor","ecu","egy"], H:["col","uru","uzb","cmr"], I:["pol","ukr","per","mli"],
+  J:["den","sui","qat","irq"], K:["aut","srb","tur","cod"], L:["par","sco","wal","bhr"],
+};
+
+const WC_PRIZES = {
+  gold:   {label:"\u{1F947} Champion",  pts:50000, coins:500, title:"World Champion"},
+  silver: {label:"\u{1F948} Runner-Up", pts:25000, coins:250, title:"Runner-Up"},
+  bronze: {label:"\u{1F949} Third",     pts:10000, coins:100, title:"Third Place"},
+  fourth: {label:"4th Place",           pts:5000,  coins:50,  title:"Semifinalist"},
+  group:  {label:"Group Exit",          pts:1000,  coins:10,  title:"Group Stage"},
+};
+
+const WC_CONFEDERATIONS = [
+  {id:"CONCACAF",label:"CONCACAF",color:"#00E5FF"},
+  {id:"CONMEBOL",label:"CONMEBOL",color:"#FFD93D"},
+  {id:"UEFA",label:"UEFA",color:"#C084FC"},
+  {id:"AFC",label:"AFC",color:"#FB923C"},
+  {id:"CAF",label:"CAF",color:"#34D399"},
+  {id:"OFC",label:"OFC",color:"#60A5FA"},
+];
+
+const WC_COOLDOWN_MS = 6 * 60 * 60 * 1000; // 6 hours
+
 const VC_QUESTIONS = [
   { q:"World Cup 2026 tổ chức ở bao nhiêu thành phố?", opts:["12","14","16","20"], correct:2 },
   { q:"Đội nào vô địch World Cup nhiều nhất?", opts:["Đức","Argentina","Italy","Brazil"], correct:3 },
@@ -341,6 +428,17 @@ export default function MoodLabArena() {
   const [walkFrom, setWalkFrom] = useState(null);
   const [chatPanel, setChatPanel] = useState(false);
   const [arenaLoading, setArenaLoading] = useState(true); // loading screen on first Arena entry
+
+  // ── World Cup Tournament ──
+  const [wcTeam, setWcTeam] = useState(null);           // selected team {id,name,flag,...}
+  const [wcTournament, setWcTournament] = useState(null); // active tournament state {group,opponents,standings,knockoutRound,...}
+  const [wcPhase, setWcPhase] = useState(null);          // null|"team_select"|"group_draw"|"group_stage"|"knockout"|"result"
+  const [wcCooldown, setWcCooldown] = useState(null);    // timestamp of last tournament entry
+  const [wcMatchday, setWcMatchday] = useState(0);       // current matchday in group (0-2)
+  const [wcBracket, setWcBracket] = useState(null);      // knockout bracket data {round,opponent,results}
+  const [wcDrawAnim, setWcDrawAnim] = useState(false);   // group draw animation active
+  const [wcGroupResult, setWcGroupResult] = useState(null); // after group stage — "advance"|"eliminated"
+  const [wcFinalResult, setWcFinalResult] = useState(null); // "gold"|"silver"|"bronze"|"fourth"|"group"
 
   // ── Derived ──
   const wcDays = Math.max(0, Math.floor((new Date("2026-06-11") - new Date()) / 86400000));
@@ -914,13 +1012,290 @@ export default function MoodLabArena() {
   const kickEndGame = () => {
     const pool = getDevicePool();
     const mult = pool.rewardMult;
+    const isWc = gameActive?.wcMode;
     let reward = 0;
-    if(kickScore.you > kickScore.ai) { reward = Math.round(80 * mult); notify(`⚽ YOU WIN! +${reward} coins!`,C.green); playFx("win"); }
-    else if(kickScore.you < kickScore.ai) { reward = Math.round(10 * mult); notify(`😢 +${reward} coins`,C.red); playFx("lose"); }
-    else { reward = Math.round(30 * mult); notify(`🤝 Draw! +${reward} coins`,C.gold); }
+    if(kickScore.you > kickScore.ai) { reward = Math.round((isWc ? 20 : 80) * mult); notify(`⚽ YOU WIN! +${reward} coins!`,C.green); playFx("win"); }
+    else if(kickScore.you < kickScore.ai) { reward = Math.round((isWc ? 5 : 10) * mult); notify(`😢 +${reward} coins`,C.red); playFx("lose"); }
+    else { reward = Math.round((isWc ? 10 : 30) * mult); notify(`🤝 Draw! +${reward} coins`,C.gold); }
     setCoins(c=>c+reward);
+
+    // Handle WC tournament progression
+    if(isWc) {
+      const myS = kickScore.you;
+      const aiS = kickScore.ai;
+      const isKnockout = gameActive?.wcKnockout;
+      const matchIdx = gameActive?.wcMatchIdx;
+      setGameActive(null); setKickState(null); setKickCharging(false);
+      if(kickChargeInterval.current){clearInterval(kickChargeInterval.current);kickChargeInterval.current=null;}
+      // Defer to WC handler with captured data
+      setTimeout(() => {
+        if(isKnockout) wcFinishKnockoutMatch(myS, aiS);
+        else wcFinishGroupMatch(matchIdx, myS, aiS);
+      }, 300);
+      return;
+    }
+
     setGameActive(null); setKickState(null); setKickCharging(false);
     if(kickChargeInterval.current){clearInterval(kickChargeInterval.current);kickChargeInterval.current=null;}
+  };
+
+  // ── WORLD CUP TOURNAMENT LOGIC ──
+  const wcCanEnter = () => {
+    if(!wcCooldown) return true;
+    return (Date.now() - wcCooldown) >= WC_COOLDOWN_MS;
+  };
+  const wcCooldownRemaining = () => {
+    if(!wcCooldown) return 0;
+    return Math.max(0, WC_COOLDOWN_MS - (Date.now() - wcCooldown));
+  };
+  const formatCooldown = (ms) => {
+    const h = Math.floor(ms / 3600000);
+    const m = Math.floor((ms % 3600000) / 60000);
+    return `${h}h ${m}m`;
+  };
+
+  const wcSelectTeam = (team) => {
+    playFx("select");
+    setWcTeam(team);
+  };
+
+  const wcConfirmTeam = () => {
+    if(!wcTeam) return;
+    playFx("success");
+    setWcPhase("group_draw");
+    setWcDrawAnim(true);
+
+    // Generate group: user's team + 3 random opponents (not same team)
+    const pool = WC_TEAMS.filter(t => t.id !== wcTeam.id && t.group !== "BONUS");
+    const shuffled = [...pool].sort(() => Math.random() - 0.5);
+    const groupOpps = shuffled.slice(0, 3);
+    const groupTeams = [wcTeam, ...groupOpps];
+    const groupLetter = String.fromCharCode(65 + Math.floor(Math.random() * 12)); // A-L
+
+    const standings = groupTeams.map(t => ({
+      ...t, played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, pts: 0,
+    }));
+
+    setWcTournament({
+      group: groupLetter,
+      teams: groupTeams,
+      standings,
+      matchday: 0,
+      groupMatches: [
+        { opp: groupOpps[0], played: false, result: null },
+        { opp: groupOpps[1], played: false, result: null },
+        { opp: groupOpps[2], played: false, result: null },
+      ],
+      knockoutRound: null,
+      knockoutOpps: [],
+      knockoutResults: [],
+    });
+    setWcMatchday(0);
+    setWcCooldown(Date.now());
+
+    // Draw animation: show for 3s then transition
+    setTimeout(() => {
+      setWcDrawAnim(false);
+      setWcPhase("group_stage");
+    }, 3000);
+  };
+
+  const wcStartGroupMatch = (matchIdx) => {
+    if(!wcTournament || wcTournament.groupMatches[matchIdx].played) return;
+    playFx("select");
+    // Start a Final Kick game — store context for callback
+    const opp = wcTournament.groupMatches[matchIdx].opp;
+    kickOpponent.current = {
+      name: opp.name,
+      emoji: opp.flag,
+      img: `https://api.dicebear.com/9.x/icons/svg?seed=${opp.id}&backgroundColor=transparent`,
+      rank: `#${Math.floor(Math.random()*50)+1}`,
+      record: `${Math.floor(Math.random()*100)}-${Math.floor(Math.random()*50)}`,
+      taunt: pick(["You have no chance!","We will win!","My team is the best!","Bring it on!","Easy match 😎"]),
+    };
+    setWcMatchday(matchIdx);
+    // Set game as Final Kick in WC mode
+    const fkGame = PLAY_GAMES.find(g => g.id === "finalkick");
+    resolveInputForGame(fkGame, (input) => {
+      setGameActive({ ...fkGame, activeInput: input, wcMode: true, wcMatchIdx: matchIdx });
+      startKick();
+      startMatchIntro(kickOpponent.current);
+    });
+  };
+
+  const wcFinishGroupMatch = (matchIdx, myScore, aiScore) => {
+    if(!wcTournament) return;
+    const result = myScore > aiScore ? "win" : myScore < aiScore ? "loss" : "draw";
+    const opp = wcTournament.groupMatches[matchIdx].opp;
+
+    const newTournament = { ...wcTournament };
+    newTournament.groupMatches = [...newTournament.groupMatches];
+    newTournament.groupMatches[matchIdx] = { ...newTournament.groupMatches[matchIdx], played: true, result, myScore, aiScore };
+
+    // Update standings
+    const newStandings = [...newTournament.standings].map(s => ({ ...s }));
+    const myIdx = newStandings.findIndex(s => s.id === wcTeam.id);
+    const oppIdx = newStandings.findIndex(s => s.id === opp.id);
+
+    if(myIdx >= 0) {
+      newStandings[myIdx].played++;
+      newStandings[myIdx].gf += myScore;
+      newStandings[myIdx].ga += aiScore;
+      if(result === "win") { newStandings[myIdx].won++; newStandings[myIdx].pts += 3; }
+      else if(result === "draw") { newStandings[myIdx].drawn++; newStandings[myIdx].pts += 1; }
+      else { newStandings[myIdx].lost++; }
+    }
+    if(oppIdx >= 0) {
+      newStandings[oppIdx].played++;
+      newStandings[oppIdx].gf += aiScore;
+      newStandings[oppIdx].ga += myScore;
+      if(result === "loss") { newStandings[oppIdx].won++; newStandings[oppIdx].pts += 3; }
+      else if(result === "draw") { newStandings[oppIdx].drawn++; newStandings[oppIdx].pts += 1; }
+      else { newStandings[oppIdx].lost++; }
+    }
+
+    // Simulate other matches for AI teams
+    const otherTeams = newStandings.filter(s => s.id !== wcTeam.id && s.id !== opp.id);
+    if(otherTeams.length >= 2) {
+      const a = newStandings.findIndex(s => s.id === otherTeams[0].id);
+      const b = newStandings.findIndex(s => s.id === otherTeams[1].id);
+      const r = Math.random();
+      if(r < 0.4) { newStandings[a].won++; newStandings[a].pts += 3; newStandings[a].gf += 2; newStandings[a].ga += 1; newStandings[b].lost++; newStandings[b].gf += 1; newStandings[b].ga += 2; }
+      else if(r < 0.7) { newStandings[a].drawn++; newStandings[a].pts += 1; newStandings[a].gf += 1; newStandings[a].ga += 1; newStandings[b].drawn++; newStandings[b].pts += 1; newStandings[b].gf += 1; newStandings[b].ga += 1; }
+      else { newStandings[b].won++; newStandings[b].pts += 3; newStandings[b].gf += 2; newStandings[b].ga += 1; newStandings[a].lost++; newStandings[a].gf += 1; newStandings[a].ga += 2; }
+      newStandings[a].played++; newStandings[b].played++;
+    }
+
+    // Sort by pts, then GD
+    newStandings.sort((a, b) => b.pts - a.pts || (b.gf - b.ga) - (a.gf - a.ga) || b.gf - a.gf);
+    newTournament.standings = newStandings;
+    setWcTournament(newTournament);
+
+    // Check if all 3 group matches played
+    const allPlayed = newTournament.groupMatches.every(m => m.played);
+    if(allPlayed) {
+      const myRank = newStandings.findIndex(s => s.id === wcTeam.id);
+      if(myRank <= 1) {
+        // Top 2: advance to knockout
+        setWcGroupResult("advance");
+        setTimeout(() => {
+          // Generate knockout bracket — 4 rounds: R32, R16, QF, SF, Final
+          const knockoutRounds = ["Round of 32","Round of 16","Quarterfinal","Semifinal","Final"];
+          const knockoutOpps = knockoutRounds.map(() => {
+            const r = WC_TEAMS.filter(t => t.id !== wcTeam.id && t.group !== "BONUS");
+            return r[Math.floor(Math.random() * r.length)];
+          });
+          setWcBracket({ rounds: knockoutRounds, opponents: knockoutOpps, results: [], currentRound: 0 });
+          setWcPhase("knockout");
+          setWcGroupResult(null);
+        }, 3000);
+      } else {
+        // Eliminated
+        setWcGroupResult("eliminated");
+        setTimeout(() => {
+          setWcFinalResult("group");
+          setWcPhase("result");
+          setWcGroupResult(null);
+        }, 3000);
+      }
+    }
+  };
+
+  const wcStartKnockoutMatch = () => {
+    if(!wcBracket || wcBracket.currentRound >= wcBracket.rounds.length) return;
+    playFx("select");
+    const opp = wcBracket.opponents[wcBracket.currentRound];
+    kickOpponent.current = {
+      name: opp.name,
+      emoji: opp.flag,
+      img: `https://api.dicebear.com/9.x/icons/svg?seed=${opp.id}&backgroundColor=transparent`,
+      rank: `#${Math.floor(Math.random()*30)+1}`,
+      record: `${Math.floor(Math.random()*150)}-${Math.floor(Math.random()*50)}`,
+      taunt: pick(["This is our moment!","You'll never take us down!","Knockout time!","Last chance, play hard!"]),
+    };
+    const fkGame = PLAY_GAMES.find(g => g.id === "finalkick");
+    resolveInputForGame(fkGame, (input) => {
+      setGameActive({ ...fkGame, activeInput: input, wcMode: true, wcKnockout: true, wcRoundIdx: wcBracket.currentRound });
+      startKick();
+      startMatchIntro(kickOpponent.current);
+    });
+  };
+
+  const wcFinishKnockoutMatch = (myScore, aiScore) => {
+    if(!wcBracket) return;
+    const win = myScore > aiScore;
+    // On draw in knockout: random extra time result (slight player advantage)
+    const actualWin = myScore === aiScore ? Math.random() < 0.55 : win;
+
+    const newBracket = { ...wcBracket };
+    newBracket.results = [...newBracket.results, { round: newBracket.currentRound, win: actualWin, myScore, aiScore, extraTime: myScore === aiScore }];
+
+    if(!actualWin) {
+      // Eliminated — determine placement
+      const round = newBracket.currentRound;
+      let placement = "group";
+      if(round === 4) placement = "silver"; // lost final
+      else if(round === 3) placement = "fourth"; // lost SF (simplified — no 3rd place match)
+      else placement = "group"; // lost earlier rounds
+      // Special: if lost in SF, offer bronze
+      if(round === 3) placement = "bronze"; // give bronze for reaching SF
+
+      setWcBracket(newBracket);
+      setWcFinalResult(placement);
+      setTimeout(() => setWcPhase("result"), 1500);
+    } else {
+      newBracket.currentRound++;
+      setWcBracket(newBracket);
+
+      if(newBracket.currentRound >= newBracket.rounds.length) {
+        // Won the final!
+        setWcFinalResult("gold");
+        spawnConfetti(60, [C.gold, C.cyan, C.green, "#fff"]);
+        playFx("win");
+        setTimeout(() => setWcPhase("result"), 1500);
+      }
+    }
+  };
+
+  // Called from kickEndGame when in WC mode
+  const wcHandleMatchEnd = (myScore, aiScore) => {
+    if(gameActive?.wcKnockout) {
+      wcFinishKnockoutMatch(myScore, aiScore);
+    } else if(gameActive?.wcMode) {
+      wcFinishGroupMatch(gameActive.wcMatchIdx, myScore, aiScore);
+    }
+  };
+
+  const wcClaimPrize = () => {
+    if(!wcFinalResult) return;
+    const prize = WC_PRIZES[wcFinalResult];
+    if(prize) {
+      setCoins(c => c + prize.coins);
+      setXp(x => x + Math.floor(prize.pts / 10));
+      notify(`${prize.label} — +${prize.coins} coins!`, wcFinalResult === "gold" ? C.gold : C.cyan);
+      if(wcFinalResult === "gold") spawnConfetti(80, [C.gold, "#fff", C.cyan]);
+      playFx("success");
+    }
+    // Reset tournament state
+    setWcPhase(null);
+    setWcTeam(null);
+    setWcTournament(null);
+    setWcBracket(null);
+    setWcMatchday(0);
+    setWcFinalResult(null);
+    setWcGroupResult(null);
+  };
+
+  const wcExitTournament = () => {
+    playFx("back");
+    setWcPhase(null);
+    setWcTeam(null);
+    setWcTournament(null);
+    setWcBracket(null);
+    setWcMatchday(0);
+    setWcFinalResult(null);
+    setWcGroupResult(null);
+    setWcDrawAnim(false);
   };
 
   const doSpin = () => {
@@ -2126,8 +2501,14 @@ export default function MoodLabArena() {
 
               {/* ═══ VS ARENA HEADER WITH CHARACTER IMAGES ═══ */}
               <div style={{width:"100%",maxWidth:390,marginTop:38,marginBottom:6}}>
-                <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,marginBottom:5}}>
-                  <span style={{fontSize:8,fontWeight:800,color:C.gold,letterSpacing:2}}>🏆 FINAL KICK</span>
+                <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,marginBottom:5,flexWrap:"wrap"}}>
+                  {gameActive?.wcMode ? (
+                    <span style={{fontSize:8,fontWeight:800,color:C.gold,letterSpacing:2}}>
+                      🏆 {gameActive?.wcKnockout && wcBracket ? wcBracket.rounds[wcBracket.currentRound].toUpperCase() : `GROUP ${wcTournament?.group || "?"} · MATCH ${(gameActive?.wcMatchIdx ?? 0)+1}/3`}
+                    </span>
+                  ) : (
+                    <span style={{fontSize:8,fontWeight:800,color:C.gold,letterSpacing:2}}>🏆 FINAL KICK</span>
+                  )}
                   <span style={{fontSize:7,fontWeight:700,color:pool.color,padding:"2px 8px",borderRadius:20,...LG.tinted(pool.color)}}>⚖️ {pool.label}</span>
                   <span style={{fontSize:7,fontWeight:700,color:inpInfo.color,padding:"2px 8px",borderRadius:20,...LG.tinted(inpInfo.color)}}>{inpInfo.icon} {inpInfo.label}</span>
                   {kickBonusActive && <span style={{fontSize:7,fontWeight:800,color:C.gold,padding:"2px 8px",borderRadius:20,background:`${C.gold}20`,border:`1px solid ${C.gold}40`,animation:"pulse 1s infinite"}}>⚡ BONUS</span>}
@@ -2140,11 +2521,17 @@ export default function MoodLabArena() {
                   <div style={{position:"absolute",right:0,top:0,width:"40%",height:"100%",background:`radial-gradient(ellipse at 80% 50%, ${C.red}12, transparent 70%)`,pointerEvents:"none"}}/>
                   {/* YOU */}
                   <div style={{flex:1,display:"flex",alignItems:"center",gap:8,padding:"10px 12px",background:`linear-gradient(135deg, ${C.cyan}08, transparent)`}}>
-                    <div style={{width:50,height:50,borderRadius:14,overflow:"hidden",border:`2px solid ${C.cyan}50`,background:`${C.cyan}10`,flexShrink:0,boxShadow:`0 0 16px ${C.cyan}30`}}>
-                      <img src={PLAYER_IMG} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}} onError={(e)=>{e.target.outerHTML='<div style="font-size:28px;text-align:center;padding-top:8px">😎</div>';}}/>
-                    </div>
+                    {gameActive?.wcMode && wcTeam ? (
+                      <div style={{width:50,height:50,borderRadius:14,display:"flex",alignItems:"center",justifyContent:"center",border:`2px solid ${C.cyan}50`,background:`${C.cyan}10`,flexShrink:0,boxShadow:`0 0 16px ${C.cyan}30`,fontSize:30}}>
+                        {wcTeam.flag}
+                      </div>
+                    ) : (
+                      <div style={{width:50,height:50,borderRadius:14,overflow:"hidden",border:`2px solid ${C.cyan}50`,background:`${C.cyan}10`,flexShrink:0,boxShadow:`0 0 16px ${C.cyan}30`}}>
+                        <img src={PLAYER_IMG} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}} onError={(e)=>{e.target.outerHTML='<div style="font-size:28px;text-align:center;padding-top:8px">😎</div>';}}/>
+                      </div>
+                    )}
                     <div style={{minWidth:0}}>
-                      <div style={{fontSize:11,fontWeight:800,color:C.cyan}}>Steve</div>
+                      <div style={{fontSize:11,fontWeight:800,color:C.cyan}}>{gameActive?.wcMode && wcTeam ? wcTeam.name : "Steve"}</div>
                       <div style={{fontSize:7,color:C.text3}}>{getDeviceShort()} · Lv.24</div>
                       <div style={{fontSize:28,fontWeight:900,color:"#fff",textShadow:`0 0 12px ${C.cyan}60`,lineHeight:1,marginTop:2}}>{kickScore.you}</div>
                     </div>
@@ -2157,9 +2544,15 @@ export default function MoodLabArena() {
                   </div>
                   {/* AI */}
                   <div style={{flex:1,display:"flex",alignItems:"center",flexDirection:"row-reverse",gap:8,padding:"10px 12px",background:`linear-gradient(225deg, ${C.red}08, transparent)`}}>
-                    <div style={{width:50,height:50,borderRadius:14,overflow:"hidden",border:`2px solid ${C.red}50`,background:`${C.red}10`,flexShrink:0,boxShadow:`0 0 16px ${C.red}30`}}>
-                      <img src={kickOpponent.current.img} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}} onError={(e)=>{e.target.outerHTML='<div style="font-size:28px;text-align:center;padding-top:8px">'+kickOpponent.current.emoji+'</div>';}}/>
-                    </div>
+                    {gameActive?.wcMode ? (
+                      <div style={{width:50,height:50,borderRadius:14,display:"flex",alignItems:"center",justifyContent:"center",border:`2px solid ${C.red}50`,background:`${C.red}10`,flexShrink:0,boxShadow:`0 0 16px ${C.red}30`,fontSize:30}}>
+                        {kickOpponent.current.emoji}
+                      </div>
+                    ) : (
+                      <div style={{width:50,height:50,borderRadius:14,overflow:"hidden",border:`2px solid ${C.red}50`,background:`${C.red}10`,flexShrink:0,boxShadow:`0 0 16px ${C.red}30`}}>
+                        <img src={kickOpponent.current.img} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}} onError={(e)=>{e.target.outerHTML='<div style="font-size:28px;text-align:center;padding-top:8px">'+kickOpponent.current.emoji+'</div>';}}/>
+                      </div>
+                    )}
                     <div style={{textAlign:"right",minWidth:0}}>
                       <div style={{fontSize:11,fontWeight:800,color:C.red,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{kickOpponent.current.name}</div>
                       <div style={{fontSize:7,color:C.text3}}>{kickOpponent.current.rank} · {kickOpponent.current.record}</div>
@@ -2327,22 +2720,28 @@ export default function MoodLabArena() {
                   }}>
                     {/* Sweet spot highlight zone */}
                     <div style={{position:"absolute",left:`${kickSweetMin}%`,width:`${kickSweetMax-kickSweetMin}%`,height:"100%",background:`${C.green}08`,borderLeft:`1px solid ${C.green}30`,borderRight:`1px solid ${C.green}30`}}/>
-                    <div style={{position:"absolute",left:`${kickSweetMin+2}%`,top:2,fontSize:7,color:`${C.green}50`,fontWeight:800}}>SWEET</div>
-                    {/* Fill bar */}
+                    <div style={{position:"absolute",left:`${kickSweetMin+2}%`,top:2,fontSize:7,color:`${C.green}50`,fontWeight:800,zIndex:2}}>SWEET</div>
+                    {/* Empty state hint */}
+                    {!kickCharging && kickPower===0 && <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",zIndex:2,pointerEvents:"none"}}>
+                      <span style={{fontSize:10,fontWeight:700,color:`${C.text3}80`,animation:"countPulse 1.5s infinite"}}>⬇️ Press & Hold below to charge</span>
+                    </div>}
+                    {/* Fill bar — absolute to ensure it renders on top */}
                     <div style={{
-                      height:"100%",width:`${kickPower}%`,
+                      position:"absolute",left:0,top:0,bottom:0,
+                      width:`${kickPower}%`,
                       background:barColor,
-                      borderRadius:12,transition:"width 0.06s linear",
+                      borderRadius:12,transition:"width 0.05s linear",
                       boxShadow:kickCharging?`0 0 20px ${zoneColor}40`:`0 0 8px ${C.cyan}20`,
+                      zIndex:1,
                     }}/>
                     {/* Power % label */}
-                    {kickPower>8 && <div style={{position:"absolute",right:8,top:"50%",transform:"translateY(-50%)",fontSize:11,fontWeight:900,color:"#fff",textShadow:"0 0 4px rgba(0,0,0,0.9)"}}>
+                    {kickPower>8 && <div style={{position:"absolute",right:8,top:"50%",transform:"translateY(-50%)",fontSize:12,fontWeight:900,color:"#fff",textShadow:"0 0 6px rgba(0,0,0,1), 0 0 2px rgba(0,0,0,1)",zIndex:3}}>
                       {Math.round(kickPower)}%
                     </div>}
                     {/* Zone markers */}
-                    <div style={{position:"absolute",top:0,left:"15%",width:1,height:"100%",background:`rgba(255,255,255,0.06)`}}/>
-                    <div style={{position:"absolute",top:0,left:"40%",width:1,height:"100%",background:`rgba(255,255,255,0.08)`}}/>
-                    <div style={{position:"absolute",top:0,left:`${kickSweetMax}%`,width:1,height:"100%",background:`${C.red}30`}}/>
+                    <div style={{position:"absolute",top:0,left:"15%",width:1,height:"100%",background:`rgba(255,255,255,0.1)`,zIndex:2}}/>
+                    <div style={{position:"absolute",top:0,left:"40%",width:1,height:"100%",background:`rgba(255,255,255,0.12)`,zIndex:2}}/>
+                    <div style={{position:"absolute",top:0,left:`${kickSweetMax}%`,width:2,height:"100%",background:`${C.red}40`,zIndex:2}}/>
                   </div>
                   {/* Duration zone labels */}
                   <div style={{display:"flex",justifyContent:"space-between",marginTop:2,padding:"0 2px"}}>
@@ -2698,11 +3097,13 @@ export default function MoodLabArena() {
         </div>
       );
     }
-    // Game detail sheet — IMMERSIVE
+    // Game detail sheet — IMMERSIVE with Quick Play + Tournament
     if(selectedGame) {
       const gc = selectedGame.color;
       const pool = getDevicePool();
-      const inpInfo = INPUT_TYPES.find(t=>t.id==="puff")||INPUT_TYPES[0];
+      const canEnterWC = wcCanEnter();
+      const cooldownMs = wcCooldownRemaining();
+      const isFinalkick = selectedGame.id === "finalkick";
       return (
         <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden"}}>
           {/* Stadium background */}
@@ -2712,75 +3113,488 @@ export default function MoodLabArena() {
             radial-gradient(ellipse at 80% 80%, rgba(168,85,247,0.05) 0%, transparent 40%),
             linear-gradient(180deg, #040812 0%, #0a1628 40%, #0d1f20 70%, #061210 100%)
           `}}/>
-          {/* Light beams */}
           <div style={{position:"absolute",top:0,left:"20%",width:3,height:"30%",background:`linear-gradient(180deg, ${gc}25, transparent)`,filter:"blur(4px)",animation:"pulse 3s infinite"}}/>
           <div style={{position:"absolute",top:0,right:"20%",width:3,height:"30%",background:`linear-gradient(180deg, ${gc}25, transparent)`,filter:"blur(4px)",animation:"pulse 3s infinite 1s"}}/>
-          {/* Grass at bottom */}
           <div style={{position:"absolute",bottom:0,left:0,right:0,height:"20%",background:`linear-gradient(180deg, transparent, rgba(34,197,94,0.06) 50%, rgba(34,197,94,0.10))`,pointerEvents:"none"}}/>
 
           {overlayBack(()=>setSelectedGame(null))}
 
-          <div style={{position:"relative",zIndex:2,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",height:"100%",padding:"50px 20px 20px",textAlign:"center"}}>
-            {/* Game icon with glow ring */}
-            <div style={{width:90,height:90,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",background:`radial-gradient(circle, ${gc}15, ${gc}05)`,border:`2px solid ${gc}30`,boxShadow:`0 0 40px ${gc}20, 0 0 80px ${gc}08`,marginBottom:12,animation:"gentleFloat 3s infinite"}}>
-              <span style={{fontSize:48,filter:`drop-shadow(0 0 15px ${gc}40)`}}>{selectedGame.emoji}</span>
+          <div style={{position:"relative",zIndex:2,display:"flex",flexDirection:"column",alignItems:"center",height:"100%",padding:"50px 16px 20px",overflowY:"auto"}}>
+            {/* Game header */}
+            <div style={{width:70,height:70,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",background:`radial-gradient(circle, ${gc}15, ${gc}05)`,border:`2px solid ${gc}30`,boxShadow:`0 0 40px ${gc}20`,marginBottom:8,animation:"gentleFloat 3s infinite"}}>
+              <span style={{fontSize:36,filter:`drop-shadow(0 0 15px ${gc}40)`}}>{selectedGame.emoji}</span>
+            </div>
+            <div style={{fontSize:20,fontWeight:900,color:C.text,textShadow:`0 0 20px ${gc}30`,marginBottom:3}}>{selectedGame.name}</div>
+            <div style={{fontSize:10,color:C.text2,marginBottom:6,maxWidth:280,textAlign:"center"}}>{selectedGame.desc}</div>
+            <div style={{display:"flex",gap:5,marginBottom:4,flexWrap:"wrap",justifyContent:"center"}}>
+              <span style={{fontSize:8,fontWeight:700,color:gc,padding:"2px 8px",borderRadius:20,...LG.tinted(gc)}}>{selectedGame.type}</span>
+              <span style={{fontSize:8,fontWeight:700,color:C.text2,padding:"2px 8px",borderRadius:20,...LG.tinted(C.text3)}}>👥 {selectedGame.players}</span>
+              <span style={{fontSize:8,fontWeight:700,color:C.text2,padding:"2px 8px",borderRadius:20,...LG.tinted(C.text3)}}>⏱ {selectedGame.time}</span>
+              {selectedGame.hot && <span style={{fontSize:8,fontWeight:800,color:C.red,padding:"2px 8px",borderRadius:20,background:`${C.red}15`,border:`1px solid ${C.red}25`,animation:"pulse 2s infinite"}}>🔥 HOT</span>}
+            </div>
+            <div style={{display:"flex",gap:4,marginBottom:14}}>
+              <span style={{fontSize:7,fontWeight:700,color:pool.color,padding:"2px 7px",borderRadius:20,...LG.tinted(pool.color)}}>⚖️ {pool.label}</span>
+              {(selectedGame.inputs||["puff"]).map(inp=>{const t=INPUT_TYPES.find(x=>x.id===inp)||INPUT_TYPES[0];return <span key={inp} style={{fontSize:7,fontWeight:700,color:t.color,padding:"2px 7px",borderRadius:20,...LG.tinted(t.color)}}>{t.icon} {t.label}</span>;})}
             </div>
 
-            <div style={{fontSize:24,fontWeight:900,color:C.text,textShadow:`0 0 20px ${gc}30`,marginBottom:4}}>{selectedGame.name}</div>
-            <div style={{fontSize:12,color:C.text2,marginBottom:8,maxWidth:280}}>{selectedGame.desc}</div>
-
-            {/* Tags */}
-            <div style={{display:"flex",gap:6,marginBottom:6}}>
-              <span style={{fontSize:9,fontWeight:700,color:gc,padding:"3px 10px",borderRadius:20,...LG.tinted(gc)}}>{selectedGame.type}</span>
-              <span style={{fontSize:9,fontWeight:700,color:C.text2,padding:"3px 10px",borderRadius:20,...LG.tinted(C.text3)}}>👥 {selectedGame.players}</span>
-              <span style={{fontSize:9,fontWeight:700,color:C.text2,padding:"3px 10px",borderRadius:20,...LG.tinted(C.text3)}}>⏱ {selectedGame.time}</span>
-              {selectedGame.hot && <span style={{fontSize:9,fontWeight:800,color:C.red,padding:"3px 10px",borderRadius:20,background:`${C.red}15`,border:`1px solid ${C.red}25`,animation:"pulse 2s infinite"}}>🔥 HOT</span>}
-            </div>
-
-            {/* Device + input info */}
-            <div style={{display:"flex",gap:5,marginBottom:16}}>
-              <span style={{fontSize:8,fontWeight:700,color:pool.color,padding:"2px 8px",borderRadius:20,...LG.tinted(pool.color)}}>⚖️ {pool.label}</span>
-              <span style={{fontSize:8,fontWeight:700,color:C.text3,padding:"2px 8px",borderRadius:20,...LG.tinted(C.text3)}}>{getDeviceShort()}</span>
-              {(selectedGame.inputs||["puff"]).map(inp=>{const t=INPUT_TYPES.find(x=>x.id===inp)||INPUT_TYPES[0];return <span key={inp} style={{fontSize:8,fontWeight:700,color:t.color,padding:"2px 8px",borderRadius:20,...LG.tinted(t.color)}}>{t.icon} {t.label}</span>;})}
-            </div>
-
-            {/* Match mode buttons — large, glass, with descriptions */}
-            <div style={{width:"100%",maxWidth:320,display:"flex",flexDirection:"column",gap:8,marginBottom:16}}>
-              {[
-                {l:"🤖 vs AI",m:"ai",desc:"Practice against AI bot",sub:"Instant match · Any skill level"},
-                {l:"🎲 Random Match",m:"random",desc:"Find a same-device opponent",sub:"⚖️ Fair match · "+pool.label},
-                {l:"👫 Invite Friend",m:"invite",desc:"Challenge a friend",sub:"Share link · Play together"},
-              ].map(b=>(
-                <div key={b.m} onClick={()=>{playFx("select");startMatch(selectedGame,b.m);}} style={{
-                  display:"flex",alignItems:"center",gap:12,padding:"14px 16px",borderRadius:14,cursor:"pointer",
-                  ...LG.tinted(gc),
-                  transition:"all 0.2s",
-                }}>
-                  <div style={{fontSize:24,width:36,textAlign:"center"}}>{b.l.split(" ")[0]}</div>
-                  <div style={{flex:1,textAlign:"left"}}>
-                    <div style={{fontSize:13,fontWeight:800,color:C.text}}>{b.l.split(" ").slice(1).join(" ")}</div>
-                    <div style={{fontSize:9,color:C.text3,marginTop:1}}>{b.sub}</div>
+            {/* ═══ SECTION A: QUICK PLAY ═══ */}
+            <div style={{width:"100%",maxWidth:340,marginBottom:12}}>
+              <div style={{fontSize:10,fontWeight:800,color:C.text2,letterSpacing:1.5,marginBottom:6}}>⚡ QUICK PLAY</div>
+              <div style={{display:"flex",gap:6}}>
+                {[
+                  {icon:"🎲",label:"Random",m:"random",sub:"~5s wait",reward:"+80"},
+                  {icon:"🤖",label:"VS AI",m:"ai",sub:"Instant",reward:"+50"},
+                  {icon:"👥",label:"Friend",m:"invite",sub:"Via link",reward:"+80"},
+                ].map(b=>(
+                  <div key={b.m} onClick={()=>{playFx("select");startMatch(selectedGame,b.m);}} style={{
+                    flex:1,padding:"10px 6px",borderRadius:12,cursor:"pointer",textAlign:"center",
+                    ...GLASS_CARD,transition:"all 0.2s",
+                  }}>
+                    <div style={{fontSize:22,marginBottom:4}}>{b.icon}</div>
+                    <div style={{fontSize:10,fontWeight:800,color:C.text}}>{b.label}</div>
+                    <div style={{fontSize:7,color:C.text3,marginTop:2}}>{b.sub}</div>
+                    <div style={{fontSize:7,color:C.green,fontWeight:700,marginTop:2}}>{b.reward}</div>
                   </div>
-                  <div style={{fontSize:14,color:`${gc}60`}}>›</div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
 
-            {/* Tournament info */}
-            <div style={{width:"100%",maxWidth:320,padding:"10px 14px",borderRadius:12,...LG.tinted(C.gold)}}>
-              <div style={{fontSize:9,fontWeight:800,color:C.gold,marginBottom:4}}>🏆 ACTIVE TOURNAMENT</div>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                <div>
-                  <div style={{fontSize:11,fontWeight:700,color:C.text}}>Final Kick WC Championship</div>
-                  <div style={{fontSize:8,color:C.text3}}>64 players · Your rank: #12 · Round of 16</div>
+            {/* ═══ SECTION B: TOURNAMENT ═══ */}
+            {isFinalkick && (
+              <div style={{width:"100%",maxWidth:340}}>
+                <div style={{fontSize:10,fontWeight:800,color:C.gold,letterSpacing:1.5,marginBottom:6}}>🏆 TOURNAMENT</div>
+                <div style={{
+                  padding:"14px 14px 12px",borderRadius:16,cursor:canEnterWC?"pointer":"default",
+                  background:"rgba(8,8,25,0.82)",
+                  border:`1px solid ${C.gold}25`,
+                  boxShadow:`0 0 30px ${C.gold}08, inset 0 1px 0 ${C.gold}10`,
+                  position:"relative",overflow:"hidden",
+                }} onClick={()=>{if(canEnterWC){playFx("select");setWcPhase("team_select");setSelectedGame(null);}}}>
+                  {/* Gold shimmer */}
+                  <div style={{position:"absolute",top:0,left:"-50%",width:"200%",height:"100%",background:`linear-gradient(90deg, transparent, ${C.gold}06, transparent)`,animation:"lightSweep 4s infinite",pointerEvents:"none"}}/>
+
+                  <div style={{position:"relative",zIndex:1}}>
+                    <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
+                      <span style={{fontSize:24}}>⚽</span>
+                      <div>
+                        <div style={{fontSize:14,fontWeight:900,color:C.gold,textShadow:`0 0 10px ${C.gold}30`}}>World Cup 2026</div>
+                        <div style={{fontSize:8,color:C.text2}}>48 Teams · Group Stage + Knockout</div>
+                      </div>
+                    </div>
+
+                    {/* Prizes */}
+                    <div style={{display:"flex",gap:4,marginBottom:8,flexWrap:"wrap"}}>
+                      {[
+                        {e:"🥇",label:"Gold",pts:"50,000",color:C.gold},
+                        {e:"🥈",label:"Silver",pts:"25,000",color:"#C0C0C0"},
+                        {e:"🥉",label:"Bronze",pts:"10,000",color:"#CD7F32"},
+                        {e:"4th",label:"",pts:"5,000",color:C.text3},
+                      ].map((p,i)=>(
+                        <div key={i} style={{padding:"3px 7px",borderRadius:8,background:`${p.color}10`,border:`1px solid ${p.color}18`,display:"flex",alignItems:"center",gap:3}}>
+                          <span style={{fontSize:10}}>{p.e}</span>
+                          <span style={{fontSize:7,fontWeight:700,color:p.color}}>{p.pts}</span>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Enter button or cooldown */}
+                    {canEnterWC ? (
+                      <div style={{
+                        padding:"10px 0",borderRadius:10,textAlign:"center",
+                        background:`linear-gradient(135deg, ${C.gold}20, ${C.gold}08)`,
+                        border:`1px solid ${C.gold}35`,
+                        boxShadow:`0 0 20px ${C.gold}10`,
+                      }}>
+                        <div style={{fontSize:12,fontWeight:900,color:C.gold,letterSpacing:1}}>ENTER TOURNAMENT</div>
+                        <div style={{fontSize:7,color:C.text3,marginTop:2}}>Choose your nation and compete for glory</div>
+                      </div>
+                    ) : (
+                      <div style={{padding:"10px 0",borderRadius:10,textAlign:"center",background:`${C.text3}08`,border:`1px solid ${C.text3}15`}}>
+                        <div style={{fontSize:10,fontWeight:700,color:C.text3}}>Next entry in {formatCooldown(cooldownMs)}</div>
+                        <div style={{fontSize:7,color:C.text3,marginTop:2}}>Cooldown active — play Quick Play in the meantime</div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Active WC tournament indicator */}
+                  {wcPhase && wcPhase !== "result" && (
+                    <div style={{marginTop:8,padding:"6px 10px",borderRadius:8,background:`${C.green}10`,border:`1px solid ${C.green}20`,display:"flex",alignItems:"center",gap:6}} onClick={(e)=>{e.stopPropagation();setSelectedGame(null);}}>
+                      <div style={{width:6,height:6,borderRadius:"50%",background:C.green,animation:"pulse 1.5s infinite"}}/>
+                      <div style={{fontSize:9,fontWeight:700,color:C.green}}>Tournament in progress — tap to continue</div>
+                    </div>
+                  )}
                 </div>
-                <div style={{fontSize:8,fontWeight:800,color:C.gold,padding:"3px 8px",borderRadius:6,background:`${C.gold}15`}}>LIVE</div>
               </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  // ── WORLD CUP OVERLAY ──
+  const renderWorldCup = () => {
+    if(!wcPhase) return null;
+
+    // ═══ TEAM SELECTION ═══
+    if(wcPhase === "team_select") {
+      const confeds = WC_CONFEDERATIONS;
+      return (
+        <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:110,overflow:"hidden"}}>
+          <div style={{position:"absolute",inset:0,background:`
+            radial-gradient(ellipse at 50% 10%, ${C.gold}10 0%, transparent 50%),
+            radial-gradient(ellipse at 30% 90%, ${C.cyan}05 0%, transparent 40%),
+            linear-gradient(180deg, #030610 0%, #0a1020 30%, #080818 100%)
+          `}}/>
+          {/* Stadium lights */}
+          {[...Array(6)].map((_,i)=>(
+            <div key={i} style={{position:"absolute",top:0,left:`${10+i*16}%`,width:2,height:`${15+Math.random()*15}%`,background:`linear-gradient(180deg, ${C.gold}20, transparent)`,filter:"blur(3px)",animation:`pulse ${2+Math.random()*2}s infinite ${Math.random()}s`}}/>
+          ))}
+
+          {overlayBack(wcExitTournament)}
+
+          <div style={{position:"relative",zIndex:2,height:"100%",display:"flex",flexDirection:"column",padding:"48px 12px 16px"}}>
+            {/* Title */}
+            <div style={{textAlign:"center",marginBottom:12}}>
+              <div style={{fontSize:11,fontWeight:800,color:C.gold,letterSpacing:2,textShadow:`0 0 15px ${C.gold}40`}}>🏆 WORLD CUP 2026</div>
+              <div style={{fontSize:16,fontWeight:900,color:C.text,marginTop:2}}>Choose Your Team</div>
+              <div style={{fontSize:9,color:C.text3,marginTop:3}}>50 nations · Select your squad and fight for glory</div>
+            </div>
+
+            {/* Team grid — scrollable */}
+            <div style={{flex:1,overflowY:"auto",paddingBottom:70}}>
+              {confeds.map(conf => {
+                const teams = WC_TEAMS.filter(t => t.confederation === conf.id);
+                if(teams.length === 0) return null;
+                return (
+                  <div key={conf.id} style={{marginBottom:10}}>
+                    <div style={{fontSize:8,fontWeight:800,color:conf.color,letterSpacing:1,marginBottom:4,paddingLeft:4}}>{conf.label}</div>
+                    <div style={{display:"grid",gridTemplateColumns:"repeat(5, 1fr)",gap:4}}>
+                      {teams.map(team => {
+                        const selected = wcTeam?.id === team.id;
+                        return (
+                          <div key={team.id} onClick={()=>wcSelectTeam(team)} style={{
+                            padding:"8px 2px 6px",borderRadius:10,textAlign:"center",cursor:"pointer",
+                            background: selected ? `${C.cyan}15` : "rgba(255,255,255,0.03)",
+                            border: selected ? `2px solid ${C.cyan}60` : "1px solid rgba(255,255,255,0.06)",
+                            boxShadow: selected ? `0 0 15px ${C.cyan}20, inset 0 0 10px ${C.cyan}08` : "none",
+                            transition:"all 0.2s",
+                          }}>
+                            <div style={{fontSize:22,lineHeight:1}}>{team.flag}</div>
+                            <div style={{fontSize:7,fontWeight:700,color:selected?C.cyan:C.text,marginTop:3,lineHeight:1.1}}>{team.name}</div>
+                            <div style={{fontSize:7,color:C.gold,marginTop:2}}>{"⭐".repeat(team.rating)}</div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Confirm button — fixed bottom */}
+            {wcTeam && (
+              <div style={{position:"absolute",bottom:16,left:16,right:16,zIndex:5,animation:"fadeIn 0.3s ease"}}>
+                <div onClick={wcConfirmTeam} style={{
+                  padding:"12px 0",borderRadius:14,textAlign:"center",cursor:"pointer",
+                  background:`linear-gradient(135deg, ${C.cyan}20, ${C.gold}15)`,
+                  border:`1px solid ${C.cyan}30`,
+                  boxShadow:`0 0 30px ${C.cyan}15`,
+                }}>
+                  <div style={{fontSize:14,fontWeight:900,color:C.cyan}}>
+                    CONFIRM {wcTeam.flag} {wcTeam.name.toUpperCase()}
+                  </div>
+                  <div style={{fontSize:8,color:C.text3,marginTop:2}}>Enter the World Cup as {wcTeam.name}</div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    // ═══ GROUP DRAW ANIMATION ═══
+    if(wcPhase === "group_draw" && wcTournament) {
+      return (
+        <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:110,overflow:"hidden",
+          background:"linear-gradient(180deg, #020408 0%, #0a1428 50%, #061018 100%)",
+          display:"flex",alignItems:"center",justifyContent:"center",
+        }}>
+          <div style={{textAlign:"center",animation:"fadeIn 0.5s ease"}}>
+            <div style={{fontSize:12,fontWeight:800,color:C.gold,letterSpacing:3,marginBottom:16,animation:"pulse 1s infinite"}}>GROUP DRAW</div>
+            <div style={{
+              padding:"20px 30px",borderRadius:20,
+              ...GLASS_CARD,
+              boxShadow:`0 0 40px ${C.gold}15`,
+              animation: wcDrawAnim ? "countPulse 0.8s ease infinite" : "none",
+            }}>
+              <div style={{fontSize:14,fontWeight:900,color:C.gold,marginBottom:12}}>GROUP {wcTournament.group}</div>
+              <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                {wcTournament.teams.map((team, i) => (
+                  <div key={team.id} style={{
+                    display:"flex",alignItems:"center",gap:10,
+                    padding:"6px 12px",borderRadius:10,
+                    background: team.id === wcTeam.id ? `${C.cyan}12` : "rgba(255,255,255,0.03)",
+                    border: team.id === wcTeam.id ? `1px solid ${C.cyan}30` : `1px solid ${C.border}`,
+                    animation:`fadeIn 0.4s ease ${i*0.3}s both`,
+                  }}>
+                    <span style={{fontSize:24}}>{team.flag}</span>
+                    <div style={{flex:1,textAlign:"left"}}>
+                      <div style={{fontSize:12,fontWeight:700,color: team.id === wcTeam.id ? C.cyan : C.text}}>{team.name}</div>
+                      <div style={{fontSize:7,color:C.gold}}>{"⭐".repeat(team.rating)}</div>
+                    </div>
+                    {team.id === wcTeam.id && <span style={{fontSize:8,fontWeight:800,color:C.cyan,padding:"2px 6px",borderRadius:6,background:`${C.cyan}15`}}>YOU</span>}
+                  </div>
+                ))}
+              </div>
+              <div style={{fontSize:9,color:C.text3,marginTop:12}}>3 matches to play — Top 2 advance</div>
             </div>
           </div>
         </div>
       );
     }
+
+    // ═══ GROUP STAGE ═══
+    if(wcPhase === "group_stage" && wcTournament) {
+      const st = wcTournament.standings;
+      return (
+        <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:110,overflow:"hidden"}}>
+          <div style={{position:"absolute",inset:0,background:`
+            radial-gradient(ellipse at 50% 20%, ${C.gold}08 0%, transparent 50%),
+            linear-gradient(180deg, #030610 0%, #0a1020 40%, #080818 100%)
+          `}}/>
+          {overlayBack(wcExitTournament)}
+
+          <div style={{position:"relative",zIndex:2,height:"100%",display:"flex",flexDirection:"column",padding:"48px 14px 20px",overflowY:"auto"}}>
+            <div style={{textAlign:"center",marginBottom:12}}>
+              <div style={{fontSize:10,fontWeight:800,color:C.gold,letterSpacing:2}}>🏆 WORLD CUP 2026 — GROUP {wcTournament.group}</div>
+              <div style={{fontSize:8,color:C.text3,marginTop:2}}>Playing as {wcTeam?.flag} {wcTeam?.name}</div>
+            </div>
+
+            {/* Group standings table */}
+            <div style={{padding:"10px 12px",borderRadius:14,...GLASS_CARD,marginBottom:12}}>
+              <div style={{fontSize:9,fontWeight:800,color:C.text2,marginBottom:6}}>STANDINGS</div>
+              <div style={{display:"grid",gridTemplateColumns:"24px 1fr 24px 24px 24px 24px 28px",gap:"2px 4px",alignItems:"center",fontSize:8}}>
+                <div style={{color:C.text3,fontWeight:700}}>#</div>
+                <div style={{color:C.text3,fontWeight:700}}>Team</div>
+                <div style={{color:C.text3,fontWeight:700,textAlign:"center"}}>P</div>
+                <div style={{color:C.text3,fontWeight:700,textAlign:"center"}}>W</div>
+                <div style={{color:C.text3,fontWeight:700,textAlign:"center"}}>D</div>
+                <div style={{color:C.text3,fontWeight:700,textAlign:"center"}}>L</div>
+                <div style={{color:C.gold,fontWeight:700,textAlign:"center"}}>Pts</div>
+                {st.map((s, i) => {
+                  const isYou = s.id === wcTeam?.id;
+                  const qualifies = i < 2;
+                  return [
+                    <div key={`r${i}`} style={{color:qualifies?C.green:C.text3,fontWeight:700}}>{i+1}</div>,
+                    <div key={`n${i}`} style={{display:"flex",alignItems:"center",gap:4}}>
+                      <span style={{fontSize:12}}>{s.flag}</span>
+                      <span style={{fontWeight:isYou?800:600,color:isYou?C.cyan:C.text,fontSize:8}}>{s.name}</span>
+                    </div>,
+                    <div key={`p${i}`} style={{textAlign:"center",color:C.text2}}>{s.played}</div>,
+                    <div key={`w${i}`} style={{textAlign:"center",color:C.green}}>{s.won}</div>,
+                    <div key={`d${i}`} style={{textAlign:"center",color:C.text2}}>{s.drawn}</div>,
+                    <div key={`l${i}`} style={{textAlign:"center",color:C.red}}>{s.lost}</div>,
+                    <div key={`pt${i}`} style={{textAlign:"center",fontWeight:800,color:C.gold}}>{s.pts}</div>,
+                  ];
+                })}
+              </div>
+            </div>
+
+            {/* Group result message */}
+            {wcGroupResult === "advance" && (
+              <div style={{padding:"12px 16px",borderRadius:14,textAlign:"center",marginBottom:12,...LG.tinted(C.green),animation:"fadeIn 0.5s ease",border:`1px solid ${C.green}30`}}>
+                <div style={{fontSize:16,fontWeight:900,color:C.green}}>QUALIFIED!</div>
+                <div style={{fontSize:10,color:C.text2,marginTop:2}}>You advance to the knockout stage</div>
+              </div>
+            )}
+            {wcGroupResult === "eliminated" && (
+              <div style={{padding:"12px 16px",borderRadius:14,textAlign:"center",marginBottom:12,...LG.tinted(C.red),animation:"fadeIn 0.5s ease",border:`1px solid ${C.red}30`}}>
+                <div style={{fontSize:16,fontWeight:900,color:C.red}}>ELIMINATED</div>
+                <div style={{fontSize:10,color:C.text2,marginTop:2}}>Your World Cup journey ends here</div>
+              </div>
+            )}
+
+            {/* Match cards */}
+            <div style={{fontSize:9,fontWeight:800,color:C.text2,marginBottom:6}}>MATCHES</div>
+            {wcTournament.groupMatches.map((match, idx) => {
+              const played = match.played;
+              const isNext = !played && wcTournament.groupMatches.slice(0, idx).every(m => m.played);
+              return (
+                <div key={idx} onClick={()=>{if(isNext && !wcGroupResult) wcStartGroupMatch(idx);}} style={{
+                  display:"flex",alignItems:"center",gap:10,padding:"10px 14px",borderRadius:12,marginBottom:6,cursor:isNext?"pointer":"default",
+                  background: isNext ? `${C.cyan}08` : played ? "rgba(255,255,255,0.02)" : "rgba(255,255,255,0.01)",
+                  border: isNext ? `1px solid ${C.cyan}25` : `1px solid ${C.border}`,
+                  opacity: played ? 0.7 : 1,
+                  transition:"all 0.2s",
+                }}>
+                  <div style={{display:"flex",alignItems:"center",gap:6,flex:1}}>
+                    <span style={{fontSize:18}}>{wcTeam?.flag}</span>
+                    <span style={{fontSize:10,fontWeight:700,color:C.text}}>vs</span>
+                    <span style={{fontSize:18}}>{match.opp.flag}</span>
+                    <span style={{fontSize:10,fontWeight:600,color:C.text2}}>{match.opp.name}</span>
+                  </div>
+                  {played ? (
+                    <div style={{textAlign:"right"}}>
+                      <div style={{fontSize:12,fontWeight:800,color:match.result==="win"?C.green:match.result==="loss"?C.red:C.gold}}>
+                        {match.myScore} - {match.aiScore}
+                      </div>
+                      <div style={{fontSize:7,fontWeight:700,color:match.result==="win"?C.green:match.result==="loss"?C.red:C.gold}}>
+                        {match.result==="win"?"WIN":match.result==="loss"?"LOSS":"DRAW"}
+                      </div>
+                    </div>
+                  ) : isNext ? (
+                    <div style={{fontSize:9,fontWeight:800,color:C.cyan,padding:"4px 10px",borderRadius:8,background:`${C.cyan}12`,border:`1px solid ${C.cyan}25`}}>PLAY</div>
+                  ) : (
+                    <div style={{fontSize:8,color:C.text3}}>Match {idx+1}</div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      );
+    }
+
+    // ═══ KNOCKOUT STAGE ═══
+    if(wcPhase === "knockout" && wcBracket) {
+      const current = wcBracket.currentRound;
+      const rounds = wcBracket.rounds;
+      return (
+        <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:110,overflow:"hidden"}}>
+          <div style={{position:"absolute",inset:0,background:`
+            radial-gradient(ellipse at 50% 20%, ${C.gold}10 0%, transparent 50%),
+            linear-gradient(180deg, #020408 0%, #0c1830 40%, #081020 100%)
+          `}}/>
+          {overlayBack(wcExitTournament)}
+
+          <div style={{position:"relative",zIndex:2,height:"100%",display:"flex",flexDirection:"column",alignItems:"center",padding:"48px 16px 20px",overflowY:"auto"}}>
+            <div style={{textAlign:"center",marginBottom:14}}>
+              <div style={{fontSize:10,fontWeight:800,color:C.gold,letterSpacing:2}}>🏆 KNOCKOUT STAGE</div>
+              <div style={{fontSize:8,color:C.text3,marginTop:2}}>{wcTeam?.flag} {wcTeam?.name} — Win or go home</div>
+            </div>
+
+            {/* Bracket visualization */}
+            <div style={{width:"100%",maxWidth:340,display:"flex",flexDirection:"column",gap:6}}>
+              {rounds.map((roundName, idx) => {
+                const result = wcBracket.results[idx];
+                const isCurrent = idx === current && !result;
+                const opp = wcBracket.opponents[idx];
+                const isPast = idx < current || result;
+                const isFuture = idx > current;
+
+                return (
+                  <div key={idx} onClick={()=>{if(isCurrent) wcStartKnockoutMatch();}} style={{
+                    display:"flex",alignItems:"center",gap:10,padding:"10px 14px",borderRadius:12,
+                    cursor: isCurrent ? "pointer" : "default",
+                    background: isCurrent ? `${C.gold}10` : isPast ? "rgba(255,255,255,0.02)" : "rgba(255,255,255,0.01)",
+                    border: isCurrent ? `1px solid ${C.gold}30` : `1px solid ${C.border}`,
+                    opacity: isFuture ? 0.4 : 1,
+                    boxShadow: isCurrent ? `0 0 20px ${C.gold}10` : "none",
+                    transition:"all 0.2s",
+                  }}>
+                    <div style={{width:10,height:10,borderRadius:"50%",
+                      background: result?.win ? C.green : result && !result.win ? C.red : isCurrent ? C.gold : C.text3,
+                      boxShadow: isCurrent ? `0 0 8px ${C.gold}40` : "none",
+                    }}/>
+                    <div style={{flex:1}}>
+                      <div style={{fontSize:10,fontWeight:700,color: isCurrent ? C.gold : C.text}}>{roundName}</div>
+                      {(isCurrent || isPast) && opp && (
+                        <div style={{fontSize:8,color:C.text2,marginTop:1}}>
+                          {wcTeam?.flag} vs {opp.flag} {opp.name}
+                        </div>
+                      )}
+                      {isFuture && <div style={{fontSize:8,color:C.text3,marginTop:1}}>TBD</div>}
+                    </div>
+                    {result ? (
+                      <div style={{textAlign:"right"}}>
+                        <div style={{fontSize:11,fontWeight:800,color:result.win?C.green:C.red}}>
+                          {result.myScore}-{result.aiScore}{result.extraTime?" (ET)":""}
+                        </div>
+                        <div style={{fontSize:7,fontWeight:700,color:result.win?C.green:C.red}}>{result.win?"WIN":"LOSS"}</div>
+                      </div>
+                    ) : isCurrent ? (
+                      <div style={{fontSize:9,fontWeight:800,color:C.gold,padding:"4px 10px",borderRadius:8,background:`${C.gold}15`,border:`1px solid ${C.gold}25`,animation:"pulse 2s infinite"}}>PLAY</div>
+                    ) : null}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ═══ RESULT SCREEN ═══
+    if(wcPhase === "result" && wcFinalResult) {
+      const prize = WC_PRIZES[wcFinalResult];
+      const isGold = wcFinalResult === "gold";
+      const accentColor = isGold ? C.gold : wcFinalResult === "silver" ? "#C0C0C0" : wcFinalResult === "bronze" ? "#CD7F32" : C.text3;
+      return (
+        <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:110,overflow:"hidden",
+          display:"flex",alignItems:"center",justifyContent:"center",
+        }}>
+          <div style={{position:"absolute",inset:0,background:`
+            radial-gradient(ellipse at 50% 30%, ${accentColor}15 0%, transparent 50%),
+            radial-gradient(ellipse at 50% 70%, ${accentColor}08 0%, transparent 50%),
+            linear-gradient(180deg, #020408 0%, #0a1428 50%, #061018 100%)
+          `}}/>
+          {/* Gold rays for champion */}
+          {isGold && [...Array(8)].map((_,i)=>(
+            <div key={i} style={{position:"absolute",top:"30%",left:"50%",width:2,height:"40%",
+              background:`linear-gradient(180deg, ${C.gold}15, transparent)`,
+              transform:`translateX(-50%) rotate(${i*45}deg)`,transformOrigin:"top center",
+              filter:"blur(3px)",animation:`pulse ${2+Math.random()}s infinite ${Math.random()}s`,
+            }}/>
+          ))}
+
+          <div style={{textAlign:"center",padding:24,animation:"fadeIn 0.6s ease",position:"relative",zIndex:2}}>
+            {/* Trophy / medal */}
+            <div style={{fontSize:60,marginBottom:8,animation:"gentleFloat 2s infinite",filter:`drop-shadow(0 0 20px ${accentColor}40)`}}>
+              {isGold ? "🏆" : wcFinalResult === "silver" ? "🥈" : wcFinalResult === "bronze" ? "🥉" : "⚽"}
+            </div>
+
+            <div style={{fontSize:20,fontWeight:900,color:accentColor,textShadow:`0 0 20px ${accentColor}30`,marginBottom:4}}>
+              {prize.title.toUpperCase()}
+            </div>
+            <div style={{fontSize:12,color:C.text2,marginBottom:16}}>
+              {wcTeam?.flag} {wcTeam?.name}
+            </div>
+
+            {/* Prize breakdown */}
+            <div style={{
+              padding:"16px 24px",borderRadius:16,...GLASS_CARD,
+              border:`1px solid ${accentColor}20`,
+              boxShadow:`0 0 30px ${accentColor}10`,
+              marginBottom:20,
+            }}>
+              <div style={{fontSize:9,fontWeight:800,color:C.text3,letterSpacing:1,marginBottom:8}}>REWARDS</div>
+              <div style={{display:"flex",justifyContent:"center",gap:16}}>
+                <div>
+                  <div style={{fontSize:20,fontWeight:900,color:C.gold}}>{prize.pts.toLocaleString()}</div>
+                  <div style={{fontSize:8,color:C.text3}}>Points</div>
+                </div>
+                <div>
+                  <div style={{fontSize:20,fontWeight:900,color:C.cyan}}>{prize.coins}</div>
+                  <div style={{fontSize:8,color:C.text3}}>Coins</div>
+                </div>
+              </div>
+            </div>
+
+            <div onClick={wcClaimPrize} style={{
+              padding:"12px 40px",borderRadius:14,cursor:"pointer",
+              background:`linear-gradient(135deg, ${accentColor}25, ${accentColor}10)`,
+              border:`1px solid ${accentColor}35`,
+              boxShadow:`0 0 20px ${accentColor}15`,
+            }}>
+              <div style={{fontSize:14,fontWeight:900,color:accentColor}}>CLAIM REWARDS</div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     return null;
   };
 
@@ -3219,6 +4033,7 @@ export default function MoodLabArena() {
 
       {/* Overlays */}
       {renderGameOverlay()}
+      {renderWorldCup()}
       {renderVibeCheck()}
       {renderSpin()}
       {renderPuffLock()}
