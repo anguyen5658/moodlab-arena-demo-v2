@@ -395,6 +395,8 @@ export default function MoodLabArena() {
     {u:"CloudNine99",m:"Just won 3 in a row ⚽",c:C.cyan,t:Date.now()-30000},
   ]);
   const [chatInput, setChatInput] = useState("");
+  const [mergedChat, setMergedChat] = useState([]); // merged both-sides chat for breaks/postgame
+  const [postGameChat, setPostGameChat] = useState(false); // 10min postgame chat active
   const [chatExpanded, setChatExpanded] = useState(false);
   const [lbTab, setLbTab] = useState("global");
   const [tournaments, setTournaments] = useState(TOURNAMENTS);
@@ -1041,8 +1043,9 @@ export default function MoodLabArena() {
 
   // ── WORLD CUP TOURNAMENT LOGIC ──
   const wcCanEnter = () => {
-    if(!wcCooldown) return true;
-    return (Date.now() - wcCooldown) >= WC_COOLDOWN_MS;
+    return true; // DEMO: unlimited entries. Production: check cooldown
+    // if(!wcCooldown) return true;
+    // return (Date.now() - wcCooldown) >= WC_COOLDOWN_MS;
   };
   const wcCooldownRemaining = () => {
     if(!wcCooldown) return 0;
@@ -2349,17 +2352,12 @@ export default function MoodLabArena() {
               </div>
             </div>}
 
-            {/* ═══ AI COMMENTATOR — AVATAR + SPEECH BUBBLE ═══ */}
-            {commentatorText && <div style={{position:"absolute",top:36,left:8,right:8,zIndex:215,display:"flex",alignItems:"flex-start",gap:6,animation:"fadeIn 0.3s ease",pointerEvents:"none"}}>
-              {/* Commentator avatar */}
-              <div style={{width:24,height:24,borderRadius:"50%",background:`linear-gradient(135deg, ${C.gold}30, ${C.gold}10)`,border:`2px solid ${C.gold}50`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,boxShadow:`0 0 10px ${C.gold}20`}}>
-                <span style={{fontSize:12}}>🎙️</span>
-              </div>
-              {/* Speech bubble */}
-              <div style={{position:"relative",flex:1,padding:"4px 10px",borderRadius:"4px 12px 12px 12px",background:`rgba(255,217,61,0.08)`,border:`1px solid ${C.gold}25`,backdropFilter:"blur(8px)"}}>
-                {/* Bubble pointer */}
-                <div style={{position:"absolute",left:-5,top:7,width:0,height:0,borderTop:"4px solid transparent",borderBottom:"4px solid transparent",borderRight:`5px solid ${C.gold}25`}}/>
-                <span style={{fontSize:8,fontWeight:600,color:C.text,fontStyle:"italic",lineHeight:1.3}}>{commentatorText}</span>
+            {/* ═══ AI COMMENTATOR — AVATAR + SPEECH BUBBLE (right side, no overlap with back) ═══ */}
+            {commentatorText && <div style={{position:"absolute",top:8,left:80,right:8,zIndex:215,display:"flex",alignItems:"flex-start",gap:4,animation:"fadeIn 0.3s ease",pointerEvents:"none"}}>
+              {/* Speech bubble (compact) */}
+              <div style={{flex:1,padding:"4px 8px",borderRadius:10,background:`rgba(255,217,61,0.08)`,border:`1px solid ${C.gold}20`,backdropFilter:"blur(8px)",display:"flex",alignItems:"center",gap:4}}>
+                <span style={{fontSize:10,flexShrink:0}}>🎙️</span>
+                <span style={{fontSize:7,fontWeight:600,color:C.text,fontStyle:"italic",lineHeight:1.2}}>{commentatorText}</span>
               </div>
             </div>}
 
@@ -2500,7 +2498,7 @@ export default function MoodLabArena() {
             <div style={{position:"relative",zIndex:2,flex:1,display:"flex",flexDirection:"column",alignItems:"center",padding:"38px 14px 52px",height:"100%",overflowY:"auto"}}>
 
               {/* ═══ VS ARENA HEADER WITH CHARACTER IMAGES ═══ */}
-              <div style={{width:"100%",maxWidth:390,marginTop:38,marginBottom:6}}>
+              <div style={{width:"100%",maxWidth:390,marginTop:28,marginBottom:4}}>
                 <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,marginBottom:5,flexWrap:"wrap"}}>
                   {gameActive?.wcMode ? (
                     <span style={{fontSize:8,fontWeight:800,color:C.gold,letterSpacing:2}}>
@@ -2931,7 +2929,7 @@ export default function MoodLabArena() {
               </div>
 
               {/* ── MAIN PANEL ── */}
-              <div style={{...GLASS_CARD,display:"flex",flexDirection:"column",maxHeight:"42%"}}>
+              <div style={{...GLASS_CARD,display:"flex",flexDirection:"column",maxHeight:"35%"}}>
                 {/* ── SIDE PICKER + CROWD BAR ── */}
                 <div style={{display:"flex",alignItems:"center",padding:"6px 8px",gap:4,borderBottom:`1px solid ${C.border}`}}>
                   {/* Your side */}
@@ -2997,50 +2995,53 @@ export default function MoodLabArena() {
                 {/* ── CONTENT ── */}
                 <div style={{flex:1,overflowY:"auto",padding:"4px 10px 6px"}}>
                   {gameBottomTab==="chat" ? (
-                    /* ── SIDE CHAT ── */
+                    /* ── CHAT — side-specific during play, merged at breaks ── */
                     <div>
-                      <div style={{fontSize:7,fontWeight:700,color:audienceSide==="you"?C.cyan:C.red,marginBottom:3}}>
-                        {audienceSide==="you"?"😎 Steve's Fan Zone":""+kickOpponent.current.emoji+" "+kickOpponent.current.name+"'s Fan Zone"}
-                        {audienceTraitor && <span style={{marginLeft:4,fontSize:7,color:C.gold}}>🐍</span>}
-                      </div>
-                      {(sideChat[audienceSide]||[]).slice(-6).map((m,i)=>(
-                        <div key={i} style={{display:"flex",alignItems:"flex-start",gap:5,marginBottom:2,animation:"fadeIn 0.2s ease"}}>
-                          <div style={{width:16,height:16,borderRadius:5,background:`${m.c||C.text3}15`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:7,flexShrink:0}}>{m.u[0]}</div>
-                          <div>
-                            <span style={{fontSize:7,fontWeight:700,color:m.c||C.text2}}>{m.u} </span>
-                            <span style={{fontSize:7,color:C.text3}}>{m.m}</span>
+                      {(()=>{
+                        const isBreak = ["shoot_result","save_result","round_result","final","bonus_offer"].includes(kickState);
+                        const isMerged = isBreak || postGameChat;
+                        const allMsgs = isMerged
+                          ? [...(sideChat.you||[]),...(sideChat.ai||[]),...mergedChat].sort((a,b)=>a.t-b.t).slice(-10)
+                          : (sideChat[audienceSide]||[]).slice(-8);
+                        const chatLabel = isMerged
+                          ? "🏟️ STADIUM CHAT — Both sides"
+                          : (audienceSide==="you"?"😎 Steve's Side":""+kickOpponent.current.emoji+" "+kickOpponent.current.name+"'s Side");
+                        const chatColor = isMerged ? C.gold : (audienceSide==="you"?C.cyan:C.red);
+                        return <>
+                          <div style={{fontSize:6,fontWeight:700,color:chatColor,marginBottom:2,display:"flex",alignItems:"center",gap:3}}>
+                            <span>{chatLabel}</span>
+                            {audienceTraitor && !isMerged && <span style={{fontSize:6,color:C.gold}}>🐍</span>}
+                            {isMerged && <span style={{fontSize:5,color:C.text3,background:`${C.gold}12`,padding:"1px 4px",borderRadius:3}}>OPEN</span>}
+                            <span style={{fontSize:5,color:C.text3,marginLeft:"auto"}}>👥 {sideFans.you+sideFans.ai}</span>
                           </div>
-                        </div>
-                      ))}
-                      {/* Quick sends */}
-                      <div style={{display:"flex",gap:2,marginTop:3,marginBottom:3,flexWrap:"wrap"}}>
-                        {(audienceSide==="you"
-                          ?["LET'S GO! 🔥","SWEET SPOT! 💨","NAIL IT! 🎯","C'MON! 💪","😂😂😂","GG 👏"]
-                          :["NO CHANCE 🧤","SAVE IT! 🚫","TOO EASY 😂","BLOCK! 🧱","💀💀💀","W! 🏆"]
-                        ).map((q,i)=>(
-                          <div key={i} onClick={()=>setSideChat(p=>({...p,[audienceSide]:[...p[audienceSide],{u:"You",m:q,c:audienceSide==="you"?C.cyan:C.red,t:Date.now()}]}))} style={{
-                            padding:"2px 5px",borderRadius:5,cursor:"pointer",fontSize:6,fontWeight:600,color:C.text3,
-                            background:`rgba(255,255,255,0.04)`,border:`1px solid ${C.border}`,
-                          }}>{q}</div>
-                        ))}
-                      </div>
-                      <div style={{display:"flex",gap:3}}>
-                        <input value={chatInput} onChange={e=>setChatInput(e.target.value)} onKeyDown={e=>{
-                          if(e.key==="Enter"&&chatInput.trim()){
-                            setSideChat(p=>({...p,[audienceSide]:[...p[audienceSide],{u:"You",m:chatInput.trim(),c:audienceSide==="you"?C.cyan:C.red,t:Date.now()}]}));
-                            setChatInput("");
-                            // 5% chance of chat leak!
-                            if(Math.random()<0.05){
-                              const otherSide=audienceSide==="you"?"ai":"you";
-                              setTimeout(()=>{
-                                setSideChat(p=>({...p,[otherSide]:[...p[otherSide],{u:"[LEAKED] 🔓",m:chatInput.trim(),c:C.gold,t:Date.now()}]}));
-                                notify("💀 Your message LEAKED to the other side!",C.gold);
-                              },2000);
-                            }
+                          {allMsgs.map((m,i)=>(
+                            <div key={i} style={{fontSize:7,marginBottom:1,lineHeight:1.3,animation:"fadeIn 0.2s ease"}}>
+                              {m.isPlayer && <span style={{fontSize:6,color:C.gold,marginRight:2}}>⭐</span>}
+                              <span style={{fontWeight:700,color:m.c||C.text2}}>{m.u==="⚠ SYSTEM"?"⚠":m.u.slice(0,6)}</span>
+                              <span style={{color:C.text3}}> {m.m}</span>
+                            </div>
+                          ))}
+                        </>;
+                      })()}
+                      {(()=>{
+                        const isBreak = ["shoot_result","save_result","round_result","final","bonus_offer"].includes(kickState) || postGameChat;
+                        const sendMsg = (txt) => {
+                          if(!txt.trim()) return;
+                          const msg = {u:"You",m:txt.trim(),c:audienceSide==="you"?C.cyan:C.red,t:Date.now(),isPlayer:false};
+                          if(isBreak) {
+                            setMergedChat(p=>[...p,msg]);
+                          } else {
+                            setSideChat(p=>({...p,[audienceSide]:[...p[audienceSide],msg]}));
+                            if(Math.random()<0.05){const os=audienceSide==="you"?"ai":"you";setTimeout(()=>{setSideChat(p=>({...p,[os]:[...p[os],{u:"[LEAKED]🔓",m:txt.trim(),c:C.gold,t:Date.now()}]}));notify("💀 LEAKED!",C.gold);},2000);}
                           }
-                        }} placeholder={audienceSide==="you"?"Cheer for Steve...":"Cheer for AI..."} style={{flex:1,background:`${C.text3}06`,border:`1px solid ${C.border}`,borderRadius:6,padding:"4px 7px",fontSize:8,color:C.text,outline:"none"}}/>
-                        <div onClick={()=>{if(chatInput.trim()){setSideChat(p=>({...p,[audienceSide]:[...p[audienceSide],{u:"You",m:chatInput.trim(),c:audienceSide==="you"?C.cyan:C.red,t:Date.now()}]}));setChatInput("");}}} style={{padding:"4px 8px",borderRadius:6,cursor:"pointer",fontSize:8,fontWeight:700,color:audienceSide==="you"?C.cyan:C.red,...LG.tinted(audienceSide==="you"?C.cyan:C.red)}}>Send</div>
-                      </div>
+                          setChatInput("");
+                        };
+                        return <div style={{display:"flex",gap:3,marginTop:2}}>
+                          <input value={chatInput} onChange={e=>setChatInput(e.target.value)} onKeyDown={e=>{if(e.key==="Enter")sendMsg(chatInput);}}
+                            placeholder={isBreak?"Chat with everyone...":"Cheer..."} style={{flex:1,background:`${C.text3}06`,border:`1px solid ${C.border}`,borderRadius:6,padding:"3px 6px",fontSize:7,color:C.text,outline:"none"}}/>
+                          <div onClick={()=>sendMsg(chatInput)} style={{padding:"3px 7px",borderRadius:6,cursor:"pointer",fontSize:7,fontWeight:700,color:isBreak?C.gold:audienceSide==="you"?C.cyan:C.red,...LG.tinted(isBreak?C.gold:audienceSide==="you"?C.cyan:C.red)}}>Send</div>
+                        </div>;
+                      })()}
                     </div>
                   ) : (
                     /* ── FUN STATS ── */
@@ -3207,6 +3208,7 @@ export default function MoodLabArena() {
                       }}>
                         <div style={{fontSize:12,fontWeight:900,color:C.gold,letterSpacing:1}}>ENTER TOURNAMENT</div>
                         <div style={{fontSize:7,color:C.text3,marginTop:2}}>Choose your nation and compete for glory</div>
+                        <div style={{fontSize:6,color:C.gold+"60",marginTop:2,fontStyle:"italic"}}>DEMO: Unlimited entries. Production: 1 entry per 6 hours</div>
                       </div>
                     ) : (
                       <div style={{padding:"10px 0",borderRadius:10,textAlign:"center",background:`${C.text3}08`,border:`1px solid ${C.text3}15`}}>
@@ -3236,6 +3238,8 @@ export default function MoodLabArena() {
   // ── WORLD CUP OVERLAY ──
   const renderWorldCup = () => {
     if(!wcPhase) return null;
+    // Hide WC overlay when actively playing a match (game screen takes over)
+    if(gameActive && gameActive.wcMode) return null;
 
     // ═══ TEAM SELECTION ═══
     if(wcPhase === "team_select") {
