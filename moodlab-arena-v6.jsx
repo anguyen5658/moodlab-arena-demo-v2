@@ -1913,23 +1913,47 @@ export default function MoodLabArena() {
               }}/>
             ))}
 
-            {/* ═══ PUFF BUBBLES (during charge) ═══ */}
+            {/* ═══ PUFF BUBBLES — Avatar + Duration (like real app) ═══ */}
             {puffBubbles.length>0 && puffBubbles.map(b=>(
-              <div key={b.id} style={{position:"absolute",left:`${b.x}%`,bottom:`${b.y}%`,width:b.size,height:b.size,
-                borderRadius:"50%",background:b.color,border:`1px solid rgba(255,255,255,0.15)`,
-                zIndex:206,pointerEvents:"none",opacity:0.6,
+              <div key={b.id} style={{position:"absolute",left:`${b.x}%`,bottom:`${b.y}%`,
+                zIndex:206,pointerEvents:"none",
                 animation:`bubbleFloat ${b.dur}s ease-out forwards`,
-              }}/>
+                display:"flex",flexDirection:"column",alignItems:"center",gap:2,
+              }}>
+                {/* Mini avatar circle */}
+                <div style={{width:b.size*2.5,height:b.size*2.5,borderRadius:"50%",
+                  background:`linear-gradient(135deg, ${b.color}, ${b.color}80)`,
+                  border:`2px solid ${b.color}`,boxShadow:`0 0 10px ${b.color}40`,
+                  display:"flex",alignItems:"center",justifyContent:"center",
+                  fontSize:b.size*1.2,
+                }}>💨</div>
+                {/* +Xs label */}
+                <div style={{fontSize:7,fontWeight:800,color:b.color,textShadow:`0 0 6px rgba(0,0,0,0.8)`,
+                  background:`rgba(0,0,0,0.4)`,padding:"1px 4px",borderRadius:6,
+                }}>+{(Math.random()*3+0.5).toFixed(1)}s</div>
+              </div>
             ))}
 
-            {/* ═══ AUDIENCE BUBBLES (random ambient) ═══ */}
+            {/* ═══ AUDIENCE BUBBLES — small ambient with random emojis ═══ */}
             {audienceBubbles.length>0 && audienceBubbles.map(b=>(
-              <div key={b.id} style={{position:"absolute",left:`${b.x}%`,bottom:`${b.y}%`,width:b.size,height:b.size,
-                borderRadius:"50%",background:b.color,
-                zIndex:204,pointerEvents:"none",opacity:0.3,
+              <div key={b.id} style={{position:"absolute",left:`${b.x}%`,bottom:`${b.y}%`,
+                zIndex:204,pointerEvents:"none",opacity:0.4,
                 animation:`bubbleFloat ${b.dur}s ease-out forwards`,
-              }}/>
+                display:"flex",flexDirection:"column",alignItems:"center",
+              }}>
+                <div style={{width:b.size*3,height:b.size*3,borderRadius:"50%",
+                  background:`radial-gradient(circle, ${b.color}, transparent)`,
+                  border:`1px solid ${b.color}`,
+                  display:"flex",alignItems:"center",justifyContent:"center",fontSize:b.size*1.5,
+                }}>{["💨","🔥","😤","👀","🫁"][Math.floor(Math.random()*5)]}</div>
+              </div>
             ))}
+
+            {/* ═══ SCREEN EDGE GLOW during active puff ═══ */}
+            {kickCharging && <div style={{position:"absolute",inset:0,zIndex:203,pointerEvents:"none",
+              boxShadow:`inset 0 0 60px ${C.lime}15, inset 0 0 120px ${C.cyan}08`,
+              borderRadius:"inherit",animation:"pulse 1.5s infinite",
+            }}/>}
 
             {/* ═══ PUFF WAVE ═══ */}
             {puffWaveActive && <div style={{position:"absolute",bottom:0,left:0,right:0,height:"100%",zIndex:208,pointerEvents:"none",
@@ -2493,40 +2517,51 @@ export default function MoodLabArena() {
               {/* ── MAIN PANEL ── */}
               <div style={{...GLASS_CARD,display:"flex",flexDirection:"column",maxHeight:"42%"}}>
                 {/* ── SIDE PICKER + CROWD BAR ── */}
-                <div style={{display:"flex",alignItems:"center",padding:"4px 8px",gap:4,borderBottom:`1px solid ${C.border}`}}>
+                <div style={{display:"flex",alignItems:"center",padding:"6px 8px",gap:4,borderBottom:`1px solid ${C.border}`}}>
                   {/* Your side */}
-                  <div onClick={()=>{if(audienceSide!=="you")switchSide();}} style={{
-                    flex:1,padding:"4px 6px",borderRadius:8,cursor:"pointer",textAlign:"center",
+                  <div style={{
+                    flex:1,padding:"5px 6px",borderRadius:8,textAlign:"center",
                     background:audienceSide==="you"?`${C.cyan}15`:"transparent",border:`1px solid ${audienceSide==="you"?C.cyan+"30":"transparent"}`,
                   }}>
-                    <div style={{fontSize:8,fontWeight:800,color:audienceSide==="you"?C.cyan:C.text3}}>😎 Steve</div>
+                    <div style={{fontSize:9,fontWeight:800,color:audienceSide==="you"?C.cyan:C.text3}}>😎 Steve</div>
                     <div style={{fontSize:7,color:C.text3}}>👥 {sideFans.you} fans</div>
                   </div>
-                  {/* Crowd energy bar */}
-                  <div style={{width:60,textAlign:"center"}}>
-                    <div style={{height:4,borderRadius:2,background:`${C.text3}15`,overflow:"hidden",display:"flex"}}>
+                  {/* SWITCH BUTTON — tap to start puff meter */}
+                  <div style={{width:70,textAlign:"center"}}>
+                    <div style={{height:4,borderRadius:2,background:`${C.text3}15`,overflow:"hidden",display:"flex",marginBottom:3}}>
                       <div style={{width:`${sideFans.you/(sideFans.you+sideFans.ai)*100}%`,background:C.cyan,transition:"width 0.5s"}}/>
                       <div style={{flex:1,background:C.red}}/>
                     </div>
-                    <div style={{fontSize:6,color:C.text3,marginTop:1}}>CROWD</div>
-                    {/* Switch button — hold to puff blinker */}
                     <div
                       onMouseDown={startSwitchPuff} onMouseUp={stopSwitchPuff} onMouseLeave={stopSwitchPuff}
                       onTouchStart={(e)=>{e.preventDefault();startSwitchPuff();}} onTouchEnd={stopSwitchPuff}
-                      style={{fontSize:7,color:switchPuffing?C.red:C.gold,cursor:"pointer",marginTop:1,fontWeight:700,userSelect:"none",WebkitUserSelect:"none",position:"relative"}}
+                      style={{
+                        padding:"4px 6px",borderRadius:8,cursor:"pointer",
+                        background:switchPuffing?`${C.red}15`:`${C.gold}08`,
+                        border:`1px solid ${switchPuffing?C.red+"40":C.gold+"25"}`,
+                        userSelect:"none",WebkitUserSelect:"none",position:"relative",overflow:"hidden",
+                        transition:"all 0.2s",
+                      }}
                     >
-                      {switchPuffing ? "💨 PUFFING..." : "🔄 Hold to Switch"} {audienceTraitor?"🐍":""}
-                      {switchPuffing && <div style={{position:"absolute",bottom:-3,left:0,right:0,height:2,borderRadius:1,background:`${C.text3}20`}}>
-                        <div style={{height:"100%",width:`${switchPuffProgress}%`,background:switchPuffProgress>=80?C.red:C.gold,borderRadius:1,transition:"width 0.05s linear"}}/>
-                      </div>}
+                      {/* Progress fill behind text */}
+                      {switchPuffing && <div style={{position:"absolute",left:0,top:0,bottom:0,width:`${switchPuffProgress}%`,background:switchPuffProgress>=80?`${C.red}20`:`${C.gold}15`,transition:"width 0.05s linear",borderRadius:8}}/>}
+                      <div style={{position:"relative",zIndex:1}}>
+                        <div style={{fontSize:7,fontWeight:800,color:switchPuffing?C.red:C.gold}}>
+                          {switchPuffing ? `💨 ${(switchPuffProgress*2.5/100).toFixed(1)}s` : "🔄 Hold"} {audienceTraitor?"🐍":""}
+                        </div>
+                        {switchPuffing && <div style={{fontSize:6,color:C.text3,marginTop:1}}>
+                          {switchPuffProgress<80?"Keep puffing...":"Almost! 🔥"}
+                        </div>}
+                        {!switchPuffing && <div style={{fontSize:5,color:C.text3,marginTop:1}}>Puff to Switch</div>}
+                      </div>
                     </div>
                   </div>
                   {/* AI side */}
-                  <div onClick={()=>{if(audienceSide!=="ai")switchSide();}} style={{
-                    flex:1,padding:"4px 6px",borderRadius:8,cursor:"pointer",textAlign:"center",
+                  <div style={{
+                    flex:1,padding:"5px 6px",borderRadius:8,textAlign:"center",
                     background:audienceSide==="ai"?`${C.red}15`:"transparent",border:`1px solid ${audienceSide==="ai"?C.red+"30":"transparent"}`,
                   }}>
-                    <div style={{fontSize:8,fontWeight:800,color:audienceSide==="ai"?C.red:C.text3}}>{kickOpponent.current.emoji} {kickOpponent.current.name.split(" ")[0]}</div>
+                    <div style={{fontSize:9,fontWeight:800,color:audienceSide==="ai"?C.red:C.text3}}>{kickOpponent.current.emoji} {kickOpponent.current.name.split(" ")[0]}</div>
                     <div style={{fontSize:7,color:C.text3}}>👥 {sideFans.ai} fans</div>
                   </div>
                 </div>
