@@ -2914,8 +2914,8 @@ export default function MoodLabArena() {
             {/* ═══ BOTTOM PANEL: Side Pick + Reactions + Chat/Stats ═══ */}
             <div style={{position:"absolute",bottom:0,left:0,right:0,zIndex:20,display:"flex",flexDirection:"column"}}>
 
-              {/* ── REACTION BAR + Audio ── */}
-              <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:3,padding:"4px 8px",...GLASS_CLEAR,borderRadius:"12px 12px 0 0"}}>
+              {/* ── REACTION BAR + Audio (compact) ── */}
+              <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:2,padding:"3px 6px",...GLASS_CLEAR,borderRadius:"10px 10px 0 0"}}>
                 {[{e:"😂"},{e:"👏"},{e:"😱"},{e:"🔥"},{e:"💀"},{e:"😘"},{e:"👋"},{e:"💨"}].map((r,i)=>(
                   <div key={i} onClick={()=>{
                     playFx("tap");
@@ -2923,21 +2923,20 @@ export default function MoodLabArena() {
                     setSideChat(p=>({...p,[audienceSide]:[...p[audienceSide],msg]}));
                     setFloatingReactions(p=>[...p,{id:Date.now()+i,emoji:r.e,x:20+Math.random()*60,dur:1.5+Math.random()}]);
                     if(r.e==="😂") playFx("laugh");
-                    // 💨 Puff emoji has 15% chance to trigger Puff Wave (simulating 10+ fans)
-                    if(r.e==="💨"&&Math.random()<0.15&&!puffWaveActive){triggerPuffWave();playFx("crowd");setCommentary("🌊 PUFF WAVE! "+sideFans.you+sideFans.ai+" fans puffed at once! THE STADIUM IS CLOUDED! ☁️");}
-                  }} style={{width:30,height:30,borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:14,background:`rgba(255,255,255,0.04)`,border:`1px solid rgba(255,255,255,0.06)`}}>
+                    if(r.e==="💨"&&Math.random()<0.15&&!puffWaveActive){triggerPuffWave();playFx("crowd");setCommentary("🌊 PUFF WAVE! "+sideFans.you+sideFans.ai+" fans puffed at once!");}
+                  }} style={{width:26,height:26,borderRadius:6,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:12,background:`rgba(255,255,255,0.04)`,border:`1px solid rgba(255,255,255,0.06)`}}>
                     {r.e}
                   </div>
                 ))}
-                <div onClick={()=>{playFx("tap");setAudioOn(!audioOn);}} style={{width:30,height:30,borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:12,marginLeft:2,background:audioOn?`${C.green}10`:`${C.red}10`,border:`1px solid ${audioOn?C.green+"20":C.red+"20"}`}}>
+                <div onClick={()=>{playFx("tap");setAudioOn(!audioOn);}} style={{width:26,height:26,borderRadius:6,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:10,marginLeft:1,background:audioOn?`${C.green}10`:`${C.red}10`,border:`1px solid ${audioOn?C.green+"20":C.red+"20"}`}}>
                   {audioOn?"🔊":"🔇"}
                 </div>
               </div>
 
               {/* ── MAIN PANEL ── */}
-              <div style={{...GLASS_CARD,display:"flex",flexDirection:"column",maxHeight:"35%"}}>
+              <div style={{...GLASS_CARD,display:"flex",flexDirection:"column",maxHeight:"30%",overflow:"hidden"}}>
                 {/* ── SIDE PICKER + CROWD BAR ── */}
-                <div style={{display:"flex",alignItems:"center",padding:"6px 8px",gap:4,borderBottom:`1px solid ${C.border}`}}>
+                <div style={{display:"flex",alignItems:"center",padding:"3px 6px",gap:3,borderBottom:`1px solid ${C.border}`}}>
                   {/* Your side */}
                   <div style={{
                     flex:1,padding:"5px 6px",borderRadius:8,textAlign:"center",
@@ -2988,12 +2987,12 @@ export default function MoodLabArena() {
 
                 {/* ── TAB BAR: Chat | Stats ── */}
                 <div style={{display:"flex",borderBottom:`1px solid ${C.border}`}}>
-                  {[{id:"chat",label:"💬 Chat",icon:"💬"},{id:"stats",label:"📊 Stats",icon:"📊"}].map(t=>(
+                  {[{id:"chat",label:"💬 Chat"},{id:"stats",label:"📊 Stats"}].map(t=>(
                     <div key={t.id} onClick={()=>{playFx("nav");setGameBottomTab(t.id);}} style={{
-                      flex:1,padding:"5px 0",textAlign:"center",cursor:"pointer",
-                      borderBottom:gameBottomTab===t.id?`2px solid ${gameBottomTab==="chat"?C.green:C.gold}`:`2px solid transparent`,
+                      flex:1,padding:"3px 0",textAlign:"center",cursor:"pointer",
+                      borderBottom:gameBottomTab===t.id?`2px solid ${t.id==="chat"?C.green:C.gold}`:`2px solid transparent`,
                     }}>
-                      <span style={{fontSize:9,fontWeight:gameBottomTab===t.id?800:600,color:gameBottomTab===t.id?(t.id==="chat"?C.green:C.gold):C.text3}}>{t.label}</span>
+                      <span style={{fontSize:8,fontWeight:gameBottomTab===t.id?800:600,color:gameBottomTab===t.id?(t.id==="chat"?C.green:C.gold):C.text3}}>{t.label}</span>
                     </div>
                   ))}
                 </div>
@@ -3050,40 +3049,39 @@ export default function MoodLabArena() {
                       })()}
                     </div>
                   ) : (
-                    /* ── FUN STATS ── */
+                    /* ── STATS — compact 2-column layout ── */
                     <div>
-                      {/* Live match stats */}
-                      <div style={{display:"flex",gap:4,marginBottom:6,justifyContent:"center"}}>
+                      {/* Stats row — inline compact */}
+                      <div style={{display:"flex",gap:2,marginBottom:4}}>
                         {[
-                          {v:kickStats.goals,l:"Goals",c:C.cyan,e:"⚽"},
-                          {v:kickStats.saves,l:"Saves",c:C.orange,e:"🧤"},
-                          {v:kickStats.perfects,l:"Perfect",c:C.green,e:"💨"},
-                          {v:kickStats.blinkers,l:"Blinker",c:C.red,e:"💀"},
+                          {v:kickStats.goals,l:"Goal",c:C.cyan,e:"⚽"},
+                          {v:kickStats.saves,l:"Save",c:C.orange,e:"🧤"},
+                          {v:kickStats.perfects,l:"Perf",c:C.green,e:"💨"},
+                          {v:kickStats.blinkers,l:"Blink",c:C.red,e:"💀"},
                           {v:kickStats.misses,l:"Miss",c:C.gold,e:"🚀"},
                         ].map((s,i)=>(
-                          <div key={i} style={{textAlign:"center",padding:"4px 4px",borderRadius:8,...LG.tinted(s.c),flex:1}}>
-                            <div style={{fontSize:9}}>{s.e}</div>
-                            <div style={{fontSize:14,fontWeight:900,color:s.c}}>{s.v}</div>
-                            <div style={{fontSize:5,color:C.text3}}>{s.l}</div>
+                          <div key={i} style={{flex:1,textAlign:"center",padding:"3px 0",borderRadius:6,background:`${s.c}08`,border:`1px solid ${s.c}15`}}>
+                            <div style={{fontSize:12,fontWeight:900,color:s.c,lineHeight:1}}>{s.v}</div>
+                            <div style={{fontSize:5,color:C.text3,marginTop:1}}>{s.e} {s.l}</div>
                           </div>
                         ))}
                       </div>
-                      {/* Fun game facts */}
-                      <div style={{fontSize:8,fontWeight:800,color:C.gold,marginBottom:3}}>😂 FUN FACTS THIS MATCH</div>
-                      {[
-                        {fact:"Avg puff duration",val:(2.5+Math.random()).toFixed(1)+"s",e:"🫁"},
-                        {fact:"Times you almost blinked",val:""+(kickStats.blinkers+Math.floor(Math.random()*3)),e:"💀"},
-                        {fact:"Keeper's confidence level",val:kickScore.you>kickScore.ai?"Shattered 😂":"Sky high 😤",e:"🧤"},
-                        {fact:"Your leg energy",val:kickStats.goals>2?"On fire 🔥":"Questionable 🦵",e:"🦶"},
-                        {fact:"Crowd mood",val:sideFans.you>sideFans.ai?"HYPE 🔥":"Nervous 😬",e:"👥"},
-                        {fact:"Traitor switches",val:""+audienceSwitchCount+(audienceSwitchCount>0?" 🐍":""),e:"🔄"},
-                      ].map((f,i)=>(
-                        <div key={i} style={{display:"flex",alignItems:"center",gap:6,padding:"2px 0",borderBottom:`1px solid ${C.border}`}}>
-                          <span style={{fontSize:10}}>{f.e}</span>
-                          <span style={{fontSize:8,color:C.text,flex:1}}>{f.fact}</span>
-                          <span style={{fontSize:8,fontWeight:700,color:C.text2,fontFamily:"monospace"}}>{f.val}</span>
-                        </div>
-                      ))}
+                      {/* Fun facts — 2 columns, compact */}
+                      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"2px 8px"}}>
+                        {[
+                          {l:"Avg Puff",v:(2.5+Math.random()).toFixed(1)+"s"},
+                          {l:"Near Blink",v:""+(kickStats.blinkers+Math.floor(Math.random()*3))},
+                          {l:"Keeper",v:kickScore.you>kickScore.ai?"Shattered":"Confident"},
+                          {l:"Leg",v:kickStats.goals>2?"On Fire":"Sleepy"},
+                          {l:"Crowd",v:sideFans.you>sideFans.ai?"HYPE":"Nervous"},
+                          {l:"Traitor",v:""+audienceSwitchCount+(audienceSwitchCount>0?" 🐍":"0")},
+                        ].map((f,i)=>(
+                          <div key={i} style={{display:"flex",justifyContent:"space-between",padding:"2px 0",borderBottom:`1px solid ${C.border}`}}>
+                            <span style={{fontSize:7,color:C.text3}}>{f.l}</span>
+                            <span style={{fontSize:7,fontWeight:700,color:C.text2}}>{f.v}</span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
