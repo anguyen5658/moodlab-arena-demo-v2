@@ -347,6 +347,7 @@ export default function MoodLabArena() {
   const [kickCharging, setKickCharging] = useState(false);
   const [actionTimer, setActionTimer] = useState(3); // 3s countdown for actions
   const actionTimerRef = useRef(null);
+  const [showHowToPlay, setShowHowToPlay] = useState(false);
   const kickChargeInterval = useRef(null);
   const [kickComment, setKickComment] = useState("");
   const [kickSweetMin, setKickSweetMin] = useState(70); // random sweet spot per round
@@ -3216,9 +3217,18 @@ export default function MoodLabArena() {
               <span style={{fontSize:8,fontWeight:700,color:C.text2,padding:"2px 8px",borderRadius:20,...LG.tinted(C.text3)}}>⏱ {selectedGame.time}</span>
               {selectedGame.hot && <span style={{fontSize:8,fontWeight:800,color:C.red,padding:"2px 8px",borderRadius:20,background:`${C.red}15`,border:`1px solid ${C.red}25`,animation:"pulse 2s infinite"}}>🔥 HOT</span>}
             </div>
-            <div style={{display:"flex",gap:4,marginBottom:14}}>
+            <div style={{display:"flex",gap:4,marginBottom:8}}>
               <span style={{fontSize:7,fontWeight:700,color:pool.color,padding:"2px 7px",borderRadius:20,...LG.tinted(pool.color)}}>⚖️ {pool.label}</span>
               {(selectedGame.inputs||["puff"]).map(inp=>{const t=INPUT_TYPES.find(x=>x.id===inp)||INPUT_TYPES[0];return <span key={inp} style={{fontSize:7,fontWeight:700,color:t.color,padding:"2px 7px",borderRadius:20,...LG.tinted(t.color)}}>{t.icon} {t.label}</span>;})}
+            </div>
+            {/* How to Play button */}
+            <div onClick={()=>{playFx("tap");setShowHowToPlay(true);}} style={{
+              padding:"6px 16px",borderRadius:20,cursor:"pointer",marginBottom:12,
+              background:`rgba(255,255,255,0.04)`,border:`1px solid ${C.border}`,
+              display:"flex",alignItems:"center",gap:5,
+            }}>
+              <span style={{fontSize:12}}>📖</span>
+              <span style={{fontSize:9,fontWeight:700,color:C.text2}}>How to Play</span>
             </div>
 
             {/* ═══ SECTION A: QUICK PLAY ═══ */}
@@ -3312,6 +3322,74 @@ export default function MoodLabArena() {
               </div>
             )}
           </div>
+
+          {/* ═══ HOW TO PLAY POPUP ═══ */}
+          {showHowToPlay && (
+            <div style={{position:"absolute",inset:0,zIndex:120,display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(0,0,0,0.7)",backdropFilter:"blur(6px)",animation:"fadeIn 0.2s ease"}}
+              onClick={()=>setShowHowToPlay(false)}>
+              <div onClick={(e)=>e.stopPropagation()} style={{width:"90%",maxWidth:360,maxHeight:"80%",borderRadius:20,overflow:"hidden",
+                background:`linear-gradient(180deg, #0a1630 0%, #0d1f35 50%, #061018 100%)`,
+                border:`1px solid ${C.border}`,boxShadow:`0 20px 60px rgba(0,0,0,0.6), 0 0 30px ${selectedGame.color}10`,
+              }}>
+                {/* Header */}
+                <div style={{padding:"14px 16px 10px",display:"flex",alignItems:"center",justifyContent:"space-between",borderBottom:`1px solid ${C.border}`}}>
+                  <div style={{display:"flex",alignItems:"center",gap:6}}>
+                    <span style={{fontSize:18}}>{selectedGame.emoji}</span>
+                    <span style={{fontSize:14,fontWeight:900,color:C.text}}>How to Play</span>
+                  </div>
+                  <div onClick={()=>setShowHowToPlay(false)} style={{width:28,height:28,borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",background:`rgba(255,255,255,0.06)`,border:`1px solid ${C.border}`,fontSize:12,color:C.text3}}>✕</div>
+                </div>
+
+                {/* Scrollable content */}
+                <div style={{padding:"12px 16px",overflowY:"auto",maxHeight:"calc(80vh - 80px)"}}>
+                  {selectedGame.id==="finalkick" ? (<>
+                    {/* Final Kick rules */}
+                    {[
+                      {icon:"🎯",title:"Goal",desc:"5 rounds. Each round: you kick + you save. Most goals wins."},
+                      {icon:"💨",title:"Puff to Kick",desc:"Hold the puff button to charge power. Release in the SWEET SPOT zone (green) to score."},
+                      {icon:"🟢",title:"Sweet Spot",desc:"Only kicks in the sweet spot can score! Too short or too long = auto-miss. The zone shifts every round."},
+                      {icon:"⏱️",title:"3s Timer",desc:"You have 3 seconds to pick a zone. Too slow = random auto-action."},
+                      {icon:"🧤",title:"Save Phase",desc:"AI shoots at you. Tap a zone to dive and block the shot."},
+                      {icon:"💀",title:"Blinker",desc:"Hold puff for 5+ seconds = BLINKER. Ball goes wild. Maximum comedy. Everyone laughs."},
+                      {icon:"⚡",title:"Bonus Shot",desc:"50% chance after round 5. Tighter sweet spot but 2x reward if scored."},
+                      {icon:"👥",title:"Audience",desc:"Fans pick sides and chat. Puff a BLINKER to switch sides (🐍 TRAITOR badge!)."},
+                      {icon:"🏆",title:"Tournament",desc:"World Cup 2026: pick a nation, play group stage (3 matches), advance to knockout."},
+                    ].map((step,i)=>(
+                      <div key={i} style={{display:"flex",gap:10,marginBottom:10,alignItems:"flex-start"}}>
+                        <div style={{width:32,height:32,borderRadius:10,background:`${selectedGame.color}10`,border:`1px solid ${selectedGame.color}15`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0}}>{step.icon}</div>
+                        <div>
+                          <div style={{fontSize:11,fontWeight:800,color:C.text,marginBottom:1}}>{step.title}</div>
+                          <div style={{fontSize:9,color:C.text2,lineHeight:1.4}}>{step.desc}</div>
+                        </div>
+                      </div>
+                    ))}
+
+                    {/* Puff zones visual */}
+                    <div style={{padding:"10px 12px",borderRadius:12,background:`rgba(255,255,255,0.03)`,border:`1px solid ${C.border}`,marginTop:4}}>
+                      <div style={{fontSize:8,fontWeight:800,color:C.gold,marginBottom:6,letterSpacing:1}}>💨 PUFF DURATION ZONES</div>
+                      <div style={{display:"flex",gap:2,height:16,borderRadius:8,overflow:"hidden",marginBottom:4}}>
+                        <div style={{flex:1,background:`${C.text3}30`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:6,fontWeight:700,color:C.text3}}>TAP</div>
+                        <div style={{flex:2,background:`${C.text3}20`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:6,fontWeight:700,color:C.text3}}>SHORT</div>
+                        <div style={{flex:2,background:`${C.cyan}20`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:6,fontWeight:700,color:C.cyan}}>GOOD</div>
+                        <div style={{flex:2,background:`${C.green}30`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:6,fontWeight:800,color:C.green}}>PERFECT</div>
+                        <div style={{flex:1,background:`${C.orange}20`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:6,fontWeight:700,color:C.orange}}>LONG</div>
+                        <div style={{flex:1,background:`${C.red}25`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:5,fontWeight:700,color:C.red}}>💀</div>
+                      </div>
+                      <div style={{fontSize:7,color:C.text3,textAlign:"center"}}>Hold 2.5-3.5s for PERFECT PUFF 💨👑</div>
+                    </div>
+                  </>) : (
+                    /* Generic game rules */
+                    <div style={{textAlign:"center",padding:"20px 0"}}>
+                      <div style={{fontSize:40,marginBottom:8}}>{selectedGame.emoji}</div>
+                      <div style={{fontSize:12,fontWeight:700,color:C.text,marginBottom:4}}>{selectedGame.name}</div>
+                      <div style={{fontSize:10,color:C.text2,lineHeight:1.5}}>{selectedGame.desc}</div>
+                      <div style={{fontSize:9,color:C.text3,marginTop:12}}>Full rules coming soon!</div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       );
     }
