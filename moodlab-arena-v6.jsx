@@ -3682,12 +3682,41 @@ export default function MoodLabArena() {
 
     // ── FAN: Watching lobby ──
     if(fanMode === "watching") {
-      const matchingGames = [
-        {home:pick(WC_TEAMS).flag+" "+pick(WC_TEAMS).name, away:pick(WC_TEAMS).flag+" "+pick(WC_TEAMS).name, score:"1-0", phase:"Group A · R2", viewers:42+Math.floor(Math.random()*80), live:true},
-        {home:pick(WC_TEAMS).flag+" "+pick(WC_TEAMS).name, away:pick(WC_TEAMS).flag+" "+pick(WC_TEAMS).name, score:"0-0", phase:"Group C · R1", viewers:18+Math.floor(Math.random()*30), live:true},
-        {home:pick(WC_TEAMS).flag+" "+pick(WC_TEAMS).name, away:pick(WC_TEAMS).flag+" "+pick(WC_TEAMS).name, score:"--", phase:"Quarterfinal", viewers:0, live:false},
-      ];
       const devLabel = INPUT_TYPES.find(t=>t.id===fanDevice)?.label||"Puff";
+      // Fixed match data (no re-render dance)
+      const liveMatches = [
+        {hf:"🇧🇷",hn:"Brazil",af:"🇩🇪",an:"Germany",score:"2-1",phase:"Group E · Match 2",viewers:127,round:3},
+        {hf:"🇺🇸",hn:"USA",af:"🇲🇽",an:"Mexico",score:"1-1",phase:"Group A · Match 3",viewers:89,round:4},
+        {hf:"🇫🇷",hn:"France",af:"🇦🇷",an:"Argentina",score:"0-0",phase:"Round of 16",viewers:234,round:5},
+        {hf:"🇯🇵",hn:"Japan",af:"🇰🇷",an:"South Korea",score:"3-2",phase:"Group F · Match 1",viewers:56,round:2},
+        {hf:"🇬🇧",hn:"England",af:"🇪🇸",an:"Spain",score:"1-0",phase:"Quarterfinal",viewers:312,round:6},
+      ];
+      const upcomingMatches = [
+        {hf:"🇮🇹",hn:"Italy",af:"🇵🇹",an:"Portugal",phase:"Group B · Match 2",time:"In 15 min"},
+        {hf:"🇳🇱",hn:"Netherlands",af:"🇭🇷",an:"Croatia",phase:"Group D · Match 3",time:"In 45 min"},
+        {hf:"🇻🇳",hn:"Vietnam",af:"🇨🇳",an:"China",phase:"Group L · Match 1",time:"In 1h 20m"},
+        {hf:"🇲🇦",hn:"Morocco",af:"🇳🇬",an:"Nigeria",phase:"Semifinal",time:"In 2h"},
+      ];
+      // Enter a match as spectator
+      const fanEnterMatch = (match) => {
+        playFx("success");
+        // Set up spectator view using the game's audience system
+        const homeTeam = WC_TEAMS.find(t=>t.name===match.hn)||WC_TEAMS[0];
+        const awayTeam = WC_TEAMS.find(t=>t.name===match.an)||WC_TEAMS[1];
+        kickOpponent.current = {
+          name:awayTeam.name, emoji:awayTeam.flag,
+          img:`https://api.dicebear.com/9.x/icons/svg?seed=${awayTeam.id}&backgroundColor=transparent`,
+          rank:`#${Math.floor(Math.random()*30)+1}`, record:`${Math.floor(Math.random()*100)}-${Math.floor(Math.random()*50)}`,
+          taunt:"Let's see what you got!", oppTeam:awayTeam,
+        };
+        if(!wcTeam) setWcTeam(homeTeam);
+        const fkGame = PLAY_GAMES.find(g=>g.id==="finalkick");
+        setGameActive({...fkGame, activeInput:fanDevice||"puff", wcMode:true, fanSpectator:true});
+        startKick();
+        startMatchIntro(kickOpponent.current);
+        setFanMode(null);
+        notify(`👀 Watching ${match.hf} ${match.hn} vs ${match.af} ${match.an}`,C.cyan);
+      };
       return (
         <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:110,overflow:"hidden"}}>
           <div style={bgStyle}/>
@@ -3698,20 +3727,26 @@ export default function MoodLabArena() {
                 <span style={{fontSize:24}}>{fanTeam?.flag}</span>
                 <span style={{fontSize:14,fontWeight:900,color:C.text}}>Fan Zone</span>
               </div>
-              <div style={{fontSize:9,color:C.text3}}>Supporting {fanTeam?.name} · {devLabel} matches</div>
+              <div style={{fontSize:9,color:C.text3}}>Supporting {fanTeam?.name} · {devLabel} matches · Tap a match to enter</div>
             </div>
 
-            {/* Live matches to watch */}
-            <div style={{fontSize:9,fontWeight:800,color:C.gold,letterSpacing:1,marginBottom:6}}>🔴 LIVE MATCHES</div>
-            {matchingGames.filter(g=>g.live).map((g,i)=>(
-              <div key={i} onClick={()=>{playFx("tap");notify("👀 Spectating... (demo)",C.cyan);}} style={{
-                padding:"12px 14px",borderRadius:14,marginBottom:8,cursor:"pointer",
+            {/* Live matches */}
+            <div style={{fontSize:9,fontWeight:800,color:C.gold,letterSpacing:1,marginBottom:6}}>🔴 LIVE MATCHES ({liveMatches.length})</div>
+            {liveMatches.map((g,i)=>(
+              <div key={i} onClick={()=>fanEnterMatch(g)} style={{
+                padding:"10px 12px",borderRadius:14,marginBottom:6,cursor:"pointer",
                 ...GLASS_CARD,transition:"all 0.2s",
               }}>
-                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:4}}>
-                  <div style={{fontSize:10,fontWeight:700,color:C.text}}>{g.home}</div>
-                  <div style={{fontSize:12,fontWeight:900,color:C.gold}}>{g.score}</div>
-                  <div style={{fontSize:10,fontWeight:700,color:C.text,textAlign:"right"}}>{g.away}</div>
+                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:3}}>
+                  <div style={{display:"flex",alignItems:"center",gap:4,flex:1}}>
+                    <span style={{fontSize:14}}>{g.hf}</span>
+                    <span style={{fontSize:9,fontWeight:700,color:C.text}}>{g.hn}</span>
+                  </div>
+                  <div style={{fontSize:12,fontWeight:900,color:C.gold,minWidth:36,textAlign:"center"}}>{g.score}</div>
+                  <div style={{display:"flex",alignItems:"center",gap:4,flex:1,justifyContent:"flex-end"}}>
+                    <span style={{fontSize:9,fontWeight:700,color:C.text}}>{g.an}</span>
+                    <span style={{fontSize:14}}>{g.af}</span>
+                  </div>
                 </div>
                 <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
                   <span style={{fontSize:7,color:C.text3}}>{g.phase}</span>
@@ -3719,17 +3754,25 @@ export default function MoodLabArena() {
                     <div style={{width:5,height:5,borderRadius:"50%",background:C.red,animation:"pulse 1.5s infinite"}}/>
                     <span style={{fontSize:7,color:C.red,fontWeight:700}}>LIVE</span>
                     <span style={{fontSize:7,color:C.text3}}>👁️ {g.viewers}</span>
+                    <span style={{fontSize:7,fontWeight:700,color:C.cyan,padding:"1px 5px",borderRadius:4,background:`${C.cyan}12`,border:`1px solid ${C.cyan}20`}}>ENTER</span>
                   </div>
                 </div>
               </div>
             ))}
 
             {/* Upcoming */}
-            <div style={{fontSize:9,fontWeight:800,color:C.text3,letterSpacing:1,marginBottom:6,marginTop:4}}>⏳ UPCOMING</div>
-            {matchingGames.filter(g=>!g.live).map((g,i)=>(
-              <div key={i} style={{padding:"10px 14px",borderRadius:12,marginBottom:6,...GLASS_CARD,opacity:0.6}}>
-                <div style={{fontSize:10,fontWeight:600,color:C.text2}}>{g.home} vs {g.away}</div>
-                <div style={{fontSize:7,color:C.text3,marginTop:2}}>{g.phase} · Starts soon</div>
+            <div style={{fontSize:9,fontWeight:800,color:C.text3,letterSpacing:1,marginBottom:6,marginTop:6}}>⏳ UPCOMING ({upcomingMatches.length})</div>
+            {upcomingMatches.map((g,i)=>(
+              <div key={i} style={{padding:"8px 12px",borderRadius:12,marginBottom:5,...GLASS_CARD,opacity:0.7}}>
+                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                  <div style={{display:"flex",alignItems:"center",gap:4}}>
+                    <span style={{fontSize:12}}>{g.hf}</span>
+                    <span style={{fontSize:9,fontWeight:600,color:C.text2}}>{g.hn} vs {g.an}</span>
+                    <span style={{fontSize:12}}>{g.af}</span>
+                  </div>
+                  <span style={{fontSize:7,color:C.gold,fontWeight:600}}>{g.time}</span>
+                </div>
+                <div style={{fontSize:7,color:C.text3,marginTop:2}}>{g.phase}</div>
               </div>
             ))}
 
