@@ -363,6 +363,7 @@ export default function MoodLabArena() {
   const [kickStats, setKickStats] = useState({goals:0,saves:0,perfects:0,blinkers:0,misses:0});
   const [kickChatOn, setKickChatOn] = useState(true); // chat panel ON by default in game
   // ── Final Kick 2 ──
+  const [isFK2Mode, setIsFK2Mode] = useState(false); // persisted FK2 flag
   const [fk2Phase, setFk2Phase] = useState(null); // "x" | "y" | null
   const [fk2X, setFk2X] = useState(0);
   const [fk2Y, setFk2Y] = useState(0);
@@ -727,10 +728,11 @@ export default function MoodLabArena() {
     setKickCharging(false); setKickBonusUsed(false); setKickBonusAvail(false); setKickBonusActive(false);
     setKickStats({goals:0,saves:0,perfects:0,blinkers:0,misses:0});
     const ss = randomizeSweetSpot();
+    setIsFK2Mode(isFK2);
     if(isFK2) {
       setKickState("shoot_x");
       setFk2Phase("x"); setFk2X(0); setFk2Y(0); setFk2XDone(false);
-      setKickComment("Aim LEFT or RIGHT! Hold to puff ← → 💨");
+      setKickComment("Aim LEFT or RIGHT! Tap to lock! ← → 👆");
     } else {
       setKickState("shoot");
       setKickComment(pick(["Let's gooo 🔥","Time to ball ⚽","No pressure 😅","Sweet spot: "+ss.holdMin+"-"+ss.holdMax+"s 🎯"]));
@@ -788,7 +790,7 @@ export default function MoodLabArena() {
   const fk2SweepRef = useRef(null);
   const fk2SweepDir = useRef(1);
   useEffect(() => {
-    if(gameActive?.id==="finalkick2" && (kickState==="shoot_x"||kickState==="shoot_y") && !matchIntro) {
+    if(isFK2Mode && (kickState==="shoot_x"||kickState==="shoot_y") && !matchIntro) {
       // Auto-sweep the crosshair line back and forth
       if(fk2SweepRef.current) clearInterval(fk2SweepRef.current);
       setFk2Sweep(5);
@@ -806,7 +808,7 @@ export default function MoodLabArena() {
       if(fk2SweepRef.current) { clearInterval(fk2SweepRef.current); fk2SweepRef.current = null; }
     }
     return () => { if(fk2SweepRef.current) { clearInterval(fk2SweepRef.current); fk2SweepRef.current = null; } };
-  }, [gameActive?.id, kickState, matchIntro]);
+  }, [isFK2Mode, kickState, matchIntro]);
 
   // FK2 tap to lock position
   const fk2TapLock = () => {
@@ -930,7 +932,7 @@ export default function MoodLabArena() {
 
     // FK2 uses fk2TapLock instead of charge — should never reach here
     // but guard just in case
-    if(gameActive?.id==="finalkick2") return;
+    if(isFK2Mode) return;
 
     setKickPower(p=>{
       // Add minor intensity variance (+/- 5%)
@@ -1168,10 +1170,10 @@ export default function MoodLabArena() {
       setKickRound(nextRound);
       const ss = randomizeSweetSpot(); // New sweet spot each round!
       setKickAim(null); setKickPower(0);
-      if(gameActive?.id==="finalkick2") {
+      if(isFK2Mode) {
         setKickState("shoot_x");
         setFk2Phase("x"); setFk2X(0); setFk2Y(0); setFk2XDone(false);
-        setKickComment("Round "+(nextRound+1)+"! Aim LEFT or RIGHT! ← → 💨");
+        setKickComment("Round "+(nextRound+1)+"! Aim LEFT or RIGHT! ← → 👆");
       } else {
         setKickState("shoot");
         setKickComment(pick(["Round "+(nextRound+1)+"! Sweet spot shifted: "+ss.holdMin+"-"+ss.holdMax+"s 🎯","New round, new sweet spot 🔄","Adapt or miss! "+ss.holdMin+"s-"+ss.holdMax+"s 💨"]));
@@ -1191,10 +1193,10 @@ export default function MoodLabArena() {
     const pMax = Math.min(96, Math.round(40 + (holdMax-1.5)/2.0 * 55));
     setKickSweetMin(Math.max(50, pMin)); setKickSweetMax(pMax);
     setKickAim(null); setKickPower(0);
-    if(gameActive?.id==="finalkick2") {
+    if(isFK2Mode) {
       setKickState("shoot_x");
       setFk2Phase("x"); setFk2X(0); setFk2Y(0); setFk2XDone(false);
-      setKickComment(pick(["BONUS! Double puff with tighter sweet spots! ⚡🎯","This one's HARDER! Both axes need precision! 🔥","Double rewards — double puff challenge! 💰💰"]));
+      setKickComment(pick(["BONUS! Double precision with tighter sweet spots! ⚡🎯","This one's HARDER! Both axes need precision! 🔥","Double rewards — double precision challenge! 💰💰"]));
     } else {
       setKickState("shoot");
       setKickComment(pick(["BONUS SHOT! Tighter sweet spot: "+holdMin.toFixed(1)+"-"+holdMax.toFixed(1)+"s ⚡","This one's HARDER! Nail the puff! 🎯","Double rewards if you score! 💰💰"]));
@@ -2584,7 +2586,7 @@ export default function MoodLabArena() {
       }
       // Final Kick ⚽ — IMMERSIVE VERSION
       if((gameActive.id==="finalkick"||gameActive.id==="finalkick2") && kickState) {
-        const isFK2 = gameActive.id==="finalkick2";
+        const isFK2 = isFK2Mode; // use persisted state flag, not gameActive.id
         const pool = getDevicePool();
         const inp = gameActive.activeInput;
         const inpInfo = INPUT_TYPES.find(t=>t.id===inp)||INPUT_TYPES[0];
@@ -2826,7 +2828,7 @@ export default function MoodLabArena() {
               }}/>
             ))}
 
-            {overlayBack(()=>{setGameActive(null);setKickState(null);})}
+            {overlayBack(()=>{setGameActive(null);setKickState(null);setIsFK2Mode(false);})}
 
             <div style={{position:"relative",zIndex:2,flex:1,display:"flex",flexDirection:"column",alignItems:"center",padding:"38px 14px 52px",height:"100%",overflowY:"auto"}}>
 
