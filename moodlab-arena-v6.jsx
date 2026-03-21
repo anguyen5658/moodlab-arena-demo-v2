@@ -1274,7 +1274,7 @@ export default function MoodLabArena() {
     };
     setWcMatchday(matchIdx);
     // Use locked tournament device input (no ask prompt)
-    const fkGame = PLAY_GAMES.find(g => g.id === "finalkick");
+    const fkGame = PLAY_GAMES.find(g => g.id === (selectedGame?.id||"finalkick"));
     const input = wcDeviceInput || "puff";
     setGameActive({ ...fkGame, activeInput: input, wcMode: true, wcMatchIdx: matchIdx });
     startKick();
@@ -1371,7 +1371,7 @@ export default function MoodLabArena() {
       record: `${Math.floor(Math.random()*150)}-${Math.floor(Math.random()*50)}`,
       taunt: pick(["This is our moment!","You'll never take us down!","Knockout time!","Last chance, play hard!"]),
     };
-    const fkGame = PLAY_GAMES.find(g => g.id === "finalkick");
+    const fkGame = PLAY_GAMES.find(g => g.id === (selectedGame?.id||"finalkick"));
     const input = wcDeviceInput || "puff";
     setGameActive({ ...fkGame, activeInput: input, wcMode: true, wcKnockout: true, wcRoundIdx: wcBracket.currentRound });
     startKick();
@@ -3055,23 +3055,27 @@ export default function MoodLabArena() {
                 </div>
               )}
 
-              {/* ═══ FK2: HORIZONTAL AIM (shoot_x) ═══ */}
+              {/* ═══ FK2: HORIZONTAL AIM (shoot_x) — bar below goal, auto-start puff ═══ */}
               {isFK2 && kickState==="shoot_x" && (()=>{
                 const xZone = kickPower<10?"WIDE ←":kickPower<33?"LEFT":kickPower<67?"CENTER":kickPower<90?"RIGHT":"WIDE →";
                 const xColor = (kickPower<10||kickPower>90)?C.red:kickPower>=kickSweetMin&&kickPower<=kickSweetMax?C.green:C.cyan;
                 return (
-                <div style={{width:goalW,animation:"fadeIn 0.3s ease"}}>
+                <div style={{width:goalW,animation:"fadeIn 0.3s ease"}}
+                  onMouseDown={()=>{if(!kickCharging){kickStartCharge();playFx("charge");}}} onMouseUp={kickStopCharge} onMouseLeave={kickStopCharge}
+                  onTouchStart={(e)=>{e.preventDefault();if(!kickCharging){kickStartCharge();playFx("charge");}}} onTouchEnd={kickStopCharge}
+                >
                   <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,marginBottom:4}}>
                     <span style={{fontSize:11,fontWeight:800,color:C.cyan}}>← HORIZONTAL AIM →</span>
-                    <span style={{fontSize:12,fontWeight:900,color:actionTimer<=1?C.red:C.gold,animation:actionTimer<=1?"pulse 0.5s infinite":"none"}}>{actionTimer}s</span>
+                    {actionTimer>0&&!kickCharging&&<span style={{fontSize:12,fontWeight:900,color:actionTimer<=1?C.red:C.gold,animation:actionTimer<=1?"pulse 0.5s infinite":"none"}}>{actionTimer}s</span>}
                   </div>
-                  <div style={{height:28,borderRadius:14,background:`rgba(255,255,255,0.04)`,overflow:"hidden",border:`2px solid ${kickCharging?xColor+"60":"rgba(255,255,255,0.1)"}`,position:"relative"}}>
+                  {/* Horizontal bar */}
+                  <div style={{height:28,borderRadius:14,background:`rgba(255,255,255,0.04)`,overflow:"hidden",border:`2px solid ${kickCharging?xColor+"60":"rgba(255,255,255,0.1)"}`,position:"relative",cursor:"pointer"}}>
                     <div style={{position:"absolute",left:0,top:0,bottom:0,width:"10%",background:`${C.red}15`,borderRight:`1px solid ${C.red}30`}}/>
                     <div style={{position:"absolute",right:0,top:0,bottom:0,width:"10%",background:`${C.red}15`,borderLeft:`1px solid ${C.red}30`}}/>
                     <div style={{position:"absolute",left:`${kickSweetMin}%`,width:`${kickSweetMax-kickSweetMin}%`,top:0,bottom:0,background:`${C.green}12`,borderLeft:`1px solid ${C.green}30`,borderRight:`1px solid ${C.green}30`}}/>
                     <div style={{position:"absolute",left:`${kickPower}%`,top:0,bottom:0,width:3,background:xColor,boxShadow:`0 0 8px ${xColor}`,transition:"left 0.05s linear",zIndex:2}}/>
                     <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",zIndex:1}}>
-                      <span style={{fontSize:9,fontWeight:800,color:xColor,textShadow:"0 0 4px rgba(0,0,0,0.8)"}}>{kickCharging?xZone:"HOLD TO AIM ←→"}</span>
+                      <span style={{fontSize:9,fontWeight:800,color:xColor,textShadow:"0 0 4px rgba(0,0,0,0.8)"}}>{kickCharging?xZone:"TAP & HOLD TO AIM ←→"}</span>
                     </div>
                   </div>
                   <div style={{display:"flex",justifyContent:"space-between",marginTop:2,padding:"0 2px"}}>
@@ -3079,48 +3083,55 @@ export default function MoodLabArena() {
                     <span style={{fontSize:6,color:C.green,fontWeight:700}}>CENTER 🎯</span>
                     <span style={{fontSize:6,color:C.text3}}>RIGHT</span><span style={{fontSize:6,color:C.red}}>WIDE</span>
                   </div>
-                  <div onMouseDown={()=>{kickStartCharge();playFx("charge");}} onMouseUp={kickStopCharge} onMouseLeave={kickStopCharge}
-                    onTouchStart={(e)=>{e.preventDefault();kickStartCharge();playFx("charge");}} onTouchEnd={kickStopCharge}
-                    style={{marginTop:6,padding:"12px 20px",borderRadius:14,cursor:"pointer",textAlign:"center",
-                      background:kickCharging?`linear-gradient(135deg, ${xColor}30, ${xColor}10)`:`linear-gradient(135deg, ${C.cyan}25, ${C.cyan}08)`,
-                      border:`2px solid ${kickCharging?xColor+"60":C.cyan+"40"}`,fontSize:14,fontWeight:900,
-                      color:kickCharging?xColor:C.cyan,animation:kickCharging?"none":"countPulse 1.2s infinite",userSelect:"none",WebkitUserSelect:"none"}}>
-                    {kickCharging?"← "+xZone+" →":"💨 HOLD TO AIM LEFT/RIGHT"}
-                  </div>
                 </div>);
               })()}
 
-              {/* ═══ FK2: VERTICAL AIM (shoot_y) ═══ */}
+              {/* ═══ FK2: VERTICAL AIM (shoot_y) — VERTICAL bar beside goal ═══ */}
               {isFK2 && kickState==="shoot_y" && (()=>{
                 const yZone = kickPower>95?"OVER ↑":kickPower>75?"HIGH":kickPower>50?"MID-HIGH":kickPower>25?"LOW":"GROUND";
                 const yColor = kickPower>95?C.red:kickPower>=kickSweetMin&&kickPower<=kickSweetMax?C.green:C.cyan;
                 return (
-                <div style={{width:goalW,animation:"fadeIn 0.3s ease"}}>
-                  <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,marginBottom:4}}>
-                    <span style={{fontSize:11,fontWeight:800,color:C.orange}}>↕ VERTICAL AIM</span>
-                    <span style={{fontSize:8,color:C.green,fontWeight:700,padding:"2px 6px",borderRadius:4,background:`${C.green}10`}}>X: {fk2XDone?Math.round(fk2X)+"%✓":"..."}</span>
-                    <span style={{fontSize:12,fontWeight:900,color:actionTimer<=1?C.red:C.gold,animation:actionTimer<=1?"pulse 0.5s infinite":"none"}}>{actionTimer}s</span>
+                <div style={{display:"flex",gap:8,alignItems:"stretch",animation:"fadeIn 0.3s ease"}}
+                  onMouseDown={()=>{if(!kickCharging){kickStartCharge();playFx("charge");}}} onMouseUp={kickStopCharge} onMouseLeave={kickStopCharge}
+                  onTouchStart={(e)=>{e.preventDefault();if(!kickCharging){kickStartCharge();playFx("charge");}}} onTouchEnd={kickStopCharge}
+                >
+                  {/* Goal with X marker */}
+                  <div style={{position:"relative",width:goalW-40,height:goalH,border:`2px solid rgba(255,255,255,0.15)`,borderRadius:4,background:`rgba(255,255,255,0.02)`,flexShrink:0}}>
+                    {/* Grid lines */}
+                    <div style={{position:"absolute",top:0,left:"33.3%",width:1,height:"100%",background:`rgba(255,255,255,0.08)`}}/>
+                    <div style={{position:"absolute",top:0,left:"66.6%",width:1,height:"100%",background:`rgba(255,255,255,0.08)`}}/>
+                    <div style={{position:"absolute",top:"50%",left:0,width:"100%",height:1,background:`rgba(255,255,255,0.08)`}}/>
+                    {/* X position line (locked from previous step) */}
+                    <div style={{position:"absolute",top:0,bottom:0,left:`${fk2X}%`,width:2,background:C.green,boxShadow:`0 0 6px ${C.green}`,zIndex:2}}/>
+                    {/* Y position line (moving) */}
+                    {kickCharging && <div style={{position:"absolute",left:0,right:0,bottom:`${kickPower}%`,height:2,background:yColor,boxShadow:`0 0 6px ${yColor}`,zIndex:2,transition:"bottom 0.05s linear"}}/>}
+                    {/* Crosshair dot */}
+                    {kickCharging && <div style={{position:"absolute",left:`${fk2X}%`,bottom:`${kickPower}%`,width:8,height:8,borderRadius:"50%",background:yColor,border:"2px solid #fff",transform:"translate(-50%,50%)",boxShadow:`0 0 10px ${yColor}`,zIndex:3}}/>}
+                    <div style={{position:"absolute",bottom:4,left:"50%",transform:"translateX(-50%)",fontSize:7,color:C.text3,whiteSpace:"nowrap"}}>X: {Math.round(fk2X)}% ✓</div>
                   </div>
-                  <div style={{height:28,borderRadius:14,background:`rgba(255,255,255,0.04)`,overflow:"hidden",border:`2px solid ${kickCharging?yColor+"60":"rgba(255,255,255,0.1)"}`,position:"relative"}}>
-                    <div style={{position:"absolute",right:0,top:0,bottom:0,width:"5%",background:`${C.red}20`,borderLeft:`1px solid ${C.red}30`}}/>
-                    <div style={{position:"absolute",left:`${kickSweetMin}%`,width:`${kickSweetMax-kickSweetMin}%`,top:0,bottom:0,background:`${C.green}12`,borderLeft:`1px solid ${C.green}30`,borderRight:`1px solid ${C.green}30`}}/>
-                    <div style={{position:"absolute",left:`${kickPower}%`,top:0,bottom:0,width:3,background:yColor,boxShadow:`0 0 8px ${yColor}`,transition:"left 0.05s linear",zIndex:2}}/>
-                    <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",zIndex:1}}>
-                      <span style={{fontSize:9,fontWeight:800,color:yColor,textShadow:"0 0 4px rgba(0,0,0,0.8)"}}>{kickCharging?yZone:"HOLD TO AIM HEIGHT"}</span>
+                  {/* VERTICAL bar (right side) */}
+                  <div style={{display:"flex",flexDirection:"column",alignItems:"center",width:36,cursor:"pointer"}}>
+                    <div style={{fontSize:7,fontWeight:800,color:C.orange,marginBottom:2,whiteSpace:"nowrap"}}>↕ HEIGHT</div>
+                    <div style={{flex:1,width:28,borderRadius:14,background:`rgba(255,255,255,0.04)`,overflow:"hidden",border:`2px solid ${kickCharging?yColor+"60":"rgba(255,255,255,0.1)"}`,position:"relative",minHeight:120}}>
+                      {/* Over bar zone (top) */}
+                      <div style={{position:"absolute",left:0,right:0,top:0,height:"5%",background:`${C.red}20`,borderBottom:`1px solid ${C.red}30`}}/>
+                      {/* Sweet spot zone */}
+                      <div style={{position:"absolute",left:0,right:0,bottom:`${kickSweetMin}%`,height:`${kickSweetMax-kickSweetMin}%`,background:`${C.green}12`,borderTop:`1px solid ${C.green}30`,borderBottom:`1px solid ${C.green}30`}}/>
+                      {/* Fill from bottom up */}
+                      <div style={{position:"absolute",left:0,right:0,bottom:0,height:`${kickPower}%`,background:`linear-gradient(0deg, ${yColor}30, ${yColor}08)`,transition:"height 0.05s linear"}}/>
+                      {/* Current position marker */}
+                      <div style={{position:"absolute",left:0,right:0,bottom:`${kickPower}%`,height:3,background:yColor,boxShadow:`0 0 8px ${yColor}`,transition:"bottom 0.05s linear",zIndex:2}}/>
+                      {/* Zone label */}
+                      <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",zIndex:1,writingMode:"vertical-rl",textOrientation:"mixed"}}>
+                        <span style={{fontSize:8,fontWeight:800,color:yColor,textShadow:"0 0 4px rgba(0,0,0,0.8)"}}>{kickCharging?yZone:"HOLD"}</span>
+                      </div>
                     </div>
-                  </div>
-                  <div style={{display:"flex",justifyContent:"space-between",marginTop:2,padding:"0 2px"}}>
-                    <span style={{fontSize:6,color:C.text3}}>GROUND</span><span style={{fontSize:6,color:C.text3}}>LOW</span>
-                    <span style={{fontSize:6,color:C.green,fontWeight:700}}>MID-HIGH 🎯</span>
-                    <span style={{fontSize:6,color:C.text3}}>HIGH</span><span style={{fontSize:6,color:C.red}}>OVER ↑</span>
-                  </div>
-                  <div onMouseDown={()=>{kickStartCharge();playFx("charge");}} onMouseUp={kickStopCharge} onMouseLeave={kickStopCharge}
-                    onTouchStart={(e)=>{e.preventDefault();kickStartCharge();playFx("charge");}} onTouchEnd={kickStopCharge}
-                    style={{marginTop:6,padding:"12px 20px",borderRadius:14,cursor:"pointer",textAlign:"center",
-                      background:kickCharging?`linear-gradient(135deg, ${yColor}30, ${yColor}10)`:`linear-gradient(135deg, ${C.orange}25, ${C.orange}08)`,
-                      border:`2px solid ${kickCharging?yColor+"60":C.orange+"40"}`,fontSize:14,fontWeight:900,
-                      color:kickCharging?yColor:C.orange,animation:kickCharging?"none":"countPulse 1.2s infinite",userSelect:"none",WebkitUserSelect:"none"}}>
-                    {kickCharging?"↕ "+yZone:"💨 HOLD TO AIM HEIGHT"}
+                    {/* Vertical labels */}
+                    <div style={{display:"flex",flexDirection:"column-reverse",alignItems:"center",marginTop:2,gap:0}}>
+                      <span style={{fontSize:5,color:C.text3}}>GND</span>
+                      <span style={{fontSize:5,color:C.green,fontWeight:700}}>🎯</span>
+                      <span style={{fontSize:5,color:C.red}}>OVER</span>
+                    </div>
                   </div>
                 </div>);
               })()}
@@ -4244,7 +4255,7 @@ export default function MoodLabArena() {
       const pool = getDevicePool();
       const canEnterWC = wcCanEnter();
       const cooldownMs = wcCooldownRemaining();
-      const isFinalkick = selectedGame.id === "finalkick";
+      const isFinalkick = selectedGame.id === "finalkick" || selectedGame.id === "finalkick2";
       return (
         <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden"}}>
           {/* Background — matching other pages */}
@@ -4400,9 +4411,9 @@ export default function MoodLabArena() {
 
                 {/* Hero */}
                 <div style={{textAlign:"center",marginBottom:16,paddingTop:8}}>
-                  <div style={{fontSize:40,marginBottom:4}}>⚽</div>
-                  <div style={{fontSize:18,fontWeight:900,color:C.text}}>Final Kick</div>
-                  <div style={{fontSize:10,color:C.text2}}>1v1 Penalty Shootout Powered by Puff</div>
+                  <div style={{fontSize:40,marginBottom:4}}>{selectedGame.id==="finalkick2"?"⚽🔥":"⚽"}</div>
+                  <div style={{fontSize:18,fontWeight:900,color:C.text}}>{selectedGame.id==="finalkick2"?"Final Kick 2":"Final Kick"}</div>
+                  <div style={{fontSize:10,color:C.text2}}>{selectedGame.id==="finalkick2"?"Double Puff Precision — 2 Puffs, 1 Shot!":"1v1 Penalty Shootout Powered by Puff"}</div>
                 </div>
 
                 {selectedGame.id==="finalkick" ? (<>
@@ -4573,6 +4584,151 @@ export default function MoodLabArena() {
                   </div>
                 </div>
 
+                </>) : selectedGame.id==="finalkick2" ? (<>
+
+                {/* ═══ FK2 SECTION 1: DOUBLE PUFF FLOW ═══ */}
+                <div style={{padding:"12px",borderRadius:16,...GLASS_CARD,marginBottom:12}}>
+                  <div style={{fontSize:9,fontWeight:800,color:C.gold,letterSpacing:2,marginBottom:8,textAlign:"center"}}>⚡ DOUBLE PUFF FLOW</div>
+                  <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
+                    {[
+                      {step:"1",icon:"←→",label:"PUFF #1: Horizontal Aim",sub:"Hold to slide left/right. Release to lock X position",color:C.cyan,arrow:true},
+                      {step:"2",icon:"↕",label:"PUFF #2: Vertical Aim",sub:"Hold to slide up/down. Release to lock Y position",color:C.orange,arrow:true},
+                      {step:"3",icon:"🎯",label:"Both Sweet Spots Hit?",sub:"X center + Y mid-high = DOUBLE PRECISION!",color:C.green,arrow:true},
+                      {step:"4",icon:"🧤",label:"Save Phase",sub:"Block the AI's shot (same as FK1)",color:C.purple,arrow:true},
+                      {step:"5",icon:"🔄",label:"Repeat x5",sub:"5 rounds total, 2 puffs per shot!",color:C.gold,arrow:false},
+                    ].map((s,i)=>(
+                      <React.Fragment key={i}>
+                        <div style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"6px 10px",borderRadius:10,background:`${s.color}08`,border:`1px solid ${s.color}15`}}>
+                          <div style={{width:28,height:28,borderRadius:8,background:`${s.color}20`,border:`1px solid ${s.color}30`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:s.icon.length>2?10:14,fontWeight:900,color:s.color,flexShrink:0}}>{s.icon}</div>
+                          <div style={{flex:1}}>
+                            <div style={{fontSize:10,fontWeight:800,color:s.color}}>{s.label}</div>
+                            <div style={{fontSize:7,color:C.text3}}>{s.sub}</div>
+                          </div>
+                          <div style={{width:18,height:18,borderRadius:"50%",background:`${s.color}15`,border:`1px solid ${s.color}30`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,fontWeight:900,color:s.color}}>{s.step}</div>
+                        </div>
+                        {s.arrow && <div style={{fontSize:10,color:C.text3+"60",lineHeight:1}}>↓</div>}
+                      </React.Fragment>
+                    ))}
+                  </div>
+                </div>
+
+                {/* ═══ FK2 SECTION 2: X-AXIS AIM VISUAL ═══ */}
+                <div style={{padding:"12px",borderRadius:16,...GLASS_CARD,marginBottom:12}}>
+                  <div style={{fontSize:9,fontWeight:800,color:C.cyan,letterSpacing:2,marginBottom:8,textAlign:"center"}}>←→ HORIZONTAL AIM (Puff #1)</div>
+                  <div style={{fontSize:8,color:C.text2,textAlign:"center",marginBottom:8}}>Hold to slide the marker. Release when it's in the GREEN center zone!</div>
+                  <div style={{height:28,borderRadius:14,overflow:"hidden",display:"flex",marginBottom:4,border:`2px solid ${C.border}`}}>
+                    <div style={{width:"10%",background:`${C.red}20`,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:6,fontWeight:800,color:C.red}}>WIDE</span></div>
+                    <div style={{width:"23%",background:`${C.cyan}10`,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:6,fontWeight:700,color:C.text3}}>LEFT</span></div>
+                    <div style={{width:"34%",background:`${C.green}20`,display:"flex",alignItems:"center",justifyContent:"center",border:`2px solid ${C.green}50`,borderRadius:4}}><span style={{fontSize:7,fontWeight:900,color:C.green}}>CENTER 🎯</span></div>
+                    <div style={{width:"23%",background:`${C.cyan}10`,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:6,fontWeight:700,color:C.text3}}>RIGHT</span></div>
+                    <div style={{width:"10%",background:`${C.red}20`,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:6,fontWeight:800,color:C.red}}>WIDE</span></div>
+                  </div>
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
+                    <div style={{padding:"6px",borderRadius:8,background:`${C.green}06`,border:`1px solid ${C.green}12`,textAlign:"center"}}>
+                      <div style={{fontSize:14,marginBottom:1}}>✅</div>
+                      <div style={{fontSize:7,fontWeight:800,color:C.green}}>CENTER = On Target</div>
+                    </div>
+                    <div style={{padding:"6px",borderRadius:8,background:`${C.red}06`,border:`1px solid ${C.red}12`,textAlign:"center"}}>
+                      <div style={{fontSize:14,marginBottom:1}}>❌</div>
+                      <div style={{fontSize:7,fontWeight:800,color:C.red}}>WIDE = Ball goes out!</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* ═══ FK2 SECTION 3: Y-AXIS AIM VISUAL ═══ */}
+                <div style={{padding:"12px",borderRadius:16,...GLASS_CARD,marginBottom:12}}>
+                  <div style={{fontSize:9,fontWeight:800,color:C.orange,letterSpacing:2,marginBottom:8,textAlign:"center"}}>↕ VERTICAL AIM (Puff #2)</div>
+                  <div style={{fontSize:8,color:C.text2,textAlign:"center",marginBottom:8}}>Vertical bar fills from bottom up. Release in the sweet spot height!</div>
+                  <div style={{display:"flex",gap:10,justifyContent:"center",alignItems:"stretch"}}>
+                    {/* Vertical bar mockup */}
+                    <div style={{width:32,height:120,borderRadius:14,border:`2px solid ${C.border}`,overflow:"hidden",display:"flex",flexDirection:"column-reverse",position:"relative"}}>
+                      <div style={{height:"25%",background:`${C.text3}15`,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:5,fontWeight:700,color:C.text3,writingMode:"vertical-rl"}}>GND</span></div>
+                      <div style={{height:"25%",background:`${C.cyan}10`}}/>
+                      <div style={{height:"30%",background:`${C.green}20`,border:`2px solid ${C.green}50`,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:5,fontWeight:900,color:C.green,writingMode:"vertical-rl"}}>🎯</span></div>
+                      <div style={{height:"15%",background:`${C.orange}15`}}/>
+                      <div style={{height:"5%",background:`${C.red}25`,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:4,fontWeight:800,color:C.red}}>↑</span></div>
+                    </div>
+                    {/* Labels */}
+                    <div style={{display:"flex",flexDirection:"column",justifyContent:"space-between",padding:"4px 0"}}>
+                      <div style={{padding:"4px 8px",borderRadius:6,background:`${C.red}08`,border:`1px solid ${C.red}15`}}>
+                        <div style={{fontSize:7,fontWeight:800,color:C.red}}>OVER BAR ↑</div>
+                        <div style={{fontSize:6,color:C.text3}}>Ball flies over = miss!</div>
+                      </div>
+                      <div style={{padding:"4px 8px",borderRadius:6,background:`${C.green}08`,border:`1px solid ${C.green}15`}}>
+                        <div style={{fontSize:7,fontWeight:800,color:C.green}}>SWEET SPOT 🎯</div>
+                        <div style={{fontSize:6,color:C.text3}}>Perfect height to score!</div>
+                      </div>
+                      <div style={{padding:"4px 8px",borderRadius:6,background:`${C.text3}08`,border:`1px solid ${C.border}`}}>
+                        <div style={{fontSize:7,fontWeight:700,color:C.text3}}>GROUND / LOW</div>
+                        <div style={{fontSize:6,color:C.text3}}>Keeper can reach easier</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* ═══ FK2 SECTION 4: CROSSHAIR ═══ */}
+                <div style={{padding:"12px",borderRadius:16,...GLASS_CARD,marginBottom:12}}>
+                  <div style={{fontSize:9,fontWeight:800,color:C.lime,letterSpacing:2,marginBottom:8,textAlign:"center"}}>🎯 THE CROSSHAIR</div>
+                  <div style={{fontSize:8,color:C.text2,textAlign:"center",marginBottom:8}}>X + Y combine to create your shot placement on the goal!</div>
+                  <div style={{position:"relative",width:"100%",aspectRatio:"3/2",border:`2px solid ${C.border}`,borderRadius:8,background:`rgba(255,255,255,0.02)`,marginBottom:6,overflow:"hidden"}}>
+                    <div style={{position:"absolute",top:0,left:"33%",width:1,height:"100%",background:`${C.text3}20`}}/>
+                    <div style={{position:"absolute",top:0,left:"66%",width:1,height:"100%",background:`${C.text3}20`}}/>
+                    <div style={{position:"absolute",top:"50%",left:0,width:"100%",height:1,background:`${C.text3}20`}}/>
+                    {/* X line */}
+                    <div style={{position:"absolute",top:0,bottom:0,left:"55%",width:2,background:C.cyan,boxShadow:`0 0 6px ${C.cyan}`}}/>
+                    {/* Y line */}
+                    <div style={{position:"absolute",left:0,right:0,bottom:"60%",height:2,background:C.orange,boxShadow:`0 0 6px ${C.orange}`}}/>
+                    {/* Crosshair dot */}
+                    <div style={{position:"absolute",left:"55%",bottom:"60%",width:12,height:12,borderRadius:"50%",background:C.green,border:"2px solid #fff",transform:"translate(-50%,50%)",boxShadow:`0 0 12px ${C.green}`}}/>
+                    <div style={{position:"absolute",bottom:4,right:6,fontSize:7,fontWeight:800,color:C.green}}>GOAL! ⚽🎯</div>
+                  </div>
+                  <div style={{textAlign:"center",fontSize:8,color:C.text2}}>
+                    <span style={{color:C.cyan,fontWeight:800}}>X: Center ✓</span>
+                    <span style={{color:C.text3,margin:"0 6px"}}>+</span>
+                    <span style={{color:C.orange,fontWeight:800}}>Y: Mid-High ✓</span>
+                    <span style={{color:C.text3,margin:"0 6px"}}>=</span>
+                    <span style={{color:C.green,fontWeight:900}}>DOUBLE PRECISION! 🎯🎯</span>
+                  </div>
+                </div>
+
+                {/* ═══ FK2 SECTION 5: SPECIAL FEATURES (shared) ═══ */}
+                <div style={{padding:"12px",borderRadius:16,...GLASS_CARD,marginBottom:12}}>
+                  <div style={{fontSize:9,fontWeight:800,color:C.purple,letterSpacing:2,marginBottom:8,textAlign:"center"}}>✨ SPECIAL FEATURES</div>
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
+                    {[
+                      {icon:"🎯",title:"Double Puff",desc:"2 puffs per shot = more skill!",color:C.lime},
+                      {icon:"⏱️",title:"3s to Start",desc:"Tap fast, then puff!",color:C.gold},
+                      {icon:"🌊",title:"Puff Wave",desc:"10+ fans puff at once!",color:C.cyan},
+                      {icon:"🐍",title:"Traitor",desc:"Switch sides = badge!",color:C.red},
+                    ].map((f,i)=>(
+                      <div key={i} style={{padding:"8px",borderRadius:10,background:`${f.color}06`,border:`1px solid ${f.color}12`,textAlign:"center"}}>
+                        <div style={{fontSize:16,marginBottom:2}}>{f.icon}</div>
+                        <div style={{fontSize:8,fontWeight:800,color:f.color}}>{f.title}</div>
+                        <div style={{fontSize:7,color:C.text3}}>{f.desc}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* ═══ FK2 SECTION 6: PRO TIPS ═══ */}
+                <div style={{padding:"12px",borderRadius:16,background:`${C.orange}06`,border:`1px solid ${C.orange}15`,marginBottom:8}}>
+                  <div style={{fontSize:9,fontWeight:800,color:C.orange,letterSpacing:2,marginBottom:6,textAlign:"center"}}>🧠 FK2 PRO TIPS</div>
+                  <div style={{display:"flex",flexDirection:"column",gap:4}}>
+                    {[
+                      "X sweet spot is CENTER — avoid the red WIDE edges!",
+                      "Y sweet spot is MID-HIGH — too high = over the bar! 💀",
+                      "Both sweet spots hit = DOUBLE PRECISION 🎯🎯 — almost unstoppable",
+                      "Blinker on either axis = comedy gold but you MISS 😂",
+                      "Watch the crosshair on the goal — it shows your live aim!",
+                    ].map((tip,i)=>(
+                      <div key={i} style={{display:"flex",gap:6,alignItems:"flex-start"}}>
+                        <span style={{fontSize:8,color:C.orange,fontWeight:900,flexShrink:0}}>💡</span>
+                        <span style={{fontSize:8,color:C.text2,lineHeight:1.3}}>{tip}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
                 </>) : (
                   <div style={{textAlign:"center",padding:"30px 20px",...GLASS_CARD,borderRadius:16}}>
                     <div style={{fontSize:48,marginBottom:10}}>{selectedGame.emoji}</div>
@@ -4710,7 +4866,7 @@ export default function MoodLabArena() {
           taunt:"Let's see what you got!", oppTeam:awayTeam,
         };
         if(!wcTeam) setWcTeam(homeTeam);
-        const fkGame = PLAY_GAMES.find(g=>g.id==="finalkick");
+        const fkGame = PLAY_GAMES.find(g=>g.id===(selectedGame?.id||"finalkick"));
         setGameActive({...fkGame, activeInput:fanDevice||"puff", wcMode:true, fanSpectator:true});
         startKick();
         startMatchIntro(kickOpponent.current);
