@@ -364,6 +364,7 @@ export default function MoodLabArena() {
   const [kickChatOn, setKickChatOn] = useState(true); // chat panel ON by default in game
   // ── Final Kick 2 ──
   const [isFK2Mode, setIsFK2Mode] = useState(false); // persisted FK2 flag
+  const isFK2Ref = useRef(false); // synchronous FK2 flag (refs update immediately)
   const [fk2Phase, setFk2Phase] = useState(null); // "x" | "y" | null
   const [fk2X, setFk2X] = useState(0);
   const [fk2Y, setFk2Y] = useState(0);
@@ -728,7 +729,7 @@ export default function MoodLabArena() {
     setKickCharging(false); setKickBonusUsed(false); setKickBonusAvail(false); setKickBonusActive(false);
     setKickStats({goals:0,saves:0,perfects:0,blinkers:0,misses:0});
     const ss = randomizeSweetSpot();
-    setIsFK2Mode(isFK2);
+    setIsFK2Mode(isFK2); isFK2Ref.current = isFK2;
     if(isFK2) {
       setKickState("shoot_x");
       setFk2Phase("x"); setFk2X(0); setFk2Y(0); setFk2XDone(false);
@@ -790,7 +791,7 @@ export default function MoodLabArena() {
   const fk2SweepRef = useRef(null);
   const fk2SweepDir = useRef(1);
   useEffect(() => {
-    if(isFK2Mode && (kickState==="shoot_x"||kickState==="shoot_y") && !matchIntro) {
+    if((isFK2Mode || isFK2Ref.current) && (kickState==="shoot_x"||kickState==="shoot_y") && !matchIntro) {
       // Auto-sweep the crosshair line back and forth
       if(fk2SweepRef.current) clearInterval(fk2SweepRef.current);
       setFk2Sweep(5);
@@ -2586,7 +2587,7 @@ export default function MoodLabArena() {
       }
       // Final Kick ⚽ — IMMERSIVE VERSION
       if((gameActive.id==="finalkick"||gameActive.id==="finalkick2") && kickState) {
-        const isFK2 = isFK2Mode; // use persisted state flag, not gameActive.id
+        const isFK2 = isFK2Mode || isFK2Ref.current || gameActive.id==="finalkick2"; // triple fallback
         const pool = getDevicePool();
         const inp = gameActive.activeInput;
         const inpInfo = INPUT_TYPES.find(t=>t.id===inp)||INPUT_TYPES[0];
@@ -2828,7 +2829,7 @@ export default function MoodLabArena() {
               }}/>
             ))}
 
-            {overlayBack(()=>{setGameActive(null);setKickState(null);setIsFK2Mode(false);})}
+            {overlayBack(()=>{setGameActive(null);setKickState(null);setIsFK2Mode(false);isFK2Ref.current=false;})}
 
             <div style={{position:"relative",zIndex:2,flex:1,display:"flex",flexDirection:"column",alignItems:"center",padding:"38px 14px 52px",height:"100%",overflowY:"auto"}}>
 
