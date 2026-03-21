@@ -586,7 +586,7 @@ export default function MoodLabArena() {
       setMatchmaking({game,mode,stage:"searching",input});
       setTimeout(()=>{
         setMatchmaking(p=>p?{...p,stage:"found",opp:mode==="ai"?"🤖 AI Bot":mode==="random"?"🎲 Player_847":"👫 Minh"}:null);
-        setTimeout(()=>{setMatchmaking(null);setGameActive({...game,activeInput:input});if(game.id==="wildwest")startDuel();if(game.id==="finalkick"||game.id==="finalkick2"){startKick();startMatchIntro(kickOpponent.current);}},1500);
+        setTimeout(()=>{setMatchmaking(null);setGameActive({...game,activeInput:input});if(game.id==="wildwest")startDuel();if(game.id==="finalkick"||game.id==="finalkick2"){startKick(game.id);startMatchIntro(kickOpponent.current);}},1500);
       },mode==="ai"?800:2200);
     });
   };
@@ -709,7 +709,10 @@ export default function MoodLabArena() {
     return {holdMin:holdMin.toFixed(1), holdMax:holdMax.toFixed(1)};
   };
 
-  const startKick = () => {
+  // gameId param needed because gameActive may not be set yet (React async state)
+  const startKick = (gameId) => {
+    const resolvedId = gameId || gameActive?.id || "finalkick";
+    const isFK2 = resolvedId === "finalkick2";
     const baseOpp = pick(AI_OPPONENTS);
     // If user has a team selected (quick play), assign opponent a random nation too
     if(wcTeam && !gameActive?.wcMode) {
@@ -724,7 +727,7 @@ export default function MoodLabArena() {
     setKickCharging(false); setKickBonusUsed(false); setKickBonusAvail(false); setKickBonusActive(false);
     setKickStats({goals:0,saves:0,perfects:0,blinkers:0,misses:0});
     const ss = randomizeSweetSpot();
-    if(gameActive?.id==="finalkick2") {
+    if(isFK2) {
       setKickState("shoot_x");
       setFk2Phase("x"); setFk2X(0); setFk2Y(0); setFk2XDone(false);
       setKickComment("Aim LEFT or RIGHT! Hold to puff ← → 💨");
@@ -1277,7 +1280,7 @@ export default function MoodLabArena() {
     const fkGame = PLAY_GAMES.find(g => g.id === (selectedGame?.id||"finalkick"));
     const input = wcDeviceInput || "puff";
     setGameActive({ ...fkGame, activeInput: input, wcMode: true, wcMatchIdx: matchIdx });
-    startKick();
+    startKick(fkGame.id);
     startMatchIntro(kickOpponent.current);
   };
 
@@ -1374,7 +1377,7 @@ export default function MoodLabArena() {
     const fkGame = PLAY_GAMES.find(g => g.id === (selectedGame?.id||"finalkick"));
     const input = wcDeviceInput || "puff";
     setGameActive({ ...fkGame, activeInput: input, wcMode: true, wcKnockout: true, wcRoundIdx: wcBracket.currentRound });
-    startKick();
+    startKick(fkGame.id);
     startMatchIntro(kickOpponent.current);
   };
 
@@ -3217,7 +3220,7 @@ export default function MoodLabArena() {
                     </div>
                     <div style={{display:"flex",gap:10,justifyContent:"center"}}>
                       {/* No rematch in tournament mode */}
-                      {!gameActive?.wcMode && <div onClick={()=>{startKick();playFx("whistle");}} style={{
+                      {!gameActive?.wcMode && <div onClick={()=>{startKick(gameActive?.id);playFx("whistle");}} style={{
                         padding:"12px 28px",borderRadius:12,cursor:"pointer",
                         background:`linear-gradient(135deg, ${C.cyan}18, ${C.cyan}06)`,
                         border:`1px solid ${C.cyan}30`,fontSize:14,fontWeight:800,color:C.cyan,
@@ -4067,7 +4070,7 @@ export default function MoodLabArena() {
                       💰 ×{pool.rewardMult} {pool.label} · {getDeviceShort()}
                     </div>
                     <div style={{display:"flex",gap:10,justifyContent:"center"}}>
-                      {!gameActive?.wcMode && <div onClick={()=>{startKick();playFx("whistle");}} style={{
+                      {!gameActive?.wcMode && <div onClick={()=>{startKick(gameActive?.id);playFx("whistle");}} style={{
                         padding:"12px 28px",borderRadius:12,cursor:"pointer",
                         background:`linear-gradient(135deg, ${C.cyan}18, ${C.cyan}06)`,
                         border:`1px solid ${C.cyan}30`,fontSize:14,fontWeight:800,color:C.cyan,
@@ -4868,7 +4871,7 @@ export default function MoodLabArena() {
         if(!wcTeam) setWcTeam(homeTeam);
         const fkGame = PLAY_GAMES.find(g=>g.id===(selectedGame?.id||"finalkick"));
         setGameActive({...fkGame, activeInput:fanDevice||"puff", wcMode:true, fanSpectator:true});
-        startKick();
+        startKick(fkGame.id);
         startMatchIntro(kickOpponent.current);
         setFanMode(null);
         notify(`👀 Watching ${match.hf} ${match.hn} vs ${match.af} ${match.an}`,C.cyan);
