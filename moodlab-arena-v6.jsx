@@ -582,7 +582,7 @@ export default function MoodLabArena() {
       setMatchmaking({game,mode,stage:"searching",input});
       setTimeout(()=>{
         setMatchmaking(p=>p?{...p,stage:"found",opp:mode==="ai"?"🤖 AI Bot":mode==="random"?"🎲 Player_847":"👫 Minh"}:null);
-        setTimeout(()=>{setMatchmaking(null);setGameActive({...game,activeInput:input});if(game.id==="wildwest")startDuel();if(game.id==="finalkick"){startKick();startMatchIntro(kickOpponent.current);}},1500);
+        setTimeout(()=>{setMatchmaking(null);setGameActive({...game,activeInput:input});if(game.id==="wildwest")startDuel();if(game.id==="finalkick"||game.id==="finalkick2"){startKick();startMatchIntro(kickOpponent.current);}},1500);
       },mode==="ai"?800:2200);
     });
   };
