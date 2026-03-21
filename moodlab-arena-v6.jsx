@@ -3058,86 +3058,96 @@ export default function MoodLabArena() {
                 </div>
               )}
 
-              {/* ═══ FK2: HORIZONTAL AIM (shoot_x) — bar below goal, auto-start puff ═══ */}
-              {isFK2 && kickState==="shoot_x" && (()=>{
-                const xZone = kickPower<10?"WIDE ←":kickPower<33?"LEFT":kickPower<67?"CENTER":kickPower<90?"RIGHT":"WIDE →";
-                const xColor = (kickPower<10||kickPower>90)?C.red:kickPower>=kickSweetMin&&kickPower<=kickSweetMax?C.green:C.cyan;
-                return (
-                <div style={{width:goalW,animation:"fadeIn 0.3s ease"}}
+              {/* ═══ FK2: AIM WITH CROSSHAIR LINES ON GOAL ═══ */}
+              {isFK2 && (kickState==="shoot_x"||kickState==="shoot_y") && (
+                <div
                   onMouseDown={()=>{if(!kickCharging){kickStartCharge();playFx("charge");}}} onMouseUp={kickStopCharge} onMouseLeave={kickStopCharge}
                   onTouchStart={(e)=>{e.preventDefault();if(!kickCharging){kickStartCharge();playFx("charge");}}} onTouchEnd={kickStopCharge}
+                  style={{width:"100%",cursor:"pointer",userSelect:"none",WebkitUserSelect:"none"}}
                 >
+                  {/* Phase label */}
                   <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,marginBottom:4}}>
-                    <span style={{fontSize:11,fontWeight:800,color:C.cyan}}>← HORIZONTAL AIM →</span>
+                    <span style={{fontSize:11,fontWeight:800,color:kickState==="shoot_x"?C.cyan:C.orange}}>
+                      {kickState==="shoot_x"?"← HORIZONTAL AIM →":"↕ VERTICAL AIM"}
+                    </span>
                     {actionTimer>0&&!kickCharging&&<span style={{fontSize:12,fontWeight:900,color:actionTimer<=1?C.red:C.gold,animation:actionTimer<=1?"pulse 0.5s infinite":"none"}}>{actionTimer}s</span>}
+                    {!kickCharging&&<span style={{fontSize:9,color:C.text3,marginLeft:4}}>Hold to aim</span>}
                   </div>
-                  {/* Horizontal bar */}
-                  <div style={{height:28,borderRadius:14,background:`rgba(255,255,255,0.04)`,overflow:"hidden",border:`2px solid ${kickCharging?xColor+"60":"rgba(255,255,255,0.1)"}`,position:"relative",cursor:"pointer"}}>
-                    <div style={{position:"absolute",left:0,top:0,bottom:0,width:"10%",background:`${C.red}15`,borderRight:`1px solid ${C.red}30`}}/>
-                    <div style={{position:"absolute",right:0,top:0,bottom:0,width:"10%",background:`${C.red}15`,borderLeft:`1px solid ${C.red}30`}}/>
-                    <div style={{position:"absolute",left:`${kickSweetMin}%`,width:`${kickSweetMax-kickSweetMin}%`,top:0,bottom:0,background:`${C.green}12`,borderLeft:`1px solid ${C.green}30`,borderRight:`1px solid ${C.green}30`}}/>
-                    <div style={{position:"absolute",left:`${kickPower}%`,top:0,bottom:0,width:3,background:xColor,boxShadow:`0 0 8px ${xColor}`,transition:"left 0.05s linear",zIndex:2}}/>
-                    <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",zIndex:1}}>
-                      <span style={{fontSize:9,fontWeight:800,color:xColor,textShadow:"0 0 4px rgba(0,0,0,0.8)"}}>{kickCharging?xZone:"TAP & HOLD TO AIM ←→"}</span>
-                    </div>
-                  </div>
-                  <div style={{display:"flex",justifyContent:"space-between",marginTop:2,padding:"0 2px"}}>
-                    <span style={{fontSize:6,color:C.red}}>WIDE</span><span style={{fontSize:6,color:C.text3}}>LEFT</span>
-                    <span style={{fontSize:6,color:C.green,fontWeight:700}}>CENTER 🎯</span>
-                    <span style={{fontSize:6,color:C.text3}}>RIGHT</span><span style={{fontSize:6,color:C.red}}>WIDE</span>
-                  </div>
-                </div>);
-              })()}
 
-              {/* ═══ FK2: VERTICAL AIM (shoot_y) — VERTICAL bar beside goal ═══ */}
-              {isFK2 && kickState==="shoot_y" && (()=>{
-                const yZone = kickPower>95?"OVER ↑":kickPower>75?"HIGH":kickPower>50?"MID-HIGH":kickPower>25?"LOW":"GROUND";
-                const yColor = kickPower>95?C.red:kickPower>=kickSweetMin&&kickPower<=kickSweetMax?C.green:C.cyan;
-                return (
-                <div style={{display:"flex",gap:8,alignItems:"stretch",animation:"fadeIn 0.3s ease"}}
-                  onMouseDown={()=>{if(!kickCharging){kickStartCharge();playFx("charge");}}} onMouseUp={kickStopCharge} onMouseLeave={kickStopCharge}
-                  onTouchStart={(e)=>{e.preventDefault();if(!kickCharging){kickStartCharge();playFx("charge");}}} onTouchEnd={kickStopCharge}
-                >
-                  {/* Goal with X marker */}
-                  <div style={{position:"relative",width:goalW-40,height:goalH,border:`2px solid rgba(255,255,255,0.15)`,borderRadius:4,background:`rgba(255,255,255,0.02)`,flexShrink:0}}>
-                    {/* Grid lines */}
-                    <div style={{position:"absolute",top:0,left:"33.3%",width:1,height:"100%",background:`rgba(255,255,255,0.08)`}}/>
-                    <div style={{position:"absolute",top:0,left:"66.6%",width:1,height:"100%",background:`rgba(255,255,255,0.08)`}}/>
-                    <div style={{position:"absolute",top:"50%",left:0,width:"100%",height:1,background:`rgba(255,255,255,0.08)`}}/>
-                    {/* X position line (locked from previous step) */}
-                    <div style={{position:"absolute",top:0,bottom:0,left:`${fk2X}%`,width:2,background:C.green,boxShadow:`0 0 6px ${C.green}`,zIndex:2}}/>
-                    {/* Y position line (moving) */}
-                    {kickCharging && <div style={{position:"absolute",left:0,right:0,bottom:`${kickPower}%`,height:2,background:yColor,boxShadow:`0 0 6px ${yColor}`,zIndex:2,transition:"bottom 0.05s linear"}}/>}
-                    {/* Crosshair dot */}
-                    {kickCharging && <div style={{position:"absolute",left:`${fk2X}%`,bottom:`${kickPower}%`,width:8,height:8,borderRadius:"50%",background:yColor,border:"2px solid #fff",transform:"translate(-50%,50%)",boxShadow:`0 0 10px ${yColor}`,zIndex:3}}/>}
-                    <div style={{position:"absolute",bottom:4,left:"50%",transform:"translateX(-50%)",fontSize:7,color:C.text3,whiteSpace:"nowrap"}}>X: {Math.round(fk2X)}% ✓</div>
-                  </div>
-                  {/* VERTICAL bar (right side) */}
-                  <div style={{display:"flex",flexDirection:"column",alignItems:"center",width:36,cursor:"pointer"}}>
-                    <div style={{fontSize:7,fontWeight:800,color:C.orange,marginBottom:2,whiteSpace:"nowrap"}}>↕ HEIGHT</div>
-                    <div style={{flex:1,width:28,borderRadius:14,background:`rgba(255,255,255,0.04)`,overflow:"hidden",border:`2px solid ${kickCharging?yColor+"60":"rgba(255,255,255,0.1)"}`,position:"relative",minHeight:120}}>
-                      {/* Over bar zone (top) */}
-                      <div style={{position:"absolute",left:0,right:0,top:0,height:"5%",background:`${C.red}20`,borderBottom:`1px solid ${C.red}30`}}/>
-                      {/* Sweet spot zone */}
-                      <div style={{position:"absolute",left:0,right:0,bottom:`${kickSweetMin}%`,height:`${kickSweetMax-kickSweetMin}%`,background:`${C.green}12`,borderTop:`1px solid ${C.green}30`,borderBottom:`1px solid ${C.green}30`}}/>
-                      {/* Fill from bottom up */}
-                      <div style={{position:"absolute",left:0,right:0,bottom:0,height:`${kickPower}%`,background:`linear-gradient(0deg, ${yColor}30, ${yColor}08)`,transition:"height 0.05s linear"}}/>
-                      {/* Current position marker */}
-                      <div style={{position:"absolute",left:0,right:0,bottom:`${kickPower}%`,height:3,background:yColor,boxShadow:`0 0 8px ${yColor}`,transition:"bottom 0.05s linear",zIndex:2}}/>
-                      {/* Zone label */}
-                      <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",zIndex:1,writingMode:"vertical-rl",textOrientation:"mixed"}}>
-                        <span style={{fontSize:8,fontWeight:800,color:yColor,textShadow:"0 0 4px rgba(0,0,0,0.8)"}}>{kickCharging?yZone:"HOLD"}</span>
-                      </div>
+                  {/* Goal box with crosshair lines */}
+                  <div style={{position:"relative",width:goalW,height:goalH,margin:"0 auto"}}>
+                    {/* Goal frame */}
+                    <div style={{position:"absolute",inset:0,border:`2px solid rgba(255,255,255,0.18)`,borderBottom:`3px solid ${C.green}50`,borderRadius:4,background:`rgba(255,255,255,0.02)`}}>
+                      <div style={{position:"absolute",top:0,left:"33.3%",width:1,height:"100%",background:`rgba(255,255,255,0.06)`}}/>
+                      <div style={{position:"absolute",top:0,left:"66.6%",width:1,height:"100%",background:`rgba(255,255,255,0.06)`}}/>
+                      <div style={{position:"absolute",top:"50%",left:0,width:"100%",height:1,background:`rgba(255,255,255,0.06)`}}/>
                     </div>
-                    {/* Vertical labels */}
-                    <div style={{display:"flex",flexDirection:"column-reverse",alignItems:"center",marginTop:2,gap:0}}>
-                      <span style={{fontSize:5,color:C.text3}}>GND</span>
-                      <span style={{fontSize:5,color:C.green,fontWeight:700}}>🎯</span>
-                      <span style={{fontSize:5,color:C.red}}>OVER</span>
-                    </div>
+
+                    {/* X line — vertical line moving left↔right (during shoot_x) */}
+                    {kickState==="shoot_x" && (
+                      <div style={{position:"absolute",top:0,bottom:0,left:`${kickPower}%`,width:2,
+                        background:(kickPower<10||kickPower>90)?C.red:(kickPower>=kickSweetMin&&kickPower<=kickSweetMax)?C.green:C.cyan,
+                        boxShadow:`0 0 10px ${(kickPower<10||kickPower>90)?C.red:(kickPower>=kickSweetMin&&kickPower<=kickSweetMax)?C.green:C.cyan}`,
+                        zIndex:3,pointerEvents:"none",
+                      }}/>
+                    )}
+
+                    {/* Locked X line (during shoot_y) */}
+                    {kickState==="shoot_y" && (
+                      <div style={{position:"absolute",top:0,bottom:0,left:`${fk2X}%`,width:2,background:`${C.green}80`,boxShadow:`0 0 6px ${C.green}40`,zIndex:2,pointerEvents:"none"}}/>
+                    )}
+
+                    {/* Y line — horizontal line moving top↔bottom (during shoot_y) */}
+                    {kickState==="shoot_y" && (
+                      <div style={{position:"absolute",left:0,right:0,bottom:`${kickPower}%`,height:2,
+                        background:kickPower>95?C.red:(kickPower>=kickSweetMin&&kickPower<=kickSweetMax)?C.green:C.orange,
+                        boxShadow:`0 0 10px ${kickPower>95?C.red:(kickPower>=kickSweetMin&&kickPower<=kickSweetMax)?C.green:C.orange}`,
+                        zIndex:3,pointerEvents:"none",
+                      }}/>
+                    )}
+
+                    {/* Crosshair dot where X meets Y */}
+                    {kickState==="shoot_y" && kickCharging && (
+                      <div style={{position:"absolute",left:`${fk2X}%`,bottom:`${kickPower}%`,width:10,height:10,borderRadius:"50%",
+                        background:"#fff",border:`2px solid ${C.green}`,transform:"translate(-50%,50%)",
+                        boxShadow:`0 0 12px ${C.green}`,zIndex:4,pointerEvents:"none",
+                      }}/>
+                    )}
+
+                    {/* Out-of-bounds zones (subtle red tint) */}
+                    {kickState==="shoot_x" && <>
+                      <div style={{position:"absolute",top:0,bottom:0,left:0,width:"10%",background:`${C.red}10`,borderRight:`1px dashed ${C.red}25`,pointerEvents:"none"}}/>
+                      <div style={{position:"absolute",top:0,bottom:0,right:0,width:"10%",background:`${C.red}10`,borderLeft:`1px dashed ${C.red}25`,pointerEvents:"none"}}/>
+                    </>}
+                    {kickState==="shoot_y" && (
+                      <div style={{position:"absolute",top:0,left:0,right:0,height:"5%",background:`${C.red}10`,borderBottom:`1px dashed ${C.red}25`,pointerEvents:"none"}}/>
+                    )}
+
+                    {/* Sweet spot indicator on edge */}
+                    {kickState==="shoot_x" && (
+                      <div style={{position:"absolute",bottom:-6,left:`${kickSweetMin}%`,width:`${kickSweetMax-kickSweetMin}%`,height:4,background:C.green,borderRadius:2,opacity:0.5}}/>
+                    )}
+                    {kickState==="shoot_y" && (
+                      <div style={{position:"absolute",right:-6,bottom:`${kickSweetMin}%`,height:`${kickSweetMax-kickSweetMin}%`,width:4,background:C.green,borderRadius:2,opacity:0.5}}/>
+                    )}
                   </div>
-                </div>);
-              })()}
+
+                  {/* Labels below goal */}
+                  {kickState==="shoot_x" && <div style={{display:"flex",justifyContent:"space-between",marginTop:4,width:goalW,margin:"4px auto 0"}}>
+                    <span style={{fontSize:7,color:C.red}}>WIDE</span><span style={{fontSize:7,color:C.text3}}>LEFT</span>
+                    <span style={{fontSize:7,color:C.green,fontWeight:700}}>🎯 CENTER</span>
+                    <span style={{fontSize:7,color:C.text3}}>RIGHT</span><span style={{fontSize:7,color:C.red}}>WIDE</span>
+                  </div>}
+                  {kickState==="shoot_y" && <div style={{display:"flex",justifyContent:"center",gap:12,marginTop:4}}>
+                    <span style={{fontSize:7,color:C.text3}}>GROUND</span>
+                    <span style={{fontSize:7,color:C.green,fontWeight:700}}>🎯 SWEET SPOT</span>
+                    <span style={{fontSize:7,color:C.red}}>OVER BAR</span>
+                  </div>}
+                  {kickState==="shoot_y" && <div style={{textAlign:"center",marginTop:2}}>
+                    <span style={{fontSize:7,color:C.green}}>X locked: {Math.round(fk2X)}% ✓</span>
+                  </div>}
+                </div>
+              )}
 
               {/* ═══ SAVE READY ═══ */}
               {kickState==="save_ready" && (
