@@ -2489,11 +2489,12 @@ export default function MoodLabArena() {
         );
       }
       // Final Kick ⚽ — IMMERSIVE VERSION
-      if(gameActive.id==="finalkick" && kickState) {
+      if((gameActive.id==="finalkick"||gameActive.id==="finalkick2") && kickState) {
+        const isFK2 = gameActive.id==="finalkick2";
         const pool = getDevicePool();
         const inp = gameActive.activeInput;
         const inpInfo = INPUT_TYPES.find(t=>t.id===inp)||INPUT_TYPES[0];
-        const isShootPhase = ["shoot","power","flight","shoot_result"].includes(kickState);
+        const isShootPhase = ["shoot","power","flight","shoot_result","shoot_x","shoot_y"].includes(kickState);
         const isSavePhase = ["save_ready","save_countdown","save_dive","save_result"].includes(kickState);
         const isResult = kickState==="shoot_result"||kickState==="save_result";
         const goalW = 290, goalH = 140;
@@ -2613,7 +2614,7 @@ export default function MoodLabArena() {
 
                 {/* Title badge */}
                 <div style={{marginBottom:16,padding:"4px 16px",borderRadius:20,background:`${C.gold}12`,border:`1px solid ${C.gold}30`}}>
-                  <span style={{fontSize:9,fontWeight:800,color:C.gold,letterSpacing:3}}>🏆 FINAL KICK CHAMPIONSHIP</span>
+                  <span style={{fontSize:9,fontWeight:800,color:C.gold,letterSpacing:3}}>{isFK2?"⚽🔥 FINAL KICK 2 — DOUBLE PUFF":"🏆 FINAL KICK CHAMPIONSHIP"}</span>
                 </div>
 
                 {/* ── VS PLAYERS — Always visible ── */}
@@ -2743,7 +2744,7 @@ export default function MoodLabArena() {
                       🏆 {gameActive?.wcKnockout && wcBracket ? wcBracket.rounds[wcBracket.currentRound].toUpperCase() : `GROUP ${wcTournament?.group || "?"} · MATCH ${(gameActive?.wcMatchIdx ?? 0)+1}/3`}
                     </span>
                   ) : (
-                    <span style={{fontSize:8,fontWeight:800,color:C.gold,letterSpacing:2}}>🏆 FINAL KICK</span>
+                    <span style={{fontSize:8,fontWeight:800,color:C.gold,letterSpacing:2}}>{isFK2?"⚽🔥 FINAL KICK 2":"🏆 FINAL KICK"}</span>
                   )}
                   <span style={{fontSize:7,fontWeight:700,color:pool.color,padding:"2px 8px",borderRadius:20,...LG.tinted(pool.color)}}>⚖️ {pool.label}</span>
                   <span style={{fontSize:7,fontWeight:700,color:inpInfo.color,padding:"2px 8px",borderRadius:20,...LG.tinted(inpInfo.color)}}>{inpInfo.icon} {inpInfo.label}</span>
@@ -3040,8 +3041,8 @@ export default function MoodLabArena() {
                 </div>
               )}
 
-              {/* ═══ SHOOT instruction + timer ═══ */}
-              {kickState==="shoot" && (
+              {/* ═══ SHOOT instruction + timer (FK1 only) ═══ */}
+              {!isFK2 && kickState==="shoot" && (
                 <div style={{textAlign:"center"}}>
                   <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
                     <span style={{fontSize:11,color:C.text2,fontWeight:600}}>👆 Pick your corner</span>
@@ -3049,6 +3050,76 @@ export default function MoodLabArena() {
                   </div>
                 </div>
               )}
+
+              {/* ═══ FK2: HORIZONTAL AIM (shoot_x) ═══ */}
+              {isFK2 && kickState==="shoot_x" && (()=>{
+                const xZone = kickPower<10?"WIDE ←":kickPower<33?"LEFT":kickPower<67?"CENTER":kickPower<90?"RIGHT":"WIDE →";
+                const xColor = (kickPower<10||kickPower>90)?C.red:kickPower>=kickSweetMin&&kickPower<=kickSweetMax?C.green:C.cyan;
+                return (
+                <div style={{width:goalW,animation:"fadeIn 0.3s ease"}}>
+                  <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,marginBottom:4}}>
+                    <span style={{fontSize:11,fontWeight:800,color:C.cyan}}>← HORIZONTAL AIM →</span>
+                    <span style={{fontSize:12,fontWeight:900,color:actionTimer<=1?C.red:C.gold,animation:actionTimer<=1?"pulse 0.5s infinite":"none"}}>{actionTimer}s</span>
+                  </div>
+                  <div style={{height:28,borderRadius:14,background:`rgba(255,255,255,0.04)`,overflow:"hidden",border:`2px solid ${kickCharging?xColor+"60":"rgba(255,255,255,0.1)"}`,position:"relative"}}>
+                    <div style={{position:"absolute",left:0,top:0,bottom:0,width:"10%",background:`${C.red}15`,borderRight:`1px solid ${C.red}30`}}/>
+                    <div style={{position:"absolute",right:0,top:0,bottom:0,width:"10%",background:`${C.red}15`,borderLeft:`1px solid ${C.red}30`}}/>
+                    <div style={{position:"absolute",left:`${kickSweetMin}%`,width:`${kickSweetMax-kickSweetMin}%`,top:0,bottom:0,background:`${C.green}12`,borderLeft:`1px solid ${C.green}30`,borderRight:`1px solid ${C.green}30`}}/>
+                    <div style={{position:"absolute",left:`${kickPower}%`,top:0,bottom:0,width:3,background:xColor,boxShadow:`0 0 8px ${xColor}`,transition:"left 0.05s linear",zIndex:2}}/>
+                    <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",zIndex:1}}>
+                      <span style={{fontSize:9,fontWeight:800,color:xColor,textShadow:"0 0 4px rgba(0,0,0,0.8)"}}>{kickCharging?xZone:"HOLD TO AIM ←→"}</span>
+                    </div>
+                  </div>
+                  <div style={{display:"flex",justifyContent:"space-between",marginTop:2,padding:"0 2px"}}>
+                    <span style={{fontSize:6,color:C.red}}>WIDE</span><span style={{fontSize:6,color:C.text3}}>LEFT</span>
+                    <span style={{fontSize:6,color:C.green,fontWeight:700}}>CENTER 🎯</span>
+                    <span style={{fontSize:6,color:C.text3}}>RIGHT</span><span style={{fontSize:6,color:C.red}}>WIDE</span>
+                  </div>
+                  <div onMouseDown={()=>{kickStartCharge();playFx("charge");}} onMouseUp={kickStopCharge} onMouseLeave={kickStopCharge}
+                    onTouchStart={(e)=>{e.preventDefault();kickStartCharge();playFx("charge");}} onTouchEnd={kickStopCharge}
+                    style={{marginTop:6,padding:"12px 20px",borderRadius:14,cursor:"pointer",textAlign:"center",
+                      background:kickCharging?`linear-gradient(135deg, ${xColor}30, ${xColor}10)`:`linear-gradient(135deg, ${C.cyan}25, ${C.cyan}08)`,
+                      border:`2px solid ${kickCharging?xColor+"60":C.cyan+"40"}`,fontSize:14,fontWeight:900,
+                      color:kickCharging?xColor:C.cyan,animation:kickCharging?"none":"countPulse 1.2s infinite",userSelect:"none",WebkitUserSelect:"none"}}>
+                    {kickCharging?"← "+xZone+" →":"💨 HOLD TO AIM LEFT/RIGHT"}
+                  </div>
+                </div>);
+              })()}
+
+              {/* ═══ FK2: VERTICAL AIM (shoot_y) ═══ */}
+              {isFK2 && kickState==="shoot_y" && (()=>{
+                const yZone = kickPower>95?"OVER ↑":kickPower>75?"HIGH":kickPower>50?"MID-HIGH":kickPower>25?"LOW":"GROUND";
+                const yColor = kickPower>95?C.red:kickPower>=kickSweetMin&&kickPower<=kickSweetMax?C.green:C.cyan;
+                return (
+                <div style={{width:goalW,animation:"fadeIn 0.3s ease"}}>
+                  <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,marginBottom:4}}>
+                    <span style={{fontSize:11,fontWeight:800,color:C.orange}}>↕ VERTICAL AIM</span>
+                    <span style={{fontSize:8,color:C.green,fontWeight:700,padding:"2px 6px",borderRadius:4,background:`${C.green}10`}}>X: {fk2XDone?Math.round(fk2X)+"%✓":"..."}</span>
+                    <span style={{fontSize:12,fontWeight:900,color:actionTimer<=1?C.red:C.gold,animation:actionTimer<=1?"pulse 0.5s infinite":"none"}}>{actionTimer}s</span>
+                  </div>
+                  <div style={{height:28,borderRadius:14,background:`rgba(255,255,255,0.04)`,overflow:"hidden",border:`2px solid ${kickCharging?yColor+"60":"rgba(255,255,255,0.1)"}`,position:"relative"}}>
+                    <div style={{position:"absolute",right:0,top:0,bottom:0,width:"5%",background:`${C.red}20`,borderLeft:`1px solid ${C.red}30`}}/>
+                    <div style={{position:"absolute",left:`${kickSweetMin}%`,width:`${kickSweetMax-kickSweetMin}%`,top:0,bottom:0,background:`${C.green}12`,borderLeft:`1px solid ${C.green}30`,borderRight:`1px solid ${C.green}30`}}/>
+                    <div style={{position:"absolute",left:`${kickPower}%`,top:0,bottom:0,width:3,background:yColor,boxShadow:`0 0 8px ${yColor}`,transition:"left 0.05s linear",zIndex:2}}/>
+                    <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",zIndex:1}}>
+                      <span style={{fontSize:9,fontWeight:800,color:yColor,textShadow:"0 0 4px rgba(0,0,0,0.8)"}}>{kickCharging?yZone:"HOLD TO AIM HEIGHT"}</span>
+                    </div>
+                  </div>
+                  <div style={{display:"flex",justifyContent:"space-between",marginTop:2,padding:"0 2px"}}>
+                    <span style={{fontSize:6,color:C.text3}}>GROUND</span><span style={{fontSize:6,color:C.text3}}>LOW</span>
+                    <span style={{fontSize:6,color:C.green,fontWeight:700}}>MID-HIGH 🎯</span>
+                    <span style={{fontSize:6,color:C.text3}}>HIGH</span><span style={{fontSize:6,color:C.red}}>OVER ↑</span>
+                  </div>
+                  <div onMouseDown={()=>{kickStartCharge();playFx("charge");}} onMouseUp={kickStopCharge} onMouseLeave={kickStopCharge}
+                    onTouchStart={(e)=>{e.preventDefault();kickStartCharge();playFx("charge");}} onTouchEnd={kickStopCharge}
+                    style={{marginTop:6,padding:"12px 20px",borderRadius:14,cursor:"pointer",textAlign:"center",
+                      background:kickCharging?`linear-gradient(135deg, ${yColor}30, ${yColor}10)`:`linear-gradient(135deg, ${C.orange}25, ${C.orange}08)`,
+                      border:`2px solid ${kickCharging?yColor+"60":C.orange+"40"}`,fontSize:14,fontWeight:900,
+                      color:kickCharging?yColor:C.orange,animation:kickCharging?"none":"countPulse 1.2s infinite",userSelect:"none",WebkitUserSelect:"none"}}>
+                    {kickCharging?"↕ "+yZone:"💨 HOLD TO AIM HEIGHT"}
+                  </div>
+                </div>);
+              })()}
 
               {/* ═══ SAVE READY ═══ */}
               {kickState==="save_ready" && (
@@ -3328,8 +3399,8 @@ export default function MoodLabArena() {
           </div>
         );
       }
-      // Final Kick 2 ⚽🔥 — DOUBLE PUFF PRECISION
-      if(gameActive.id==="finalkick2" && kickState) {
+      // Final Kick 2 shares FK1's render (handled above via isFK2 flag)
+      if(false) { // FK2 block removed — uses FK1 render with isFK2 flag
         const pool = getDevicePool();
         const inp = gameActive.activeInput;
         const inpInfo = INPUT_TYPES.find(t=>t.id===inp)||INPUT_TYPES[0];
