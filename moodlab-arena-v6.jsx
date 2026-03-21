@@ -477,9 +477,12 @@ export default function MoodLabArena() {
   useEffect(() => { const t=setInterval(()=>setMainStage(p=>(p+1)%3),5000); return()=>clearInterval(t); }, []);
   useEffect(() => { const t=setInterval(()=>setTickerOffset(p=>p-0.5),30); return()=>clearInterval(t); }, []);
 
-  // ── 3s Action Timer for shoot/power/save_dive ──
+  // ── 3s Action Timer — only before user starts acting ──
+  // Timer runs for: shoot (pick zone), save_dive (pick zone), shoot_x/shoot_y (before puff starts)
+  // Timer STOPS once user starts charging (kickCharging=true) — puff duration is unlimited
   useEffect(() => {
-    if(kickState==="shoot"||kickState==="save_dive"||kickState==="power"||kickState==="shoot_x"||kickState==="shoot_y") {
+    const timerStates = ["shoot","save_dive","shoot_x","shoot_y"];
+    if(timerStates.includes(kickState) && !kickCharging) {
       setActionTimer(3);
       if(actionTimerRef.current) clearInterval(actionTimerRef.current);
       actionTimerRef.current = setInterval(()=>{
@@ -487,7 +490,6 @@ export default function MoodLabArena() {
           if(p<=1) {
             clearInterval(actionTimerRef.current); actionTimerRef.current=null;
             if(kickState==="shoot") { const rz=Math.floor(Math.random()*6); kickSelectZone(rz); playFx("error"); setCommentary("Too slow! Auto-kick! 🐌"); }
-            else if(kickState==="power") { kickStopCharge(); playFx("error"); setCommentary("Time's up! Auto-release! ⏱️"); }
             else if(kickState==="save_dive") { const rz=Math.floor(Math.random()*6); kickDive(rz); playFx("error"); setCommentary("Too slow! Random dive! 🐌"); }
             else if(kickState==="shoot_x") { setFk2X(20+Math.floor(Math.random()*60)); setFk2XDone(true); setFk2Phase("y"); setKickState("shoot_y"); setKickPower(0); playFx("error"); setCommentary("Too slow! Random X aim! 🐌"); setKickComment("Auto-aimed X! Now puff for HEIGHT! ↕️"); }
             else if(kickState==="shoot_y") { setKickPower(20+Math.floor(Math.random()*60)); setTimeout(()=>{ fk2LockY(); }, 100); playFx("error"); setCommentary("Too slow! Random Y aim! 🐌"); }
@@ -497,10 +499,12 @@ export default function MoodLabArena() {
         });
       },1000);
     } else {
+      // Clear timer when charging starts or state changes to non-timer state
       if(actionTimerRef.current){clearInterval(actionTimerRef.current);actionTimerRef.current=null;}
+      if(kickCharging) setActionTimer(0); // hide timer display while puffing
     }
     return()=>{if(actionTimerRef.current){clearInterval(actionTimerRef.current);actionTimerRef.current=null;}};
-  }, [kickState]);
+  }, [kickState, kickCharging]);
 
   // Bot chat
   useEffect(() => {
