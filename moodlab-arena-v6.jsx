@@ -589,8 +589,8 @@ export default function MoodLabArena() {
       setMatchmaking({game,mode,stage:"searching",input});
       setTimeout(()=>{
         setMatchmaking(p=>p?{...p,stage:"found",opp:mode==="ai"?"🤖 AI Bot":mode==="random"?"🎲 Player_847":"👫 Minh"}:null);
-        setTimeout(()=>{setMatchmaking(null);setGameActive({...game,activeInput:input});if(game.id==="wildwest")startDuel();if(game.id==="finalkick"||game.id==="finalkick2"){startKick(game.id);startMatchIntro(kickOpponent.current);}},1500);
-      },mode==="ai"?800:2200);
+        setTimeout(()=>{setMatchmaking(null);setGameActive({...game,activeInput:input});if(game.id==="wildwest")startDuel();if(game.id==="finalkick"||game.id==="finalkick2"){startKick(game.id);startMatchIntro(kickOpponent.current);}},800);
+      },mode==="ai"?400:1200);
     });
   };
 
@@ -666,20 +666,20 @@ export default function MoodLabArena() {
     setTimeout(()=>{
       setMatchIntro({stage:"stats",count:3});
       setCommentary("Let's see the stats! Who has the edge? 📊");
-    },2000);
+    },1200);
     setTimeout(()=>{
       setMatchIntro({stage:"countdown",count:3});
       setCommentary("HERE WE GO!");
       playFx("whistle");
-    },4000);
-    setTimeout(()=>setMatchIntro(p=>p?{...p,count:2}:null),5000);
-    setTimeout(()=>setMatchIntro(p=>p?{...p,count:1}:null),6000);
+    },2400);
+    setTimeout(()=>setMatchIntro(p=>p?{...p,count:2}:null),3100);
+    setTimeout(()=>setMatchIntro(p=>p?{...p,count:1}:null),3800);
     setTimeout(()=>{
       setMatchIntro({stage:"go",count:0});
       setCommentary("⚽ KICK OFF! Let the game begin!");
       triggerFlash("goal"); playFx("crowd");
-    },7000);
-    setTimeout(()=>setMatchIntro(null),8000);
+    },4500);
+    setTimeout(()=>setMatchIntro(null),5200);
   };
 
   // ── Final Kick Logic ──
@@ -842,13 +842,29 @@ export default function MoodLabArena() {
       setKickState("flight"); playFx("kick");
       const pool = getDevicePool();
       const sameZone = zone === aiSaveZone;
-      const aiSaves = bothSweet ? (sameZone && Math.random() < pool.aiSave) : true;
-      const isGoal = !aiSaves;
+
+      // FK2 scoring: based on accuracy + zone difference (NOT sweet spot)
+      // Both sweet = 90% goal. One sweet = 60% goal. Neither sweet = 35% goal.
+      // If AI picks same zone, reduce by pool.aiSave chance
+      let goalChance = bothSweet ? 0.90 : (xInSweet || yInSweet) ? 0.60 : 0.35;
+      if(sameZone) goalChance *= (1 - pool.aiSave); // AI has a chance to save if same zone
+      const isGoal = Math.random() < goalChance;
+
       setKickBallAnim({zone, power:avgPower, result:isGoal?"goal":"saved", wasBlinker:false});
       setTimeout(()=>{
         setKickState("shoot_result");
-        if(isGoal) { setKickScore(s=>({...s,you:s.you+1})); setKickStats(s=>({...s,goals:s.goals+1,perfects:s.perfects+1})); playFx("win"); playFx("crowd"); triggerFlash("goal"); triggerShake(); spawnConfetti(40); spawnSmoke(5); setCommentary(pick(["WHAT A GOAL! DOUBLE PRECISION! 🎯🎯","TOP BINS! The crowd erupts!","CLINICAL! Both axes PERFECT!"])); }
-        else { playFx("lose"); triggerFlash("save"); setCommentary(pick(["SAVED!","The keeper reads it!","Denied! 🧤"])); if(!bothSweet) { setKickComment(pick(["Missed the sweet spot 😬","Need BOTH axes in the zone!","Almost... keep practicing! 💨"])); playFx("laugh"); } }
+        if(isGoal) {
+          setKickScore(s=>({...s,you:s.you+1}));
+          setKickStats(s=>({...s,goals:s.goals+1,perfects:bothSweet?s.perfects+1:s.perfects}));
+          playFx("win"); playFx("crowd"); triggerFlash("goal"); triggerShake(); spawnConfetti(40); spawnSmoke(5);
+          if(bothSweet) setCommentary(pick(["WHAT A GOAL! DOUBLE PRECISION! 🎯🎯","TOP BINS! Both axes PERFECT!","CLINICAL! The crowd erupts!"]));
+          else setCommentary(pick(["GOAL! Good aim!","It's in! The keeper couldn't reach it!","GOLAZO! Nice placement!"]));
+        } else {
+          playFx("lose"); triggerFlash("save");
+          if(sameZone) setCommentary(pick(["SAVED! Keeper read it perfectly!","The goalkeeper says NO! 🧤","Denied! Right at the keeper!"]));
+          else setCommentary(pick(["Just wide of the post!","So close! The keeper got lucky!","Almost! Better aim next time!"]));
+          setKickComment(pick(["Aim for the corners! 🎯","Different zone from keeper = goal 💡","Keep trying! 💪"]));
+        }
       },800);
       setTimeout(()=>{ setKickState("save_ready"); setKickBallAnim(null); },2600);
     }
@@ -1085,10 +1101,10 @@ export default function MoodLabArena() {
     } else {
       setKickRound(nextRound);
       const ss = randomizeSweetSpot(); // New sweet spot each round!
-      setKickAim(null); setKickPower(0);
+      setKickAim(null); setKickPower(0); setKickAiZone(null); setKickDiveAnim(null); setKickBallAnim(null);
       if(isFK2Mode) {
         setKickState("shoot_x");
-        setFk2Phase("x"); setFk2X(0); setFk2Y(0); setFk2XDone(false);
+        setFk2Phase("x"); setFk2X(0); setFk2Y(0); setFk2XDone(false); setKickCharging(false);
         setKickComment("Round "+(nextRound+1)+"! Aim LEFT or RIGHT! ← → 👆");
       } else {
         setKickState("shoot");
