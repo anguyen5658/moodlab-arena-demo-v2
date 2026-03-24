@@ -521,6 +521,29 @@ export default function MoodLabArena() {
   const towHoldRef = useRef(false);
   const towPosRef = useRef(50);
 
+  // ── Hot Potato ──
+  const [hpPhase, setHpPhase] = useState(null); // null|"intro"|"playing"|"passing"|"exploding"|"next_round"|"result"
+  const [hpPlayers, setHpPlayers] = useState([]);
+  const [hpCurrentHolder, setHpCurrentHolder] = useState(0);
+  const [hpBombTimer, setHpBombTimer] = useState(0);
+  const [hpMaxTimer, setHpMaxTimer] = useState(5);
+  const [hpRound, setHpRound] = useState(1);
+  const [hpPassing, setHpPassing] = useState(false);
+  const [hpExploded, setHpExploded] = useState(null);
+  const [hpComment, setHpComment] = useState("");
+  const [hpPuffHeld, setHpPuffHeld] = useState(false);
+  const [hpPuffPower, setHpPuffPower] = useState(0);
+  const [hpWinner, setHpWinner] = useState(null);
+  const [hpEliminatedList, setHpEliminatedList] = useState([]);
+  const [hpFuse, setHpFuse] = useState(1); // 1.0 = full fuse, 0 = exploded
+  const [hpTension, setHpTension] = useState(0);
+  const [hpPassTarget, setHpPassTarget] = useState(null); // idx bomb is moving toward
+  const [hpIntroStage, setHpIntroStage] = useState(0);
+  const [hpExplosionParticles, setHpExplosionParticles] = useState([]);
+  const hpTimerRef = useRef(null);
+  const hpPuffRef = useRef(null);
+  const hpPuffStart = useRef(0);
+
   // ── Visual Effects Engine ──
   const [screenShake, setScreenShake] = useState(false);
   const [screenFlash, setScreenFlash] = useState(null); // null | "goal" | "save" | "miss" | "blinker"
@@ -1515,7 +1538,7 @@ export default function MoodLabArena() {
       setMatchmaking({game,mode,stage:"searching",input});
       setTimeout(()=>{
         setMatchmaking(p=>p?{...p,stage:"found",opp:mode==="ai"?"🤖 AI Bot":mode==="random"?"🎲 Player_847":"👫 Minh"}:null);
-        setTimeout(()=>{setMatchmaking(null);setGameActive({...game,activeInput:input});if(game.id==="wildwest")startDuel();if(game.id==="finalkick"||game.id==="finalkick2"||game.id==="finalkick3"){startKick(game.id);startMatchIntro(kickOpponent.current);}if(game.id==="balloon")startBalloonPop();if(game.id==="russian")startRussianRoulette();if(game.id==="puffpong")startPuffPong();if(game.id==="rhythm")startRhythmPuff();if(game.id==="tugofwar")startTugOfWar();},800);
+        setTimeout(()=>{setMatchmaking(null);setGameActive({...game,activeInput:input});if(game.id==="wildwest")startDuel();if(game.id==="finalkick"||game.id==="finalkick2"||game.id==="finalkick3"){startKick(game.id);startMatchIntro(kickOpponent.current);}if(game.id==="balloon")startBalloonPop();if(game.id==="russian")startRussianRoulette();if(game.id==="puffpong")startPuffPong();if(game.id==="rhythm")startRhythmPuff();if(game.id==="tugofwar")startTugOfWar();if(game.id==="hotpotato")startHotPotato();},800);
       },mode==="ai"?400:1200);
     });
   };
@@ -2471,6 +2494,180 @@ export default function MoodLabArena() {
     setGameActive(null);setTowPhase(null);
   };
 
+  // ═══════════════════════════════════════════════════════════════
+  // HOT POTATO 💣 — Full Game Engine
+  // ═══════════════════════════════════════════════════════════════
+  const HP_COMMENTS = {
+    hold:["The bomb chose you... personally 💣😂","PUFF FASTER! It's about to blow! 🫁💨","Tick tock... your turn! ⏰💣","Don't panic... actually, PANIC! 😱","Hot hands! Pass it NOW! 🔥"],
+    pass:["Quick pass! Smart move 💨","Strategic skip! Sent it ahead! 🧠","Away it goes... someone else's problem 😏","Fast hands! Bomb transferred 💣➡️","YEET! That bomb is someone else's now 🫡"],
+    skip:["Strategic skip! Sent it 2 players ahead! 🧠","Skipped the neighbor! Big brain play 🧠💨","Long puff = long throw! Clever! 🎯","Power pass! Jumped right over them! 💪"],
+    explode:["BOOM! You held it like a phone with low battery 📱💀","KABOOM! Too slow! 💣💥","EXPLOSION! Should've puffed faster! 🫁💀","BOOM! Your hands are too slow! 💣💀","Detonated! That's gonna leave a mark 😂💥","BLEW UP! The bomb wins this round 💣🏆"],
+    aiPass:["AI passed it in 0.3 seconds... they know something you don't 🤖","AI yeets the bomb instantly 🤖💨","Bot reflexes! Passed in a blink 🤖⚡","AI doesn't hesitate. Neither should you 🤖"],
+    win:["SOLE SURVIVOR! The bomb fears you! 👑💣","Last one standing! Legendary lungs! 🫁🏆","Champion! Everyone else got roasted 🔥👑","WINNER! The others are toast 🍞💀"],
+    tension:["The fuse is getting shorter... 🧨","Everyone's sweating now 😰","Timer shrinking... danger rising! ⚠️","This round will be FAST 💨⚡"],
+  };
+  const HP_AI = [
+    {name:"BombBot",emoji:"🤖",img:"https://api.dicebear.com/9.x/bottts-neutral/svg?seed=BombBot&backgroundColor=transparent"},
+    {name:"HotHands",emoji:"🔥",img:"https://api.dicebear.com/9.x/adventurer/svg?seed=HotHands&backgroundColor=transparent"},
+    {name:"FuseRunner",emoji:"🧨",img:"https://api.dicebear.com/9.x/adventurer/svg?seed=FuseRunner&backgroundColor=transparent"},
+    {name:"BlastZone",emoji:"💥",img:"https://api.dicebear.com/9.x/bottts-neutral/svg?seed=BlastZone&backgroundColor=transparent"},
+    {name:"TickTock",emoji:"⏰",img:"https://api.dicebear.com/9.x/adventurer/svg?seed=TickTock&backgroundColor=transparent"},
+    {name:"KaBoom",emoji:"💣",img:"https://api.dicebear.com/9.x/bottts-neutral/svg?seed=KaBoom&backgroundColor=transparent"},
+    {name:"PuffQuick",emoji:"💨",img:"https://api.dicebear.com/9.x/adventurer/svg?seed=PuffQuick&backgroundColor=transparent"},
+  ];
+  const startHotPotato = () => {
+    const aiCount = 3 + Math.floor(Math.random()*4); // 3-6 AI = 4-7 total
+    const shuffled = [...HP_AI].sort(()=>Math.random()-0.5).slice(0, aiCount);
+    const players = shuffled.map(a=>({...a,isYou:false,isAI:true,alive:true}));
+    const youIdx = Math.floor(Math.random()*(players.length+1));
+    players.splice(youIdx, 0, {name:"You",emoji:"😤",img:PLAYER_IMG,isYou:true,isAI:false,alive:true});
+    setHpPlayers(players);setHpCurrentHolder(-1);setHpRound(1);setHpMaxTimer(5+Math.random()*3);
+    setHpBombTimer(0);setHpComment("");setHpExploded(null);setHpWinner(null);setHpEliminatedList([]);
+    setHpFuse(1);setHpTension(0);setHpPuffHeld(false);setHpPuffPower(0);setHpPassTarget(null);
+    setHpIntroStage(0);setHpPassing(false);setHpExplosionParticles([]);
+    setHpPhase("intro");playFx("crowd");setCommentary("Hot Potato! 💣 "+players.length+" players... who goes BOOM?");
+    const hpActive = {v:true};
+    setTimeout(()=>{if(!hpActive.v)return;setHpIntroStage(1);},500);
+    setTimeout(()=>{if(!hpActive.v)return;setHpIntroStage(2);},1500);
+    setTimeout(()=>{if(!hpActive.v)return;setHpIntroStage(3);playFx("whistle");},2800);
+    setTimeout(()=>{if(!hpActive.v)return;setHpIntroStage(4);},3500);
+    setTimeout(()=>{if(!hpActive.v)return;hpStartRound(players, 1);},4200);
+    window._hpActive = hpActive;
+  };
+  const hpFindNextAlive = (players, fromIdx, skip=0) => {
+    let found = 0;
+    for(let i=1;i<=players.length*2;i++){
+      const ni = (fromIdx+i)%players.length;
+      if(players[ni].alive){
+        if(found >= skip) return ni;
+        found++;
+      }
+    }
+    return null;
+  };
+  const hpStartRound = (players, round) => {
+    const alive = players.filter(p=>p.alive);
+    if(alive.length <= 1) return;
+    const maxT = Math.max(2, 6 - (round-1)*0.6 + (Math.random()*2-1));
+    setHpMaxTimer(maxT);setHpBombTimer(0);setHpFuse(1);setHpRound(round);setHpPassing(false);
+    setHpExploded(null);setHpPuffHeld(false);setHpPuffPower(0);setHpPassTarget(null);
+    const aliveIdxs = players.map((p,i)=>p.alive?i:-1).filter(i=>i>=0);
+    const startHolder = aliveIdxs[Math.floor(Math.random()*aliveIdxs.length)];
+    setHpCurrentHolder(startHolder);setHpPhase("playing");
+    if(round > 1){setHpComment(pick(HP_COMMENTS.tension));setHpTension(Math.min(100, (round-1)*15));}
+    else setHpComment("Bomb activated! 💣");
+    playFx("kick");
+    // Start bomb timer
+    const startTime = Date.now();
+    if(hpTimerRef.current) clearInterval(hpTimerRef.current);
+    hpTimerRef.current = setInterval(()=>{
+      if(!window._hpActive?.v){clearInterval(hpTimerRef.current);return;}
+      const elapsed = (Date.now()-startTime)/1000;
+      const pct = Math.min(1, elapsed/maxT);
+      setHpBombTimer(elapsed);setHpFuse(1-pct);
+      if(elapsed >= maxT){
+        clearInterval(hpTimerRef.current);hpTimerRef.current=null;
+        hpExplodeBomb(players, round);
+      }
+    },50);
+    // If AI holds first, trigger AI turn
+    if(players[startHolder].isAI) setTimeout(()=>{if(window._hpActive?.v) hpAiTurn(players, startHolder, round);}, 600+Math.random()*800);
+  };
+  const hpPassBomb = (players, fromIdx, skipCount, round) => {
+    if(hpTimerRef.current===null) return; // already exploded
+    const target = hpFindNextAlive(players, fromIdx, skipCount);
+    if(target===null) return;
+    setHpPassing(true);setHpPassTarget(target);
+    if(skipCount > 0){setHpComment(pick(HP_COMMENTS.skip));playFx("laugh");}
+    else {setHpComment(pick(HP_COMMENTS.pass));playFx("kick");}
+    setTimeout(()=>{
+      if(!window._hpActive?.v) return;
+      setHpCurrentHolder(target);setHpPassing(false);setHpPassTarget(null);
+      // If AI, trigger their turn
+      if(players[target].isAI){
+        setTimeout(()=>{if(window._hpActive?.v && hpTimerRef.current) hpAiTurn(players, target, round);}, 400+Math.random()*1200);
+      }
+    }, 350);
+  };
+  const hpAiTurn = (players, idx, round) => {
+    if(!window._hpActive?.v || hpTimerRef.current===null) return;
+    const holdTime = 300+Math.random()*1500; // AI holds 0.3-1.8s
+    setHpComment(pick(HP_COMMENTS.aiPass));
+    setTimeout(()=>{
+      if(!window._hpActive?.v || hpTimerRef.current===null) return;
+      const skip = Math.random()<0.15?1:0; // 15% chance AI skips
+      hpPassBomb(players, idx, skip, round);
+    }, holdTime);
+  };
+  const hpStartPuff = () => {
+    if(hpPhase!=="playing"||hpPuffHeld) return;
+    const cur = hpPlayers[hpCurrentHolder];
+    if(!cur||!cur.isYou) return;
+    setHpPuffHeld(true);setHpPuffPower(0);hpPuffStart.current=Date.now();
+    setDimLights(true);playFx("charge");
+    if(hpPuffRef.current) clearInterval(hpPuffRef.current);
+    hpPuffRef.current = setInterval(()=>{
+      const e = (Date.now()-hpPuffStart.current)/1000;
+      setHpPuffPower(Math.min(100, (e/3.0)*100));
+    },50);
+  };
+  const hpStopPuff = () => {
+    if(!hpPuffHeld) return;
+    setHpPuffHeld(false);setDimLights(false);
+    if(hpPuffRef.current){clearInterval(hpPuffRef.current);hpPuffRef.current=null;}
+    const holdTime = (Date.now()-hpPuffStart.current)/1000;
+    let skip = 0;
+    if(holdTime >= 3) skip = 2;
+    else if(holdTime >= 1) skip = 1;
+    setHpPuffPower(0);
+    hpPassBomb(hpPlayers, hpCurrentHolder, skip, hpRound);
+  };
+  const hpExplodeBomb = (players, round) => {
+    if(hpTimerRef.current){clearInterval(hpTimerRef.current);hpTimerRef.current=null;}
+    if(hpPuffRef.current){clearInterval(hpPuffRef.current);hpPuffRef.current=null;}
+    setHpPuffHeld(false);setDimLights(false);setHpPuffPower(0);
+    // Get current holder at explosion time
+    setHpPhase("exploding");setHpComment(pick(HP_COMMENTS.explode));
+    triggerShake();triggerFlash("miss");playFx("lose");spawnSmoke(15);
+    // Spawn explosion particles
+    const parts = Array.from({length:20},(_,i)=>({id:Date.now()+i,x:Math.random()*60+20,y:Math.random()*40+30,size:4+Math.random()*8,color:["#FF4444","#FF8800","#FFCC00","#FF6600"][Math.floor(Math.random()*4)],rot:Math.random()*360}));
+    setHpExplosionParticles(parts);
+    setTimeout(()=>setHpExplosionParticles([]),1500);
+    // Use a callback to get the latest holder
+    setHpCurrentHolder(currentHolder => {
+      const victim = players[currentHolder];
+      setHpExploded(victim);
+      setCommentary(victim.isYou?"💥 YOU BLEW UP! 💀":"💥 "+victim.name+" EXPLODED! 💣💀");
+      const updated = players.map((p,i)=>i===currentHolder?{...p,alive:false}:p);
+      setHpPlayers(updated);setHpEliminatedList(el=>[...el, victim]);
+      setHpTension(t=>Math.min(100, t+20));
+      setTimeout(()=>{
+        if(!window._hpActive?.v) return;
+        const aliveCount = updated.filter(p=>p.alive).length;
+        if(aliveCount<=1){
+          const winner = updated.find(p=>p.alive);
+          setHpWinner(winner||null);setHpPhase("result");
+          if(winner&&winner.isYou){spawnConfetti(50,[C.orange,C.gold,C.red,C.pink]);playFx("win");playFx("crowd");triggerFlash("goal");}
+          else playFx("crowd");
+          setHpComment(pick(HP_COMMENTS.win));
+          setCommentary(winner?(winner.isYou?"SURVIVOR! 👑 Hot Potato Champion!":""+winner.name+" wins Hot Potato!"):"Game over!");
+        } else {
+          setHpPhase("next_round");setHpComment(aliveCount+" remain... next round! 🔥");
+          setTimeout(()=>{if(window._hpActive?.v) hpStartRound(updated, round+1);}, 2200);
+        }
+      }, 2200);
+      return currentHolder; // keep value unchanged
+    });
+  };
+  const hpEndGame = () => {
+    if(hpTimerRef.current){clearInterval(hpTimerRef.current);hpTimerRef.current=null;}
+    if(hpPuffRef.current){clearInterval(hpPuffRef.current);hpPuffRef.current=null;}
+    if(window._hpActive){window._hpActive.v=false;window._hpActive=null;}
+    const won = hpWinner&&hpWinner.isYou;const r=won?120:15;
+    setCoins(c=>c+r);notify(won?"💣 Survived! +"+r+" coins!":"💀 Exploded! +"+r,won?C.green:C.red);
+    setGameActive(null);setHpPhase(null);setDimLights(false);
+  };
+
   // ── Match Intro Sequence ──
   const startMatchIntro = (opponent) => {
     setMatchIntro({stage:"enter",count:3});
@@ -3139,6 +3336,7 @@ export default function MoodLabArena() {
     else if(fkGame.id === "puffpong") { startPuffPong(); }
     else if(fkGame.id === "balloon") { startBalloonPop(); }
     else if(fkGame.id === "russian") { startRussianRoulette(); }
+    else if(fkGame.id === "hotpotato") { startHotPotato(); }
     else { startKick(fkGame.id); startMatchIntro(kickOpponent.current); }
   };
 
@@ -3239,6 +3437,7 @@ export default function MoodLabArena() {
     else if(fkGame.id === "puffpong") { startPuffPong(); }
     else if(fkGame.id === "balloon") { startBalloonPop(); }
     else if(fkGame.id === "russian") { startRussianRoulette(); }
+    else if(fkGame.id === "hotpotato") { startHotPotato(); }
     else { startKick(fkGame.id); startMatchIntro(kickOpponent.current); }
   };
 
@@ -4307,6 +4506,10 @@ export default function MoodLabArena() {
     if(window._rpActive) { window._rpActive.v = false; window._rpActive = null; }
     if(window._wwActive) { window._wwActive.v = false; window._wwActive = null; }
     if(window._bpActive) { window._bpActive.v = false; window._bpActive = null; }
+    if(window._hpActive) { window._hpActive.v = false; window._hpActive = null; }
+    // Hot Potato
+    if(hpTimerRef.current){clearInterval(hpTimerRef.current);hpTimerRef.current=null;}
+    if(hpPuffRef.current){clearInterval(hpPuffRef.current);hpPuffRef.current=null;}
     // Three.js cleanup
     if(threeSceneRef.current){
       const r=threeSceneRef.current.renderer;if(r){r.dispose();r.forceContextLoss();}
@@ -7082,6 +7285,198 @@ export default function MoodLabArena() {
         );
       }
 
+      // ═══════════════════════════════════════════════════════════════
+      // HOT POTATO 💣 — Immersive Render
+      // ═══════════════════════════════════════════════════════════════
+      if(gameActive.id==="hotpotato" && hpPhase) {
+        const curP = hpPlayers[hpCurrentHolder];
+        const isYourTurn = curP && curP.isYou && hpPhase==="playing" && !hpPassing;
+        const aliveCount = hpPlayers.filter(p=>p.alive).length;
+        const fuseColor = hpFuse > 0.6 ? C.green : hpFuse > 0.3 ? C.orange : C.red;
+        const pulseSpeed = hpFuse > 0.6 ? "2s" : hpFuse > 0.3 ? "0.8s" : "0.3s";
+        const isExploding = hpPhase==="exploding";
+        const circleR = 100; // radius of player circle
+        const alivePlayers = hpPlayers.filter(p=>p.alive);
+        return (
+          <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden",display:"flex",flexDirection:"column",alignItems:"center",
+            animation:screenShake?"shake 0.4s ease":"none"}}
+            onMouseDown={(e)=>{if(e.target.closest('[data-back]'))return;if(isYourTurn&&!hpPuffHeld)hpStartPuff();}}
+            onMouseUp={(e)=>{if(e.target.closest('[data-back]'))return;if(hpPuffHeld)hpStopPuff();}}
+            onTouchStart={(e)=>{if(e.target.closest('[data-back]'))return;e.preventDefault();if(isYourTurn&&!hpPuffHeld)hpStartPuff();}}
+            onTouchEnd={(e)=>{if(e.target.closest('[data-back]'))return;e.preventDefault();if(hpPuffHeld)hpStopPuff();}}>
+            {/* Dark fire background */}
+            <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg, #0a0400 0%, #1a0800 20%, #0f0502 50%, #080200 100%)",zIndex:0}}/>
+            {/* Fire gradient overlay */}
+            <div style={{position:"absolute",bottom:0,left:0,right:0,height:"40%",background:"radial-gradient(ellipse at 50% 100%, rgba(255,100,0,0.08) 0%, transparent 70%)",pointerEvents:"none",zIndex:1}}/>
+            {/* Vignette */}
+            <div style={{position:"absolute",inset:0,background:`radial-gradient(ellipse at 50% 45%, transparent 30%, rgba(0,0,0,${isExploding?0.8:0.5}) 100%)`,pointerEvents:"none",zIndex:2,transition:"all 0.5s"}}/>
+            {/* Explosion red pulse */}
+            {isExploding&&<div style={{position:"absolute",inset:0,zIndex:4,pointerEvents:"none",background:"rgba(255,50,0,0.3)",animation:"flashOverlay 0.4s ease forwards"}}/>}
+            {/* Smoke particles */}
+            {smokeParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size,borderRadius:"50%",background:"rgba(255,150,50,0.1)",filter:"blur(8px)",animation:`smokeRise ${p.dur}s ease-out forwards`,pointerEvents:"none",zIndex:5}}/>))}
+            {/* Explosion particles */}
+            {hpExplosionParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size,borderRadius:"50%",background:p.color,boxShadow:`0 0 ${p.size*2}px ${p.color}`,animation:`confettiFall ${0.8+Math.random()*0.5}s ease-out forwards`,pointerEvents:"none",zIndex:200}}/>))}
+            {/* Flash overlay */}
+            {screenFlash && <div style={{position:"absolute",inset:0,zIndex:200,pointerEvents:"none",opacity:0,background:screenFlash==="goal"?"rgba(0,255,100,0.25)":"rgba(255,50,50,0.2)",animation:"flashOverlay 0.4s ease forwards"}}/>}
+            {/* Confetti */}
+            {confettiParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size*0.6,background:p.color,borderRadius:1,transform:`rotate(${p.rot}deg)`,zIndex:210,pointerEvents:"none",animation:`confettiFall ${1.5+Math.random()}s ease-out forwards`}}/>))}
+            {overlayBack(()=>setGameActive(null))}
+            {renderGameChatPanel("HOT POTATO")}
+            <div style={{display:"flex",flexDirection:"column",alignItems:"center",maxWidth:380,width:"100%",padding:"50px 16px 20px",gap:8,zIndex:10,overflowY:"auto",flex:1}}>
+              {/* Title */}
+              <div style={{fontSize:18,fontWeight:900,letterSpacing:3,color:C.orange,textShadow:`0 0 20px ${C.orange}40`}}>💣 HOT POTATO</div>
+              <div style={{fontSize:9,color:C.text3}}>Round {hpRound} · {aliveCount} alive · Timer: {hpFuse>0?Math.max(0,(hpMaxTimer-hpBombTimer)).toFixed(1)+"s":"BOOM!"}</div>
+              {/* Tension meter */}
+              <div style={{width:"80%",maxWidth:260,height:4,borderRadius:2,background:"rgba(255,255,255,0.06)",overflow:"hidden",marginBottom:4}}>
+                <div style={{width:hpTension+"%",height:"100%",borderRadius:2,background:`linear-gradient(90deg,${C.orange},${C.red})`,transition:"width 0.3s"}}/>
+              </div>
+              {/* Intro sequence */}
+              {hpPhase==="intro"&&(
+                <div style={{textAlign:"center",padding:"30px 0",animation:"fadeIn 0.4s ease"}}>
+                  {hpIntroStage>=1&&<div style={{fontSize:40,marginBottom:8,animation:"hpBombPulse 1s infinite"}}>💣</div>}
+                  {hpIntroStage>=2&&<div style={{fontSize:16,fontWeight:900,color:C.text,marginBottom:6}}>{hpPlayers.length} Players Enter the Circle</div>}
+                  {hpIntroStage>=3&&<div style={{fontSize:24,fontWeight:900,color:C.red,animation:"countPulse 0.5s infinite"}}>GET READY!</div>}
+                  {hpIntroStage>=4&&<div style={{fontSize:12,color:C.text2,marginTop:6}}>Pass the bomb... or BOOM! 💥</div>}
+                </div>
+              )}
+              {/* Player circle */}
+              {hpPhase!=="intro"&&(
+                <div style={{position:"relative",width:circleR*2+60,height:circleR*2+60,flexShrink:0,marginBottom:8}}>
+                  {/* Center bomb */}
+                  <div style={{position:"absolute",left:"50%",top:"50%",transform:"translate(-50%,-50%)",fontSize:isExploding?60:36,
+                    animation:isExploding?"hpExplosion 0.6s ease forwards":`hpBombPulse ${pulseSpeed} infinite`,
+                    filter:isExploding?"brightness(2)":"none",zIndex:20,transition:"font-size 0.2s"}}>
+                    {isExploding?"💥":"💣"}
+                  </div>
+                  {/* Fuse visual */}
+                  {!isExploding&&hpPhase==="playing"&&(
+                    <div style={{position:"absolute",left:"50%",top:"50%",transform:"translate(-50%,24px)",width:60,height:6,borderRadius:3,background:"rgba(255,255,255,0.08)",overflow:"hidden",zIndex:21}}>
+                      <div style={{width:(hpFuse*100)+"%",height:"100%",borderRadius:3,background:`linear-gradient(90deg,${fuseColor},${C.red})`,transition:"width 0.1s",boxShadow:`0 0 8px ${fuseColor}`}}/>
+                    </div>
+                  )}
+                  {/* Players positioned in circle */}
+                  {hpPlayers.map((p,i)=>{
+                    const totalAlive = hpPlayers.length;
+                    const angle = (i/totalAlive)*Math.PI*2 - Math.PI/2;
+                    const px = Math.cos(angle)*circleR + circleR + 30;
+                    const py = Math.sin(angle)*circleR + circleR + 30;
+                    const isHolder = i===hpCurrentHolder && !isExploding;
+                    const isTarget = i===hpPassTarget;
+                    const isElim = !p.alive;
+                    const isVictim = isExploding && i===hpCurrentHolder;
+                    return (
+                      <div key={i} style={{position:"absolute",left:px-24,top:py-24,width:48,display:"flex",flexDirection:"column",alignItems:"center",gap:2,
+                        opacity:isElim?0.3:1,filter:isElim?"grayscale(1)":"none",transform:isHolder?"scale(1.2)":isTarget?"scale(1.1)":"scale(1)",transition:"all 0.35s",zIndex:isHolder?15:10}}>
+                        {/* Danger glow for holder */}
+                        {isHolder&&<div style={{position:"absolute",inset:-8,borderRadius:"50%",background:`radial-gradient(circle, ${C.red}20, transparent)`,animation:`hpBombPulse ${pulseSpeed} infinite`,pointerEvents:"none"}}/>}
+                        {/* Avatar */}
+                        <div style={{width:40,height:40,borderRadius:12,overflow:"hidden",
+                          border:`2px solid ${isVictim?C.red:isHolder?(p.isYou?C.cyan:C.orange):isElim?"rgba(255,255,255,0.1)":"rgba(255,255,255,0.15)"}`,
+                          boxShadow:isHolder?`0 0 15px ${p.isYou?C.cyan:C.orange}50`:"none",
+                          background:"rgba(0,0,0,0.3)"}}>
+                          {isElim?<div style={{width:"100%",height:"100%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20}}>💀</div>:
+                          <img src={p.img} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}} onError={(e)=>{e.target.style.display="none";}}/>}
+                        </div>
+                        {/* Name */}
+                        <div style={{fontSize:7,fontWeight:700,color:isHolder?(p.isYou?C.cyan:C.orange):isElim?C.text3:C.text,textAlign:"center",maxWidth:48,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{p.isYou?"YOU":p.name}</div>
+                        {/* Bomb indicator */}
+                        {isHolder&&!isExploding&&<div style={{fontSize:12,animation:`hpBombPulse ${pulseSpeed} infinite`}}>💣</div>}
+                        {isVictim&&<div style={{fontSize:16,animation:"hpExplosion 0.6s ease forwards"}}>💥</div>}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+              {/* Commentary */}
+              {hpComment&&(
+                <div style={{padding:"6px 14px",borderRadius:10,...LG.pill,maxWidth:300,textAlign:"center",animation:"fadeIn 0.3s ease"}}>
+                  <div style={{fontSize:11,fontWeight:700,color:C.text}}>{hpComment}</div>
+                </div>
+              )}
+              {/* Puff power meter when holding */}
+              {hpPuffHeld&&(
+                <div style={{width:"80%",maxWidth:260,marginTop:4}}>
+                  <div style={{width:"100%",height:10,borderRadius:5,background:"rgba(255,255,255,0.05)",overflow:"hidden",border:`1px solid ${C.border}`}}>
+                    <div style={{width:hpPuffPower+"%",height:"100%",borderRadius:5,
+                      background:hpPuffPower<33?`linear-gradient(90deg,${C.cyan},${C.green})`:hpPuffPower<66?`linear-gradient(90deg,${C.green},${C.gold})`:
+                        `linear-gradient(90deg,${C.gold},${C.orange})`,transition:"width 0.05s"}}/>
+                  </div>
+                  <div style={{display:"flex",justifyContent:"space-between",marginTop:2}}>
+                    <span style={{fontSize:7,color:C.cyan}}>Quick pass</span>
+                    <span style={{fontSize:7,color:C.gold}}>Skip 1</span>
+                    <span style={{fontSize:7,color:C.orange}}>Skip 2!</span>
+                  </div>
+                </div>
+              )}
+              {/* HOLD TO PASS button for your turn */}
+              {isYourTurn&&!hpPuffHeld&&(
+                <div style={{padding:"18px 0",borderRadius:16,cursor:"pointer",textAlign:"center",width:"100%",maxWidth:300,
+                  background:`linear-gradient(135deg,${C.orange}20,${C.red}10)`,border:`2px solid ${C.orange}30`,
+                  animation:`hpBombPulse ${pulseSpeed} infinite`,userSelect:"none",WebkitUserSelect:"none",marginTop:8}}>
+                  <div style={{fontSize:20,fontWeight:900,color:C.orange,letterSpacing:2}}>💣 HOLD TO PASS!</div>
+                  <div style={{fontSize:9,color:C.text3,marginTop:3}}>Quick tap = next · Hold = skip players!</div>
+                </div>
+              )}
+              {/* Waiting for AI */}
+              {hpPhase==="playing"&&curP&&curP.isAI&&!hpPassing&&(
+                <div style={{textAlign:"center",marginTop:8,animation:"pulse 0.6s infinite"}}>
+                  <div style={{fontSize:12,color:C.orange,fontWeight:700}}>{curP.name} is holding the bomb... 💣🤖</div>
+                </div>
+              )}
+              {/* Passing animation */}
+              {hpPassing&&(
+                <div style={{textAlign:"center",marginTop:8,animation:"fadeIn 0.2s ease"}}>
+                  <div style={{fontSize:14,color:C.gold,fontWeight:700}}>💣 Passing... ➡️</div>
+                </div>
+              )}
+              {/* Exploding overlay */}
+              {isExploding&&hpExploded&&(
+                <div style={{textAlign:"center",marginTop:12,animation:"fadeIn 0.4s ease"}}>
+                  <div style={{fontSize:40,marginBottom:6}}>💥💀💥</div>
+                  <div style={{fontSize:18,fontWeight:900,color:C.red}}>{hpExploded.isYou?"YOU BLEW UP!":hpExploded.name+" EXPLODED!"}</div>
+                  <div style={{fontSize:10,color:C.text3,marginTop:4}}>{aliveCount} players remain</div>
+                </div>
+              )}
+              {/* Next round transition */}
+              {hpPhase==="next_round"&&(
+                <div style={{textAlign:"center",padding:"20px 0",animation:"fadeIn 0.4s ease"}}>
+                  <div style={{fontSize:30,marginBottom:8}}>🔥</div>
+                  <div style={{fontSize:16,fontWeight:900,color:C.gold}}>Round {hpRound+1} Coming...</div>
+                  <div style={{fontSize:10,color:C.text2}}>Timer gets SHORTER! 😰</div>
+                </div>
+              )}
+              {/* Result screen */}
+              {hpPhase==="result"&&(
+                <div style={{textAlign:"center",padding:"20px 0",animation:"fadeIn 0.5s ease"}}>
+                  <div style={{fontSize:50,marginBottom:8}}>{hpWinner&&hpWinner.isYou?"👑":"💀"}</div>
+                  <div style={{fontSize:24,fontWeight:900,color:hpWinner&&hpWinner.isYou?C.green:C.red}}>{hpWinner&&hpWinner.isYou?"SOLE SURVIVOR!":hpWinner?hpWinner.name+" WINS!":"Game Over!"}</div>
+                  <div style={{fontSize:11,color:C.text2,marginTop:4}}>{hpWinner&&hpWinner.isYou?"+120 coins!":"+15 coins"}</div>
+                  {/* Elimination order */}
+                  <div style={{marginTop:12,textAlign:"left",width:"100%",maxWidth:260}}>
+                    <div style={{fontSize:8,fontWeight:800,color:C.text3,letterSpacing:1,marginBottom:4}}>ELIMINATION ORDER</div>
+                    {hpEliminatedList.map((p,i)=>(
+                      <div key={i} style={{display:"flex",alignItems:"center",gap:6,padding:"3px 0"}}>
+                        <span style={{fontSize:8,color:C.red}}>💀 #{i+1}</span>
+                        <span style={{fontSize:9,color:C.text2}}>{p.isYou?"You":p.name}</span>
+                      </div>
+                    ))}
+                    {hpWinner&&<div style={{display:"flex",alignItems:"center",gap:6,padding:"3px 0"}}>
+                      <span style={{fontSize:8,color:C.gold}}>👑 Winner</span>
+                      <span style={{fontSize:9,color:C.gold,fontWeight:700}}>{hpWinner.isYou?"You":hpWinner.name}</span>
+                    </div>}
+                  </div>
+                  {/* Actions */}
+                  <div style={{display:"flex",gap:10,marginTop:16}}>
+                    <div onClick={()=>{setHpPhase(null);startHotPotato();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.orange}15`,border:`1px solid ${C.orange}30`,fontSize:13,fontWeight:800,color:C.orange}}>🔄 Play Again</div>
+                    <div onClick={hpEndGame} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.text3}10`,border:`1px solid ${C.text3}20`,fontSize:13,fontWeight:800,color:C.text3}}>Done ✓</div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      }
+
       // Generic game
       return (
         <div style={overlayStyle}>
@@ -7190,7 +7585,7 @@ export default function MoodLabArena() {
 
                   <div style={{position:"relative",zIndex:1}}>
                     <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
-                      <span style={{fontSize:24}}>{selectedGame.id==="wildwest"?"🤠":selectedGame.id==="russian"?"🔫":"⚽"}</span>
+                      <span style={{fontSize:24}}>{selectedGame.id==="wildwest"?"🤠":selectedGame.id==="russian"?"🔫":selectedGame.id==="hotpotato"?"💣":"⚽"}</span>
                       <div>
                         <div style={{fontSize:14,fontWeight:900,color:C.gold,textShadow:`0 0 10px ${C.gold}30`}}>{
                           selectedGame.id==="finalkick"?"FK1 World Cup 2026":
@@ -7202,6 +7597,7 @@ export default function MoodLabArena() {
                           selectedGame.id==="puffpong"?"Puff Pong Championship 2026":
                           selectedGame.id==="rhythm"?"Rhythm Puff Festival 2026":
                           selectedGame.id==="tugofwar"?"Tug of War Arena 2026":
+                          selectedGame.id==="hotpotato"?"Hot Potato Championship 2026":
                           "Championship 2026"
                         }</div>
                         <div style={{fontSize:8,color:C.text2}}>{
@@ -7211,6 +7607,7 @@ export default function MoodLabArena() {
                           selectedGame.id==="puffpong"?"48 Players · Neon Arena":
                           selectedGame.id==="rhythm"?"48 DJs · Concert Stage":
                           selectedGame.id==="tugofwar"?"48 Teams · Colosseum":
+                          selectedGame.id==="hotpotato"?"48 Players · Bomb Circle":
                           "48 Teams · Group Stage + Knockout"
                         }</div>
                       </div>
@@ -7284,6 +7681,7 @@ export default function MoodLabArena() {
                     selectedGame.id==="puffpong"?"🏓":
                     selectedGame.id==="rhythm"?"🎵🎸":
                     selectedGame.id==="tugofwar"?"💪🪢":
+                    selectedGame.id==="hotpotato"?"💣🔥":
                     selectedGame.emoji
                   }</div>
                   <div style={{fontSize:18,fontWeight:900,color:C.text}}>{
@@ -7296,6 +7694,7 @@ export default function MoodLabArena() {
                     selectedGame.id==="puffpong"?"Puff Pong":
                     selectedGame.id==="rhythm"?"Rhythm Puff":
                     selectedGame.id==="tugofwar"?"Tug of War":
+                    selectedGame.id==="hotpotato"?"Hot Potato":
                     selectedGame.name
                   }</div>
                   <div style={{fontSize:10,color:C.text2}}>{
@@ -7308,6 +7707,7 @@ export default function MoodLabArena() {
                     selectedGame.id==="puffpong"?"Tap-Controlled Ping Pong Battle!":
                     selectedGame.id==="rhythm"?"Tap the Beat — Guitar Hero Style!":
                     selectedGame.id==="tugofwar"?"Puff Power vs AI — Pull the Rope!":
+                    selectedGame.id==="hotpotato"?"Pass the Bomb — Last One Standing Wins!":
                     selectedGame.desc
                   }</div>
                 </div>
@@ -8309,6 +8709,122 @@ export default function MoodLabArena() {
                       "Save energy for the final 10 seconds — that's when it counts!",
                       "AI pulls back randomly — don't panic when rope slips!",
                       "Cross 70% to win — push hard past center and don't stop!",
+                    ].map((tip,i)=>(
+                      <div key={i} style={{display:"flex",gap:6,alignItems:"flex-start"}}>
+                        <span style={{fontSize:8,color:C.orange,fontWeight:900,flexShrink:0}}>💡</span>
+                        <span style={{fontSize:8,color:C.text2,lineHeight:1.3}}>{tip}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                </>) : (selectedGame.id==="hotpotato") ? (<>
+
+                {/* ═══ HOT POTATO — SECTION 1: GAME FLOW ═══ */}
+                <div style={{padding:"14px 12px",borderRadius:16,marginBottom:12,position:"relative",overflow:"hidden",
+                  background:`linear-gradient(135deg, rgba(255,100,0,0.1) 0%, rgba(255,50,0,0.04) 50%, rgba(200,60,0,0.06) 100%)`,
+                  border:`1px solid ${C.orange}20`,boxShadow:`0 0 20px ${C.orange}06, inset 0 1px 0 ${C.orange}10`}}>
+                  <div style={{position:"absolute",top:-30,left:"50%",transform:"translateX(-50%)",width:180,height:80,borderRadius:"50%",background:`radial-gradient(circle, ${C.orange}12, transparent)`,filter:"blur(20px)",pointerEvents:"none"}}/>
+                  <div style={{position:"relative",zIndex:1}}>
+                  <div style={{fontSize:10,fontWeight:900,color:C.orange,letterSpacing:3,marginBottom:10,textAlign:"center",textShadow:`0 0 12px ${C.orange}30`}}>💣 GAME FLOW</div>
+                  <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:3}}>
+                    {[
+                      {step:"1",icon:"👥",label:"Circle Up",sub:"3-8 players sit in a circle",color:C.cyan,arrow:true},
+                      {step:"2",icon:"💣",label:"Bomb Drops",sub:"Random player gets the bomb!",color:C.orange,arrow:true,glow:true},
+                      {step:"3",icon:"💨",label:"PUFF to Pass!",sub:"Hold & release to pass the bomb",color:C.lime,arrow:true},
+                      {step:"4",icon:"💥",label:"BOOM!",sub:"Timer runs out = holder EXPLODES!",color:C.red,arrow:true,glow:true},
+                      {step:"5",icon:"👑",label:"Last Standing",sub:"Survive all rounds to win!",color:C.gold,arrow:false},
+                    ].map((s,i)=>(
+                      <React.Fragment key={i}>
+                        <div style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"7px 10px",borderRadius:12,background:`${s.color}08`,border:`1px solid ${s.color}18`,boxShadow:s.glow?`0 0 12px ${s.color}10`:"none",position:"relative",overflow:"hidden"}}>
+                          {s.glow && <div style={{position:"absolute",inset:0,background:`linear-gradient(90deg, transparent, ${s.color}04, transparent)`,animation:"lightSweep 3s infinite",pointerEvents:"none"}}/>}
+                          <div style={{width:30,height:30,borderRadius:10,background:`linear-gradient(135deg, ${s.color}30, ${s.color}15)`,border:`1.5px solid ${s.color}40`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,flexShrink:0,boxShadow:`0 2px 8px ${s.color}15`,position:"relative",zIndex:1}}>{s.icon}</div>
+                          <div style={{flex:1,position:"relative",zIndex:1}}>
+                            <div style={{fontSize:10,fontWeight:900,color:s.color,textShadow:`0 0 8px ${s.color}20`}}>{s.label}</div>
+                            <div style={{fontSize:7,color:C.text2,lineHeight:1.3}}>{s.sub}</div>
+                          </div>
+                          <div style={{width:20,height:20,borderRadius:"50%",background:`linear-gradient(135deg, ${s.color}25, ${s.color}10)`,border:`1.5px solid ${s.color}35`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:900,color:s.color,position:"relative",zIndex:1}}>{s.step}</div>
+                        </div>
+                        {s.arrow && <div style={{fontSize:12,color:`${C.orange}40`,lineHeight:1,textShadow:`0 0 6px ${C.orange}15`}}>⬇</div>}
+                      </React.Fragment>
+                    ))}
+                  </div>
+                  </div>
+                </div>
+
+                {/* ═══ SECTION 2: PUFF PASS MECHANIC ═══ */}
+                <div style={{padding:"12px",borderRadius:16,...GLASS_CARD,marginBottom:12}}>
+                  <div style={{fontSize:9,fontWeight:800,color:C.lime,letterSpacing:2,marginBottom:8,textAlign:"center"}}>💨 PUFF PASS MECHANIC</div>
+                  <div style={{fontSize:8,color:C.text2,textAlign:"center",marginBottom:8}}>Hold to charge, release to pass! The longer you hold, the further it goes!</div>
+
+                  {/* Visual pass power bar */}
+                  <div style={{height:32,borderRadius:16,overflow:"hidden",display:"flex",marginBottom:6,border:`2px solid ${C.border}`}}>
+                    <div style={{width:"33%",background:`${C.cyan}15`,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                      <span style={{fontSize:7,fontWeight:800,color:C.cyan}}>TAP = Next 👆</span>
+                    </div>
+                    <div style={{width:"34%",background:`${C.gold}15`,display:"flex",alignItems:"center",justifyContent:"center",border:`1px solid ${C.gold}20`,borderRadius:2}}>
+                      <span style={{fontSize:7,fontWeight:800,color:C.gold}}>HOLD 1-2s = Skip 1 🎯</span>
+                    </div>
+                    <div style={{width:"33%",background:`${C.orange}20`,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                      <span style={{fontSize:7,fontWeight:800,color:C.orange}}>HOLD 3s+ = Skip 2! 🧠</span>
+                    </div>
+                  </div>
+                  <div style={{textAlign:"center",fontSize:7,color:C.red,fontWeight:700}}>⚠️ But holding too long is RISKY — bomb might explode in your hands!</div>
+                </div>
+
+                {/* ═══ SECTION 3: BOMB TIMER VISUAL ═══ */}
+                <div style={{padding:"12px",borderRadius:16,...GLASS_CARD,marginBottom:12}}>
+                  <div style={{fontSize:9,fontWeight:800,color:C.red,letterSpacing:2,marginBottom:8,textAlign:"center"}}>🧨 THE BOMB TIMER</div>
+                  <div style={{fontSize:8,color:C.text2,textAlign:"center",marginBottom:8}}>Hidden timer! You NEVER know when it blows!</div>
+                  <div style={{display:"flex",gap:8,justifyContent:"center",marginBottom:8}}>
+                    {[
+                      {round:"Rd 1",time:"5-8s",color:C.green,emoji:"😌"},
+                      {round:"Rd 2",time:"4-6s",color:C.gold,emoji:"😰"},
+                      {round:"Rd 3",time:"3-5s",color:C.orange,emoji:"😱"},
+                      {round:"Rd 4+",time:"2-3s",color:C.red,emoji:"💀"},
+                    ].map((r,i)=>(
+                      <div key={i} style={{flex:1,textAlign:"center",padding:"6px 4px",borderRadius:8,background:`${r.color}08`,border:`1px solid ${r.color}15`}}>
+                        <div style={{fontSize:16}}>{r.emoji}</div>
+                        <div style={{fontSize:8,fontWeight:800,color:r.color}}>{r.round}</div>
+                        <div style={{fontSize:7,color:C.text3}}>{r.time}</div>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{textAlign:"center",fontSize:7,color:C.text3}}>Each round the timer gets SHORTER and MORE UNPREDICTABLE! 🔥</div>
+                </div>
+
+                {/* ═══ SECTION 4: SPECIAL FEATURES ═══ */}
+                <div style={{padding:"12px",borderRadius:16,...GLASS_CARD,marginBottom:12}}>
+                  <div style={{fontSize:9,fontWeight:800,color:C.gold,letterSpacing:2,marginBottom:8,textAlign:"center"}}>✨ FEATURES</div>
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
+                    {[
+                      {icon:"💣",title:"Hidden Timer",desc:"2-8 seconds, random!",color:C.red},
+                      {icon:"🔥",title:"Fuse Visual",desc:"Watch it burn shorter",color:C.orange},
+                      {icon:"🧠",title:"Strategic Skip",desc:"Hold to jump players",color:C.cyan},
+                      {icon:"💥",title:"Explosion FX",desc:"Screen shake + particles",color:C.pink},
+                      {icon:"📉",title:"Shrinking Timer",desc:"Gets faster each round",color:C.gold},
+                      {icon:"💀",title:"Elimination",desc:"Last standing = champion",color:C.purple},
+                    ].map((f,i)=>(
+                      <div key={i} style={{padding:"8px",borderRadius:10,background:`${f.color}06`,border:`1px solid ${f.color}12`,textAlign:"center"}}>
+                        <div style={{fontSize:18,marginBottom:2}}>{f.icon}</div>
+                        <div style={{fontSize:8,fontWeight:800,color:f.color}}>{f.title}</div>
+                        <div style={{fontSize:7,color:C.text3}}>{f.desc}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* ═══ SECTION 5: PRO TIPS ═══ */}
+                <div style={{padding:"12px",borderRadius:16,...GLASS_CARD,marginBottom:12}}>
+                  <div style={{fontSize:9,fontWeight:800,color:C.green,letterSpacing:2,marginBottom:8,textAlign:"center"}}>🎯 PRO TIPS</div>
+                  <div style={{display:"flex",flexDirection:"column",gap:5}}>
+                    {[
+                      "Quick taps are safe — pass to the next player instantly!",
+                      "Hold 1-2 seconds to skip 1 player — surprise attack! 🧠",
+                      "Hold 3+ seconds to skip 2 — but risk exploding! ⚠️",
+                      "AI passes fast — they don't hold long. Watch their pattern!",
+                      "Later rounds have shorter timers — puff faster or die! 💀",
+                      "The bomb pulses faster near explosion — visual warning! 👀",
                     ].map((tip,i)=>(
                       <div key={i} style={{display:"flex",gap:6,alignItems:"flex-start"}}>
                         <span style={{fontSize:8,color:C.orange,fontWeight:900,flexShrink:0}}>💡</span>
@@ -9629,6 +10145,10 @@ export default function MoodLabArena() {
         @keyframes rpRatingPop{0%{transform:translateX(-50%) scale(0);opacity:0}30%{transform:translateX(-50%) scale(1.3);opacity:1}60%{transform:translateX(-50%) scale(.95);opacity:1}100%{transform:translateX(-50%) translateY(-20px) scale(.8);opacity:0}}
         @keyframes rpNoteGlow{0%,100%{box-shadow:0 0 8px currentColor}50%{box-shadow:0 0 20px currentColor,0 0 30px currentColor}}
         @keyframes rpLanePulse{0%,100%{opacity:.15}50%{opacity:.35}}
+        @keyframes hpBombPulse{0%,100%{transform:scale(1);filter:brightness(1)}50%{transform:scale(1.15);filter:brightness(1.3) drop-shadow(0 0 12px rgba(255,100,0,0.6))}}
+        @keyframes hpFuseBurn{0%{width:100%}100%{width:0%}}
+        @keyframes hpExplosion{0%{transform:scale(1);opacity:1}30%{transform:scale(2.5);opacity:1;filter:brightness(2)}60%{transform:scale(3);opacity:0.7}100%{transform:scale(4);opacity:0}}
+        @keyframes hpPassAnim{0%{transform:translateX(0)}50%{transform:translateX(10px) scale(1.2)}100%{transform:translateX(0)}}
         *{-webkit-tap-highlight-color:transparent;user-select:none;box-sizing:border-box}
         input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
         input[type=number]{-moz-appearance:textfield}
