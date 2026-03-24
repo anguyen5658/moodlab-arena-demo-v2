@@ -4302,7 +4302,10 @@ export default function MoodLabArena() {
   };
 
   const overlayBack = (onClose) => (
-    <div onClick={()=>{playFx("back");cleanupAllGames();onClose();}} style={{position:"absolute",top:8,left:10,zIndex:250,cursor:"pointer",padding:"5px 10px",borderRadius:8,background:`rgba(6,8,15,0.7)`,backdropFilter:"blur(8px)",border:`1px solid ${C.border}`}}>
+    <div data-back="true" onClick={(e)=>{e.stopPropagation();playFx("back");cleanupAllGames();onClose();}}
+      onTouchStart={(e)=>{e.stopPropagation();}}
+      onMouseDown={(e)=>{e.stopPropagation();}}
+      style={{position:"absolute",top:8,left:10,zIndex:250,cursor:"pointer",padding:"5px 10px",borderRadius:8,background:`rgba(6,8,15,0.7)`,backdropFilter:"blur(8px)",border:`1px solid ${C.border}`}}>
       <span style={{fontSize:11,fontWeight:600,color:C.text2}}>← Back</span>
     </div>
   );
@@ -4429,10 +4432,11 @@ export default function MoodLabArena() {
           <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden",
             animation:screenShake?"shake 0.4s ease":"none",
             filter:dimLights?"brightness(0.6)":wwSlowMo?"saturate(1.4) contrast(1.15)":"brightness(1)",transition:"filter 0.3s"}}
-            onMouseDown={()=>{if(["staredown","countdown","draw"].includes(wwPhase)) duelShoot();}}
-            onMouseUp={()=>{if(wwPhase==="puffing") duelReleasePuff();}}
-            onTouchStart={(e)=>{e.preventDefault();if(["staredown","countdown","draw"].includes(wwPhase)) duelShoot();}}
-            onTouchEnd={(e)=>{e.preventDefault();if(wwPhase==="puffing") duelReleasePuff();}}>
+            onMouseDown={(e)=>{if(e.target.closest('[data-back]'))return;if(["staredown","countdown","draw"].includes(wwPhase)) duelShoot();}}
+            onMouseUp={(e)=>{if(e.target.closest('[data-back]'))return;if(wwPhase==="puffing") duelReleasePuff();}}
+            onTouchStart={(e)=>{if(e.target.closest('[data-back]'))return;if(["staredown","countdown","draw"].includes(wwPhase)) duelShoot();}}
+            onTouchEnd={(e)=>{if(e.target.closest('[data-back]'))return;if(wwPhase==="puffing") duelReleasePuff();}}>
+
 
             {/* ═══ SCREEN FLASH OVERLAY ═══ */}
             {screenFlash && <div style={{position:"absolute",inset:0,zIndex:200,pointerEvents:"none",opacity:0,
