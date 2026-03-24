@@ -334,7 +334,7 @@ export default function MoodLabArena() {
   // ── Duel (Wild West) ──
   const [duelState, setDuelState] = useState(null);
   const [duelResult, setDuelResult] = useState(null);
-  const [duelPhase, setDuelPhase] = useState("menu"); // "menu"|"intro"|"staredown"|"ready"|"steady"|"draw"|"result"|"round_result"|"final"
+  const [duelPhase, setDuelPhase] = useState("menu"); // "menu"|"intro"|"countdown"|"staredown"|"draw"|"puffing"|"result"|"round_result"|"final"
   const [duelRound, setDuelRound] = useState(0);
   const [duelScore, setDuelScore] = useState({you:0, ai:0});
   const [duelOpponent, setDuelOpponent] = useState(null);
@@ -349,6 +349,17 @@ export default function MoodLabArena() {
   const [duelIntroCount, setDuelIntroCount] = useState(3);
   const [duelAudienceReactions, setDuelAudienceReactions] = useState([]);
   const [duelFiredShot, setDuelFiredShot] = useState(false);
+  // Countdown + Puff hold states
+  const [duelCountdown, setDuelCountdown] = useState(null); // 3,2,1,"DRAW!" for round countdown
+  const [duelPuffing, setDuelPuffing] = useState(false); // currently holding puff
+  const [duelPuffMeter, setDuelPuffMeter] = useState(0); // 0-100 puff meter fill
+  const duelPuffStart = useRef(null); // when puff hold started
+  const duelPuffInterval = useRef(null); // interval for updating meter
+  const duelReactionTime = useRef(null); // ms from DRAW to puff start
+  const [duelPuffBonus, setDuelPuffBonus] = useState(null); // "basic"|"quick"|"power"|"legendary"
+  const [duelStaredownText, setDuelStaredownText] = useState(""); // tension commentary
+  const [duelMuzzleFlash, setDuelMuzzleFlash] = useState(null); // "left"|"right"|null
+  const [duelStaredownStage, setDuelStaredownStage] = useState(0); // 0-3 for building tension
 
   const DUEL_OPPONENTS = [
     {name:"Sheriff Puffington",emoji:"🤠",img:"https://api.dicebear.com/9.x/adventurer/svg?seed=Sheriff&backgroundColor=transparent",rank:"#1",record:"420-69",taunt:"This town ain't big enough for the two of us",speed:350},
@@ -541,12 +552,11 @@ export default function MoodLabArena() {
     return()=>{if(actionTimerRef.current){clearInterval(actionTimerRef.current);actionTimerRef.current=null;}};
   }, [kickState, kickCharging, matchIntro]);
 
-  // ── THREE.JS 3D SCENE FOR FK3 ──
+  // ── THREE.JS 3D SCENE FOR FK3 — FULL SCREEN IMMERSIVE ──
   useEffect(() => {
     const isFK3Now = isFK3Mode || isFK3Ref.current;
-    const isShoot3D = ["shoot_x","shoot_y","flight","shoot_result"].includes(kickState);
-    if(!isFK3Now || !isShoot3D || typeof THREE === "undefined") {
-      // Cleanup if leaving 3D
+    const isActive3D = ["shoot_x","shoot_y","flight","shoot_result","save_ready","save_countdown","save_dive","save_result"].includes(kickState);
+    if(!isFK3Now || !isActive3D || typeof THREE === "undefined") {
       if(threeSceneRef.current) {
         const s = threeSceneRef.current;
         if(s.animId) cancelAnimationFrame(s.animId);
@@ -555,210 +565,374 @@ export default function MoodLabArena() {
       }
       return;
     }
-    // Don't re-init if already running
     if(threeSceneRef.current) return;
     const container = threeCanvasRef.current;
     if(!container) return;
 
-    const W = 300, H = 200;
+    const W = container.clientWidth || 430;
+    const H = container.clientHeight || 932;
     const scene = new THREE.Scene();
-    scene.fog = new THREE.FogExp2(0x050520, 0.025);
-    scene.background = new THREE.Color(0x050520);
+    scene.fog = new THREE.Fog(0x0a1628, 30, 120);
+    scene.background = new THREE.Color(0x0a1628);
 
-    const camera = new THREE.PerspectiveCamera(55, W/H, 0.1, 200);
-    camera.position.set(0, 1.2, 12);
-    camera.lookAt(0, 1.5, 0);
+    const camera = new THREE.PerspectiveCamera(60, W/H, 0.1, 1000);
+    camera.position.set(0, 1.5, 12);
+    camera.lookAt(0, 1.2, 0);
 
     const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:false });
     renderer.setSize(W, H);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.2;
     container.innerHTML = "";
     container.appendChild(renderer.domElement);
-    renderer.domElement.style.borderRadius = "12px";
+    renderer.domElement.style.display = "block";
 
-    // Ground
-    const groundGeo = new THREE.PlaneGeometry(40, 30);
-    const groundMat = new THREE.MeshStandardMaterial({ color:0x1a5c2a, roughness:0.9 });
+    // ── GROUND — Large grass field with stripe texture ──
+    const groundGeo = new THREE.PlaneGeometry(80, 60);
+    const groundMat = new THREE.MeshStandardMaterial({ color:0x1a6b2a, roughness:0.85, metalness:0.0 });
     const ground = new THREE.Mesh(groundGeo, groundMat);
     ground.rotation.x = -Math.PI/2;
     ground.receiveShadow = true;
     scene.add(ground);
+    // Grass stripes (alternating lighter/darker bands)
+    for(let i = -6; i <= 6; i++) {
+      const stripeGeo = new THREE.PlaneGeometry(80, 2.5);
+      const stripeMat = new THREE.MeshStandardMaterial({ color: i%2===0 ? 0x1e7a32 : 0x186828, roughness:0.85 });
+      const stripe = new THREE.Mesh(stripeGeo, stripeMat);
+      stripe.rotation.x = -Math.PI/2;
+      stripe.position.set(0, 0.005, i * 2.5);
+      scene.add(stripe);
+    }
+    // Penalty area lines
+    const lineMat = new THREE.MeshBasicMaterial({ color:0xffffff, transparent:true, opacity:0.35 });
+    const penAreaW = 16.5, penAreaD = 5;
+    const pLineGeos = [
+      { w:0.08, h:penAreaD, x:0, z:penAreaD/2 },
+      { w:penAreaW, h:0.08, x:0, z:penAreaD },
+      { w:0.08, h:penAreaD, x:-penAreaW/2, z:penAreaD/2 },
+      { w:0.08, h:penAreaD, x:penAreaW/2, z:penAreaD/2 },
+    ];
+    pLineGeos.forEach(l => {
+      const g = new THREE.PlaneGeometry(l.w, l.h);
+      const m = new THREE.Mesh(g, lineMat);
+      m.rotation.x = -Math.PI/2;
+      m.position.set(l.x, 0.01, l.z);
+      scene.add(m);
+    });
+    // Penalty spot
+    const penSpotGeo = new THREE.CircleGeometry(0.12, 12);
+    const penSpot = new THREE.Mesh(penSpotGeo, lineMat.clone());
+    penSpot.rotation.x = -Math.PI/2;
+    penSpot.position.set(0, 0.01, 11);
+    scene.add(penSpot);
 
-    // Grid lines on ground
-    const gridHelper = new THREE.GridHelper(30, 30, 0x2a7c3a, 0x2a7c3a);
-    gridHelper.position.y = 0.01;
-    gridHelper.material.opacity = 0.15;
-    gridHelper.material.transparent = true;
-    scene.add(gridHelper);
-
-    // Goal dimensions (real-ish scale)
-    const gW = 7.32, gH = 2.44, postR = 0.06;
-    const postMat = new THREE.MeshStandardMaterial({ color:0xffffff, emissive:0x00ccff, emissiveIntensity:0.6, metalness:0.8, roughness:0.2 });
-
-    // Left post
-    const lPost = new THREE.Mesh(new THREE.CylinderGeometry(postR, postR, gH, 8), postMat);
+    // ── GOAL — Thick realistic posts + crossbar ──
+    const gW = 7.32, gH = 2.44, postR = 0.08;
+    const postMat = new THREE.MeshStandardMaterial({ color:0xffffff, metalness:0.7, roughness:0.25 });
+    const lPost = new THREE.Mesh(new THREE.CylinderGeometry(postR, postR, gH, 12), postMat);
     lPost.position.set(-gW/2, gH/2, 0);
     lPost.castShadow = true;
     scene.add(lPost);
-
-    // Right post
-    const rPost = new THREE.Mesh(new THREE.CylinderGeometry(postR, postR, gH, 8), postMat);
+    const rPost = new THREE.Mesh(new THREE.CylinderGeometry(postR, postR, gH, 12), postMat);
     rPost.position.set(gW/2, gH/2, 0);
     rPost.castShadow = true;
     scene.add(rPost);
-
-    // Crossbar
-    const crossbar = new THREE.Mesh(new THREE.CylinderGeometry(postR, postR, gW+postR*2, 8), postMat);
+    const crossbar = new THREE.Mesh(new THREE.CylinderGeometry(postR, postR, gW+postR*2, 12), postMat);
     crossbar.rotation.z = Math.PI/2;
     crossbar.position.set(0, gH, 0);
     crossbar.castShadow = true;
     scene.add(crossbar);
+    // Side support struts
+    const strutMat = new THREE.MeshStandardMaterial({ color:0xdddddd, metalness:0.5, roughness:0.4 });
+    [-1,1].forEach(side => {
+      const strut = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 2.8, 6), strutMat);
+      strut.position.set(side*gW/2, gH/2, -1);
+      strut.rotation.x = 0.15;
+      scene.add(strut);
+    });
 
-    // Net (wireframe behind posts)
-    const netGeo = new THREE.PlaneGeometry(gW, gH, 12, 6);
-    const netMat = new THREE.MeshBasicMaterial({ color:0xaaddff, wireframe:true, transparent:true, opacity:0.12 });
+    // ── NET — Visible mesh on back and sides ──
+    const netMat = new THREE.MeshBasicMaterial({ color:0xccddff, wireframe:true, transparent:true, opacity:0.18, side:THREE.DoubleSide });
+    // Back net
+    const netGeo = new THREE.PlaneGeometry(gW, gH, 20, 10);
     const net = new THREE.Mesh(netGeo, netMat);
-    net.position.set(0, gH/2, -0.5);
+    net.position.set(0, gH/2, -1.8);
     scene.add(net);
+    // Bottom net
+    const netBotGeo = new THREE.PlaneGeometry(gW, 1.8, 20, 4);
+    const netBot = new THREE.Mesh(netBotGeo, netMat.clone());
+    netBot.rotation.x = -Math.PI/2;
+    netBot.position.set(0, 0.01, -0.9);
+    scene.add(netBot);
+    // Side nets
+    [-1,1].forEach(side => {
+      const sNetGeo = new THREE.PlaneGeometry(1.8, gH, 4, 10);
+      const sNet = new THREE.Mesh(sNetGeo, netMat.clone());
+      sNet.position.set(side*gW/2, gH/2, -0.9);
+      sNet.rotation.y = side * Math.PI/2;
+      scene.add(sNet);
+    });
+    // Top net
+    const topNetGeo = new THREE.PlaneGeometry(gW, 1.8, 20, 4);
+    const topNet = new THREE.Mesh(topNetGeo, netMat.clone());
+    topNet.rotation.x = Math.PI/2;
+    topNet.position.set(0, gH, -0.9);
+    scene.add(topNet);
 
-    // Back net (bottom)
-    const netBottomGeo = new THREE.PlaneGeometry(gW, 1.5, 12, 3);
-    const netBottom = new THREE.Mesh(netBottomGeo, netMat.clone());
-    netBottom.rotation.x = -Math.PI/2;
-    netBottom.position.set(0, 0.01, -1);
-    scene.add(netBottom);
-
-    // Ball
-    const ballGeo = new THREE.SphereGeometry(0.22, 16, 16);
-    const ballMat = new THREE.MeshStandardMaterial({ color:0xffffff, roughness:0.3, metalness:0.1 });
+    // ── BALL — Bigger, textured look ──
+    const ballGeo = new THREE.SphereGeometry(0.22, 24, 24);
+    const ballMat = new THREE.MeshStandardMaterial({ color:0xffffff, roughness:0.25, metalness:0.05 });
     const ball = new THREE.Mesh(ballGeo, ballMat);
     ball.position.set(0, 0.22, 11);
     ball.castShadow = true;
     scene.add(ball);
+    // Ball pentagon patches (visual detail)
+    const patchGeo = new THREE.SphereGeometry(0.225, 24, 24);
+    const patchMat = new THREE.MeshBasicMaterial({ color:0x222222, wireframe:true, transparent:true, opacity:0.15 });
+    const ballPatches = new THREE.Mesh(patchGeo, patchMat);
+    ball.add(ballPatches);
 
-    // Keeper (capsule shape)
+    // ── KEEPER — Detailed humanoid ──
     const keeperGroup = new THREE.Group();
-    const bodyGeo = new THREE.CylinderGeometry(0.25, 0.2, 1.2, 8);
-    const bodyMat = new THREE.MeshStandardMaterial({ color:0xff3333, roughness:0.6 });
+    // Legs
+    const legGeo = new THREE.CylinderGeometry(0.08, 0.07, 0.9, 8);
+    const legMat = new THREE.MeshStandardMaterial({ color:0x111111, roughness:0.7 });
+    const lLeg = new THREE.Mesh(legGeo, legMat);
+    lLeg.position.set(-0.12, 0.45, 0);
+    keeperGroup.add(lLeg);
+    const rLeg = new THREE.Mesh(legGeo, legMat);
+    rLeg.position.set(0.12, 0.45, 0);
+    keeperGroup.add(rLeg);
+    // Body (jersey)
+    const bodyGeo = new THREE.CylinderGeometry(0.28, 0.22, 0.7, 10);
+    const bodyMat = new THREE.MeshStandardMaterial({ color:0xff2222, roughness:0.5 });
     const body = new THREE.Mesh(bodyGeo, bodyMat);
-    body.position.y = 0.8;
+    body.position.y = 1.25;
     keeperGroup.add(body);
-    const headGeo = new THREE.SphereGeometry(0.2, 8, 8);
+    // Head
+    const headGeo = new THREE.SphereGeometry(0.18, 10, 10);
     const headMat = new THREE.MeshStandardMaterial({ color:0xffcc88, roughness:0.5 });
     const head = new THREE.Mesh(headGeo, headMat);
-    head.position.y = 1.6;
+    head.position.y = 1.78;
     keeperGroup.add(head);
     // Arms
-    const armGeo = new THREE.CylinderGeometry(0.06, 0.06, 0.7, 6);
-    const armMat = new THREE.MeshStandardMaterial({ color:0xff3333, roughness:0.6 });
+    const armGeo = new THREE.CylinderGeometry(0.06, 0.05, 0.65, 6);
+    const armMat = new THREE.MeshStandardMaterial({ color:0xff2222, roughness:0.5 });
     const lArm = new THREE.Mesh(armGeo, armMat);
-    lArm.position.set(-0.35, 1.1, 0);
+    lArm.position.set(-0.38, 1.25, 0);
     lArm.rotation.z = Math.PI/6;
     keeperGroup.add(lArm);
     const rArm = new THREE.Mesh(armGeo, armMat);
-    rArm.position.set(0.35, 1.1, 0);
+    rArm.position.set(0.38, 1.25, 0);
     rArm.rotation.z = -Math.PI/6;
     keeperGroup.add(rArm);
-    // Gloves
-    const gloveGeo = new THREE.SphereGeometry(0.1, 6, 6);
-    const gloveMat = new THREE.MeshStandardMaterial({ color:0x00ff88, emissive:0x00ff88, emissiveIntensity:0.3 });
+    // Gloves (bigger, brighter)
+    const gloveGeo = new THREE.SphereGeometry(0.12, 8, 8);
+    const gloveMat = new THREE.MeshStandardMaterial({ color:0x00ff88, emissive:0x00ff88, emissiveIntensity:0.4, roughness:0.3 });
     const lGlove = new THREE.Mesh(gloveGeo, gloveMat);
-    lGlove.position.set(-0.6, 1.35, 0);
+    lGlove.position.set(-0.65, 1.5, 0);
     keeperGroup.add(lGlove);
     const rGlove = new THREE.Mesh(gloveGeo, gloveMat);
-    rGlove.position.set(0.6, 1.35, 0);
+    rGlove.position.set(0.65, 1.5, 0);
     keeperGroup.add(rGlove);
     keeperGroup.position.set(0, 0, 0.5);
     scene.add(keeperGroup);
 
-    // Aim lines (vertical + horizontal neon lines on goal plane)
-    const aimLineVGeo = new THREE.PlaneGeometry(0.04, gH);
+    // ── KEEPER POV GLOVES (visible in save phase) ──
+    const povGloveGroup = new THREE.Group();
+    const povGloveMat = new THREE.MeshStandardMaterial({ color:0x00ff66, emissive:0x00ff44, emissiveIntensity:0.5, roughness:0.3 });
+    const povLGlove = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.35, 0.15, 2, 2, 2), povGloveMat);
+    povLGlove.position.set(-0.7, -0.6, -0.8);
+    povLGlove.rotation.set(0.2, 0.3, -0.15);
+    povGloveGroup.add(povLGlove);
+    const povRGlove = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.35, 0.15, 2, 2, 2), povGloveMat.clone());
+    povRGlove.position.set(0.7, -0.6, -0.8);
+    povRGlove.rotation.set(0.2, -0.3, 0.15);
+    povGloveGroup.add(povRGlove);
+    // Wrist bands
+    const wristMat = new THREE.MeshStandardMaterial({ color:0x00cc55, roughness:0.5 });
+    const povLWrist = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.08, 8), wristMat);
+    povLWrist.position.set(-0.7, -0.4, -0.8);
+    povGloveGroup.add(povLWrist);
+    const povRWrist = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.08, 8), wristMat.clone());
+    povRWrist.position.set(0.7, -0.4, -0.8);
+    povGloveGroup.add(povRWrist);
+    povGloveGroup.visible = false;
+    scene.add(povGloveGroup);
+
+    // ── STADIUM — Background stands with crowd ──
+    const standMat = new THREE.MeshStandardMaterial({ color:0x1a2540, roughness:0.9 });
+    // Back stand (behind goal)
+    const backStand = new THREE.Mesh(new THREE.BoxGeometry(50, 12, 3), standMat);
+    backStand.position.set(0, 5, -12);
+    scene.add(backStand);
+    // Side stands
+    [-1,1].forEach(side => {
+      const sideStand = new THREE.Mesh(new THREE.BoxGeometry(3, 10, 40), standMat.clone());
+      sideStand.position.set(side*22, 4, 5);
+      scene.add(sideStand);
+    });
+    // Far stand (behind kicker)
+    const farStand = new THREE.Mesh(new THREE.BoxGeometry(50, 8, 3), standMat.clone());
+    farStand.position.set(0, 3, 25);
+    scene.add(farStand);
+    // Crowd dots on stands
+    const crowdColors = [0xff4444, 0x4488ff, 0xffdd44, 0xff8844, 0x44ff88, 0xffffff, 0xff66aa];
+    const crowdDots = [];
+    for(let i = 0; i < 200; i++) {
+      const cGeo = new THREE.SphereGeometry(0.15+Math.random()*0.1, 4, 4);
+      const cMat = new THREE.MeshBasicMaterial({ color:crowdColors[Math.floor(Math.random()*crowdColors.length)] });
+      const cDot = new THREE.Mesh(cGeo, cMat);
+      const angle = Math.random()*Math.PI*2;
+      const r = 15+Math.random()*10;
+      cDot.position.set(
+        Math.sin(angle)*r*(0.8+Math.random()*0.4),
+        1+Math.random()*8,
+        Math.cos(angle)*r*(0.3+Math.random()*0.5) - 5
+      );
+      scene.add(cDot);
+      crowdDots.push(cDot);
+    }
+    // Stadium floodlight towers
+    const towerMat = new THREE.MeshStandardMaterial({ color:0x445566, metalness:0.6, roughness:0.4 });
+    [[-15,0],[-15,20],[15,0],[15,20]].forEach(([tx,tz]) => {
+      const tower = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.2, 18, 6), towerMat);
+      tower.position.set(tx, 9, tz);
+      scene.add(tower);
+      const lampGeo = new THREE.BoxGeometry(1.5, 0.3, 0.5);
+      const lampMat = new THREE.MeshBasicMaterial({ color:0xffffcc });
+      const lamp = new THREE.Mesh(lampGeo, lampMat);
+      lamp.position.set(tx, 18, tz);
+      scene.add(lamp);
+    });
+
+    // ── AIM LINES ──
+    const aimLineVGeo = new THREE.PlaneGeometry(0.05, gH);
     const aimLineVMat = new THREE.MeshBasicMaterial({ color:0x00e5ff, transparent:true, opacity:0.9, side:THREE.DoubleSide });
     const aimLineV = new THREE.Mesh(aimLineVGeo, aimLineVMat);
     aimLineV.position.set(0, gH/2, 0.05);
     aimLineV.visible = false;
     scene.add(aimLineV);
-
-    const aimLineHGeo = new THREE.PlaneGeometry(gW, 0.04);
+    const aimLineHGeo = new THREE.PlaneGeometry(gW, 0.05);
     const aimLineHMat = new THREE.MeshBasicMaterial({ color:0xfb923c, transparent:true, opacity:0.9, side:THREE.DoubleSide });
     const aimLineH = new THREE.Mesh(aimLineHGeo, aimLineHMat);
     aimLineH.position.set(0, gH/2, 0.05);
     aimLineH.visible = false;
     scene.add(aimLineH);
-
-    // Crosshair dot
-    const dotGeo = new THREE.SphereGeometry(0.08, 8, 8);
+    const dotGeo = new THREE.SphereGeometry(0.1, 8, 8);
     const dotMat = new THREE.MeshBasicMaterial({ color:0xffffff });
     const dot = new THREE.Mesh(dotGeo, dotMat);
     dot.position.set(0, gH/2, 0.1);
     dot.visible = false;
     scene.add(dot);
 
-    // Stadium lights
-    const light1 = new THREE.PointLight(0x00e5ff, 80, 50);
-    light1.position.set(-8, 12, 5);
-    light1.castShadow = true;
-    scene.add(light1);
-    const light2 = new THREE.PointLight(0xffd93d, 60, 50);
-    light2.position.set(8, 12, 5);
-    scene.add(light2);
-    const ambient = new THREE.AmbientLight(0x334466, 0.8);
+    // ── LIGHTING — HemisphereLight + SpotLights ──
+    const hemiLight = new THREE.HemisphereLight(0x88aaff, 0x224422, 0.6);
+    scene.add(hemiLight);
+    const spotLight1 = new THREE.SpotLight(0xffffff, 200, 60, Math.PI/4, 0.5, 1);
+    spotLight1.position.set(-10, 20, 8);
+    spotLight1.castShadow = true;
+    spotLight1.shadow.mapSize.width = 512;
+    spotLight1.shadow.mapSize.height = 512;
+    scene.add(spotLight1);
+    const spotLight2 = new THREE.SpotLight(0xffffff, 200, 60, Math.PI/4, 0.5, 1);
+    spotLight2.position.set(10, 20, 8);
+    spotLight2.castShadow = true;
+    scene.add(spotLight2);
+    const ambient = new THREE.AmbientLight(0x445566, 0.4);
     scene.add(ambient);
-    // Rim light behind goal
-    const rimLight = new THREE.PointLight(0xc084fc, 30, 30);
-    rimLight.position.set(0, 5, -5);
+    // Colored accent lights
+    const accentL = new THREE.PointLight(0x00ccff, 40, 40);
+    accentL.position.set(-8, 8, 5);
+    scene.add(accentL);
+    const accentR = new THREE.PointLight(0xffaa00, 40, 40);
+    accentR.position.set(8, 8, 5);
+    scene.add(accentR);
+    const rimLight = new THREE.PointLight(0xcc88ff, 25, 25);
+    rimLight.position.set(0, 6, -6);
     scene.add(rimLight);
 
-    // Vapor trail particles for flight
     const trailParticles = [];
-
-    // Result particles
     const resultParticles = [];
 
     const state = {
-      scene, camera, renderer, ball, keeperGroup, net,
-      aimLineV, aimLineH, dot, trailParticles, resultParticles,
-      gW, gH, animId: null, startTime: Date.now(),
+      scene, camera, renderer, ball, keeperGroup, net, povGloveGroup,
+      aimLineV, aimLineH, dot, trailParticles, resultParticles, crowdDots,
+      gW, gH, W, H, animId: null, startTime: Date.now(),
       ballStart: new THREE.Vector3(0, 0.22, 11),
       ballTarget: new THREE.Vector3(0, 1, -0.3),
       flightProgress: 0, flightDone: false,
       keeperDiveTarget: 0, keeperDiving: false,
       resultShown: false,
+      cameraMode: "shoot", // "shoot" | "save"
+      baseFOV: 60, targetFOV: 60,
+      saveBallStart: new THREE.Vector3(0, 0.22, 20),
+      saveBallTarget: new THREE.Vector3(0, 1.2, 0),
+      saveBallProgress: 0, saveBallDone: false,
+      saveDiveDir: 0,
+      povGloveBaseL: new THREE.Vector3(-0.7, -0.6, -0.8),
+      povGloveBaseR: new THREE.Vector3(0.7, -0.6, -0.8),
     };
     threeSceneRef.current = state;
+
+    // Resize handler
+    const onResize = () => {
+      const cw = container.clientWidth || 430;
+      const ch = container.clientHeight || 932;
+      state.W = cw; state.H = ch;
+      camera.aspect = cw/ch;
+      camera.updateProjectionMatrix();
+      renderer.setSize(cw, ch);
+    };
+    window.addEventListener("resize", onResize);
 
     const animate = () => {
       state.animId = requestAnimationFrame(animate);
       const t = (Date.now() - state.startTime) / 1000;
 
-      // Subtle camera sway
-      camera.position.x = Math.sin(t * 0.3) * 0.15;
-      camera.position.y = 1.2 + Math.sin(t * 0.5) * 0.05;
+      // FOV lerp
+      camera.fov += (state.targetFOV - camera.fov) * 0.05;
+      camera.updateProjectionMatrix();
 
-      // Keeper idle animation
-      keeperGroup.position.x = Math.sin(t * 1.5) * 0.3;
-      keeperGroup.children.forEach((c, i) => {
-        if(i === 0) c.rotation.z = Math.sin(t * 2) * 0.03; // body sway
+      if(state.cameraMode === "shoot") {
+        // Subtle camera sway during aiming
+        if(!state.flightProgress || state.flightProgress < 0.01) {
+          camera.position.x += (Math.sin(t * 0.3) * 0.12 - camera.position.x) * 0.03;
+          camera.position.y += (1.5 + Math.sin(t * 0.5) * 0.04 - camera.position.y) * 0.03;
+        }
+        // Keeper idle
+        if(!state.keeperDiving) {
+          keeperGroup.position.x = Math.sin(t * 1.5) * 0.3;
+          keeperGroup.children.forEach((c, i) => {
+            if(i === 2) c.rotation.z = Math.sin(t * 2) * 0.03;
+          });
+        }
+      }
+
+      // Crowd wave animation
+      crowdDots.forEach((cd, i) => {
+        cd.position.y += Math.sin(t*2 + i*0.3) * 0.003;
       });
 
-      // Update trail particles
+      // Trail particles
       for(let i = state.trailParticles.length - 1; i >= 0; i--) {
         const p = state.trailParticles[i];
-        p.mesh.material.opacity -= 0.02;
-        p.mesh.scale.multiplyScalar(0.97);
+        p.mesh.material.opacity -= 0.015;
+        p.mesh.scale.multiplyScalar(0.96);
         if(p.mesh.material.opacity <= 0) {
           scene.remove(p.mesh);
           state.trailParticles.splice(i, 1);
         }
       }
-
-      // Update result particles
+      // Result particles
       for(let i = state.resultParticles.length - 1; i >= 0; i--) {
         const p = state.resultParticles[i];
         p.mesh.position.add(p.vel);
         p.vel.y -= 0.003;
-        p.mesh.material.opacity -= 0.015;
+        p.mesh.material.opacity -= 0.012;
         if(p.mesh.material.opacity <= 0) {
           scene.remove(p.mesh);
           state.resultParticles.splice(i, 1);
@@ -770,13 +944,14 @@ export default function MoodLabArena() {
     animate();
 
     return () => {
+      window.removeEventListener("resize", onResize);
       if(state.animId) cancelAnimationFrame(state.animId);
       if(state.renderer) { state.renderer.dispose(); state.renderer.domElement.remove(); }
       threeSceneRef.current = null;
     };
   }, [isFK3Mode, kickState]);
 
-  // ── FK3 3D scene updates (aim lines, ball flight, keeper dive) ──
+  // ── FK3 3D scene updates (aim lines, ball flight, keeper dive, SAVE POV) ──
   useEffect(() => {
     const s = threeSceneRef.current;
     if(!s) return;
@@ -785,8 +960,12 @@ export default function MoodLabArena() {
 
     const gW = s.gW, gH = s.gH;
 
-    // Update aim lines based on kickState and kickPower
+    // ── SHOOT PHASE: Aim lines ──
     if(kickState === "shoot_x") {
+      s.cameraMode = "shoot";
+      s.keeperGroup.visible = true;
+      s.povGloveGroup.visible = false;
+      s.targetFOV = 60;
       s.aimLineV.visible = kickCharging && kickPower > 0;
       s.aimLineH.visible = false;
       s.dot.visible = false;
@@ -798,12 +977,15 @@ export default function MoodLabArena() {
         s.aimLineV.material.color.setHex(isOOB ? 0xff4444 : isPerfect ? 0x34d399 : 0x00e5ff);
       }
     } else if(kickState === "shoot_y") {
+      s.cameraMode = "shoot";
+      s.keeperGroup.visible = true;
+      s.povGloveGroup.visible = false;
+      s.targetFOV = 60;
       s.aimLineV.visible = true;
       const lockedX = (fk2X / 100 - 0.5) * gW;
       s.aimLineV.position.x = lockedX;
       s.aimLineV.material.color.setHex(0x34d399);
       s.aimLineV.material.opacity = 0.5;
-
       s.aimLineH.visible = kickCharging && kickPower > 0;
       s.dot.visible = kickCharging && kickPower > 0;
       if(kickCharging && kickPower > 0) {
@@ -812,48 +994,57 @@ export default function MoodLabArena() {
         const isPerfect = kickPower >= kickSweetMin && kickPower <= kickSweetMax;
         const isOOB = kickPower > 95;
         s.aimLineH.material.color.setHex(isOOB ? 0xff4444 : isPerfect ? 0x34d399 : 0xfb923c);
-
         s.dot.position.set(lockedX, yPos, 0.1);
         s.dot.material.color.setHex(isPerfect ? 0x34d399 : 0xffffff);
       }
     } else if(kickState === "flight") {
+      // ── BALL FLIGHT: Camera follows ball, zooms in ──
       s.aimLineV.visible = false;
       s.aimLineH.visible = false;
       s.dot.visible = false;
+      s.keeperGroup.visible = true;
+      s.povGloveGroup.visible = false;
 
-      // Animate ball flight
       if(!s.flightDone) {
-        s.flightProgress += 0.025;
+        s.flightProgress += 0.02;
         if(s.flightProgress >= 1) {
           s.flightProgress = 1;
           s.flightDone = true;
         }
         const p = s.flightProgress;
-        // Bezier curve: start -> peak -> target
-        const peak = new THREE.Vector3(
-          s.ballTarget.x * 0.5,
-          Math.max(s.ballTarget.y, gH * 0.7) + 1.5,
-          s.ballStart.z * (1 - p * 0.6)
-        );
+        const peakHeight = Math.max(s.ballTarget.y, gH * 0.7) + 2.0;
+        const peakX = s.ballTarget.x * 0.5;
+        const peakZ = s.ballStart.z * 0.4;
         const t1 = 1 - p;
-        s.ball.position.x = t1*t1*s.ballStart.x + 2*t1*p*peak.x + p*p*s.ballTarget.x;
-        s.ball.position.y = t1*t1*s.ballStart.y + 2*t1*p*peak.y + p*p*s.ballTarget.y;
-        s.ball.position.z = t1*t1*s.ballStart.z + 2*t1*p*peak.z + p*p*s.ballTarget.z;
+        s.ball.position.x = t1*t1*s.ballStart.x + 2*t1*p*peakX + p*p*s.ballTarget.x;
+        s.ball.position.y = t1*t1*s.ballStart.y + 2*t1*p*peakHeight + p*p*s.ballTarget.y;
+        s.ball.position.z = t1*t1*s.ballStart.z + 2*t1*p*peakZ + p*p*s.ballTarget.z;
 
-        // Ball spin
-        s.ball.rotation.x += 0.3;
-        s.ball.rotation.z += 0.1;
+        s.ball.rotation.x += 0.35;
+        s.ball.rotation.z += 0.12;
 
-        // Camera follow
-        s.camera.position.z = 12 - p * 5;
-        s.camera.lookAt(s.ball.position.x * 0.3, 1.5, 0);
+        // Camera follows ball and zooms in
+        const camTargetZ = 12 - p * 8;
+        const camTargetX = s.ball.position.x * 0.25;
+        const camTargetY = 1.5 + (s.ball.position.y - 1.5) * 0.3;
+        s.camera.position.x += (camTargetX - s.camera.position.x) * 0.08;
+        s.camera.position.y += (camTargetY - s.camera.position.y) * 0.08;
+        s.camera.position.z += (camTargetZ - s.camera.position.z) * 0.08;
+        s.camera.lookAt(
+          s.ball.position.x * 0.4,
+          s.ball.position.y * 0.5 + 0.8,
+          Math.min(s.ball.position.z, 2)
+        );
+        s.targetFOV = 60 - p * 22;
 
         // Vapor trail
-        if(Math.random() < 0.5) {
-          const trailGeo = new THREE.SphereGeometry(0.06, 4, 4);
+        if(Math.random() < 0.6) {
+          const trailGeo = new THREE.SphereGeometry(0.07, 4, 4);
           const trailMat = new THREE.MeshBasicMaterial({ color:0xaaddff, transparent:true, opacity:0.5 });
           const trailMesh = new THREE.Mesh(trailGeo, trailMat);
           trailMesh.position.copy(s.ball.position);
+          trailMesh.position.x += (Math.random()-0.5)*0.08;
+          trailMesh.position.y += (Math.random()-0.5)*0.08;
           s.scene.add(trailMesh);
           s.trailParticles.push({ mesh:trailMesh });
         }
@@ -861,23 +1052,27 @@ export default function MoodLabArena() {
         // Keeper dive
         if(p > 0.3 && !s.keeperDiving) {
           s.keeperDiving = true;
-          // Determine dive direction from ball target
           s.keeperDiveTarget = s.ballTarget.x;
         }
         if(s.keeperDiving) {
-          const diveSpeed = 0.08;
-          s.keeperGroup.position.x += (s.keeperDiveTarget * 0.8 - s.keeperGroup.position.x) * diveSpeed;
+          const diveSpeed = 0.06;
+          s.keeperGroup.position.x += (s.keeperDiveTarget * 0.85 - s.keeperGroup.position.x) * diveSpeed;
           const diveDir = s.keeperDiveTarget > 0 ? 1 : -1;
-          s.keeperGroup.rotation.z += diveDir * 0.02;
-          // Arms stretch
-          s.keeperGroup.children[2].rotation.z = Math.PI/3 * diveDir; // left arm
-          s.keeperGroup.children[3].rotation.z = -Math.PI/3 * diveDir; // right arm
+          s.keeperGroup.rotation.z += diveDir * 0.025;
+          s.keeperGroup.children[4].rotation.z = Math.PI/3 * diveDir;
+          s.keeperGroup.children[5].rotation.z = -Math.PI/3 * diveDir;
+          s.keeperGroup.children[6].position.x = -0.65 + s.keeperDiveTarget * 0.3;
+          s.keeperGroup.children[7].position.x = 0.65 + s.keeperDiveTarget * 0.3;
+          s.keeperGroup.children[6].position.y = 1.5 + Math.abs(s.keeperDiveTarget) * 0.15;
+          s.keeperGroup.children[7].position.y = 1.5 + Math.abs(s.keeperDiveTarget) * 0.15;
         }
       }
     } else if(kickState === "shoot_result") {
       s.aimLineV.visible = false;
       s.aimLineH.visible = false;
       s.dot.visible = false;
+      s.keeperGroup.visible = true;
+      s.povGloveGroup.visible = false;
 
       if(!s.resultShown && kickBallAnim) {
         s.resultShown = true;
@@ -885,57 +1080,138 @@ export default function MoodLabArena() {
         const isMiss = kickBallAnim.result === "miss";
 
         if(isGoal) {
-          // Green particle burst
-          for(let i = 0; i < 20; i++) {
-            const pGeo = new THREE.SphereGeometry(0.05+Math.random()*0.05, 4, 4);
+          for(let i = 0; i < 30; i++) {
+            const pGeo = new THREE.SphereGeometry(0.05+Math.random()*0.06, 4, 4);
             const pMat = new THREE.MeshBasicMaterial({ color:0x34d399, transparent:true, opacity:0.8 });
             const pMesh = new THREE.Mesh(pGeo, pMat);
             pMesh.position.copy(s.ball.position);
-            const vel = new THREE.Vector3((Math.random()-0.5)*0.15, Math.random()*0.1, (Math.random()-0.5)*0.1);
+            const vel = new THREE.Vector3((Math.random()-0.5)*0.2, Math.random()*0.15, (Math.random()-0.5)*0.15);
             s.scene.add(pMesh);
             s.resultParticles.push({ mesh:pMesh, vel });
           }
-          // Net deform
           if(s.net.geometry.attributes.position) {
             const pos = s.net.geometry.attributes.position;
             for(let i = 0; i < pos.count; i++) {
               const dx = pos.getX(i) - s.ball.position.x;
-              const dy = pos.getY(i) - s.ball.position.y;
+              const dy = pos.getY(i) - (s.ball.position.y - gH/2);
               const dist = Math.sqrt(dx*dx + dy*dy);
-              if(dist < 1.5) pos.setZ(i, -0.3 * (1 - dist/1.5));
+              if(dist < 2) pos.setZ(i, pos.getZ(i) - 0.4 * (1 - dist/2));
             }
             pos.needsUpdate = true;
           }
-          // Camera shake
-          s.camera.position.x += (Math.random()-0.5)*0.3;
-          s.camera.position.y += (Math.random()-0.5)*0.2;
+          s.camera.position.x += (Math.random()-0.5)*0.4;
+          s.camera.position.y += (Math.random()-0.5)*0.3;
         } else if(isMiss) {
-          // Ball flies past — orange particles
-          for(let i = 0; i < 10; i++) {
+          for(let i = 0; i < 12; i++) {
             const pGeo = new THREE.SphereGeometry(0.04, 4, 4);
             const pMat = new THREE.MeshBasicMaterial({ color:0xff4444, transparent:true, opacity:0.6 });
             const pMesh = new THREE.Mesh(pGeo, pMat);
             pMesh.position.copy(s.ball.position);
-            const vel = new THREE.Vector3((Math.random()-0.5)*0.1, Math.random()*0.08, -0.05);
+            const vel = new THREE.Vector3((Math.random()-0.5)*0.1, Math.random()*0.08, -0.06);
             s.scene.add(pMesh);
             s.resultParticles.push({ mesh:pMesh, vel });
           }
         } else {
-          // Saved — orange flash particles
-          for(let i = 0; i < 12; i++) {
+          for(let i = 0; i < 15; i++) {
             const pGeo = new THREE.SphereGeometry(0.04, 4, 4);
             const pMat = new THREE.MeshBasicMaterial({ color:0xfb923c, transparent:true, opacity:0.7 });
             const pMesh = new THREE.Mesh(pGeo, pMat);
             pMesh.position.copy(s.keeperGroup.position);
             pMesh.position.y += 1;
-            const vel = new THREE.Vector3((Math.random()-0.5)*0.12, Math.random()*0.08, (Math.random()-0.5)*0.08);
+            const vel = new THREE.Vector3((Math.random()-0.5)*0.12, Math.random()*0.1, (Math.random()-0.5)*0.1);
             s.scene.add(pMesh);
             s.resultParticles.push({ mesh:pMesh, vel });
           }
         }
       }
     }
-  }, [kickState, kickPower, kickCharging, fk2X, fk2Y, kickBallAnim, isFK3Mode]);
+
+    // ── SAVE PHASE: Keeper POV — camera inside goal looking outward ──
+    else if(kickState === "save_ready" || kickState === "save_countdown") {
+      s.cameraMode = "save";
+      s.aimLineV.visible = false;
+      s.aimLineH.visible = false;
+      s.dot.visible = false;
+      s.keeperGroup.visible = false;
+      s.povGloveGroup.visible = true;
+      s.targetFOV = 70;
+      s.camera.position.set(0, 1.2, -0.5);
+      s.camera.lookAt(0, 1.2, 20);
+      s.ball.position.set(0, 0.22, 18);
+      s.ball.scale.set(1,1,1);
+      s.ball.visible = kickState === "save_countdown";
+      s.saveBallProgress = 0;
+      s.saveBallDone = false;
+      s.saveDiveDir = 0;
+      s.resultShown = false;
+      if(s.povGloveGroup.parent !== s.camera) {
+        s.scene.remove(s.povGloveGroup);
+        s.camera.add(s.povGloveGroup);
+        s.povGloveGroup.visible = true;
+      }
+    } else if(kickState === "save_dive") {
+      s.cameraMode = "save";
+      s.keeperGroup.visible = false;
+      s.povGloveGroup.visible = true;
+      s.ball.visible = true;
+      if(!s.saveBallDone) {
+        s.saveBallProgress += 0.035;
+        if(s.saveBallProgress >= 1) {
+          s.saveBallProgress = 1;
+          s.saveBallDone = true;
+        }
+        const p = s.saveBallProgress;
+        const aiZone = kickAiZone !== null ? kickAiZone : 0;
+        const col = aiZone % 3;
+        const row = Math.floor(aiZone / 3);
+        const targetX = (col - 1) * 2.2;
+        const targetY = row === 0 ? 0.6 : 1.8;
+        s.ball.position.x = targetX * p;
+        s.ball.position.y = 0.22 + (targetY - 0.22) * p + Math.sin(p * Math.PI) * 1.0;
+        s.ball.position.z = 18 - p * 18.5;
+        s.ball.rotation.x -= 0.4;
+        s.ball.rotation.z += 0.15;
+        const sc = 1 + p * 1.5;
+        s.ball.scale.set(sc, sc, sc);
+      }
+    } else if(kickState === "save_result") {
+      s.cameraMode = "save";
+      s.keeperGroup.visible = false;
+      s.povGloveGroup.visible = true;
+      s.ball.visible = true;
+      s.aimLineV.visible = false;
+      s.aimLineH.visible = false;
+
+      if(!s.resultShown && kickBallAnim) {
+        s.resultShown = true;
+        const isGoal = kickBallAnim.result === "goal";
+        if(!isGoal) {
+          s.ball.position.z = -0.3;
+          for(let i = 0; i < 20; i++) {
+            const pGeo = new THREE.SphereGeometry(0.06, 4, 4);
+            const pMat = new THREE.MeshBasicMaterial({ color:0x00ff88, transparent:true, opacity:0.8 });
+            const pMesh = new THREE.Mesh(pGeo, pMat);
+            pMesh.position.copy(s.ball.position);
+            const vel = new THREE.Vector3((Math.random()-0.5)*0.15, Math.random()*0.12, (Math.random()-0.5)*0.15);
+            s.scene.add(pMesh);
+            s.resultParticles.push({ mesh:pMesh, vel });
+          }
+        } else {
+          s.ball.position.z = -3;
+          for(let i = 0; i < 12; i++) {
+            const pGeo = new THREE.SphereGeometry(0.05, 4, 4);
+            const pMat = new THREE.MeshBasicMaterial({ color:0xff4444, transparent:true, opacity:0.7 });
+            const pMesh = new THREE.Mesh(pGeo, pMat);
+            pMesh.position.set(s.ball.position.x, s.ball.position.y, -1);
+            const vel = new THREE.Vector3((Math.random()-0.5)*0.1, Math.random()*0.08, -0.1);
+            s.scene.add(pMesh);
+            s.resultParticles.push({ mesh:pMesh, vel });
+          }
+          s.camera.position.x += (Math.random()-0.5)*0.4;
+        }
+      }
+    }
+  }, [kickState, kickPower, kickCharging, fk2X, fk2Y, kickBallAnim, isFK3Mode, kickAiZone]);
 
   // ── FK3: Set ball target when entering flight ──
   useEffect(() => {
@@ -945,22 +1221,33 @@ export default function MoodLabArena() {
     if(!isFK3Now || kickState !== "flight") return;
 
     // Set target from fk2X and fk2Y
-    const xNorm = (fk2X / 100 - 0.5) * s.gW; // -gW/2 to gW/2
-    const yNorm = (fk2Y / 100) * s.gH;       // 0 to gH
+    const xNorm = (fk2X / 100 - 0.5) * s.gW;
+    const yNorm = (fk2Y / 100) * s.gH;
     s.ballTarget = new THREE.Vector3(xNorm, Math.max(0.22, yNorm), -0.3);
     s.ballStart = new THREE.Vector3(0, 0.22, 11);
     s.ball.position.set(0, 0.22, 11);
+    s.ball.scale.set(1,1,1);
     s.flightProgress = 0;
     s.flightDone = false;
     s.keeperDiving = false;
     s.resultShown = false;
-    // Reset camera
-    s.camera.position.set(0, 1.2, 12);
+    // Reset camera to behind-ball view
+    s.camera.position.set(0, 1.5, 12);
+    s.targetFOV = 60;
+    // Detach POV gloves from camera if attached
+    if(s.povGloveGroup.parent === s.camera) {
+      s.camera.remove(s.povGloveGroup);
+      s.scene.add(s.povGloveGroup);
+    }
+    s.povGloveGroup.visible = false;
     // Reset keeper
+    s.keeperGroup.visible = true;
     s.keeperGroup.position.set(0, 0, 0.5);
     s.keeperGroup.rotation.z = 0;
-    s.keeperGroup.children[2].rotation.z = Math.PI/6;
-    s.keeperGroup.children[3].rotation.z = -Math.PI/6;
+    s.keeperGroup.children[4].rotation.z = Math.PI/6;
+    s.keeperGroup.children[5].rotation.z = -Math.PI/6;
+    s.keeperGroup.children[6].position.set(-0.65, 1.5, 0);
+    s.keeperGroup.children[7].position.set(0.65, 1.5, 0);
   }, [kickState, isFK3Mode]);
 
   // Bot chat
@@ -1059,6 +1346,12 @@ export default function MoodLabArena() {
     setDuelRoundResults([]);
     setDuelResult(null);
     setDuelFiredShot(false);
+    setDuelPuffing(false);
+    setDuelPuffMeter(0);
+    setDuelPuffBonus(null);
+    setDuelMuzzleFlash(null);
+    setDuelStaredownStage(0);
+    setDuelStaredownText("");
     // Start intro sequence
     setDuelPhase("intro");
     setDuelIntroStage("enter");
@@ -1067,7 +1360,7 @@ export default function MoodLabArena() {
     setCommentary("The duelists approach... " + opp.emoji);
     setTimeout(()=>{
       setDuelIntroStage("stats");
-      setCommentary("Check the stats! Who's the fastest gun? 📊");
+      setCommentary("Check the stats! Who's the fastest gun?");
     },1200);
     setTimeout(()=>{
       setDuelIntroStage("countdown");
@@ -1079,12 +1372,11 @@ export default function MoodLabArena() {
     setTimeout(()=>setDuelIntroCount(1),3800);
     setTimeout(()=>{
       setDuelIntroStage("go");
-      setCommentary("🤠 DUEL! May the fastest draw win!");
+      setCommentary("DUEL! May the fastest draw win!");
       triggerFlash("goal"); playFx("crowd");
     },4500);
     setTimeout(()=>{
       setDuelIntroStage(null);
-      setDuelPhase("staredown");
       startDuelRound(0);
     },5200);
   };
@@ -1092,51 +1384,89 @@ export default function MoodLabArena() {
   const startDuelRound = (roundNum) => {
     setDuelFiredShot(false);
     setDuelResult(null);
-    setDuelPhase("staredown");
+    setDuelPuffing(false);
+    setDuelPuffMeter(0);
+    setDuelPuffBonus(null);
+    setDuelMuzzleFlash(null);
+    setDuelStaredownStage(0);
+    setDuelStaredownText("");
     duelDrawTime.current = null;
+    duelReactionTime.current = null;
     setDuelTumbleweed(Math.random() > 0.5);
-    // Spawn dust particles
-    setDuelDustParticles(Array.from({length:6},(_,i)=>({id:Date.now()+i, x:Math.random()*100, y:60+Math.random()*30, size:2+Math.random()*4, dur:3+Math.random()*3})));
-    setCommentary(pick(["Eyes locked... fingers twitching... 👀","The desert wind howls... 🌪️","You can hear a pin drop... 🤫","Sweat drips... who draws first? 💧"]));
+    setDuelDustParticles(Array.from({length:8},(_,i)=>({id:Date.now()+i, x:Math.random()*100, y:55+Math.random()*35, size:2+Math.random()*5, dur:3+Math.random()*4})));
 
+    // PHASE 1: Dramatic 3...2...1 countdown
+    setDuelPhase("countdown");
+    setDuelCountdown(3);
+    playFx("tap");
+    setCommentary("Round " + (roundNum+1) + "... Get ready!");
+
+    setTimeout(()=>{ setDuelCountdown(2); playFx("tap"); },900);
+    setTimeout(()=>{ setDuelCountdown(1); playFx("select"); setCommentary("Here it comes..."); },1800);
     setTimeout(()=>{
-      setDuelPhase("ready");
-      playFx("tap");
-      setCommentary("READY...");
-    }, 800 + Math.random()*400);
+      setDuelCountdown("DRAW!");
+      playFx("whistle");
+      triggerFlash("save");
+    },2700);
 
-    // STEADY after 1-1.5s
-    duelTimerRef.current = setTimeout(()=>{
-      setDuelPhase("steady");
-      playFx("select");
-      setCommentary("STEADY...");
+    // PHASE 2: Staredown with building tension (random 1.5-4.5s)
+    setTimeout(()=>{
+      setDuelCountdown(null);
+      setDuelPhase("staredown");
+      setDuelStaredownStage(0);
+      setCommentary(pick(["Eyes locked... fingers twitching...","The desert wind howls...","You can hear a pin drop...","Sweat drips... who draws first?"]));
 
-      // DRAW after random 1-4s (prevents timing exploits)
-      const steadyDuration = 1000 + Math.random() * 3000;
+      // Build tension stages
+      const tensionBase = 1500 + Math.random() * 3000; // total staredown 1.5-4.5s
+      const stage1 = tensionBase * 0.3;
+      const stage2 = tensionBase * 0.6;
+      const stage3 = tensionBase * 0.85;
+
+      duelTimerRef.current = setTimeout(()=>{
+        setDuelStaredownStage(1);
+        setDuelStaredownText(pick(["The tension is THICK...","Not a soul moves...","Tumbleweeds hold their breath..."]));
+      }, stage1);
+
       duelSteadyTimerRef.current = setTimeout(()=>{
+        setDuelStaredownStage(2);
+        setDuelStaredownText(pick(["WHO WILL DRAW FIRST?","The air crackles with tension...","One twitch and it is over..."]));
+      }, stage2);
+
+      const stage3Timer = setTimeout(()=>{
+        setDuelStaredownStage(3);
+        setDuelStaredownText("...");
+      }, stage3);
+
+      // PHASE 3: DRAW! (puff to shoot)
+      const drawTimer = setTimeout(()=>{
         setDuelPhase("draw");
         duelDrawTime.current = Date.now();
         triggerShake();
         triggerFlash("miss");
         playFx("whistle");
-        setCommentary("🔥 DRAW! PUFF NOW!");
+        setCommentary("DRAW! HOLD TO PUFF!");
+        setDuelStaredownText("");
 
-        // Auto-timeout after 3s
+        // Auto-timeout after 3s if no puff
         duelTimerRef.current = setTimeout(()=>{
           if(duelDrawTime.current) {
-            // Player was too slow
             const aiSpeed = getAiDrawSpeed(roundNum);
-            setDuelResult({win:false, you:3000, ai:aiSpeed, timeout:true});
+            setDuelResult({win:false, you:3000, ai:aiSpeed, timeout:true, puffDur:0, bonus:null});
             setDuelPhase("result");
             duelDrawTime.current = null;
             setDuelFiredShot(true);
+            setDuelMuzzleFlash("right");
+            setTimeout(()=>setDuelMuzzleFlash(null),500);
             playFx("lose");
-            setCommentary(pick(["Too slow, partner! 🐌🤠","You froze up! AI drew ages ago!","Tumbleweed is faster than you! 💀"]));
+            setCommentary(pick(["Too slow, partner! AI drew ages ago!","You froze up! Tumbleweed is faster!","Asleep at high noon!"]));
             handleDuelRoundEnd(false, false);
           }
         }, 3000);
-      }, steadyDuration);
-    }, 1000 + Math.random()*500);
+      }, tensionBase);
+
+      // Store for cleanup
+      duelTimerRef.current = drawTimer;
+    }, 3200); // After 3..2..1..DRAW! countdown
   };
 
   const getAiDrawSpeed = (round) => {
@@ -1148,12 +1478,12 @@ export default function MoodLabArena() {
     return Math.max(180, Math.floor(base - speedup + jitter));
   };
 
+  // duelShoot = START of puff hold (mousedown/touchstart)
   const duelShoot = () => {
-    // Prevent double-tap
     if(duelFiredShot) return;
 
-    // FOUL — drew before DRAW phase
-    if(duelPhase === "staredown" || duelPhase === "ready" || duelPhase === "steady") {
+    // FOUL: puffed before DRAW phase
+    if(duelPhase === "staredown" || duelPhase === "countdown") {
       setDuelFiredShot(true);
       clearTimeout(duelTimerRef.current);
       clearTimeout(duelSteadyTimerRef.current);
@@ -1163,65 +1493,111 @@ export default function MoodLabArena() {
       playFx("error");
       triggerShake();
       setDuelStats(s=>({...s, fouls:s.fouls+1}));
-      setCommentary(pick(["FOUL! Jumped the gun! 🔫😂","Bro shot before DRAW literally 💀","Trigger happy much? Automatic loss!","Easy there cowboy! Too early! 🤠"]));
-      notify("⚠ FOUL! Drew too early!", C.red);
-      // Foul = auto-lose round
+      setCommentary(pick(["FOUL! Jumped the gun!","Shot before DRAW! Automatic loss!","Trigger happy much?","Easy there cowboy! Too early!"]));
+      notify("FOUL! Drew too early!", C.red);
       handleDuelRoundEnd(false, true);
       return;
     }
 
-    // Valid shot during DRAW phase
+    // Valid shot during DRAW phase: START puff hold
     if(duelPhase === "draw" && duelDrawTime.current) {
-      setDuelFiredShot(true);
+      const reactionMs = Date.now() - duelDrawTime.current;
+      duelReactionTime.current = reactionMs;
       clearTimeout(duelTimerRef.current);
-      const playerTime = Date.now() - duelDrawTime.current;
-      duelDrawTime.current = null;
-      const aiTime = getAiDrawSpeed(duelRound);
-      const win = playerTime < aiTime;
-      setDuelResult({win, you:playerTime, ai:aiTime});
-      setDuelPhase("result");
-
-      // Update stats
-      setDuelStats(s=>{
-        const times = [...s.drawTimes, playerTime];
-        return {
-          ...s,
-          fastestDraw: Math.min(s.fastestDraw, playerTime),
-          avgDraw: Math.round(times.reduce((a,b)=>a+b,0)/times.length),
-          drawTimes: times,
-        };
-      });
-
-      if(win) {
-        playFx("win"); playFx("crowd");
-        triggerFlash("goal");
-        spawnSmoke(10);
-        if(playerTime < 200) {
-          setCommentary("LIGHTNING FAST! " + playerTime + "ms! 🤠⚡ INHUMAN REFLEXES!");
-          spawnConfetti(40, [C.gold, C.orange, "#fff"]);
-        } else if(playerTime < 300) {
-          setCommentary("QUICK DRAW! " + playerTime + "ms! 🔥 Faster than a rattlesnake!");
-        } else {
-          setCommentary("You got 'em! " + playerTime + "ms beats " + aiTime + "ms! 🤠");
+      setDuelPhase("puffing");
+      setDuelPuffing(true);
+      setDuelPuffMeter(0);
+      duelPuffStart.current = Date.now();
+      playFx("charge");
+      // Update puff meter every 50ms
+      duelPuffInterval.current = setInterval(()=>{
+        const elapsed = (Date.now() - duelPuffStart.current) / 1000;
+        const meter = Math.min(100, elapsed / 4.5 * 100); // 4.5s = full
+        setDuelPuffMeter(meter);
+        if(Math.random()<0.3) spawnPuffBubble();
+        // Auto-release at 5s (blinker)
+        if(elapsed >= 5.0) {
+          duelReleasePuff();
         }
-        notify("🤠 Round won! " + playerTime + "ms!", C.green);
-      } else {
-        playFx("lose");
-        triggerFlash("miss");
-        spawnSmoke(6);
-        setCommentary(pick([
-          "💀 " + aiTime + "ms vs your " + playerTime + "ms! AI was faster!",
-          duelOpponentRef.current.name + " drew first! " + aiTime + "ms! 🔫",
-          "Not quick enough, partner! " + aiTime + "ms beats " + playerTime + "ms!",
-        ]));
-        notify("💀 AI drew faster! " + aiTime + "ms", C.red);
-      }
-      handleDuelRoundEnd(win, false);
+      }, 50);
     }
   };
 
+  // duelReleasePuff = END of puff hold (mouseup/touchend)
+  const duelReleasePuff = () => {
+    if(!duelPuffing) return;
+    setDuelPuffing(false);
+    setDuelFiredShot(true);
+    if(duelPuffInterval.current){ clearInterval(duelPuffInterval.current); duelPuffInterval.current=null; }
+    duelDrawTime.current = null;
+
+    const reactionMs = duelReactionTime.current || 999;
+    const puffDuration = duelPuffStart.current ? (Date.now() - duelPuffStart.current) / 1000 : 0;
+    const aiTime = getAiDrawSpeed(duelRound);
+    const win = reactionMs < aiTime;
+
+    // Determine puff bonus tier
+    let bonus = "basic"; // tap < 0.5s
+    let bonusCoins = 0;
+    let bonusLabel = "Basic Shot";
+    if(puffDuration >= 4.5) { bonus="legendary"; bonusCoins=50; bonusLabel="LEGENDARY DRAW"; }
+    else if(puffDuration >= 2.0) { bonus="power"; bonusCoins=25; bonusLabel="Power Shot"; }
+    else if(puffDuration >= 0.8) { bonus="quick"; bonusCoins=10; bonusLabel="Quick Draw"; }
+    setDuelPuffBonus(bonus);
+
+    const result = {win, you:reactionMs, ai:aiTime, puffDur:puffDuration, bonus, bonusCoins, bonusLabel};
+    setDuelResult(result);
+    setDuelPhase("result");
+
+    // Muzzle flash
+    if(win) { setDuelMuzzleFlash("left"); } else { setDuelMuzzleFlash("right"); }
+    setTimeout(()=>setDuelMuzzleFlash(null),600);
+
+    // Update stats
+    setDuelStats(s=>{
+      const times = [...s.drawTimes, reactionMs];
+      return { ...s, fastestDraw:Math.min(s.fastestDraw,reactionMs), avgDraw:Math.round(times.reduce((a,b)=>a+b,0)/times.length), drawTimes:times };
+    });
+
+    if(win) {
+      playFx("win"); playFx("crowd");
+      triggerFlash("goal");
+      spawnSmoke(12);
+      if(bonusCoins > 0) setCoins(c=>c+bonusCoins);
+      if(reactionMs < 200) {
+        setCommentary("LIGHTNING! " + reactionMs + "ms! " + bonusLabel + (bonusCoins>0?" +"+bonusCoins:"") + " INHUMAN!");
+        spawnConfetti(50, [C.gold, C.orange, "#fff"]);
+      } else if(reactionMs < 300) {
+        setCommentary("QUICK DRAW! " + reactionMs + "ms! " + bonusLabel + (bonusCoins>0?" +"+bonusCoins:""));
+        spawnConfetti(25, [C.gold, C.orange]);
+      } else {
+        setCommentary("Got em! " + reactionMs + "ms beats " + aiTime + "ms! " + bonusLabel);
+      }
+      if(bonus==="legendary") {
+        setCommentary("LEGENDARY DRAW! " + reactionMs + "ms + BLINKER PUFF! +50 coins! Lungs of steel!");
+        spawnConfetti(60, [C.gold, C.orange, "#fff", C.green, C.pink]);
+      }
+      notify("Round won! " + reactionMs + "ms" + (bonusCoins>0?" +"+bonusCoins:""), C.green);
+    } else {
+      playFx("lose");
+      triggerFlash("miss");
+      spawnSmoke(8);
+      const roasts = [
+        aiTime+"ms vs your "+reactionMs+"ms! Outdrawn!",
+        (duelOpponentRef.current||{}).name+" drew first! "+aiTime+"ms!",
+        "Not quick enough partner! "+aiTime+"ms beats "+reactionMs+"ms!",
+        "AI literally had time for coffee! "+reactionMs+"ms!",
+        "My grandma draws faster! "+reactionMs+"ms!",
+      ];
+      setCommentary(pick(roasts));
+      notify("AI drew faster! " + aiTime + "ms", C.red);
+    }
+    handleDuelRoundEnd(win, false);
+  };
+
   const handleDuelRoundEnd = (win, wasFoul) => {
-    const newResults = [...duelRoundResults, {win, foul:wasFoul, you:win?0:0, ai:0}];
+    const rr = duelResult || {};
+    const newResults = [...duelRoundResults, {win, foul:wasFoul, you:rr.you||0, ai:rr.ai||0, bonus:rr.bonus||null, bonusCoins:rr.bonusCoins||0, puffDur:rr.puffDur||0}];
     setDuelRoundResults(newResults);
     const newScore = {...duelScore};
     if(win) newScore.you++; else newScore.ai++;
@@ -1230,38 +1606,41 @@ export default function MoodLabArena() {
     // Check if match is over (best of 5 = first to 3)
     setTimeout(()=>{
       if(newScore.you >= 3 || newScore.ai >= 3) {
-        // Match over
         setDuelPhase("final");
         const matchWin = newScore.you >= 3;
+        // Total bonus coins from all rounds
+        const totalBonus = newResults.reduce((s,r)=>s+(r.win?r.bonusCoins:0),0);
         if(matchWin) {
           playFx("win"); playFx("crowd");
           spawnConfetti(60, [C.gold, C.orange, "#fff", C.green]);
-          setCoins(c=>c+150);
+          setCoins(c=>c+150+totalBonus);
           setDuelStats(s=>({...s, wins:s.wins+1, streak:s.streak+1}));
-          setCommentary(pick(["🏆 FASTEST GUN IN THE WEST! +150 coins!","CHAMPION DUELIST! " + duelOpponentRef.current.name + " tips their hat! 🤠","YOU'RE THE SHERIFF NOW! 🌟"]));
-          notify("🏆 DUEL WON! +150 coins!", C.gold);
+          setCommentary(pick(["FASTEST GUN IN THE WEST! +"+(150+totalBonus)+" coins!","CHAMPION DUELIST! "+(duelOpponentRef.current||{}).name+" tips their hat!","YOU ARE THE SHERIFF NOW!"]));
+          notify("DUEL WON! +"+(150+totalBonus)+" coins!", C.gold);
         } else {
           playFx("lose");
           setDuelStats(s=>({...s, streak:0}));
-          setCommentary(pick(["💀 " + duelOpponentRef.current.name + " wins the duel!","Outdrawn! Better luck next time, partner!","The AI claims the bounty! 🤠"]));
-          notify("💀 Duel lost!", C.red);
+          setCommentary(pick([((duelOpponentRef.current||{}).name||"AI")+" wins the duel!","Outdrawn! Better luck next time partner!","The AI claims the bounty!"]));
+          notify("Duel lost!", C.red);
         }
       } else {
-        // Next round
         setDuelPhase("round_result");
         setTimeout(()=>{
           const nextRound = duelRound + 1;
           setDuelRound(nextRound);
           startDuelRound(nextRound);
-        }, 2000);
+        }, 2500);
       }
-    }, 1500);
+    }, 1800);
   };
 
   const resetDuel = () => {
     clearTimeout(duelTimerRef.current);
     clearTimeout(duelSteadyTimerRef.current);
+    if(duelPuffInterval.current) clearInterval(duelPuffInterval.current);
     duelDrawTime.current = null;
+    duelPuffStart.current = null;
+    duelReactionTime.current = null;
     setDuelPhase("menu");
     setDuelRound(0);
     setDuelScore({you:0,ai:0});
@@ -1272,6 +1651,13 @@ export default function MoodLabArena() {
     setDuelTumbleweed(false);
     setDuelDustParticles([]);
     setDuelState(null);
+    setDuelPuffing(false);
+    setDuelPuffMeter(0);
+    setDuelPuffBonus(null);
+    setDuelCountdown(null);
+    setDuelMuzzleFlash(null);
+    setDuelStaredownStage(0);
+    setDuelStaredownText("");
   };
   // ── Sound FX — real audio files + synthesized fallbacks ──
   const playAudio = useCallback((src, vol=0.5) => {
@@ -3185,80 +3571,99 @@ export default function MoodLabArena() {
     }
     if(gameActive) {
       // ═══════════════════════════════════════════════════════════
-      // ── WILD WEST DUEL — IMMERSIVE VERSION ──
+      // ── WILD WEST DUEL — CINEMATIC WESTERN v2 ──
       // ═══════════════════════════════════════════════════════════
       if(gameActive.id==="wildwest") {
         const wwOpp = duelOpponentRef.current || DUEL_OPPONENTS[0];
         const wwPhase = duelPhase;
-        const isDrawPhase = wwPhase === "draw";
-        const isTensionPhase = ["staredown","ready","steady"].includes(wwPhase);
-        const wwSunsetIntensity = isTensionPhase ? 1.3 : isDrawPhase ? 1.8 : 1;
-        const wwVignetteIntensity = isTensionPhase ? 0.7 : isDrawPhase ? 0.9 : 0.4;
-        const wwScreenPulse = wwPhase === "ready" ? "duelHeartbeat 1.5s ease-in-out infinite" : wwPhase === "steady" ? "duelHeartbeat 1s ease-in-out infinite" : "none";
+        const isDrawPhase = wwPhase === "draw" || wwPhase === "puffing";
+        const isTensionPhase = wwPhase === "staredown";
+        const isCountdown = wwPhase === "countdown";
+        const wwSunsetIntensity = isTensionPhase ? 1.3 : isDrawPhase ? 1.8 : isCountdown ? 1.1 : 1;
+        const wwVignetteIntensity = isTensionPhase ? (0.5 + duelStaredownStage * 0.12) : isDrawPhase ? 0.9 : 0.35;
+        const wwScreenPulse = isTensionPhase ? (duelStaredownStage >= 2 ? "duelHeartbeat 0.8s ease-in-out infinite" : "duelHeartbeat 1.5s ease-in-out infinite") : "none";
+        const puffMeterColor = duelPuffMeter < 20 ? C.text3 : duelPuffMeter < 45 ? C.cyan : duelPuffMeter < 70 ? C.gold : duelPuffMeter < 90 ? C.orange : C.red;
 
         return (
-          <div style={{...overlayStyle, background:"none", overflow:"hidden", animation:screenShake?"shake 0.4s ease":"none"}} onClick={()=>{if(["staredown","ready","steady","draw"].includes(wwPhase)) duelShoot();}}>
+          <div style={{...overlayStyle, background:"none", overflow:"hidden", animation:screenShake?"shake 0.4s ease":"none"}}
+            onMouseDown={()=>{if(["staredown","countdown","draw"].includes(wwPhase)) duelShoot();}}
+            onMouseUp={()=>{if(wwPhase==="puffing") duelReleasePuff();}}
+            onTouchStart={(e)=>{e.preventDefault();if(["staredown","countdown","draw"].includes(wwPhase)) duelShoot();}}
+            onTouchEnd={(e)=>{e.preventDefault();if(wwPhase==="puffing") duelReleasePuff();}}>
 
             {/* ═══ SCREEN FLASH OVERLAY ═══ */}
             {screenFlash && <div style={{position:"absolute",inset:0,zIndex:200,pointerEvents:"none",opacity:0,
-              background:screenFlash==="goal"?"rgba(0,255,100,0.25)":screenFlash==="save"?"rgba(255,165,0,0.2)":screenFlash==="miss"?"rgba(255,50,50,0.25)":"rgba(255,0,0,0.3)",
+              background:screenFlash==="goal"?"rgba(255,215,0,0.35)":screenFlash==="save"?"rgba(255,165,0,0.2)":screenFlash==="miss"?"rgba(255,20,20,0.4)":"rgba(255,0,0,0.3)",
               animation:"flashOverlay 0.4s ease forwards",
             }}/>}
 
-            {/* ═══ DESERT SUNSET BACKGROUND ═══ */}
+            {/* ═══ DRAW RED FLASH ═══ */}
+            {isDrawPhase && <div style={{position:"absolute",inset:0,zIndex:3,pointerEvents:"none",background:"rgba(180,0,0,0.15)",animation:"duelRedPulse 0.4s ease-in-out infinite"}}/>}
+
+            {/* ═══ NIGHT SKY + STARS ═══ */}
             <div style={{position:"absolute",inset:0,background:`
               linear-gradient(180deg,
-                #1a0a2e 0%,
-                #2d1b4e ${10*wwSunsetIntensity}%,
-                #6b2fa0 ${20*wwSunsetIntensity}%,
-                #d4556b ${35*wwSunsetIntensity}%,
-                #e8875c ${50*wwSunsetIntensity}%,
-                #f4a742 ${65*wwSunsetIntensity}%,
-                #c87533 ${80*wwSunsetIntensity}%,
-                #8b4513 90%,
+                #0a0515 0%,
+                #150a2e ${8*wwSunsetIntensity}%,
+                #2d1b4e ${16*wwSunsetIntensity}%,
+                #6b2fa0 ${24*wwSunsetIntensity}%,
+                #c04060 ${35*wwSunsetIntensity}%,
+                #e8875c ${48*wwSunsetIntensity}%,
+                #f4a742 ${62*wwSunsetIntensity}%,
+                #c87533 ${78*wwSunsetIntensity}%,
+                #8b4513 88%,
                 #3d1f0a 100%)`,
-              transition:"all 0.8s ease",
-              animation: wwPhase==="steady" ? "duelHeatShimmer 3s ease-in-out infinite" : "none",
+              transition:"all 1s ease",
             }}/>
 
-            {/* Desert heat shimmer overlay */}
-            {isTensionPhase && <div style={{position:"absolute",inset:0,background:"transparent",animation:"duelHeatShimmer 4s ease-in-out infinite",opacity:0.3,backgroundImage:"repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,167,66,0.03) 2px, rgba(255,167,66,0.03) 4px)"}}/>}
+            {/* Stars in dark sky */}
+            {[...Array(12)].map((_,i)=>(
+              <div key={"star"+i} style={{position:"absolute",top:(2+Math.sin(i*1.7)*8)+"%",left:(5+i*8)+"%",width:i%3===0?3:2,height:i%3===0?3:2,borderRadius:"50%",background:"rgba(255,255,255,"+(0.3+Math.sin(i)*0.3)+")",animation:`duelStar ${2+i%3}s ease-in-out infinite`,animationDelay:i*0.3+"s",pointerEvents:"none"}}/>
+            ))}
 
-            {/* Sun glow */}
-            <div style={{position:"absolute",top:"8%",left:"50%",transform:"translateX(-50%)",width:80,height:80,borderRadius:"50%",background:"radial-gradient(circle, rgba(255,200,50,0.8) 0%, rgba(255,140,50,0.4) 30%, transparent 70%)",filter:"blur(8px)",opacity:wwSunsetIntensity*0.6,transition:"opacity 0.8s"}}/>
+            {/* Moon */}
+            <div style={{position:"absolute",top:"4%",right:"12%",width:20,height:20,borderRadius:"50%",background:"radial-gradient(circle at 35% 35%, #f0e6d0 0%, #d4c4a0 50%, rgba(180,160,120,0.4) 100%)",boxShadow:"0 0 15px rgba(240,230,200,0.3)",opacity:wwSunsetIntensity<1.3?0.7:0.3,transition:"opacity 1s",pointerEvents:"none"}}/>
+
+            {/* Heat shimmer */}
+            {(isTensionPhase||isCountdown) && <div style={{position:"absolute",inset:0,animation:"duelHeatShimmer 3s ease-in-out infinite",opacity:0.25,backgroundImage:"repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(255,167,66,0.025) 3px, rgba(255,167,66,0.025) 6px)",pointerEvents:"none"}}/>}
+
+            {/* Sun glow (bigger, more dramatic) */}
+            <div style={{position:"absolute",top:"6%",left:"50%",transform:"translateX(-50%)",width:120,height:120,borderRadius:"50%",background:"radial-gradient(circle, rgba(255,200,50,0.9) 0%, rgba(255,140,50,0.5) 25%, rgba(255,100,30,0.2) 50%, transparent 70%)",filter:"blur(12px)",opacity:wwSunsetIntensity*0.55,transition:"opacity 1s",pointerEvents:"none"}}/>
+
+            {/* Long shadow from sun */}
+            <div style={{position:"absolute",top:"12%",left:"50%",transform:"translateX(-50%)",width:4,height:"60%",background:"linear-gradient(180deg, rgba(255,180,50,0.15) 0%, transparent 100%)",filter:"blur(6px)",opacity:0.5,pointerEvents:"none"}}/>
 
             {/* ═══ WESTERN TOWN SILHOUETTE ═══ */}
-            <div style={{position:"absolute",bottom:"28%",left:0,right:0,height:80,overflow:"hidden"}}>
-              {/* Buildings silhouette */}
+            <div style={{position:"absolute",bottom:"26%",left:0,right:0,height:90,overflow:"hidden",pointerEvents:"none"}}>
               <svg viewBox="0 0 400 80" style={{width:"100%",height:"100%",position:"absolute",bottom:0}} preserveAspectRatio="none">
                 <path d="M0,80 L0,55 L15,55 L15,40 L20,38 L25,40 L25,55 L40,55 L40,35 L42,30 L44,28 L46,30 L48,35 L48,55 L55,55 L55,45 L70,45 L70,30 L75,25 L80,30 L80,55 L90,55 L90,50 L95,50 L95,38 L97,35 L99,38 L99,55 L110,55 L110,48 L130,48 L130,55 L140,55 L140,30 L142,20 L145,18 L148,20 L150,30 L150,55 L160,55 L160,42 L175,42 L175,55 L185,55 L185,35 L190,32 L195,28 L200,25 L205,28 L210,32 L215,35 L215,55 L225,55 L225,50 L240,50 L240,55 L250,55 L250,38 L252,33 L255,30 L258,33 L260,38 L260,55 L280,55 L280,45 L285,42 L290,45 L290,55 L300,55 L300,35 L310,35 L310,20 L312,15 L315,12 L318,15 L320,20 L320,55 L335,55 L335,48 L350,48 L350,55 L365,55 L365,40 L370,38 L375,40 L375,55 L390,55 L390,50 L400,50 L400,80 Z" fill="#1a0a05" opacity="0.95"/>
-                {/* Water tower */}
                 <rect x="305" y="8" width="20" height="8" fill="#1a0a05" opacity="0.95"/>
                 <rect x="312" y="16" width="6" height="20" fill="#1a0a05" opacity="0.95"/>
-                {/* Saloon sign */}
                 <rect x="185" y="32" width="30" height="5" rx="1" fill="#2a1505" opacity="0.8"/>
               </svg>
             </div>
 
             {/* ═══ GROUND / DESERT FLOOR ═══ */}
-            <div style={{position:"absolute",bottom:0,left:0,right:0,height:"28%",background:"linear-gradient(180deg, #8b4513 0%, #6b3410 30%, #4a2008 60%, #2d1205 100%)"}}/>
-            {/* Ground texture dots */}
-            <div style={{position:"absolute",bottom:0,left:0,right:0,height:"28%",backgroundImage:"radial-gradient(circle, rgba(139,69,19,0.3) 1px, transparent 1px)",backgroundSize:"20px 20px",opacity:0.5}}/>
+            <div style={{position:"absolute",bottom:0,left:0,right:0,height:"26%",background:"linear-gradient(180deg, #8b4513 0%, #6b3410 20%, #5a2a0e 40%, #4a2008 60%, #2d1205 100%)",pointerEvents:"none"}}/>
+            <div style={{position:"absolute",bottom:0,left:0,right:0,height:"26%",backgroundImage:"radial-gradient(circle, rgba(139,69,19,0.3) 1px, transparent 1px)",backgroundSize:"18px 18px",opacity:0.4,pointerEvents:"none"}}/>
+            {/* Cactus silhouettes */}
+            <div style={{position:"absolute",bottom:"24%",left:"8%",fontSize:20,opacity:0.15,transform:"scaleX(-1)",pointerEvents:"none"}}>🌵</div>
+            <div style={{position:"absolute",bottom:"23%",right:"6%",fontSize:16,opacity:0.12,pointerEvents:"none"}}>🌵</div>
 
             {/* ═══ TUMBLEWEED ═══ */}
             {duelTumbleweed && isTensionPhase && (
-              <div style={{position:"absolute",bottom:"30%",fontSize:24,animation:"duelTumbleweed 6s linear infinite",opacity:0.7,filter:"drop-shadow(0 2px 4px rgba(0,0,0,0.5))"}}>🌾</div>
+              <div style={{position:"absolute",bottom:"28%",fontSize:22,animation:"duelTumbleweed 7s linear infinite",opacity:0.6,filter:"drop-shadow(0 2px 6px rgba(0,0,0,0.6))",pointerEvents:"none"}}>🌾</div>
             )}
 
             {/* ═══ DUST PARTICLES ═══ */}
             {duelDustParticles.map(p=>(
-              <div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size,borderRadius:"50%",background:"rgba(210,170,120,0.4)",animation:`duelDust ${p.dur}s ease-in-out infinite`,filter:"blur(1px)"}}/>
+              <div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size,borderRadius:"50%",background:"rgba(210,170,120,0.35)",animation:`duelDust ${p.dur}s ease-in-out infinite`,filter:"blur(1px)",pointerEvents:"none"}}/>
             ))}
 
-            {/* ═══ VIGNETTE (dark edges during tension) ═══ */}
-            <div style={{position:"absolute",inset:0,background:`radial-gradient(ellipse at 50% 50%, transparent 40%, rgba(0,0,0,${wwVignetteIntensity}) 100%)`,transition:"all 0.8s ease",pointerEvents:"none",zIndex:2}}/>
+            {/* ═══ VIGNETTE ═══ */}
+            <div style={{position:"absolute",inset:0,background:`radial-gradient(ellipse at 50% 50%, transparent 35%, rgba(0,0,0,${wwVignetteIntensity}) 100%)`,transition:"all 1s ease",pointerEvents:"none",zIndex:2}}/>
 
-            {/* Screen pulse animation during tension */}
+            {/* Screen pulse */}
             <div style={{position:"absolute",inset:0,animation:wwScreenPulse,pointerEvents:"none",zIndex:1}}/>
 
             {/* ═══ BACK BUTTON ═══ */}
@@ -3269,62 +3674,51 @@ export default function MoodLabArena() {
               <div style={{position:"absolute",inset:0,zIndex:50,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
                 background:`radial-gradient(ellipse at 50% 30%, rgba(244,167,66,0.08) 0%, transparent 50%),
                   radial-gradient(ellipse at 50% 70%, rgba(139,69,19,0.06) 0%, transparent 50%),
-                  rgba(4,8,18,0.92)`,
-                backdropFilter:"blur(12px)",animation:"fadeIn 0.3s ease",
+                  rgba(4,8,18,0.94)`,
+                backdropFilter:"blur(16px)",animation:"fadeIn 0.3s ease",
               }}>
-                {/* Spotlight beams */}
                 <div style={{position:"absolute",top:0,left:"20%",width:2,height:"40%",background:`linear-gradient(180deg, ${C.gold}25, transparent)`,filter:"blur(3px)"}}/>
                 <div style={{position:"absolute",top:0,right:"20%",width:2,height:"40%",background:`linear-gradient(180deg, ${C.orange}25, transparent)`,filter:"blur(3px)"}}/>
 
-                {/* Title badge */}
-                <div style={{marginBottom:16,padding:"4px 16px",borderRadius:20,background:`${C.gold}12`,border:`1px solid ${C.gold}30`}}>
-                  <span style={{fontSize:9,fontWeight:800,color:C.gold,letterSpacing:3}}>🤠 HIGH NOON SHOWDOWN</span>
+                <div style={{marginBottom:16,padding:"4px 18px",borderRadius:20,background:`${C.gold}12`,border:`1px solid ${C.gold}30`}}>
+                  <span style={{fontSize:10,fontWeight:800,color:C.gold,letterSpacing:4,textTransform:"uppercase"}}>HIGH NOON SHOWDOWN</span>
                 </div>
 
-                {/* VS PLAYERS */}
                 <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:20,marginBottom:16}}>
-                  {/* Player left */}
                   <div style={{textAlign:"center",animation:"slideInLeft 0.8s ease"}}>
-                    <div style={{width:60,height:60,borderRadius:16,overflow:"hidden",border:`2px solid ${C.cyan}60`,background:`${C.cyan}10`,margin:"0 auto 6px",boxShadow:`0 0 20px ${C.cyan}30`}}>
-                      <img src={PLAYER_IMG} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}} onError={(e)=>{e.target.outerHTML='<div style="font-size:32px;text-align:center;padding-top:10px">😎</div>';}}/>
+                    <div style={{width:64,height:64,borderRadius:16,overflow:"hidden",border:`2px solid ${C.cyan}60`,background:`${C.cyan}10`,margin:"0 auto 6px",boxShadow:`0 0 20px ${C.cyan}30`}}>
+                      <img src={PLAYER_IMG} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}} onError={(e)=>{e.target.outerHTML='<div style="font-size:34px;text-align:center;padding-top:10px">😎</div>';}}/>
                     </div>
-                    <div style={{fontSize:14,fontWeight:900,color:C.cyan,textShadow:`0 0 10px ${C.cyan}40`}}>Steve</div>
-                    <div style={{fontSize:8,color:C.text3}}>Lv.24 · Gunslinger</div>
+                    <div style={{fontSize:14,fontWeight:900,color:C.cyan,textShadow:`0 0 10px ${C.cyan}40`,letterSpacing:1,textTransform:"uppercase"}}>STEVE</div>
+                    <div style={{fontSize:8,color:C.text3}}>Lv.24 Gunslinger</div>
                   </div>
 
-                  {/* VS center */}
                   <div style={{textAlign:"center",minWidth:50}}>
                     {duelIntroStage==="countdown" ? (
-                      <div style={{fontSize:60,fontWeight:900,color:C.gold,textShadow:`0 0 40px ${C.gold}60`,animation:"countPulse 0.8s ease",lineHeight:1}}>
-                        {duelIntroCount}
-                      </div>
+                      <div style={{fontSize:64,fontWeight:900,color:C.gold,textShadow:`0 0 50px ${C.gold}80, 0 0 100px ${C.gold}30`,animation:"duelCountdownPop 0.7s ease",lineHeight:1}}>{duelIntroCount}</div>
                     ) : duelIntroStage==="go" ? (
-                      <div style={{fontSize:24,fontWeight:900,color:C.green,textShadow:`0 0 20px ${C.green}60`,animation:"countPulse 0.5s ease",lineHeight:1}}>
-                        🔫
-                      </div>
+                      <div style={{fontSize:28,fontWeight:900,color:C.green,textShadow:`0 0 30px ${C.green}60`,animation:"duelCountdownPop 0.5s ease",lineHeight:1}}>DUEL!</div>
                     ) : (
-                      <div style={{fontSize:24,fontWeight:900,color:C.gold,textShadow:`0 0 20px ${C.gold}60`,animation:"countPulse 1.5s infinite"}}>VS</div>
+                      <div style={{fontSize:28,fontWeight:900,color:C.gold,textShadow:`0 0 25px ${C.gold}60`,animation:"countPulse 1.5s infinite"}}>VS</div>
                     )}
                   </div>
 
-                  {/* Opponent right */}
                   <div style={{textAlign:"center",animation:"slideInRight 0.8s ease"}}>
-                    <div style={{width:60,height:60,borderRadius:16,overflow:"hidden",border:`2px solid ${C.orange}60`,background:`${C.orange}10`,margin:"0 auto 6px",boxShadow:`0 0 20px ${C.orange}30`}}>
-                      <img src={wwOpp.img} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}} onError={(e)=>{e.target.outerHTML='<div style="font-size:32px;text-align:center;padding-top:10px">'+wwOpp.emoji+'</div>';}}/>
+                    <div style={{width:64,height:64,borderRadius:16,overflow:"hidden",border:`2px solid ${C.orange}60`,background:`${C.orange}10`,margin:"0 auto 6px",boxShadow:`0 0 20px ${C.orange}30`}}>
+                      <img src={wwOpp.img} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}} onError={(e)=>{e.target.outerHTML='<div style="font-size:34px;text-align:center;padding-top:10px">'+wwOpp.emoji+'</div>';}}/>
                     </div>
-                    <div style={{fontSize:14,fontWeight:900,color:C.orange,textShadow:`0 0 10px ${C.orange}40`}}>{wwOpp.name}</div>
-                    <div style={{fontSize:8,color:C.text3}}>{wwOpp.rank} · {wwOpp.record}</div>
+                    <div style={{fontSize:14,fontWeight:900,color:C.orange,textShadow:`0 0 10px ${C.orange}40`,letterSpacing:1}}>{wwOpp.name.toUpperCase()}</div>
+                    <div style={{fontSize:8,color:C.text3}}>{wwOpp.rank} {wwOpp.record}</div>
                   </div>
                 </div>
 
-                {/* STATS TABLE */}
                 {(duelIntroStage==="stats"||duelIntroStage==="countdown"||duelIntroStage==="go") && (
-                  <div style={{width:"80%",maxWidth:280,padding:"10px 14px",borderRadius:14,...GLASS_CLEAR,animation:"fadeIn 0.5s ease",marginBottom:12}}>
-                    <div style={{fontSize:8,fontWeight:800,color:C.gold,marginBottom:8,textAlign:"center",letterSpacing:2}}>📊 GUNSLINGER STATS</div>
+                  <div style={{width:"82%",maxWidth:280,padding:"10px 14px",borderRadius:14,...GLASS_CLEAR,animation:"fadeIn 0.5s ease",marginBottom:12}}>
+                    <div style={{fontSize:8,fontWeight:800,color:C.gold,marginBottom:8,textAlign:"center",letterSpacing:3,textTransform:"uppercase"}}>GUNSLINGER STATS</div>
                     {[
                       [duelStats.fastestDraw < 999 ? duelStats.fastestDraw+"ms" : "---","Fastest Draw",(wwOpp.speed-50+Math.floor(Math.random()*40))+"ms"],
                       [duelStats.wins+"","Duels Won",wwOpp.record.split("-")[0]],
-                      [duelStats.fouls+"","Fouls 💀",Math.floor(Math.random()*15)+""],
+                      [duelStats.fouls+"","Fouls",Math.floor(Math.random()*15)+""],
                       [duelStats.streak+"","Win Streak",Math.floor(Math.random()*8)+""],
                     ].map(([l,mid,r],i)=>(
                       <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4,padding:"2px 0",borderBottom:i<3?`1px solid ${C.border}`:"none"}}>
@@ -3336,17 +3730,14 @@ export default function MoodLabArena() {
                   </div>
                 )}
 
-                {/* GO text */}
                 {duelIntroStage==="go" && (
                   <div style={{animation:"fadeIn 0.2s ease",marginTop:4}}>
-                    <div style={{fontSize:28,fontWeight:900,color:C.gold,textShadow:`0 0 30px ${C.gold}60`,animation:"countPulse 0.5s ease",textAlign:"center"}}>
-                      HIGH NOON!
-                    </div>
+                    <div style={{fontSize:24,fontWeight:900,color:C.gold,textShadow:`0 0 30px ${C.gold}60`,animation:"countPulse 0.5s ease",textAlign:"center",letterSpacing:3,textTransform:"uppercase"}}>HIGH NOON!</div>
                   </div>
                 )}
 
-                <div style={{marginTop:12,fontSize:8,color:C.text3}}>
-                  👁 {120+Math.floor(Math.random()*80)} watching · 🤠 Best of 5
+                <div style={{marginTop:12,fontSize:8,color:C.text3,letterSpacing:1}}>
+                  {120+Math.floor(Math.random()*80)} watching -- Best of 5
                 </div>
               </div>
             )}
@@ -3354,203 +3745,238 @@ export default function MoodLabArena() {
             {/* ═══ MAIN GAME AREA ═══ */}
             <div style={{position:"relative",zIndex:10,flex:1,display:"flex",flexDirection:"column",pointerEvents: duelIntroStage ? "none" : "auto"}}>
 
-              {/* ── TOP BAR: Round tracker + Score ── */}
+              {/* ── TOP BAR: Bullet hole round tracker + Score ── */}
               <div style={{padding:"40px 16px 8px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                {/* Round dots */}
-                <div style={{display:"flex",gap:4,alignItems:"center"}}>
+                <div style={{display:"flex",gap:5,alignItems:"center"}}>
                   {[0,1,2,3,4].map(i=>{
                     const rr = duelRoundResults[i];
+                    const isCurrent = i===duelRound && !rr;
                     return (
-                      <div key={i} style={{width:20,height:20,borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,fontWeight:800,
-                        background: rr ? (rr.win ? `${C.green}30` : `${C.red}30`) : i===duelRound ? `${C.gold}30` : "rgba(255,255,255,0.06)",
-                        border: `1px solid ${rr ? (rr.win ? C.green+"60" : C.red+"60") : i===duelRound ? C.gold+"60" : "rgba(255,255,255,0.1)"}`,
-                        color: rr ? (rr.win ? C.green : C.red) : i===duelRound ? C.gold : C.text3,
-                        boxShadow: i===duelRound ? `0 0 8px ${C.gold}30` : "none",
+                      <div key={i} style={{width:22,height:22,borderRadius:11,display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:900,
+                        background: rr ? (rr.win ? `radial-gradient(circle, ${C.green}40, ${C.green}15)` : `radial-gradient(circle, ${C.red}40, ${C.red}15)`) : isCurrent ? `radial-gradient(circle, ${C.gold}30, transparent)` : "radial-gradient(circle, rgba(60,40,20,0.6), rgba(40,25,10,0.3))",
+                        border: `2px solid ${rr ? (rr.win ? C.green+"80" : C.red+"80") : isCurrent ? C.gold+"80" : "rgba(139,69,19,0.4)"}`,
+                        color: rr ? (rr.win ? C.green : C.red) : isCurrent ? C.gold : "rgba(139,69,19,0.6)",
+                        boxShadow: isCurrent ? `0 0 10px ${C.gold}40, inset 0 0 6px ${C.gold}15` : rr ? `inset 0 0 4px rgba(0,0,0,0.5)` : "inset 0 0 4px rgba(0,0,0,0.3)",
+                        textShadow: rr ? `0 0 6px ${rr.win?C.green:C.red}60` : "none",
                       }}>
-                        {rr ? (rr.win ? "W" : rr.foul ? "F" : "L") : (i+1)}
+                        {rr ? (rr.win ? "W" : rr.foul ? "F" : "L") : isCurrent ? (duelRound+1) : ""}
                       </div>
                     );
                   })}
-                  <span style={{fontSize:8,color:C.text3,marginLeft:4}}>R{duelRound+1}/5</span>
+                  <span style={{fontSize:8,color:"rgba(210,170,120,0.6)",marginLeft:4,fontWeight:700,letterSpacing:1}}>R{duelRound+1}/5</span>
                 </div>
 
-                {/* Score */}
-                <div style={{display:"flex",alignItems:"center",gap:8,padding:"4px 12px",borderRadius:12,...GLASS_CLEAR}}>
-                  <span style={{fontSize:14,fontWeight:900,color:C.cyan}}>{duelScore.you}</span>
-                  <span style={{fontSize:8,color:C.text3}}>-</span>
-                  <span style={{fontSize:14,fontWeight:900,color:C.orange}}>{duelScore.ai}</span>
+                <div style={{display:"flex",alignItems:"center",gap:8,padding:"5px 14px",borderRadius:12,background:"rgba(20,10,5,0.5)",border:"1px solid rgba(139,69,19,0.3)"}}>
+                  <span style={{fontSize:15,fontWeight:900,color:C.cyan,textShadow:`0 0 8px ${C.cyan}40`}}>{duelScore.you}</span>
+                  <span style={{fontSize:10,color:"rgba(139,69,19,0.6)",fontWeight:900}}>:</span>
+                  <span style={{fontSize:15,fontWeight:900,color:C.orange,textShadow:`0 0 8px ${C.orange}40`}}>{duelScore.ai}</span>
                 </div>
               </div>
 
-              {/* ── DUELIST ARENA — Two characters facing each other ── */}
-              <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",position:"relative",padding:"0 20px"}}>
+              {/* ── DUELIST ARENA ── */}
+              <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",position:"relative",padding:"0 16px"}}>
 
-                {/* The two duelists */}
-                <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:isTensionPhase?30:isDrawPhase?20:40,width:"100%",maxWidth:320,marginBottom:20,transition:"gap 0.8s ease"}}>
-                  {/* Player character */}
-                  <div style={{textAlign:"center",animation: wwPhase==="staredown" ? "duelBreathe 2s ease-in-out infinite" : "none",transition:"transform 0.3s"}}>
-                    <div style={{fontSize:50,filter:`drop-shadow(0 0 ${isTensionPhase?15:8}px ${C.cyan}60)`,transition:"filter 0.5s",transform: duelResult?.win ? "scale(1.2)" : duelResult && !duelResult.win ? "rotate(-20deg) translateY(10px)" : "none"}}>
-                      😎
+                {/* ═══ 3..2..1 ROUND COUNTDOWN ═══ */}
+                {isCountdown && duelCountdown && (
+                  <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",zIndex:30,pointerEvents:"none"}}>
+                    <div style={{textAlign:"center"}}>
+                      {typeof duelCountdown === "number" ? (
+                        <div style={{fontSize:100,fontWeight:900,color:C.gold,textShadow:`0 0 60px ${C.gold}80, 0 0 120px ${C.gold}30, 0 4px 20px rgba(0,0,0,0.5)`,animation:"duelCountdownPop 0.8s ease",lineHeight:1,letterSpacing:-5,fontFamily:"'Georgia',serif"}}>{duelCountdown}</div>
+                      ) : (
+                        <div style={{fontSize:42,fontWeight:900,color:C.red,textShadow:`0 0 50px ${C.red}80, 0 0 100px ${C.red}30, 0 4px 20px rgba(0,0,0,0.5)`,animation:"duelCountdownPop 0.6s ease",lineHeight:1,letterSpacing:4,textTransform:"uppercase"}}>{duelCountdown}</div>
+                      )}
                     </div>
-                    <div style={{fontSize:9,fontWeight:800,color:C.cyan,marginTop:4,textShadow:`0 0 8px ${C.cyan}40`}}>Steve</div>
-                    {/* Gun smoke on shot */}
-                    {duelResult && !duelResult.foul && (
-                      <div style={{position:"absolute",left:"25%",top:"40%",width:30,height:30,borderRadius:"50%",background:"radial-gradient(circle, rgba(200,200,200,0.6) 0%, transparent 70%)",animation:"duelSmoke 1s ease-out forwards",pointerEvents:"none"}}/>
+                  </div>
+                )}
+
+                {/* Duelist silhouettes */}
+                <div style={{display:"flex",alignItems:"flex-end",justifyContent:"space-between",width:"100%",maxWidth:340,marginBottom:10,position:"relative"}}>
+                  {/* Player (left) */}
+                  <div style={{textAlign:"center",position:"relative",animation: isTensionPhase ? "duelBreathe 2s ease-in-out infinite" : "none",transition:"transform 0.5s ease"}}>
+                    <div style={{fontSize:60,transform: duelResult?.win ? "scale(1.15)" : duelResult && !duelResult.win && !duelResult.foul ? "rotate(-25deg) translateY(15px)" : "scaleX(-1)",
+                      filter:`drop-shadow(0 8px 16px rgba(0,0,0,0.7)) drop-shadow(0 0 ${isTensionPhase?20:10}px ${C.cyan}50)`,transition:"all 0.5s ease",
+                    }}>😎</div>
+                    {isTensionPhase && duelStaredownStage >= 1 && (
+                      <div style={{position:"absolute",top:"30%",left:"55%",width:6,height:3,borderRadius:3,background:C.cyan,boxShadow:`0 0 8px ${C.cyan}, 0 0 16px ${C.cyan}60`,animation:"duelEyeGlow 1.5s ease-in-out infinite",pointerEvents:"none"}}/>
+                    )}
+                    <div style={{fontSize:10,fontWeight:900,color:C.cyan,marginTop:4,textShadow:`0 0 10px ${C.cyan}40`,letterSpacing:1,textTransform:"uppercase"}}>Steve</div>
+                    {duelMuzzleFlash==="left" && (
+                      <div style={{position:"absolute",right:-15,top:"35%",width:30,height:30,borderRadius:"50%",background:"radial-gradient(circle, rgba(255,200,50,0.9) 0%, rgba(255,100,0,0.6) 40%, transparent 70%)",animation:"duelMuzzle 0.3s ease-out forwards",pointerEvents:"none",zIndex:20}}/>
+                    )}
+                    {duelResult && !duelResult.foul && duelResult.win && (
+                      <div style={{position:"absolute",right:-10,top:"30%",width:40,height:40,borderRadius:"50%",background:"radial-gradient(circle, rgba(200,200,200,0.5) 0%, transparent 70%)",animation:"duelSmoke 1.2s ease-out forwards",pointerEvents:"none"}}/>
                     )}
                   </div>
 
-                  {/* VS / Phase text center */}
-                  <div style={{textAlign:"center",minWidth:60,position:"relative"}}>
-                    {wwPhase==="staredown" && (
-                      <div style={{fontSize:10,fontWeight:800,color:C.gold,opacity:0.6,animation:"duelBreathe 2s ease-in-out infinite",letterSpacing:2}}>
-                        . . .
-                      </div>
-                    )}
-                    {wwPhase==="ready" && (
-                      <div style={{animation:"fadeIn 0.3s ease"}}>
-                        <div style={{fontSize:28,fontWeight:900,color:C.text,textShadow:"0 0 20px rgba(255,255,255,0.3)",animation:"duelBreathe 1.5s ease-in-out infinite"}}>READY</div>
-                      </div>
-                    )}
-                    {wwPhase==="steady" && (
-                      <div style={{animation:"fadeIn 0.3s ease"}}>
-                        <div style={{fontSize:28,fontWeight:900,color:C.gold,textShadow:`0 0 25px ${C.gold}60`,animation:"duelBreathe 1s ease-in-out infinite"}}>STEADY</div>
+                  {/* Center phase display */}
+                  <div style={{textAlign:"center",flex:1,position:"relative",minHeight:80,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                    {isTensionPhase && (
+                      <div style={{animation:"fadeIn 0.5s ease",textAlign:"center"}}>
+                        <div style={{fontSize:11,fontWeight:800,color:C.gold,opacity:0.4+duelStaredownStage*0.15,animation:`duelBreathe ${2-duelStaredownStage*0.3}s ease-in-out infinite`,letterSpacing:3,textTransform:"uppercase"}}>
+                          {duelStaredownStage < 1 ? ". . ." : duelStaredownStage < 2 ? "..." : ""}
+                        </div>
+                        {duelStaredownText && (
+                          <div style={{fontSize:9,color:C.gold,opacity:0.7,marginTop:6,animation:"fadeIn 0.5s ease",letterSpacing:1,fontStyle:"italic"}}>{duelStaredownText}</div>
+                        )}
+                        <div style={{fontSize:8,color:C.red+"70",marginTop:8,letterSpacing:1}}>PUFF BEFORE DRAW = FOUL</div>
                       </div>
                     )}
                     {wwPhase==="draw" && (
-                      <div style={{animation:"fadeIn 0.1s ease"}}>
-                        <div style={{fontSize:36,fontWeight:900,color:C.red,textShadow:`0 0 40px ${C.red}`,animation:"pulse 0.3s infinite",letterSpacing:3}}>DRAW!</div>
-                        <div style={{fontSize:10,fontWeight:700,color:"#fff",marginTop:6,animation:"pulse 0.5s infinite",opacity:0.9}}>PUFF NOW!</div>
+                      <div style={{animation:"duelDrawFlash 0.15s ease"}}>
+                        <div style={{fontSize:44,fontWeight:900,color:C.red,textShadow:`0 0 50px ${C.red}, 0 0 100px ${C.red}60, 0 4px 20px rgba(0,0,0,0.5)`,animation:"countPulse 0.3s infinite",letterSpacing:5,textTransform:"uppercase"}}>DRAW!</div>
+                        <div style={{fontSize:11,fontWeight:800,color:"#fff",marginTop:8,animation:"countPulse 0.5s infinite",opacity:0.95,letterSpacing:2}}>HOLD TO PUFF!</div>
+                      </div>
+                    )}
+                    {wwPhase==="puffing" && (
+                      <div style={{animation:"fadeIn 0.2s ease",width:"100%"}}>
+                        <div style={{fontSize:14,fontWeight:900,color:puffMeterColor,textShadow:`0 0 15px ${puffMeterColor}60`,letterSpacing:2,textTransform:"uppercase",marginBottom:10}}>
+                          {duelPuffMeter<20?"PUFFING...":duelPuffMeter<45?"QUICK DRAW":duelPuffMeter<70?"POWER SHOT":duelPuffMeter<90?"MEGA PUFF":"LEGENDARY!"}
+                        </div>
+                        <div style={{width:"80%",maxWidth:200,height:14,borderRadius:7,background:"rgba(0,0,0,0.5)",border:"1px solid rgba(255,255,255,0.15)",margin:"0 auto",overflow:"hidden",position:"relative"}}>
+                          <div style={{width:duelPuffMeter+"%",height:"100%",borderRadius:6,background:`linear-gradient(90deg, ${C.cyan}, ${C.gold}, ${C.orange}, ${C.red})`,backgroundSize:"300% 100%",backgroundPosition:(duelPuffMeter)+"%",transition:"width 0.05s linear",boxShadow:`0 0 10px ${puffMeterColor}60`}}/>
+                          {[20,45,70,90].map((mark,mi)=>(
+                            <div key={mi} style={{position:"absolute",left:mark+"%",top:0,bottom:0,width:1,background:"rgba(255,255,255,0.3)"}}/>
+                          ))}
+                        </div>
+                        <div style={{display:"flex",justifyContent:"space-between",width:"80%",maxWidth:200,margin:"4px auto 0",fontSize:6,color:C.text3,letterSpacing:0.5}}>
+                          <span>TAP</span><span>QUICK</span><span>POWER</span><span>LEGEND</span>
+                        </div>
+                        <div style={{fontSize:9,color:"#fff",marginTop:6,opacity:0.7}}>Release to fire!</div>
                       </div>
                     )}
                     {(wwPhase==="result" || wwPhase==="round_result") && duelResult && (
                       <div style={{animation:"fadeIn 0.3s ease"}}>
                         {duelResult.foul ? (
                           <div>
-                            <div style={{fontSize:22,fontWeight:900,color:C.red,textShadow:`0 0 20px ${C.red}60`}}>FOUL!</div>
-                            <div style={{fontSize:8,color:C.text3,marginTop:4}}>Drew too early!</div>
+                            <div style={{fontSize:28,fontWeight:900,color:C.red,textShadow:`0 0 30px ${C.red}60`,letterSpacing:3}}>FOUL!</div>
+                            <div style={{fontSize:9,color:C.text3,marginTop:4}}>Drew too early! Round lost.</div>
                           </div>
                         ) : duelResult.win ? (
                           <div>
-                            <div style={{fontSize:18,fontWeight:900,color:C.green,textShadow:`0 0 15px ${C.green}60`}}>FASTER!</div>
-                            <div style={{fontSize:9,color:C.text3,marginTop:4}}>{duelResult.you}ms vs {duelResult.ai}ms</div>
+                            <div style={{fontSize:48,fontWeight:900,color:C.green,textShadow:`0 0 40px ${C.green}60, 0 4px 20px rgba(0,0,0,0.5)`,lineHeight:1,animation:"duelCountdownPop 0.5s ease"}}>{duelResult.you}ms</div>
+                            <div style={{fontSize:16,fontWeight:900,color:C.gold,marginTop:6,textShadow:`0 0 15px ${C.gold}40`,letterSpacing:2}}>FASTER!</div>
+                            <div style={{fontSize:9,color:C.text3,marginTop:3}}>vs AI {duelResult.ai}ms</div>
+                            {duelResult.bonusCoins > 0 && (
+                              <div style={{marginTop:6,padding:"3px 10px",borderRadius:8,background:`${C.gold}15`,border:`1px solid ${C.gold}30`,display:"inline-block"}}>
+                                <span style={{fontSize:10,fontWeight:800,color:C.gold}}>{duelResult.bonusLabel} +{duelResult.bonusCoins}</span>
+                              </div>
+                            )}
                           </div>
                         ) : (
                           <div>
-                            <div style={{fontSize:18,fontWeight:900,color:C.red,textShadow:`0 0 15px ${C.red}60`}}>SLOWER!</div>
-                            <div style={{fontSize:9,color:C.text3,marginTop:4}}>{duelResult.you}ms vs {duelResult.ai}ms</div>
+                            <div style={{fontSize:36,fontWeight:900,color:C.red,textShadow:`0 0 30px ${C.red}60`,lineHeight:1}}>{duelResult.you}ms</div>
+                            <div style={{fontSize:16,fontWeight:900,color:C.red,marginTop:6,letterSpacing:2}}>OUTDRAWN!</div>
+                            <div style={{fontSize:9,color:C.text3,marginTop:3}}>AI drew at {duelResult.ai}ms</div>
                           </div>
                         )}
                       </div>
                     )}
                   </div>
 
-                  {/* AI character */}
-                  <div style={{textAlign:"center",animation: wwPhase==="staredown" ? "duelBreathe 2.2s ease-in-out infinite" : "none",transition:"transform 0.3s"}}>
-                    <div style={{fontSize:50,filter:`drop-shadow(0 0 ${isTensionPhase?15:8}px ${C.orange}60)`,transition:"filter 0.5s",transform: duelResult && !duelResult.win && !duelResult.foul ? "scale(1.2)" : duelResult?.win ? "rotate(20deg) translateY(10px)" : duelResult?.foul ? "scale(1.1)" : "none"}}>
-                      {wwOpp.emoji}
-                    </div>
-                    <div style={{fontSize:9,fontWeight:800,color:C.orange,marginTop:4,textShadow:`0 0 8px ${C.orange}40`}}>{wwOpp.name.split(" ")[0]}</div>
-                    {/* Gun smoke on AI shot */}
+                  {/* AI (right) */}
+                  <div style={{textAlign:"center",position:"relative",animation: isTensionPhase ? "duelBreathe 2.2s ease-in-out infinite" : "none",transition:"transform 0.5s ease"}}>
+                    <div style={{fontSize:60,transform: duelResult && !duelResult.win && !duelResult.foul ? "scale(1.15)" : duelResult?.win ? "rotate(25deg) translateY(15px)" : duelResult?.foul ? "scale(1.05)" : "none",
+                      filter:`drop-shadow(0 8px 16px rgba(0,0,0,0.7)) drop-shadow(0 0 ${isTensionPhase?20:10}px ${C.orange}50)`,transition:"all 0.5s ease",
+                    }}>{wwOpp.emoji}</div>
+                    {isTensionPhase && duelStaredownStage >= 1 && (
+                      <div style={{position:"absolute",top:"30%",right:"55%",width:6,height:3,borderRadius:3,background:C.orange,boxShadow:`0 0 8px ${C.orange}, 0 0 16px ${C.orange}60`,animation:"duelEyeGlow 1.3s ease-in-out infinite",pointerEvents:"none"}}/>
+                    )}
+                    <div style={{fontSize:10,fontWeight:900,color:C.orange,marginTop:4,textShadow:`0 0 10px ${C.orange}40`,letterSpacing:1,textTransform:"uppercase"}}>{wwOpp.name.split(" ")[0]}</div>
+                    {duelMuzzleFlash==="right" && (
+                      <div style={{position:"absolute",left:-15,top:"35%",width:30,height:30,borderRadius:"50%",background:"radial-gradient(circle, rgba(255,200,50,0.9) 0%, rgba(255,100,0,0.6) 40%, transparent 70%)",animation:"duelMuzzle 0.3s ease-out forwards",pointerEvents:"none",zIndex:20}}/>
+                    )}
                     {duelResult && !duelResult.foul && !duelResult.win && (
-                      <div style={{position:"absolute",right:"25%",top:"40%",width:30,height:30,borderRadius:"50%",background:"radial-gradient(circle, rgba(200,200,200,0.6) 0%, transparent 70%)",animation:"duelSmoke 1s ease-out forwards",pointerEvents:"none"}}/>
+                      <div style={{position:"absolute",left:-10,top:"30%",width:40,height:40,borderRadius:"50%",background:"radial-gradient(circle, rgba(200,200,200,0.5) 0%, transparent 70%)",animation:"duelSmoke 1.2s ease-out forwards",pointerEvents:"none"}}/>
                     )}
                   </div>
                 </div>
-
-                {/* ── Tension indicator / Instructions ── */}
-                {wwPhase==="staredown" && (
-                  <div style={{animation:"fadeIn 0.5s ease",textAlign:"center"}}>
-                    <div style={{fontSize:9,color:C.text3,letterSpacing:2,textTransform:"uppercase"}}>Eyes locked... wait for DRAW</div>
-                    <div style={{fontSize:8,color:C.red+"80",marginTop:4}}>Puff before DRAW = FOUL</div>
-                  </div>
-                )}
               </div>
 
               {/* ── BOTTOM PANEL ── */}
               <div style={{padding:"8px 16px 20px",position:"relative",zIndex:20}}>
-                {/* Commentator bar */}
                 {commentatorText && (
-                  <div style={{textAlign:"center",padding:"6px 14px",borderRadius:12,...GLASS_CARD,marginBottom:8,animation:"fadeIn 0.3s ease"}}>
-                    <span style={{fontSize:10,fontWeight:700,color:C.gold}}>{commentatorText}</span>
+                  <div style={{textAlign:"center",padding:"7px 14px",borderRadius:12,background:"rgba(20,10,5,0.6)",border:"1px solid rgba(139,69,19,0.3)",marginBottom:8,animation:"fadeIn 0.3s ease"}}>
+                    <span style={{fontSize:10,fontWeight:700,color:C.gold,letterSpacing:0.5}}>{commentatorText}</span>
                   </div>
                 )}
 
-                {/* Stats bar during gameplay */}
-                {!["final","intro"].includes(wwPhase) && !duelIntroStage && (
-                  <div style={{display:"flex",justifyContent:"space-around",padding:"8px 12px",borderRadius:14,...GLASS_CARD}}>
+                {!["final","intro"].includes(wwPhase) && !duelIntroStage && !isCountdown && (
+                  <div style={{display:"flex",justifyContent:"space-around",padding:"8px 12px",borderRadius:14,background:"rgba(20,10,5,0.5)",border:"1px solid rgba(139,69,19,0.2)"}}>
                     <div style={{textAlign:"center"}}>
                       <div style={{fontSize:12,fontWeight:900,color:C.cyan}}>{duelStats.fastestDraw < 999 ? duelStats.fastestDraw+"ms" : "---"}</div>
-                      <div style={{fontSize:7,color:C.text3}}>Best Draw</div>
+                      <div style={{fontSize:7,color:"rgba(210,170,120,0.5)",letterSpacing:0.5}}>Best Draw</div>
                     </div>
                     <div style={{textAlign:"center"}}>
                       <div style={{fontSize:12,fontWeight:900,color:C.gold}}>{duelStats.avgDraw || "---"}{duelStats.avgDraw ? "ms" : ""}</div>
-                      <div style={{fontSize:7,color:C.text3}}>Avg Draw</div>
+                      <div style={{fontSize:7,color:"rgba(210,170,120,0.5)",letterSpacing:0.5}}>Avg Draw</div>
                     </div>
                     <div style={{textAlign:"center"}}>
                       <div style={{fontSize:12,fontWeight:900,color:C.red}}>{duelStats.fouls}</div>
-                      <div style={{fontSize:7,color:C.text3}}>Fouls</div>
+                      <div style={{fontSize:7,color:"rgba(210,170,120,0.5)",letterSpacing:0.5}}>Fouls</div>
                     </div>
                     <div style={{textAlign:"center"}}>
                       <div style={{fontSize:12,fontWeight:900,color:C.green}}>{duelStats.streak}</div>
-                      <div style={{fontSize:7,color:C.text3}}>Streak</div>
+                      <div style={{fontSize:7,color:"rgba(210,170,120,0.5)",letterSpacing:0.5}}>Streak</div>
                     </div>
                   </div>
                 )}
 
-                {/* FINAL RESULTS PANEL */}
                 {wwPhase==="final" && (
-                  <div style={{textAlign:"center",padding:"16px",borderRadius:16,...GLASS_CARD,animation:"fadeIn 0.5s ease"}}>
-                    <div style={{fontSize:32,marginBottom:4}}>{duelScore.you >= 3 ? "🏆" : "💀"}</div>
-                    <div style={{fontSize:22,fontWeight:900,color:duelScore.you>=3?C.gold:C.red,textShadow:`0 0 20px ${duelScore.you>=3?C.gold:C.red}40`,marginBottom:4}}>
-                      {duelScore.you >= 3 ? "FASTEST GUN IN THE WEST!" : "OUTDRAWN!"}
+                  <div style={{textAlign:"center",padding:"18px",borderRadius:16,background:"rgba(15,8,3,0.8)",border:"1px solid rgba(139,69,19,0.4)",animation:"fadeIn 0.5s ease",boxShadow:"0 8px 32px rgba(0,0,0,0.5)"}}>
+                    <div style={{fontSize:36,marginBottom:6}}>{duelScore.you >= 3 ? "🏆" : "💀"}</div>
+                    <div style={{fontSize:24,fontWeight:900,color:duelScore.you>=3?C.gold:C.red,textShadow:`0 0 30px ${duelScore.you>=3?C.gold:C.red}50`,marginBottom:6,letterSpacing:2,textTransform:"uppercase"}}>
+                      {duelScore.you >= 3 ? "FASTEST GUN!" : "OUTDRAWN!"}
                     </div>
-                    <div style={{fontSize:11,color:C.text2,marginBottom:12}}>
+                    <div style={{fontSize:12,color:C.text2,marginBottom:14,letterSpacing:1}}>
                       Final Score: {duelScore.you} - {duelScore.ai}
                     </div>
 
-                    {/* Round recap */}
-                    <div style={{display:"flex",justifyContent:"center",gap:6,marginBottom:12}}>
+                    <div style={{display:"flex",justifyContent:"center",gap:4,marginBottom:14,flexWrap:"wrap"}}>
                       {duelRoundResults.map((rr,i)=>(
-                        <div key={i} style={{padding:"4px 8px",borderRadius:8,background:rr.win?`${C.green}15`:`${C.red}15`,border:`1px solid ${rr.win?C.green:C.red}30`,fontSize:8,fontWeight:700,color:rr.win?C.green:C.red}}>
-                          R{i+1}: {rr.foul?"FOUL":rr.win?"WIN":"LOSS"}
+                        <div key={i} style={{padding:"5px 8px",borderRadius:8,background:rr.win?`${C.green}12`:`${C.red}12`,border:`1px solid ${rr.win?C.green:C.red}25`,textAlign:"center",minWidth:52}}>
+                          <div style={{fontSize:9,fontWeight:800,color:rr.win?C.green:C.red}}>{rr.foul?"FOUL":rr.win?"WIN":"LOSS"}</div>
+                          {!rr.foul && rr.you > 0 && <div style={{fontSize:7,color:C.text3,marginTop:1}}>{rr.you}ms</div>}
+                          {rr.bonus && rr.bonusCoins > 0 && <div style={{fontSize:6,color:C.gold,marginTop:1}}>+{rr.bonusCoins}</div>}
                         </div>
                       ))}
                     </div>
 
-                    {/* Stats summary */}
-                    <div style={{display:"flex",justifyContent:"space-around",marginBottom:12,padding:"8px",borderRadius:10,background:"rgba(255,255,255,0.03)"}}>
+                    <div style={{display:"flex",justifyContent:"space-around",marginBottom:14,padding:"8px",borderRadius:10,background:"rgba(255,255,255,0.02)",border:"1px solid rgba(139,69,19,0.15)"}}>
                       <div style={{textAlign:"center"}}>
-                        <div style={{fontSize:13,fontWeight:900,color:C.cyan}}>{duelStats.fastestDraw < 999 ? duelStats.fastestDraw+"ms" : "---"}</div>
-                        <div style={{fontSize:7,color:C.text3}}>Fastest</div>
+                        <div style={{fontSize:14,fontWeight:900,color:C.cyan}}>{duelStats.fastestDraw < 999 ? duelStats.fastestDraw+"ms" : "---"}</div>
+                        <div style={{fontSize:7,color:"rgba(210,170,120,0.5)"}}>Fastest</div>
                       </div>
                       <div style={{textAlign:"center"}}>
-                        <div style={{fontSize:13,fontWeight:900,color:C.gold}}>{duelStats.avgDraw||"---"}{duelStats.avgDraw?"ms":""}</div>
-                        <div style={{fontSize:7,color:C.text3}}>Average</div>
+                        <div style={{fontSize:14,fontWeight:900,color:C.gold}}>{duelStats.avgDraw||"---"}{duelStats.avgDraw?"ms":""}</div>
+                        <div style={{fontSize:7,color:"rgba(210,170,120,0.5)"}}>Average</div>
                       </div>
                       <div style={{textAlign:"center"}}>
-                        <div style={{fontSize:13,fontWeight:900,color:C.red}}>{duelStats.fouls}</div>
-                        <div style={{fontSize:7,color:C.text3}}>Fouls</div>
+                        <div style={{fontSize:14,fontWeight:900,color:C.red}}>{duelStats.fouls}</div>
+                        <div style={{fontSize:7,color:"rgba(210,170,120,0.5)"}}>Fouls</div>
                       </div>
                     </div>
 
-                    {duelScore.you >= 3 && <div style={{fontSize:11,color:C.gold,fontWeight:700,marginBottom:8}}>+150 coins earned! 🪙</div>}
+                    {duelScore.you >= 3 && (
+                      <div style={{fontSize:12,color:C.gold,fontWeight:800,marginBottom:10,letterSpacing:1}}>
+                        +{150+duelRoundResults.reduce((s,r)=>s+(r.win?r.bonusCoins:0),0)} coins earned!
+                      </div>
+                    )}
 
                     <div style={{display:"flex",gap:8,justifyContent:"center"}}>
-                      <div onClick={(e)=>{e.stopPropagation();startDuel();}} style={{padding:"10px 20px",borderRadius:10,cursor:"pointer",background:`${C.gold}15`,border:`1px solid ${C.gold}30`,fontSize:13,fontWeight:700,color:C.gold}}>
-                        Rematch 🔄
+                      <div onClick={(e)=>{e.stopPropagation();startDuel();}} style={{padding:"10px 22px",borderRadius:10,cursor:"pointer",background:`linear-gradient(135deg, ${C.gold}20, ${C.gold}08)`,border:`1px solid ${C.gold}40`,fontSize:13,fontWeight:800,color:C.gold,letterSpacing:1}}>
+                        REMATCH
                       </div>
-                      <div onClick={(e)=>{e.stopPropagation();resetDuel();setGameActive(null);}} style={{padding:"10px 20px",borderRadius:10,cursor:"pointer",background:"rgba(255,255,255,0.05)",border:`1px solid ${C.border}`,fontSize:13,fontWeight:700,color:C.text2}}>
+                      <div onClick={(e)=>{e.stopPropagation();resetDuel();setGameActive(null);}} style={{padding:"10px 22px",borderRadius:10,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:`1px solid rgba(139,69,19,0.3)`,fontSize:13,fontWeight:700,color:C.text2}}>
                         Exit
                       </div>
                     </div>
                   </div>
                 )}
 
-                {/* Audience reaction bar */}
                 {isTensionPhase && (
                   <div style={{display:"flex",justifyContent:"center",gap:6,marginTop:8,animation:"fadeIn 0.5s ease"}}>
                     {["😰","🤫","👀","💨","🔥"].map((e,i)=>(
-                      <div key={i} style={{width:28,height:28,borderRadius:14,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,...LG.pill,cursor:"pointer",animation:`duelBreathe ${2+i*0.3}s ease-in-out infinite`}}
+                      <div key={i} style={{width:28,height:28,borderRadius:14,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,background:"rgba(20,10,5,0.4)",border:"1px solid rgba(139,69,19,0.2)",cursor:"pointer",animation:`duelBreathe ${2+i*0.3}s ease-in-out infinite`}}
                         onClick={(ev)=>{ev.stopPropagation();playFx("tap");}}>
                         {e}
                       </div>
@@ -3560,11 +3986,15 @@ export default function MoodLabArena() {
               </div>
             </div>
 
-            {/* ═══ CONFETTI PARTICLES ═══ */}
+            {/* ═══ CONFETTI ═══ */}
             {confettiParticles.map(p=>(
               <div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size,background:p.color,borderRadius:p.size>4?"1px":"50%",animation:`confettiFall 2s ease-in forwards`,transform:`rotate(${p.rot}deg)`,zIndex:60,pointerEvents:"none"}}/>
             ))}
-            {/* ═══ SMOKE PARTICLES ═══ */}
+            {/* ═══ PUFF BUBBLES ═══ */}
+            {puffBubbles.map(b=>(
+              <div key={b.id} style={{position:"absolute",left:b.x+"%",bottom:"15%",width:b.size,height:b.size,borderRadius:"50%",background:`radial-gradient(circle, rgba(200,220,255,0.25) 0%, transparent 70%)`,animation:`bubbleFloat ${b.dur}s ease-out forwards`,zIndex:55,pointerEvents:"none"}}/>
+            ))}
+            {/* ═══ SMOKE ═══ */}
             {smokeParticles.map(p=>(
               <div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size,borderRadius:"50%",background:"radial-gradient(circle, rgba(200,200,200,0.3) 0%, transparent 70%)",animation:`smokeRise ${p.dur}s ease-out forwards`,zIndex:55,pointerEvents:"none"}}/>
             ))}
@@ -3772,8 +4202,8 @@ export default function MoodLabArena() {
               </div>
             )}
 
-            {/* ═══ STADIUM BACKGROUND ═══ */}
-            <div style={{position:"absolute",inset:0,background:`
+            {/* ═══ STADIUM BACKGROUND (hidden when FK3 3D is active) ═══ */}
+            {!isFK3 && <><div style={{position:"absolute",inset:0,background:`
               radial-gradient(ellipse at 50% 0%, rgba(0,229,255,0.08) 0%, transparent 50%),
               radial-gradient(ellipse at 20% 80%, rgba(127,255,0,0.05) 0%, transparent 40%),
               radial-gradient(ellipse at 80% 80%, rgba(168,85,247,0.05) 0%, transparent 40%),
@@ -3815,11 +4245,14 @@ export default function MoodLabArena() {
                 animation:`pulse ${2+Math.random()*3}s infinite ${Math.random()*2}s`,
               }}/>
             ))}
+            </>}
 
             {overlayBack(()=>{setGameActive(null);setKickState(null);setIsFK2Mode(false);isFK2Ref.current=false;setIsFK3Mode(false);isFK3Ref.current=false;})}
 
+            {/* ═══ FK3 FULLSCREEN 3D CANVAS — Behind all UI ═══ */}
+            {isFK3 && <div ref={threeCanvasRef} style={{position:"absolute",inset:0,zIndex:1,pointerEvents:"none"}} />}
 
-<div style={{position:"relative",zIndex:2,flex:1,display:"flex",flexDirection:"column",alignItems:"center",padding:"38px 14px 52px",height:"100%",overflowY:"auto"}}>
+<div style={{position:"relative",zIndex:isFK3?3:2,flex:1,display:"flex",flexDirection:"column",alignItems:"center",padding:"38px 14px 52px",height:"100%",overflowY:"auto"}}>
 
               {/* ═══ VS ARENA HEADER WITH CHARACTER IMAGES ═══ */}
               <div style={{width:"100%",maxWidth:390,marginTop:28,marginBottom:4}}>
@@ -3898,21 +4331,38 @@ export default function MoodLabArena() {
                 )}
               </div>
 
-              {/* ═══ FK3 3D CANVAS (shoot phases only) ═══ */}
-              {isFK3 && isShootPhase && (
-                <div style={{position:"relative",width:300,height:200,marginBottom:4,borderRadius:12,overflow:"hidden",border:`2px solid ${C.purple}30`,boxShadow:`0 0 30px ${C.purple}15, 0 8px 32px rgba(0,0,0,0.4)`}}>
-                  <div ref={threeCanvasRef} style={{width:300,height:200}} />
+              {/* ═══ FK3 3D OVERLAY INFO (fullscreen canvas is behind) ═══ */}
+              {isFK3 && (isShootPhase || isSavePhase) && (
+                <div style={{textAlign:"center",marginBottom:4}}>
                   {/* 3D badge */}
-                  <div style={{position:"absolute",top:6,right:6,padding:"2px 6px",borderRadius:6,background:`${C.purple}30`,border:`1px solid ${C.purple}50`,fontSize:7,fontWeight:800,color:C.purple,zIndex:10}}>3D VIEW</div>
-                  {/* FK2 aim overlay info on 3D */}
-                  {kickState==="shoot_x" && <div style={{position:"absolute",bottom:6,left:"50%",transform:"translateX(-50%)",padding:"2px 10px",borderRadius:6,background:"rgba(0,0,0,0.6)",fontSize:8,fontWeight:700,color:C.cyan,zIndex:10}}>{"← HORIZONTAL AIM →"}</div>}
-                  {kickState==="shoot_y" && <div style={{position:"absolute",bottom:6,left:"50%",transform:"translateX(-50%)",padding:"2px 10px",borderRadius:6,background:"rgba(0,0,0,0.6)",fontSize:8,fontWeight:700,color:C.orange,zIndex:10}}>{"↕ VERTICAL AIM"}</div>}
-                  {kickState==="flight" && <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",fontSize:24,animation:"pulse 0.5s infinite",zIndex:10,pointerEvents:"none"}}>⚽</div>}
+                  <div style={{display:"inline-block",padding:"2px 8px",borderRadius:8,background:`${C.purple}25`,border:`1px solid ${C.purple}40`,fontSize:8,fontWeight:800,color:C.purple,marginBottom:4}}>3D VIEW</div>
+                  {kickState==="shoot_x" && <div style={{padding:"3px 12px",borderRadius:8,background:"rgba(0,0,0,0.5)",fontSize:9,fontWeight:700,color:C.cyan,display:"inline-block",marginLeft:6}}>{"<< HORIZONTAL AIM >>"}</div>}
+                  {kickState==="shoot_y" && <div style={{padding:"3px 12px",borderRadius:8,background:"rgba(0,0,0,0.5)",fontSize:9,fontWeight:700,color:C.orange,display:"inline-block",marginLeft:6}}>{"VERTICAL AIM"}</div>}
+                  {kickState==="flight" && <div style={{fontSize:20,animation:"pulse 0.5s infinite",marginTop:4}}>{"SHOT!"}</div>}
                 </div>
               )}
 
-              {/* ═══ GOAL FRAME — 2D (FK1/FK2, or FK3 save phase) ═══ */}
-              {(!isFK3 || !isShootPhase) && <><div style={{perspective:"600px",marginBottom:4}}>
+              {/* ═══ FK3 SAVE PHASE — 3D zone tap overlay ═══ */}
+              {isFK3 && kickState==="save_dive" && (
+                <div style={{position:"fixed",top:"35%",left:"5%",right:"5%",bottom:"25%",zIndex:5,display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gridTemplateRows:"1fr 1fr",gap:4,pointerEvents:"auto"}}>
+                  {[3,4,5,0,1,2].map(z => (
+                    <div key={z} onClick={()=>kickDive(z)} style={{
+                      borderRadius:12,cursor:"pointer",
+                      background:`rgba(255,165,0,0.08)`,
+                      border:`1px solid ${C.orange}30`,
+                      display:"flex",alignItems:"center",justifyContent:"center",
+                      fontSize:20,color:`${C.orange}80`,
+                      backdropFilter:"blur(2px)",
+                      transition:"background 0.15s",
+                    }}>
+                      {z<3?"🧤":"🤸"}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* ═══ GOAL FRAME — 2D (FK1/FK2 only, not FK3) ═══ */}
+              {!isFK3 && <><div style={{perspective:"600px",marginBottom:4}}>
                 <div style={{
                   position:"relative",width:goalW,height:goalH,cursor:kickState==="shoot"||kickState==="save_dive"?"pointer":"default",
                   border:`3px solid rgba(255,255,255,0.2)`,
@@ -7144,6 +7594,12 @@ export default function MoodLabArena() {
         @keyframes duelDust{0%,100%{transform:translateX(0) translateY(0);opacity:0.2}25%{transform:translateX(15px) translateY(-8px);opacity:0.5}50%{transform:translateX(30px) translateY(2px);opacity:0.3}75%{transform:translateX(10px) translateY(-5px);opacity:0.4}}
         @keyframes duelBreathe{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.03);opacity:0.85}}
         @keyframes duelSmoke{0%{transform:scale(0.5);opacity:0.6}100%{transform:scale(3) translateY(-40px);opacity:0}}
+        @keyframes duelCountdownPop{0%{transform:scale(2.5);opacity:0}30%{transform:scale(0.9);opacity:1}50%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
+        @keyframes duelRedPulse{0%,100%{opacity:0.15}50%{opacity:0.3}}
+        @keyframes duelDrawFlash{0%{transform:scale(3);opacity:0}100%{transform:scale(1);opacity:1}}
+        @keyframes duelEyeGlow{0%,100%{opacity:0.5;box-shadow:0 0 4px currentColor}50%{opacity:1;box-shadow:0 0 12px currentColor,0 0 24px currentColor}}
+        @keyframes duelMuzzle{0%{transform:scale(0.3);opacity:1}50%{transform:scale(1.5);opacity:0.8}100%{transform:scale(2);opacity:0}}
+        @keyframes duelStar{0%,100%{opacity:0.2}50%{opacity:0.8}}
         *{-webkit-tap-highlight-color:transparent;user-select:none;box-sizing:border-box}
         input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
         input[type=number]{-moz-appearance:textfield}
