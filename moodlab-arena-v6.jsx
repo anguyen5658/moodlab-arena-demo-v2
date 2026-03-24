@@ -417,6 +417,68 @@ export default function MoodLabArena() {
   const [audioOn, setAudioOn] = useState(true);
   const [arcadeTab, setArcadeTab] = useState("games");
 
+  // ── Balloon Pop ──
+  const [bpPhase, setBpPhase] = useState(null);
+  const [bpPlayers, setBpPlayers] = useState([]);
+  const [bpCurrentTurn, setBpCurrentTurn] = useState(0);
+  const [bpAirLevel, setBpAirLevel] = useState(0);
+  const [bpPopThreshold, setBpPopThreshold] = useState(100);
+  const [bpPuffAmount, setBpPuffAmount] = useState(0);
+  const [bpCharging, setBpCharging] = useState(false);
+  const [bpComment, setBpComment] = useState("");
+  const [bpRound, setBpRound] = useState(0);
+  const [bpLoser, setBpLoser] = useState(null);
+  const [bpHistory, setBpHistory] = useState([]);
+  const [bpShaking, setBpShaking] = useState(false);
+  const [bpPopping, setBpPopping] = useState(false);
+  const [bpBalloonColor, setBpBalloonColor] = useState("#4CAF50");
+  const [bpMinPuff] = useState(5);
+  const bpChargeInterval = useRef(null);
+  const bpPuffStart = useRef(0);
+
+  // ── Russian Roulette ──
+  const [rrPhase, setRrPhase] = useState(null); // null|"intro"|"spinning"|"player_turn"|"puffing"|"click"|"bang"|"result"
+  const [rrPlayers, setRrPlayers] = useState([]);
+  const [rrCurrentTurn, setRrCurrentTurn] = useState(0);
+  const [rrChamber, setRrChamber] = useState(0); // which chamber has the bullet (0-5)
+  const [rrCurrentChamber, setRrCurrentChamber] = useState(0); // current chamber position
+  const [rrComment, setRrComment] = useState("");
+  const [rrEliminated, setRrEliminated] = useState(null);
+  const [rrRound, setRrRound] = useState(0);
+  const [rrSpinAngle, setRrSpinAngle] = useState(0);
+
+  // ── Puff Pong ──
+  const [ppPhase, setPpPhase] = useState(null); // null|"playing"|"scored"|"result"
+  const [ppBallX, setPpBallX] = useState(50);
+  const [ppBallY, setPpBallY] = useState(50);
+  const [ppBallDx, setPpBallDx] = useState(2);
+  const [ppBallDy, setPpBallDy] = useState(1.5);
+  const [ppPaddleY, setPpPaddleY] = useState(50);
+  const [ppAiPaddleY, setPpAiPaddleY] = useState(50);
+  const [ppScore, setPpScore] = useState({you:0, ai:0});
+  const [ppComment, setPpComment] = useState("");
+  const ppInterval = useRef(null);
+
+  // ── Rhythm Puff ──
+  const [rpPhase, setRpPhase] = useState(null); // null|"playing"|"result"
+  const [rpNotes, setRpNotes] = useState([]);
+  const [rpScore, setRpScore] = useState(0);
+  const [rpCombo, setRpCombo] = useState(0);
+  const [rpMaxCombo, setRpMaxCombo] = useState(0);
+  const [rpMisses, setRpMisses] = useState(0);
+  const [rpComment, setRpComment] = useState("");
+  const [rpBeat, setRpBeat] = useState(0);
+  const rpInterval = useRef(null);
+
+  // ── Tug of War ──
+  const [towPhase, setTowPhase] = useState(null); // null|"playing"|"result"
+  const [towPosition, setTowPosition] = useState(50); // 0=AI wins, 100=you win, 50=center
+  const [towTimer, setTowTimer] = useState(30);
+  const [towPuffs, setTowPuffs] = useState(0);
+  const [towAiPuffs, setTowAiPuffs] = useState(0);
+  const [towComment, setTowComment] = useState("");
+  const towInterval = useRef(null);
+
   // ── Visual Effects Engine ──
   const [screenShake, setScreenShake] = useState(false);
   const [screenFlash, setScreenFlash] = useState(null); // null | "goal" | "save" | "miss" | "blinker"
@@ -685,61 +747,94 @@ export default function MoodLabArena() {
     topNet.position.set(0, gH, -0.9);
     scene.add(topNet);
 
-    // ── BALL — Bigger, textured look ──
-    const ballGeo = new THREE.SphereGeometry(0.22, 24, 24);
-    const ballMat = new THREE.MeshStandardMaterial({ color:0xffffff, roughness:0.25, metalness:0.05 });
+    // ── BALL — Realistic pentagon-panel pattern ──
+    const ballGeo = new THREE.IcosahedronGeometry(0.22, 1);
+    const ballMat = new THREE.MeshStandardMaterial({ color:0xffffff, roughness:0.25, metalness:0.05, flatShading:true });
     const ball = new THREE.Mesh(ballGeo, ballMat);
     ball.position.set(0, 0.22, 11);
     ball.castShadow = true;
     scene.add(ball);
-    // Ball pentagon patches (visual detail)
-    const patchGeo = new THREE.SphereGeometry(0.225, 24, 24);
-    const patchMat = new THREE.MeshBasicMaterial({ color:0x222222, wireframe:true, transparent:true, opacity:0.15 });
+    // Pentagon patch wireframe overlay
+    const patchGeo = new THREE.IcosahedronGeometry(0.225, 1);
+    const patchMat = new THREE.MeshBasicMaterial({ color:0x111111, wireframe:true, transparent:true, opacity:0.25 });
     const ballPatches = new THREE.Mesh(patchGeo, patchMat);
     ball.add(ballPatches);
+    // Dark pentagon accent patches (alternating faces)
+    const darkPatchGeo = new THREE.IcosahedronGeometry(0.218, 1);
+    const darkPatchMat = new THREE.MeshStandardMaterial({ color:0x222222, roughness:0.4, metalness:0.1, flatShading:true, transparent:true, opacity:0.35 });
+    const darkPatches = new THREE.Mesh(darkPatchGeo, darkPatchMat);
+    ball.add(darkPatches);
+    // Subtle glow ring around ball
+    const ballGlowGeo = new THREE.RingGeometry(0.24, 0.30, 16);
+    const ballGlowMat = new THREE.MeshBasicMaterial({ color:0xffffff, transparent:true, opacity:0.08, side:THREE.DoubleSide });
+    const ballGlow = new THREE.Mesh(ballGlowGeo, ballGlowMat);
+    ballGlow.rotation.x = -Math.PI/2;
+    ballGlow.position.set(0, 0.01, 0);
+    ball.add(ballGlow);
 
-    // ── KEEPER — Detailed humanoid ──
+    // ── KEEPER — Bright neon-visible humanoid ──
     const keeperGroup = new THREE.Group();
-    // Legs
-    const legGeo = new THREE.CylinderGeometry(0.08, 0.07, 0.9, 8);
-    const legMat = new THREE.MeshStandardMaterial({ color:0x111111, roughness:0.7 });
+    // Legs (dark shorts)
+    const legGeo = new THREE.CylinderGeometry(0.09, 0.08, 0.9, 8);
+    const legMat = new THREE.MeshStandardMaterial({ color:0x222222, roughness:0.6 });
     const lLeg = new THREE.Mesh(legGeo, legMat);
-    lLeg.position.set(-0.12, 0.45, 0);
+    lLeg.position.set(-0.13, 0.45, 0);
     keeperGroup.add(lLeg);
     const rLeg = new THREE.Mesh(legGeo, legMat);
-    rLeg.position.set(0.12, 0.45, 0);
+    rLeg.position.set(0.13, 0.45, 0);
     keeperGroup.add(rLeg);
-    // Body (jersey)
-    const bodyGeo = new THREE.CylinderGeometry(0.28, 0.22, 0.7, 10);
-    const bodyMat = new THREE.MeshStandardMaterial({ color:0xff2222, roughness:0.5 });
+    // Boots (bright cleats)
+    const bootGeo = new THREE.BoxGeometry(0.14, 0.1, 0.2);
+    const bootMat = new THREE.MeshStandardMaterial({ color:0xff4400, emissive:0xff2200, emissiveIntensity:0.2, roughness:0.4 });
+    const lBoot = new THREE.Mesh(bootGeo, bootMat);
+    lBoot.position.set(-0.13, 0.02, 0.04);
+    keeperGroup.add(lBoot);
+    const rBoot = new THREE.Mesh(bootGeo, bootMat);
+    rBoot.position.set(0.13, 0.02, 0.04);
+    keeperGroup.add(rBoot);
+    // Body (bright neon yellow keeper jersey)
+    const bodyGeo = new THREE.CylinderGeometry(0.30, 0.24, 0.75, 10);
+    const bodyMat = new THREE.MeshStandardMaterial({ color:0xffee00, emissive:0xffee00, emissiveIntensity:0.15, roughness:0.4 });
     const body = new THREE.Mesh(bodyGeo, bodyMat);
     body.position.y = 1.25;
     keeperGroup.add(body);
+    // Jersey number (#1)
+    const numGeo = new THREE.PlaneGeometry(0.2, 0.25);
+    const numMat = new THREE.MeshBasicMaterial({ color:0x000000, transparent:true, opacity:0.5 });
+    const num = new THREE.Mesh(numGeo, numMat);
+    num.position.set(0, 1.3, 0.25);
+    keeperGroup.add(num);
     // Head
-    const headGeo = new THREE.SphereGeometry(0.18, 10, 10);
+    const headGeo = new THREE.SphereGeometry(0.19, 12, 12);
     const headMat = new THREE.MeshStandardMaterial({ color:0xffcc88, roughness:0.5 });
     const head = new THREE.Mesh(headGeo, headMat);
-    head.position.y = 1.78;
+    head.position.y = 1.82;
     keeperGroup.add(head);
-    // Arms
-    const armGeo = new THREE.CylinderGeometry(0.06, 0.05, 0.65, 6);
-    const armMat = new THREE.MeshStandardMaterial({ color:0xff2222, roughness:0.5 });
+    // Cap
+    const capGeo = new THREE.CylinderGeometry(0.22, 0.20, 0.08, 12);
+    const capMat = new THREE.MeshStandardMaterial({ color:0xffee00, emissive:0xffee00, emissiveIntensity:0.1, roughness:0.5 });
+    const cap = new THREE.Mesh(capGeo, capMat);
+    cap.position.y = 1.95;
+    keeperGroup.add(cap);
+    // Arms (long sleeves matching jersey)
+    const armGeo = new THREE.CylinderGeometry(0.07, 0.06, 0.7, 6);
+    const armMat = new THREE.MeshStandardMaterial({ color:0xffee00, emissive:0xffee00, emissiveIntensity:0.1, roughness:0.5 });
     const lArm = new THREE.Mesh(armGeo, armMat);
-    lArm.position.set(-0.38, 1.25, 0);
+    lArm.position.set(-0.40, 1.25, 0);
     lArm.rotation.z = Math.PI/6;
     keeperGroup.add(lArm);
     const rArm = new THREE.Mesh(armGeo, armMat);
-    rArm.position.set(0.38, 1.25, 0);
+    rArm.position.set(0.40, 1.25, 0);
     rArm.rotation.z = -Math.PI/6;
     keeperGroup.add(rArm);
-    // Gloves (bigger, brighter)
-    const gloveGeo = new THREE.SphereGeometry(0.12, 8, 8);
-    const gloveMat = new THREE.MeshStandardMaterial({ color:0x00ff88, emissive:0x00ff88, emissiveIntensity:0.4, roughness:0.3 });
+    // Gloves (BIGGER, BRIGHT green with strong glow)
+    const gloveGeo = new THREE.SphereGeometry(0.14, 10, 10);
+    const gloveMat = new THREE.MeshStandardMaterial({ color:0x00ff66, emissive:0x00ff66, emissiveIntensity:0.6, roughness:0.2 });
     const lGlove = new THREE.Mesh(gloveGeo, gloveMat);
-    lGlove.position.set(-0.65, 1.5, 0);
+    lGlove.position.set(-0.70, 1.55, 0);
     keeperGroup.add(lGlove);
     const rGlove = new THREE.Mesh(gloveGeo, gloveMat);
-    rGlove.position.set(0.65, 1.5, 0);
+    rGlove.position.set(0.70, 1.55, 0);
     keeperGroup.add(rGlove);
     keeperGroup.position.set(0, 0, 0.5);
     scene.add(keeperGroup);
@@ -914,6 +1009,16 @@ export default function MoodLabArena() {
           });
         }
       }
+
+      // ── CROWD CHEERING ANIMATION — dots bob up and down ──
+      crowdDots.forEach((dot, i) => {
+        const freq = 1.5 + (i % 7) * 0.3;
+        const amp = 0.15 + (i % 5) * 0.05;
+        dot.position.y += Math.sin(t * freq + i * 0.7) * amp * 0.01;
+        // Wave effect — crowd does the wave
+        const wavePhase = (t * 0.8 + i * 0.05) % (Math.PI * 2);
+        if(wavePhase < 0.5) dot.position.y += 0.03;
+      });
 
       // ── BALL FLIGHT ANIMATION (runs per frame) ──
       if(state.cameraMode === "shoot" && state.flightActive && !state.flightDone) {
@@ -1368,7 +1473,7 @@ export default function MoodLabArena() {
       setMatchmaking({game,mode,stage:"searching",input});
       setTimeout(()=>{
         setMatchmaking(p=>p?{...p,stage:"found",opp:mode==="ai"?"🤖 AI Bot":mode==="random"?"🎲 Player_847":"👫 Minh"}:null);
-        setTimeout(()=>{setMatchmaking(null);setGameActive({...game,activeInput:input});if(game.id==="wildwest")startDuel();if(game.id==="finalkick"||game.id==="finalkick2"||game.id==="finalkick3"){startKick(game.id);startMatchIntro(kickOpponent.current);}},800);
+        setTimeout(()=>{setMatchmaking(null);setGameActive({...game,activeInput:input});if(game.id==="wildwest")startDuel();if(game.id==="finalkick"||game.id==="finalkick2"||game.id==="finalkick3"){startKick(game.id);startMatchIntro(kickOpponent.current);}if(game.id==="balloon")startBalloonPop();if(game.id==="russian")startRussianRoulette();if(game.id==="puffpong")startPuffPong();if(game.id==="rhythm")startRhythmPuff();if(game.id==="tugofwar")startTugOfWar();},800);
       },mode==="ai"?400:1200);
     });
   };
@@ -1452,22 +1557,44 @@ export default function MoodLabArena() {
       setDuelCountdown(null);
       setDuelPhase("staredown");
       setDuelStaredownStage(0);
-      setCommentary(pick(["Eyes locked... fingers twitching...","The desert wind howls...","You can hear a pin drop...","Sweat drips... who draws first?"]));
+      // Round-by-round tension escalation
+      const roundTension = [
+        ["Eyes locked... fingers twitching...","The desert wind howls...","You can hear a pin drop...","Sweat drips... who draws first?"],
+        ["The saloon goes SILENT...","Both hands hover over holsters...","A bead of sweat rolls down...","The clock ticks louder..."],
+        ["MAXIMUM TENSION... Round 3!","The crowd holds their breath...","This could decide EVERYTHING...","Hearts are POUNDING..."],
+        ["CHAMPIONSHIP ROUND VIBES...","The air is ELECTRIC...","One shot to seal the deal...","History in the making..."],
+        ["FINAL SHOWDOWN ENERGY...","THE ENTIRE ARENA IS SILENT...","Everything rides on THIS draw...","LEGENDARY moment incoming..."],
+      ];
+      setCommentary(pick(roundTension[Math.min(roundNum, 4)]));
 
-      // Build tension stages
-      const tensionBase = 1500 + Math.random() * 3000; // total staredown 1.5-4.5s
+      // Build tension stages — longer staredown in later rounds
+      const tensionBase = 1500 + Math.random() * 3000 + roundNum * 400; // gets longer each round
       const stage1 = tensionBase * 0.3;
       const stage2 = tensionBase * 0.6;
       const stage3 = tensionBase * 0.85;
 
+      const stage1Texts = [
+        ["The tension is THICK...","Not a soul moves...","Tumbleweeds hold their breath..."],
+        ["Fingers are TWITCHING...","The crowd leans in...","A hawk circles overhead..."],
+        ["You can hear your own HEARTBEAT...","The sun beats down mercilessly...","Neither blinks..."],
+        ["The tension could CUT GLASS...","Time itself has STOPPED...","The desert holds its breath..."],
+        ["THIS IS IT... the moment of truth...","Legends are born in moments like THIS...","The air is THICK with destiny..."],
+      ];
+      const stage2Texts = [
+        ["WHO WILL DRAW FIRST?","The air crackles with tension...","One twitch and it is over..."],
+        ["SOMEONE HAS TO MOVE...","The silence is DEAFENING...","Every nerve is on FIRE..."],
+        ["The WORLD is watching...","This staredown is LEGENDARY...","Who has the NERVE?"],
+        ["PURE. RAW. TENSION.","The ground beneath TREMBLES...","Even the wind STOPPED..."],
+        ["THE ULTIMATE SHOWDOWN...","History will remember THIS moment...","DRAW OR DIE..."],
+      ];
       duelTimerRef.current = setTimeout(()=>{
         setDuelStaredownStage(1);
-        setDuelStaredownText(pick(["The tension is THICK...","Not a soul moves...","Tumbleweeds hold their breath..."]));
+        setDuelStaredownText(pick(stage1Texts[Math.min(roundNum, 4)]));
       }, stage1);
 
       duelSteadyTimerRef.current = setTimeout(()=>{
         setDuelStaredownStage(2);
-        setDuelStaredownText(pick(["WHO WILL DRAW FIRST?","The air crackles with tension...","One twitch and it is over..."]));
+        setDuelStaredownText(pick(stage2Texts[Math.min(roundNum, 4)]));
       }, stage2);
 
       const stage3Timer = setTimeout(()=>{
@@ -1751,6 +1878,177 @@ export default function MoodLabArena() {
   const triggerPuffWave = () => { setPuffWaveActive(true); spawnSmoke(15); setTimeout(()=>setPuffWaveActive(false),3000); };
   const setCommentary = (text) => { setCommentatorText(text); };
 
+  // ═══════════════════════════════════════════════════════════════
+  // BALLOON POP — Logic
+  // ═══════════════════════════════════════════════════════════════
+  const BP_AI_PLAYERS = [
+    {name:"CautiousCarl",emoji:"🐢",img:"https://api.dicebear.com/9.x/bottts-neutral/svg?seed=CautiousCarl&backgroundColor=transparent",strategy:"cautious",taunt:"Easy does it..."},
+    {name:"YOLO Yolanda",emoji:"🔥",img:"https://api.dicebear.com/9.x/adventurer/svg?seed=YoloYolanda&backgroundColor=transparent",strategy:"reckless",taunt:"FULL SEND BABY"},
+    {name:"RandomRick",emoji:"🎲",img:"https://api.dicebear.com/9.x/bottts-neutral/svg?seed=RandomRick&backgroundColor=transparent",strategy:"random",taunt:"Who knows lol"},
+    {name:"SmoothSam",emoji:"😎",img:"https://api.dicebear.com/9.x/adventurer/svg?seed=SmoothSam&backgroundColor=transparent",strategy:"cautious",taunt:"Calculated risk"},
+    {name:"MadMax420",emoji:"💀",img:"https://api.dicebear.com/9.x/bottts-neutral/svg?seed=MadMax420&backgroundColor=transparent",strategy:"reckless",taunt:"Send it or go home"},
+    {name:"NervousNate",emoji:"😰",img:"https://api.dicebear.com/9.x/adventurer/svg?seed=NervousNate&backgroundColor=transparent",strategy:"cautious",taunt:"Oh god oh no..."},
+  ];
+  const BP_COMMENTS = {small:["Baby puff 🍼","My grandma hits harder 👵","Ant-sized 🐜","Whisper puff 🤫","Barely a breeze 🌬️","Playing it safe huh? 😏","Coward level: MAX 🐔"],big:["MADMAN! 💀","FULL SEND! 🫁","Balloon said YIKES 😳","LUNGS OF STEEL 💪","Risky business! 🔥","That was AGGRESSIVE 😤","Brave AND stupid 🤪"],pop:["BOOOOM! 💥🎈💀","THE BALLOON HAS LEFT THE CHAT 💀","R.I.P. BALLOON 🪦","THAT SOUND! 💥","BANG! GAME OVER! 💥🎈"],shaking:["IT COULD GO ANY MOMENT! 😱","DANGER ZONE! 🚨","Everyone holding their breath! 😶","The balloon is STRESSED 😬"]};
+  const getBalloonColor = (pct) => pct<30?"#4CAF50":pct<50?"#8BC34A":pct<65?"#FFEB3B":pct<75?"#FF9800":pct<85?"#FF5722":"#F44336";
+  const startBalloonPop = () => {
+    const aiCount = 3+Math.floor(Math.random()*3);
+    const shuffled = [...BP_AI_PLAYERS].sort(()=>Math.random()-0.5);
+    const aiP = shuffled.slice(0,aiCount).map(a=>({...a,isYou:false,isAI:true,alive:true,puffs:0,totalAir:0}));
+    const youIdx = Math.floor(Math.random()*(aiP.length+1));
+    const players = [...aiP];
+    players.splice(youIdx,0,{name:"You",emoji:"😤",img:PLAYER_IMG,isYou:true,isAI:false,alive:true,puffs:0,totalAir:0,strategy:"human"});
+    const threshold = 80+Math.floor(Math.random()*41);
+    setBpPlayers(players);setBpCurrentTurn(0);setBpAirLevel(0);setBpPopThreshold(threshold);setBpPuffAmount(0);setBpCharging(false);setBpComment("");setBpRound(0);setBpLoser(null);setBpHistory([]);setBpShaking(false);setBpPopping(false);setBpBalloonColor("#4CAF50");setBpPhase("intro");
+    playFx("crowd");setCommentary("Welcome to BALLOON POP! 🎈 Don't pop it!");
+    setTimeout(()=>{setBpPhase("playing");setBpComment("Let the game begin! 🎈");playFx("whistle");if(players[0].isAI)setTimeout(()=>bpDoAITurn(players,0,0,threshold),1200);},2000);
+  };
+  const bpProcessPuff = (pidx,amount,players,airLevel,threshold) => {
+    const ca = Math.max(5,Math.min(25,amount));const newAir = airLevel+ca;const popped = newAir>=threshold;
+    const up = players.map((p,i)=>i===pidx?{...p,puffs:p.puffs+1,totalAir:p.totalAir+ca}:p);
+    const dAir = Math.min(newAir,threshold);const color = getBalloonColor((dAir/threshold)*100);const nearPop = dAir>threshold*0.7;
+    setBpPlayers(up);setBpAirLevel(newAir);setBpBalloonColor(color);setBpHistory(h=>[...h,{playerIdx:pidx,amount:ca,totalAfter:newAir}]);setBpRound(r=>r+1);
+    if(ca<=7)setBpComment(pick(BP_COMMENTS.small));else if(ca>=15)setBpComment(pick(BP_COMMENTS.big));else setBpComment("Solid puff, playing smart 🧠");
+    if(nearPop&&!popped){setBpShaking(true);if(dAir>threshold*0.85)setTimeout(()=>setBpComment(pick(BP_COMMENTS.shaking)),600);}
+    if(popped){setBpPopping(true);setBpShaking(false);setBpLoser(up[pidx]);setBpPhase("popped");setBpComment(pick(BP_COMMENTS.pop));playFx("lose");triggerShake();triggerFlash("miss");spawnSmoke(20);playFx("crowd");
+      setCommentary(up[pidx].isYou?"💥 YOU POPPED IT! 💀":"💥 "+up[pidx].name+" POPPED IT! 🎉");
+      setTimeout(()=>{setBpPopping(false);setBpPhase("result");if(!up[pidx].isYou){spawnConfetti(40,[C.pink,C.gold,C.cyan]);playFx("win");triggerFlash("goal");}else playFx("laugh");},2000);return;}
+    const next = (pidx+1)%up.length;setBpCurrentTurn(next);
+    if(up[next].isAI){setBpPhase("ai_turn");setTimeout(()=>bpDoAITurn(up,next,newAir,threshold),1200+Math.random()*1500);}else{setBpPhase("playing");setBpComment("YOUR TURN! Hold to puff 💨");playFx("select");}
+  };
+  const bpDoAITurn = (players,idx,airLevel,threshold) => {
+    const strat = players[idx].strategy;const amt = strat==="cautious"?5+Math.floor(Math.random()*4):strat==="reckless"?12+Math.floor(Math.random()*11):5+Math.floor(Math.random()*14);
+    setBpPhase("ai_turn");playFx("charge");setBpCharging(true);setBpPuffAmount(0);
+    const dur = 400+(amt/25)*1800;const st = Date.now();
+    const iv = setInterval(()=>{setBpPuffAmount(Math.min(100,(Date.now()-st)/dur*100));},50);
+    setTimeout(()=>{clearInterval(iv);setBpCharging(false);setBpPuffAmount(0);playFx("kick");bpProcessPuff(idx,amt,players,airLevel,threshold);},dur);
+  };
+  const bpStartCharge = () => {if(bpPhase!=="playing"||bpCharging)return;if(bpPlayers[bpCurrentTurn]&&bpPlayers[bpCurrentTurn].isAI)return;
+    setBpCharging(true);setBpPuffAmount(0);bpPuffStart.current=Date.now();setDimLights(true);playFx("charge");
+    bpChargeInterval.current=setInterval(()=>{const e=(Date.now()-bpPuffStart.current)/1000;setBpPuffAmount(Math.min(100,(e/3.0)*100));if(Math.random()<0.3)spawnPuffBubble();if(e>=3.5)bpStopCharge();},50);};
+  const bpStopCharge = () => {if(!bpCharging)return;setBpCharging(false);setDimLights(false);if(bpChargeInterval.current){clearInterval(bpChargeInterval.current);bpChargeInterval.current=null;}
+    const e=(Date.now()-bpPuffStart.current)/1000;const amt=Math.round(5+Math.min(1,e/3.0)*20);playFx("kick");setBpPuffAmount(0);
+    bpProcessPuff(bpCurrentTurn,amt,bpPlayers,bpAirLevel,bpPopThreshold);};
+  const bpEndGame = () => {const won=bpLoser&&!bpLoser.isYou;const r=won?80+Math.floor(Math.random()*40):10;setCoins(c=>c+r);notify(won?"🎈 SURVIVED! +"+r+" coins!":"💀 Popped! +"+r,won?C.green:C.red);setGameActive(null);setBpPhase(null);};
+
+  // ═══════════════════════════════════════════════════════════════
+  // RUSSIAN ROULETTE — Logic
+  // ═══════════════════════════════════════════════════════════════
+  const RR_AI = [
+    {name:"Lucky Luke",emoji:"🤠",img:"https://api.dicebear.com/9.x/adventurer/svg?seed=LuckyLuke&backgroundColor=transparent"},
+    {name:"Nervous Nick",emoji:"😰",img:"https://api.dicebear.com/9.x/adventurer/svg?seed=NervousNick&backgroundColor=transparent"},
+    {name:"Bold Betty",emoji:"💪",img:"https://api.dicebear.com/9.x/adventurer/svg?seed=BoldBetty&backgroundColor=transparent"},
+    {name:"Chill Chad",emoji:"😎",img:"https://api.dicebear.com/9.x/bottts-neutral/svg?seed=ChillChad&backgroundColor=transparent"},
+    {name:"Sweaty Steve",emoji:"😓",img:"https://api.dicebear.com/9.x/adventurer/svg?seed=SweatySteve&backgroundColor=transparent"},
+  ];
+  const RR_COMMENTS = {spin:["The revolver SPINS... 🔄","Round and round it goes...","Where it stops, nobody knows! 🎲"],click:["*CLICK*... SAFE! 😮‍💨","Empty chamber! You live! ✨","The luck continues... 🍀","Phew! Not this time! 😅"],bang:["BANG! 💥🔫","IT FIRED! 💀","The chamber was LOADED! 💥"],tension:["The tension is UNREAL...","Everyone's holding their breath...","Who's next?! 😱","The revolver awaits... 🔫"]};
+  const startRussianRoulette = () => {
+    const aiCount = 3+Math.floor(Math.random()*3);
+    const shuffled = [...RR_AI].sort(()=>Math.random()-0.5).slice(0,aiCount);
+    const players = shuffled.map(a=>({...a,isYou:false,isAI:true,alive:true}));
+    const youIdx = Math.floor(Math.random()*(players.length+1));
+    players.splice(youIdx,0,{name:"You",emoji:"😤",img:PLAYER_IMG,isYou:true,isAI:false,alive:true});
+    const chamber = Math.floor(Math.random()*6);
+    setRrPlayers(players);setRrCurrentTurn(0);setRrChamber(chamber);setRrCurrentChamber(0);setRrComment("");setRrEliminated(null);setRrRound(0);setRrSpinAngle(0);setRrPhase("intro");
+    playFx("crowd");setCommentary("Russian Roulette! 🎲 1 bullet, 6 chambers...");
+    setTimeout(()=>{setRrPhase("spinning");setRrSpinAngle(720+Math.random()*720);setRrComment(pick(RR_COMMENTS.spin));playFx("charge");
+      setTimeout(()=>{setRrPhase("player_turn");setRrComment(players[0].isYou?"YOUR TURN... Hold to puff 💨":""+players[0].name+"'s turn...");playFx("select");
+        if(players[0].isAI)setTimeout(()=>rrDoTurn(players,0,chamber,0),1500);},2000);},1500);
+  };
+  const rrDoTurn = (players,idx,bullet,chamberPos) => {
+    const newChamber = (chamberPos+1)%6;const hit = newChamber===bullet;
+    setRrCurrentChamber(newChamber);setRrRound(r=>r+1);
+    playFx("kick");
+    if(hit){setRrPhase("bang");setRrComment(pick(RR_COMMENTS.bang));setRrEliminated(players[idx]);triggerShake();triggerFlash("miss");playFx("lose");
+      setCommentary(players[idx].isYou?"💥 YOU GOT HIT! Game over!":"💥 "+players[idx].name+" is OUT! 💀");
+      const up = players.map((p,i)=>i===idx?{...p,alive:false}:p);setRrPlayers(up);
+      setTimeout(()=>{setRrPhase("result");if(!players[idx].isYou){spawnConfetti(30,[C.gold,C.green,C.cyan]);playFx("win");triggerFlash("goal");}},2000);
+    } else {
+      setRrPhase("click");setRrComment(pick(RR_COMMENTS.click));playFx("select");
+      setCommentary((players[idx].isYou?"You":""+players[idx].name)+" survived! *click* 😮‍💨");
+      setTimeout(()=>{
+        const next = (idx+1)%players.length;setRrCurrentTurn(next);setRrPhase("player_turn");
+        setRrComment(pick(RR_COMMENTS.tension));
+        if(players[next].isAI)setTimeout(()=>rrDoTurn(players,next,bullet,newChamber),1500+Math.random()*1000);
+        else{setRrComment("YOUR TURN... 😰 Hold to puff");playFx("select");}
+      },1500);
+    }
+  };
+  const rrPuff = () => {if(rrPhase!=="player_turn")return;const cur=rrPlayers[rrCurrentTurn];if(!cur||cur.isAI)return;rrDoTurn(rrPlayers,rrCurrentTurn,rrChamber,rrCurrentChamber);};
+  const rrEndGame = () => {const won=rrEliminated&&!rrEliminated.isYou;const r=won?100:10;setCoins(c=>c+r);notify(won?"🎲 SURVIVED! +"+r+" coins!":"💀 Eliminated! +"+r,won?C.green:C.red);setGameActive(null);setRrPhase(null);};
+
+  // ═══════════════════════════════════════════════════════════════
+  // PUFF PONG — Logic
+  // ═══════════════════════════════════════════════════════════════
+  const startPuffPong = () => {
+    setPpBallX(50);setPpBallY(50);setPpBallDx(1.5);setPpBallDy(1);setPpPaddleY(50);setPpAiPaddleY(50);setPpScore({you:0,ai:0});setPpComment("PUFF PONG! 🏓");setPpPhase("playing");
+    playFx("whistle");setCommentary("Puff Pong! Tap/puff to move paddle! 🏓");
+    if(ppInterval.current)clearInterval(ppInterval.current);
+    ppInterval.current=setInterval(()=>{
+      setPpBallX(x=>{setPpBallY(y=>{setPpBallDx(dx=>{setPpBallDy(dy=>{
+        let nx=x+dx,ny=y+dy,ndx=dx,ndy=dy;
+        if(ny<=2||ny>=98){ndy=-dy;playFx("tap");}
+        setPpAiPaddleY(ap=>ap+(ny-ap)*0.06);
+        if(nx<=5){setPpPaddleY(pp=>{if(Math.abs(ny-pp)<12){ndx=Math.abs(dx)*1.05;ndy=dy+(ny-pp)*0.15;playFx("kick");setPpComment(pick(["Nice return! 🏓","Puff power! 💨","Clean shot! ✨"]));return pp;}
+          setPpScore(s=>{const ns={...s,ai:s.ai+1};if(ns.ai>=5){clearInterval(ppInterval.current);setPpPhase("result");setCommentary("AI wins Puff Pong! "+ns.you+"-"+ns.ai);playFx("lose");}return ns;});
+          nx=50;ny=50;ndx=1.5;ndy=1;setPpComment("AI scores! 😤");playFx("error");return pp;});}
+        if(nx>=95){setPpAiPaddleY(ap=>{if(Math.abs(ny-ap)<10){ndx=-Math.abs(dx)*1.05;ndy=dy+(ny-ap)*0.1;playFx("tap");return ap;}
+          setPpScore(s=>{const ns={...s,you:s.you+1};if(ns.you>=5){clearInterval(ppInterval.current);setPpPhase("result");setCommentary("You WIN Puff Pong! "+ns.you+"-"+ns.ai+" 🏆");playFx("win");spawnConfetti(30,[C.green,C.gold,C.cyan]);}return ns;});
+          nx=50;ny=50;ndx=-1.5;ndy=1;setPpComment("YOU SCORE! 🎉");playFx("crowd");triggerFlash("goal");return ap;});}
+        setPpBallDy(()=>ndy);return ndx;});return ny+dy;});return x+dx;});});
+    },30);
+  };
+  const ppMovePaddle = (dir) => {setPpPaddleY(p=>Math.max(8,Math.min(92,p+dir*8)));};
+  const ppEndGame = () => {if(ppInterval.current)clearInterval(ppInterval.current);const won=ppScore.you>ppScore.ai;const r=won?80:15;setCoins(c=>c+r);notify(won?"🏓 Won! +"+r:"🏓 Lost! +"+r,won?C.green:C.red);setGameActive(null);setPpPhase(null);};
+
+  // ═══════════════════════════════════════════════════════════════
+  // RHYTHM PUFF — Logic
+  // ═══════════════════════════════════════════════════════════════
+  const RP_LANES = ["🎸","🥁","🎹","🎷"];
+  const startRhythmPuff = () => {
+    setRpNotes([]);setRpScore(0);setRpCombo(0);setRpMaxCombo(0);setRpMisses(0);setRpComment("Get ready! 🎵");setRpPhase("playing");setRpBeat(0);
+    playFx("whistle");setCommentary("Rhythm Puff! Hit the notes! 🎵");
+    if(rpInterval.current)clearInterval(rpInterval.current);
+    let beatCount=0;
+    rpInterval.current=setInterval(()=>{
+      beatCount++;
+      setRpNotes(notes=>{
+        let nn=[...notes.map(n=>({...n,y:n.y+3})).filter(n=>{
+          if(n.y>95&&!n.hit){setRpMisses(m=>{if(m+1>=10){clearInterval(rpInterval.current);setRpPhase("result");playFx("lose");setCommentary("Song over! Too many misses!");}return m+1;});setRpCombo(0);setRpComment("Miss! 💀");playFx("error");return false;}
+          return n.y<110;})];
+        if(beatCount%12===0||(beatCount%8===0&&Math.random()>0.3)){const lane=Math.floor(Math.random()*4);nn.push({id:Date.now()+Math.random(),lane,y:0,hit:false});}
+        return nn;
+      });
+      setRpBeat(b=>b+1);
+    },60);
+  };
+  const rpHitNote = (lane) => {
+    setRpNotes(notes=>{const idx=notes.findIndex(n=>n.lane===lane&&n.y>70&&n.y<100&&!n.hit);
+      if(idx>=0){const newN=[...notes];newN[idx]={...newN[idx],hit:true};
+        const pts=10+rpCombo*2;setRpScore(s=>s+pts);setRpCombo(c=>{const nc=c+1;setRpMaxCombo(m=>Math.max(m,nc));return nc;});
+        playFx("kick");triggerFlash("save");setRpComment(rpCombo>=10?"PERFECT x"+rpCombo+"! 🔥":rpCombo>=5?"Combo x"+rpCombo+"! ⚡":"Hit! +"+pts+" 🎵");return newN;}
+      setRpCombo(0);setRpMisses(m=>m+1);setRpComment("Wrong lane! 😬");playFx("error");return notes;});
+  };
+  const rpEndGame = () => {if(rpInterval.current)clearInterval(rpInterval.current);const r=Math.min(200,rpScore);setCoins(c=>c+r);notify("🎵 Score: "+rpScore+" +"+r+" coins!",C.purple);setGameActive(null);setRpPhase(null);};
+
+  // ═══════════════════════════════════════════════════════════════
+  // TUG OF WAR — Logic
+  // ═══════════════════════════════════════════════════════════════
+  const startTugOfWar = () => {
+    setTowPosition(50);setTowTimer(30);setTowPuffs(0);setTowAiPuffs(0);setTowComment("PULL! 💪");setTowPhase("playing");
+    playFx("whistle");setCommentary("TUG OF WAR! Spam puff to pull! 💪");
+    if(towInterval.current)clearInterval(towInterval.current);
+    towInterval.current=setInterval(()=>{
+      setTowTimer(t=>{if(t<=1){clearInterval(towInterval.current);setTowPhase("result");
+        setTowPosition(p=>{const won=p>50;if(won){spawnConfetti(30,[C.blue,C.gold]);playFx("win");triggerFlash("goal");setCommentary("You WIN the tug! 💪🏆");}else{playFx("lose");setCommentary("AI wins the tug! 😤");}return p;});return 0;}
+        // AI pulls randomly
+        if(Math.random()<0.3){setTowPosition(p=>Math.max(0,p-1.5-Math.random()*1.5));setTowAiPuffs(a=>a+1);}
+        return t-1;});
+    },1000);
+  };
+  const towPuff = () => {if(towPhase!=="playing")return;setTowPosition(p=>Math.min(100,p+2+Math.random()*2));setTowPuffs(n=>n+1);playFx("kick");setTowComment(pick(["PULL! 💪","Keep going! 🔥","More power! ⚡","HARDER! 😤"]));};
+  const towEndGame = () => {if(towInterval.current)clearInterval(towInterval.current);const won=towPosition>50;const r=won?80:15;setCoins(c=>c+r);notify(won?"💪 Won! +"+r:"😤 Lost! +"+r,won?C.green:C.red);setGameActive(null);setTowPhase(null);};
+
   // ── Match Intro Sequence ──
   const startMatchIntro = (opponent) => {
     setMatchIntro({stage:"enter",count:3});
@@ -1920,7 +2218,7 @@ export default function MoodLabArena() {
     setKickAim(zone);
     if(yOutOfBounds) { setKickComment(pick(["OVER THE BAR! 🚀","Ball in orbit 🛸","That's a satellite 💀"])); playFx("laugh"); }
     else if(xOutOfBounds) { setKickComment(pick(["WIDE LEFT/RIGHT! 🌊","Ball's in the car park 💀"])); playFx("laugh"); }
-    else if(bothSweet) { setKickComment(pick(["DOUBLE SWEET SPOT! 🎯🎯","SNIPER PUFF! 🔥","PRECISION KING! 👑"])); }
+    else if(bothSweet) { setKickComment(pick(["DOUBLE SWEET SPOT! 🎯🎯","SNIPER PUFF! 🔥","PRECISION KING! 👑","SURGEON LEVEL PUFF! 🩺","LASER GUIDED MISSILE! 🚀","X + Y = PERFECTION! ✨","BOTH AXES NAILED! 🔨","GOLDEN CROSSHAIR! 🏅","PUFF GOD STATUS! 👼","MATHEMATICAL PRECISION! 🧮"])); spawnConfetti(20, [C.gold, C.green, C.cyan]); triggerFlash("goal"); }
     else if(!xInSweet && !yInSweet) { setKickComment(pick(["Both axes off 😬","Need better puff control!"])); }
     // Execute kick
     const avgPower = Math.round((fk2X + yPos) / 2);
@@ -1959,7 +2257,7 @@ export default function MoodLabArena() {
           setKickScore(s=>({...s,you:s.you+1}));
           setKickStats(s=>({...s,goals:s.goals+1,perfects:bothSweet?s.perfects+1:s.perfects}));
           playFx("win"); playFx("crowd"); triggerFlash("goal"); triggerShake(); spawnConfetti(40); spawnSmoke(5);
-          if(bothSweet) setCommentary(pick(["WHAT A GOAL! DOUBLE PRECISION! 🎯🎯","TOP BINS! Both axes PERFECT!","CLINICAL! The crowd erupts!"]));
+          if(bothSweet) setCommentary(pick(["WHAT A GOAL! DOUBLE PRECISION! 🎯🎯","TOP BINS! Both axes PERFECT!","CLINICAL! The crowd erupts!","DOUBLE PUFF MASTERY! UNSTOPPABLE! 🔥","Surgeon-level aim on BOTH axes! 💉","X-Y PERFECT! The keeper had NO CHANCE!"]));
           else setCommentary(pick(["GOAL! Good aim!","It's in! The keeper couldn't reach it!","GOLAZO! Nice placement!"]));
         } else {
           playFx("lose"); triggerFlash("save");
@@ -3616,13 +3914,15 @@ export default function MoodLabArena() {
         const isDrawPhase = wwPhase === "draw" || wwPhase === "puffing";
         const isTensionPhase = wwPhase === "staredown";
         const isCountdown = wwPhase === "countdown";
+        const wwSlowMo = wwPhase === "draw" || wwPhase === "result";
         const wwSunsetIntensity = isTensionPhase ? 1.3 : isDrawPhase ? 1.8 : isCountdown ? 1.1 : 1;
         const wwVignetteIntensity = isTensionPhase ? (0.5 + duelStaredownStage * 0.12) : isDrawPhase ? 0.9 : 0.35;
         const wwScreenPulse = isTensionPhase ? (duelStaredownStage >= 2 ? "duelHeartbeat 0.8s ease-in-out infinite" : "duelHeartbeat 1.5s ease-in-out infinite") : "none";
         const puffMeterColor = duelPuffMeter < 20 ? C.text3 : duelPuffMeter < 45 ? C.cyan : duelPuffMeter < 70 ? C.gold : duelPuffMeter < 90 ? C.orange : C.red;
 
         return (
-          <div style={{...overlayStyle, background:"none", overflow:"hidden", animation:screenShake?"shake 0.4s ease":"none"}}
+          <div style={{...overlayStyle, background:"none", overflow:"hidden", animation:screenShake?"shake 0.4s ease":"none",
+            filter:wwSlowMo?"saturate(1.4) contrast(1.15)":"none",transition:"filter 0.3s ease"}}
             onMouseDown={()=>{if(["staredown","countdown","draw"].includes(wwPhase)) duelShoot();}}
             onMouseUp={()=>{if(wwPhase==="puffing") duelReleasePuff();}}
             onTouchStart={(e)=>{e.preventDefault();if(["staredown","countdown","draw"].includes(wwPhase)) duelShoot();}}
@@ -3840,9 +4140,16 @@ export default function MoodLabArena() {
                     {duelMuzzleFlash==="left" && (
                       <div style={{position:"absolute",right:-15,top:"35%",width:30,height:30,borderRadius:"50%",background:"radial-gradient(circle, rgba(255,200,50,0.9) 0%, rgba(255,100,0,0.6) 40%, transparent 70%)",animation:"duelMuzzle 0.3s ease-out forwards",pointerEvents:"none",zIndex:20}}/>
                     )}
-                    {duelResult && !duelResult.foul && duelResult.win && (
+                    {duelResult && !duelResult.foul && duelResult.win && <>
                       <div style={{position:"absolute",right:-10,top:"30%",width:40,height:40,borderRadius:"50%",background:"radial-gradient(circle, rgba(200,200,200,0.5) 0%, transparent 70%)",animation:"duelSmoke 1.2s ease-out forwards",pointerEvents:"none"}}/>
-                    )}
+                      {/* Gun smoke particles */}
+                      {[0,1,2,3,4,5].map(i=>(
+                        <div key={"gs"+i} style={{position:"absolute",right:-8+i*3,top:"25%",width:6+i*2,height:6+i*2,borderRadius:"50%",
+                          background:`rgba(180,180,180,${0.3-i*0.04})`,filter:"blur(3px)",
+                          animation:`duelSmoke ${0.8+i*0.3}s ease-out ${i*0.1}s forwards`,pointerEvents:"none",
+                        }}/>
+                      ))}
+                    </>}
                   </div>
 
                   {/* Center phase display */}
@@ -3922,9 +4229,16 @@ export default function MoodLabArena() {
                     {duelMuzzleFlash==="right" && (
                       <div style={{position:"absolute",left:-15,top:"35%",width:30,height:30,borderRadius:"50%",background:"radial-gradient(circle, rgba(255,200,50,0.9) 0%, rgba(255,100,0,0.6) 40%, transparent 70%)",animation:"duelMuzzle 0.3s ease-out forwards",pointerEvents:"none",zIndex:20}}/>
                     )}
-                    {duelResult && !duelResult.foul && !duelResult.win && (
+                    {duelResult && !duelResult.foul && !duelResult.win && <>
                       <div style={{position:"absolute",left:-10,top:"30%",width:40,height:40,borderRadius:"50%",background:"radial-gradient(circle, rgba(200,200,200,0.5) 0%, transparent 70%)",animation:"duelSmoke 1.2s ease-out forwards",pointerEvents:"none"}}/>
-                    )}
+                      {/* Gun smoke particles */}
+                      {[0,1,2,3,4,5].map(i=>(
+                        <div key={"ags"+i} style={{position:"absolute",left:-8+i*3,top:"25%",width:6+i*2,height:6+i*2,borderRadius:"50%",
+                          background:`rgba(180,180,180,${0.3-i*0.04})`,filter:"blur(3px)",
+                          animation:`duelSmoke ${0.8+i*0.3}s ease-out ${i*0.1}s forwards`,pointerEvents:"none",
+                        }}/>
+                      ))}
+                    </>}
                   </div>
                 </div>
               </div>
@@ -4053,12 +4367,15 @@ export default function MoodLabArena() {
         const getBallPos = (z) => ({ x: KICK_ZONES[z].col * zoneW + zoneW/2, y: KICK_ZONES[z].row * zoneH + zoneH/2 });
 
         // Fun commentary
-        const SHOOT_TAUNTS = ["Pick your poison 🎯","Where you aiming, champ? 😏","Top bins or nah? 🤔","Don't choke now 😂","AI keeper is SHOOK 🥶"];
-        const GOAL_CHEERS = ["GOLAZOOO! 🔥🔥🔥","ABSOLUTE BANGER! 💥","NET GO BRRR 😤","SHEEEESH! 🥶","TOP BINS MERCHANT 👑"];
-        const SAVE_TAUNTS = ["AI's got the ball... 👀","Keeper mode: ON 🧤","Don't let it in! 😬","Quick reflexes or nah? 🤣","This one's SPICY 🌶️"];
-        const SAVE_CHEERS = ["DENIED! 🚫🧤","WALL MODE ACTIVATED 🧱","NOT TODAY! 😤","BRICK WALL ENERGY 💪","AI IS CRYING RN 😭"];
-        const CONCEDE_REACT = ["Bruh... 💀","That one hurt 😂","AI said 'sit down' 😤","Pain. Just pain. 🥲","Keeper had lag 📡"];
+        const SHOOT_TAUNTS = ["Pick your poison 🎯","Where you aiming, champ? 😏","Top bins or nah? 🤔","Don't choke now 😂","AI keeper is SHOOK 🥶","One puff to rule them all 💨","Aim with your third eye 👁️","This keeper's been napping 😴","Choose wisely grasshopper 🧘","Corner pocket, calling it 🎱","The crowd is SILENT 🤫","Hit that sweet spot zone 🍯","Left? Right? Center? CHAOS! 🌀","Channel your inner Messi ⚽","The net is BEGGING for it 🥺"];
+        const GOAL_CHEERS = ["GOLAZOOO! 🔥🔥🔥","ABSOLUTE BANGER! 💥","NET GO BRRR 😤","SHEEEESH! 🥶","TOP BINS MERCHANT 👑","WHAT A STRIKE! The keeper's LOST! 🫠","THUNDERPUFF! Ball went SUPERSONIC! ⚡","The net RIPPED! Someone call maintenance! 🧵","That ball had GPS tracking! 🛰️","CLINICAL! Doctor Puff in the house! 🩺","Even the AI is clapping 👏🤖","Upper 90! Pure FILTH! 🗑️","Ball went through a PORTAL 🌀","Keeper's still looking for the ball 🔍","HIGHLIGHT REEL material right there! 📹"];
+        const SAVE_TAUNTS = ["AI's got the ball... 👀","Keeper mode: ON 🧤","Don't let it in! 😬","Quick reflexes or nah? 🤣","This one's SPICY 🌶️","Time to be a WALL 🧱","Channel your inner cat 🐱","Gloves: ACTIVATED 🧤","This ball has your name on it 📝","The goal is SACRED territory 🏰","Be the brick wall 🧱","Trust your puff instincts 💨","Don't blink! 👁️","Here it comes... READY? 😤","Dive like your life depends on it 🏊"];
+        const SAVE_CHEERS = ["DENIED! 🚫🧤","WALL MODE ACTIVATED 🧱","NOT TODAY! 😤","BRICK WALL ENERGY 💪","AI IS CRYING RN 😭","FORTRESS! Nothing gets past you! 🏰","Cat-like REFLEXES! Meow! 🐱","The AI RAGE QUIT mentally 🤖💢","Save of the CENTURY! 📺","Your gloves are LEGENDARY 🧤✨","Full STRETCH! Spider-Man save! 🕷️","Read them like a BOOK 📖","The crowd goes WILD! 🎉","Puff-powered reflexes! 💨⚡","Save so good it should be ILLEGAL 👮"];
+        const CONCEDE_REACT = ["Bruh... 💀","That one hurt 😂","AI said 'sit down' 😤","Pain. Just pain. 🥲","Keeper had lag 📡","Your gloves called in sick 🤒","The ball and net are in love 💕","Wrong way bestie 🧭","Keeper.exe has stopped working 💻","Did you even try? Genuine question 🤔","The ball went through your SOUL 👻","Diving like a fish... out of water 🐟","Keeper was vibing, not saving 🎧","That ball had plot armor 🛡️","The goal said 'welcome home' to the ball 🏠"];
 
+        // Streak counter for consecutive goals
+        const streakBonus = kickStats.goals > 0 ? Math.min(kickStats.goals, 5) : 0;
+        const streakLabel = streakBonus >= 5 ? "🔥 UNSTOPPABLE x5" : streakBonus >= 4 ? "🔥 ON FIRE x4" : streakBonus >= 3 ? "⚡ HAT TRICK x3" : streakBonus >= 2 ? "✨ DOUBLE x2" : "";
 
         // Crowd emojis floating
         const crowdEmojis = ["🎉","🔥","😤","💨","🤣","😱","👏","🥳","💀","😂","🙌","⚡"];
@@ -4547,7 +4864,7 @@ export default function MoodLabArena() {
                     }}/>;
                   })()}
 
-                  {/* ═══ RESULT OVERLAY — Big & Fun ═══ */}
+                  {/* ═══ RESULT OVERLAY — Big & Fun (FK1) ═══ */}
                   {isResult && kickBallAnim && (()=>{
                     const isMiss = kickBallAnim.result==="missed";
                     const isGoal = kickBallAnim.result==="goal";
@@ -4560,12 +4877,24 @@ export default function MoodLabArena() {
                         background:good?`radial-gradient(circle, ${C.green}20, rgba(0,0,0,0.7))`:`radial-gradient(circle, ${C.red}15, rgba(0,0,0,0.7))`,
                         animation:"fadeIn 0.2s ease",
                       }}>
-                        <div style={{fontSize:28,fontWeight:900,color:youMissed?C.gold:good?C.green:C.red,textShadow:`0 0 30px ${youMissed?C.gold:good?C.green:C.red}`,animation:"countPulse 0.5s ease"}}>
-                          {youMissed?(kickBallAnim.wasBlinker?"💀 BLINKER!":"🚀 MISS!"):youScored?"⚽ GOLAZO!":youSaved?"🧤 DENIED!":isShootPhase?"🧤 Saved!":"⚽ AI Scores!"}
+                        {/* Big emoji burst */}
+                        <div style={{fontSize:56,animation:"goalBurst 0.6s cubic-bezier(0.34,1.56,0.64,1)",filter:`drop-shadow(0 0 40px ${good?C.green:C.red}80)`}}>
+                          {youMissed?"💀":youScored?"⚽":youSaved?"🧤":isShootPhase?"🧤":"⚽"}
                         </div>
-                        <div style={{fontSize:10,color:C.text2,marginTop:4,fontStyle:"italic"}}>
+                        <div style={{fontSize:32,fontWeight:900,color:youMissed?C.gold:good?C.green:C.red,textShadow:`0 0 40px ${youMissed?C.gold:good?C.green:C.red}`,animation:"goalBurst 0.5s ease 0.1s both",letterSpacing:2}}>
+                          {youMissed?(kickBallAnim.wasBlinker?"BLINKER!":"MISS!"):youScored?"GOLAZO!":youSaved?"DENIED!":isShootPhase?"Saved!":"AI Scores!"}
+                        </div>
+                        <div style={{fontSize:11,color:C.text2,marginTop:6,fontStyle:"italic",animation:"fadeIn 0.4s ease 0.2s both"}}>
                           {good?pick(youScored?GOAL_CHEERS:SAVE_CHEERS):pick(CONCEDE_REACT)}
                         </div>
+                        {/* Streak counter */}
+                        {youScored && streakBonus >= 2 && (
+                          <div style={{marginTop:8,padding:"4px 14px",borderRadius:20,background:`${C.gold}20`,border:`1px solid ${C.gold}40`,
+                            animation:"goalBurst 0.4s ease 0.3s both",display:"flex",alignItems:"center",gap:6}}>
+                            <span style={{fontSize:14,fontWeight:900,color:C.gold,textShadow:`0 0 15px ${C.gold}`}}>{streakLabel}</span>
+                            <span style={{fontSize:9,color:C.gold}}>+{streakBonus*10} bonus</span>
+                          </div>
+                        )}
                       </div>
                     );
                   })()}
@@ -5866,6 +6195,283 @@ export default function MoodLabArena() {
           </div>
         );
       }
+      // ═══════════════════════════════════════════════════════════════
+      // BALLOON POP 🎈 — Render
+      // ═══════════════════════════════════════════════════════════════
+      if(gameActive.id==="balloon" && bpPhase) {
+        const curP = bpPlayers[bpCurrentTurn];
+        const isYourTurn = curP && curP.isYou && bpPhase === "playing";
+        const airPct = Math.min(100, (bpAirLevel / bpPopThreshold) * 100);
+        const balloonScale = 0.4 + (airPct / 100) * 1.2;
+        const nearPop = airPct > 70;
+        const dangerZone = airPct > 85;
+        return (
+          <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden",display:"flex",flexDirection:"column",alignItems:"center",
+            background:`radial-gradient(ellipse at 50% 30%, ${C.pink}08, transparent 50%), rgba(5,5,16,0.97)`,
+            animation:screenShake?"shake 0.4s ease":"none",filter:dimLights?"brightness(0.6)":"brightness(1)",transition:"filter 0.3s"}}>
+            {overlayBack(()=>{setGameActive(null);setBpPhase(null);})}
+            {screenFlash && <div style={{position:"absolute",inset:0,zIndex:200,pointerEvents:"none",opacity:0,background:screenFlash==="goal"?"rgba(0,255,100,0.25)":"rgba(255,50,50,0.2)",animation:"flashOverlay 0.4s ease forwards"}}/>}
+            {confettiParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size*0.6,background:p.color,borderRadius:1,transform:`rotate(${p.rot}deg)`,zIndex:210,pointerEvents:"none",animation:`confettiFall ${1.5+Math.random()}s ease-out forwards`}}/>))}
+            <div style={{display:"flex",flexDirection:"column",alignItems:"center",maxWidth:380,width:"100%",padding:"50px 16px 20px",gap:8,zIndex:10,overflowY:"auto",flex:1}}>
+              <div style={{textAlign:"center",marginBottom:4}}>
+                <div style={{fontSize:16,fontWeight:900,letterSpacing:3,color:C.pink,textShadow:`0 0 20px ${C.pink}40`}}>🎈 BALLOON POP</div>
+                <div style={{fontSize:9,color:C.text3,marginTop:2}}>Round {bpRound+1} · Air: {Math.round(airPct)}% · {bpPlayers.length} players</div>
+              </div>
+              {/* Player ring */}
+              <div style={{display:"flex",justifyContent:"center",flexWrap:"wrap",gap:6,marginBottom:4}}>
+                {bpPlayers.map((p,i)=>{const isCur=i===bpCurrentTurn&&bpPhase!=="popped"&&bpPhase!=="result";const isL=bpLoser&&bpLoser.name===p.name;return(
+                  <div key={i} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:2,opacity:isL?0.4:1,transform:isCur?"scale(1.15)":"scale(1)",transition:"all 0.3s"}}>
+                    <div style={{width:36,height:36,borderRadius:10,overflow:"hidden",border:`2px solid ${isCur?(p.isYou?C.cyan:C.orange):isL?C.red:"rgba(255,255,255,0.1)"}`,background:isCur?(p.isYou?C.cyan:C.orange)+"15":"rgba(255,255,255,0.03)",position:"relative"}}>
+                      <img src={p.img} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}} onError={(e)=>{e.target.style.display="none";}}/>
+                      {isL && <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(0,0,0,0.6)",fontSize:18}}>💀</div>}
+                    </div>
+                    <div style={{fontSize:7,fontWeight:700,color:isCur?(p.isYou?C.cyan:C.orange):C.text3}}>{p.isYou?"YOU":p.name.slice(0,8)}</div>
+                  </div>);})}
+              </div>
+              {/* Balloon */}
+              <div style={{position:"relative",display:"flex",alignItems:"center",justifyContent:"center",width:220,height:220,marginBottom:4}}>
+                {bpPhase!=="popped"&&bpPhase!=="result"&&(<div style={{fontSize:Math.round(60+airPct*0.8),transform:`scale(${balloonScale})`,transition:bpCharging?"transform 0.1s":"transform 0.5s cubic-bezier(0.34,1.56,0.64,1)",filter:`drop-shadow(0 0 ${10+airPct*0.3}px ${bpBalloonColor}60)`,animation:bpShaking?(dangerZone?"bpWobbleFast 0.15s infinite":"bpWobble 0.3s infinite"):bpCharging?"bpInflate 0.3s infinite":"gentleFloat 3s infinite",userSelect:"none"}}>🎈</div>)}
+                {bpPopping&&(<div style={{position:"absolute",display:"flex",alignItems:"center",justifyContent:"center"}}><div style={{fontSize:80,animation:"bpExplode 0.6s ease-out forwards"}}>💥</div></div>)}
+                {bpPhase==="result"&&(<div style={{textAlign:"center",animation:"fadeIn 0.5s ease"}}><div style={{fontSize:60,marginBottom:8}}>{bpLoser&&bpLoser.isYou?"💀":"🎉"}</div><div style={{fontSize:18,fontWeight:900,color:bpLoser&&bpLoser.isYou?C.red:C.green}}>{bpLoser&&bpLoser.isYou?"YOU POPPED IT!":(bpLoser?bpLoser.name:"???")+" POPPED IT!"}</div></div>)}
+              </div>
+              {/* Commentary */}
+              {bpComment&&(<div style={{textAlign:"center",padding:"6px 16px",borderRadius:12,...LG.pill,animation:"fadeIn 0.3s ease"}}><div style={{fontSize:11,fontWeight:600,color:C.text,fontStyle:"italic"}}>"{bpComment}"</div></div>)}
+              {/* Puff button */}
+              {isYourTurn&&(<div style={{width:"100%",marginTop:8}}>
+                <div style={{width:"100%",height:8,borderRadius:6,background:"rgba(255,255,255,0.05)",overflow:"hidden",marginBottom:8}}><div style={{width:bpPuffAmount+"%",height:"100%",borderRadius:6,background:bpPuffAmount>75?`linear-gradient(90deg,${C.orange},${C.red})`:`linear-gradient(90deg,${C.green},${C.cyan})`,transition:"width 0.05s linear"}}/></div>
+                <div onMouseDown={bpStartCharge} onMouseUp={bpStopCharge} onMouseLeave={()=>{if(bpCharging)bpStopCharge();}} onTouchStart={(e)=>{e.preventDefault();bpStartCharge();}} onTouchEnd={bpStopCharge}
+                  style={{padding:"14px 0",borderRadius:16,cursor:"pointer",textAlign:"center",userSelect:"none",background:bpCharging?`linear-gradient(135deg,${C.orange}30,${C.red}20)`:`linear-gradient(135deg,${C.cyan}15,${C.pink}10)`,border:`2px solid ${bpCharging?C.orange:C.cyan}30`,transform:bpCharging?"scale(0.97)":"scale(1)",transition:"all 0.2s"}}>
+                  <div style={{fontSize:18,fontWeight:900,letterSpacing:2,color:bpCharging?C.orange:C.cyan}}>{bpCharging?"💨 PUFFING...":"HOLD TO PUFF 💨"}</div>
+                  <div style={{fontSize:9,color:C.text3,marginTop:3}}>{bpCharging?"Release to add air!":"Min 5% · Hold longer = more air"}</div>
+                </div></div>)}
+              {bpPhase==="ai_turn"&&bpCharging&&(<div style={{width:"100%",marginTop:8}}><div style={{width:"100%",height:6,borderRadius:4,background:"rgba(255,255,255,0.05)",overflow:"hidden"}}><div style={{width:bpPuffAmount+"%",height:"100%",borderRadius:4,background:`linear-gradient(90deg,${C.orange},${C.red})`,transition:"width 0.05s linear"}}/></div><div style={{textAlign:"center",fontSize:8,color:C.orange,marginTop:4,animation:"pulse 0.5s infinite"}}>{(curP?curP.name:"AI")+" is puffing... 💨"}</div></div>)}
+              {/* Result actions */}
+              {bpPhase==="result"&&(<div style={{display:"flex",gap:10,marginTop:12,animation:"fadeIn 0.5s ease"}}>
+                <div onClick={()=>{setBpPhase(null);startBalloonPop();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.pink}15`,border:`1px solid ${C.pink}30`,fontSize:13,fontWeight:800,color:C.pink}}>🔄 Play Again</div>
+                <div onClick={bpEndGame} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.text3}10`,border:`1px solid ${C.text3}20`,fontSize:13,fontWeight:800,color:C.text3}}>Done ✓</div>
+              </div>)}
+            </div>
+          </div>
+        );
+      }
+
+      // ═══════════════════════════════════════════════════════════════
+      // RUSSIAN ROULETTE 🎲 — Render
+      // ═══════════════════════════════════════════════════════════════
+      if(gameActive.id==="russian" && rrPhase) {
+        const curP = rrPlayers[rrCurrentTurn];
+        const isYourTurn = curP && curP.isYou && rrPhase === "player_turn";
+        return (
+          <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden",display:"flex",flexDirection:"column",alignItems:"center",
+            background:`radial-gradient(ellipse at 50% 30%, ${C.red}08, transparent 50%), rgba(5,5,16,0.97)`,
+            animation:screenShake?"shake 0.4s ease":"none"}}>
+            {overlayBack(()=>{setGameActive(null);setRrPhase(null);})}
+            {screenFlash && <div style={{position:"absolute",inset:0,zIndex:200,pointerEvents:"none",opacity:0,background:screenFlash==="goal"?"rgba(0,255,100,0.25)":"rgba(255,50,50,0.2)",animation:"flashOverlay 0.4s ease forwards"}}/>}
+            {confettiParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size*0.6,background:p.color,borderRadius:1,transform:`rotate(${p.rot}deg)`,zIndex:210,pointerEvents:"none",animation:`confettiFall ${1.5+Math.random()}s ease-out forwards`}}/>))}
+            <div style={{display:"flex",flexDirection:"column",alignItems:"center",maxWidth:380,width:"100%",padding:"50px 16px 20px",gap:12,zIndex:10,overflowY:"auto",flex:1}}>
+              <div style={{fontSize:16,fontWeight:900,letterSpacing:3,color:C.red,textShadow:`0 0 20px ${C.red}40`}}>🎲 RUSSIAN ROULETTE</div>
+              <div style={{fontSize:9,color:C.text3}}>Round {rrRound+1} · Chamber {rrCurrentChamber+1}/6 · {rrPlayers.length} players</div>
+              {/* Players circle */}
+              <div style={{display:"flex",justifyContent:"center",flexWrap:"wrap",gap:8,marginBottom:8}}>
+                {rrPlayers.map((p,i)=>{const isCur=i===rrCurrentTurn&&rrPhase!=="bang"&&rrPhase!=="result";const isOut=rrEliminated&&rrEliminated.name===p.name;return(
+                  <div key={i} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:2,opacity:isOut?0.4:1,transform:isCur?"scale(1.2)":"scale(1)",transition:"all 0.3s"}}>
+                    <div style={{width:44,height:44,borderRadius:12,overflow:"hidden",border:`2px solid ${isCur?(p.isYou?C.cyan:C.orange):isOut?C.red:"rgba(255,255,255,0.1)"}`,boxShadow:isCur?`0 0 15px ${p.isYou?C.cyan:C.orange}40`:"none"}}>
+                      <img src={p.img} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}} onError={(e)=>{e.target.style.display="none";}}/>
+                    </div>
+                    <div style={{fontSize:8,fontWeight:700,color:isCur?(p.isYou?C.cyan:C.orange):C.text3}}>{p.isYou?"YOU":p.name.slice(0,8)}</div>
+                    {isCur && <div style={{fontSize:6,color:C.red,animation:"pulse 0.5s infinite"}}>PUFFING</div>}
+                  </div>);})}
+              </div>
+              {/* Revolver */}
+              <div style={{position:"relative",width:120,height:120,display:"flex",alignItems:"center",justifyContent:"center",marginBottom:8}}>
+                <div style={{fontSize:70,transform:`rotate(${rrSpinAngle}deg)`,transition:rrPhase==="spinning"?"transform 2s cubic-bezier(0.17,0.67,0.12,0.99)":"transform 0.3s",filter:`drop-shadow(0 0 20px ${C.red}40)`}}>🔫</div>
+                {rrPhase==="spinning"&&<div style={{position:"absolute",fontSize:10,color:C.gold,fontWeight:800,animation:"pulse 0.3s infinite"}}>SPINNING...</div>}
+              </div>
+              {/* Commentary */}
+              {rrComment&&(<div style={{textAlign:"center",padding:"8px 20px",borderRadius:12,...LG.pill,animation:"fadeIn 0.3s ease"}}><div style={{fontSize:12,fontWeight:700,color:rrPhase==="bang"?C.red:rrPhase==="click"?C.green:C.text}}>{rrComment}</div></div>)}
+              {/* Puff to pull trigger */}
+              {isYourTurn&&(<div onClick={rrPuff} onTouchStart={(e)=>{e.preventDefault();rrPuff();}}
+                style={{padding:"16px 40px",borderRadius:16,cursor:"pointer",textAlign:"center",background:`${C.red}15`,border:`2px solid ${C.red}30`,animation:"countPulse 1s infinite",userSelect:"none"}}>
+                <div style={{fontSize:18,fontWeight:900,color:C.red,letterSpacing:2}}>💨 PUFF TO PULL TRIGGER</div>
+                <div style={{fontSize:9,color:C.text3,marginTop:3}}>One chamber... six slots...</div>
+              </div>)}
+              {rrPhase==="click"&&(<div style={{textAlign:"center",animation:"fadeIn 0.3s ease"}}><div style={{fontSize:50,animation:"goalBurst 0.5s ease"}}>😮‍💨</div><div style={{fontSize:14,fontWeight:800,color:C.green}}>SAFE!</div></div>)}
+              {rrPhase==="bang"&&(<div style={{textAlign:"center",animation:"shake 0.5s ease"}}><div style={{fontSize:60,animation:"goalBurst 0.5s ease"}}>💥</div><div style={{fontSize:18,fontWeight:900,color:C.red,textShadow:`0 0 30px ${C.red}`}}>BANG!</div></div>)}
+              {rrPhase==="result"&&(<div style={{display:"flex",gap:10,marginTop:12,animation:"fadeIn 0.5s ease"}}>
+                <div onClick={()=>{setRrPhase(null);startRussianRoulette();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.red}15`,border:`1px solid ${C.red}30`,fontSize:13,fontWeight:800,color:C.red}}>🔄 Again</div>
+                <div onClick={rrEndGame} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.text3}10`,border:`1px solid ${C.text3}20`,fontSize:13,fontWeight:800,color:C.text3}}>Done ✓</div>
+              </div>)}
+            </div>
+          </div>
+        );
+      }
+
+      // ═══════════════════════════════════════════════════════════════
+      // PUFF PONG 🏓 — Render
+      // ═══════════════════════════════════════════════════════════════
+      if(gameActive.id==="puffpong" && ppPhase) {
+        return (
+          <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden",display:"flex",flexDirection:"column",alignItems:"center",
+            background:`radial-gradient(ellipse at 50% 50%, ${C.green}06, transparent 50%), rgba(5,5,16,0.97)`}}>
+            {overlayBack(()=>{if(ppInterval.current)clearInterval(ppInterval.current);setGameActive(null);setPpPhase(null);})}
+            {screenFlash && <div style={{position:"absolute",inset:0,zIndex:200,pointerEvents:"none",opacity:0,background:screenFlash==="goal"?"rgba(0,255,100,0.25)":"rgba(255,50,50,0.2)",animation:"flashOverlay 0.4s ease forwards"}}/>}
+            <div style={{display:"flex",flexDirection:"column",alignItems:"center",maxWidth:380,width:"100%",padding:"50px 16px 20px",gap:8,zIndex:10,flex:1}}>
+              <div style={{fontSize:16,fontWeight:900,letterSpacing:3,color:C.green,textShadow:`0 0 20px ${C.green}40`}}>🏓 PUFF PONG</div>
+              <div style={{display:"flex",gap:20,alignItems:"center",marginBottom:4}}>
+                <span style={{fontSize:24,fontWeight:900,color:C.cyan}}>{ppScore.you}</span>
+                <span style={{fontSize:12,color:C.text3}}>vs</span>
+                <span style={{fontSize:24,fontWeight:900,color:C.orange}}>{ppScore.ai}</span>
+              </div>
+              {/* Table */}
+              <div style={{position:"relative",width:"100%",maxWidth:340,height:300,background:`${C.green}08`,border:`2px solid ${C.green}20`,borderRadius:12,overflow:"hidden"}}>
+                {/* Center line */}
+                <div style={{position:"absolute",left:"50%",top:0,bottom:0,width:2,borderLeft:`2px dashed ${C.green}20`}}/>
+                {/* Your paddle (left) */}
+                <div style={{position:"absolute",left:8,top:`${ppPaddleY-10}%`,width:8,height:"20%",background:C.cyan,borderRadius:4,boxShadow:`0 0 10px ${C.cyan}60`,transition:"top 0.1s"}}/>
+                {/* AI paddle (right) */}
+                <div style={{position:"absolute",right:8,top:`${ppAiPaddleY-10}%`,width:8,height:"18%",background:C.orange,borderRadius:4,boxShadow:`0 0 10px ${C.orange}60`,transition:"top 0.15s"}}/>
+                {/* Ball */}
+                <div style={{position:"absolute",left:`${ppBallX}%`,top:`${ppBallY}%`,width:12,height:12,borderRadius:"50%",background:"#fff",boxShadow:"0 0 15px rgba(255,255,255,0.8)",transform:"translate(-50%,-50%)",transition:"none"}}/>
+                {/* Touch zones */}
+                <div onMouseDown={()=>ppMovePaddle(-1)} onTouchStart={(e)=>{e.preventDefault();ppMovePaddle(-1);}} style={{position:"absolute",left:0,top:0,width:"50%",height:"50%",cursor:"pointer"}}/>
+                <div onMouseDown={()=>ppMovePaddle(1)} onTouchStart={(e)=>{e.preventDefault();ppMovePaddle(1);}} style={{position:"absolute",left:0,top:"50%",width:"50%",height:"50%",cursor:"pointer"}}/>
+              </div>
+              <div style={{fontSize:8,color:C.text3,marginTop:4}}>Tap TOP/BOTTOM half to move paddle ↕</div>
+              {ppComment&&(<div style={{padding:"4px 12px",borderRadius:8,...LG.pill}}><div style={{fontSize:10,fontWeight:600,color:C.text}}>{ppComment}</div></div>)}
+              {ppPhase==="result"&&(<div style={{display:"flex",gap:10,marginTop:8,animation:"fadeIn 0.5s ease"}}>
+                <div onClick={()=>{setPpPhase(null);startPuffPong();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.green}15`,border:`1px solid ${C.green}30`,fontSize:13,fontWeight:800,color:C.green}}>🔄 Again</div>
+                <div onClick={ppEndGame} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.text3}10`,border:`1px solid ${C.text3}20`,fontSize:13,fontWeight:800,color:C.text3}}>Done ✓</div>
+              </div>)}
+            </div>
+          </div>
+        );
+      }
+
+      // ═══════════════════════════════════════════════════════════════
+      // RHYTHM PUFF 🎵 — Render
+      // ═══════════════════════════════════════════════════════════════
+      if(gameActive.id==="rhythm" && rpPhase) {
+        const laneColors = [C.red,C.cyan,C.gold,C.purple];
+        return (
+          <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden",display:"flex",flexDirection:"column",alignItems:"center",
+            background:`radial-gradient(ellipse at 50% 80%, ${C.purple}08, transparent 50%), rgba(5,5,16,0.97)`}}>
+            {overlayBack(()=>{if(rpInterval.current)clearInterval(rpInterval.current);setGameActive(null);setRpPhase(null);})}
+            {screenFlash && <div style={{position:"absolute",inset:0,zIndex:200,pointerEvents:"none",opacity:0,background:"rgba(255,165,0,0.2)",animation:"flashOverlay 0.4s ease forwards"}}/>}
+            <div style={{display:"flex",flexDirection:"column",alignItems:"center",maxWidth:380,width:"100%",padding:"50px 16px 10px",gap:6,zIndex:10,flex:1}}>
+              <div style={{fontSize:16,fontWeight:900,letterSpacing:3,color:C.purple,textShadow:`0 0 20px ${C.purple}40`}}>🎵 RHYTHM PUFF</div>
+              <div style={{display:"flex",gap:16,alignItems:"center",marginBottom:2}}>
+                <span style={{fontSize:10,color:C.gold,fontWeight:800}}>Score: {rpScore}</span>
+                <span style={{fontSize:10,color:rpCombo>=5?C.orange:C.text3,fontWeight:800}}>Combo: {rpCombo}x</span>
+                <span style={{fontSize:10,color:C.red,fontWeight:800}}>Miss: {rpMisses}/10</span>
+              </div>
+              {/* Note lanes */}
+              <div style={{position:"relative",width:"100%",maxWidth:320,height:360,display:"flex",gap:2,overflow:"hidden",borderRadius:12,border:`1px solid rgba(255,255,255,0.08)`}}>
+                {RP_LANES.map((lane,li)=>(
+                  <div key={li} style={{flex:1,position:"relative",background:`${laneColors[li]}04`,borderRight:li<3?`1px solid rgba(255,255,255,0.05)`:"none"}}>
+                    {/* Hit zone */}
+                    <div style={{position:"absolute",bottom:"5%",left:0,right:0,height:"10%",background:`${laneColors[li]}12`,border:`1px solid ${laneColors[li]}30`,borderRadius:4}}/>
+                    {/* Lane label */}
+                    <div style={{position:"absolute",bottom:2,left:0,right:0,textAlign:"center",fontSize:16}}>{lane}</div>
+                  </div>
+                ))}
+                {/* Notes falling */}
+                {rpNotes.filter(n=>!n.hit).map(n=>(
+                  <div key={n.id} style={{position:"absolute",left:`${n.lane*25+5}%`,top:`${n.y}%`,width:"15%",height:20,borderRadius:6,
+                    background:`linear-gradient(135deg,${laneColors[n.lane]},${laneColors[n.lane]}80)`,
+                    boxShadow:`0 0 10px ${laneColors[n.lane]}40`,
+                    display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,
+                    transition:"top 0.06s linear",zIndex:5}}>🎵</div>
+                ))}
+                {/* Hit notes (flash) */}
+                {rpNotes.filter(n=>n.hit).map(n=>(
+                  <div key={n.id+"h"} style={{position:"absolute",left:`${n.lane*25+5}%`,top:`${n.y}%`,width:"15%",height:20,borderRadius:6,
+                    background:`${laneColors[n.lane]}40`,animation:"flashOverlay 0.3s ease forwards",zIndex:4}}/>
+                ))}
+              </div>
+              {/* Hit buttons */}
+              <div style={{display:"flex",gap:6,marginTop:4,width:"100%",maxWidth:320}}>
+                {RP_LANES.map((lane,li)=>(
+                  <div key={li} onClick={()=>rpHitNote(li)} onTouchStart={(e)=>{e.preventDefault();rpHitNote(li);}}
+                    style={{flex:1,padding:"12px 0",borderRadius:12,cursor:"pointer",textAlign:"center",
+                      background:`${laneColors[li]}15`,border:`1px solid ${laneColors[li]}30`,
+                      fontSize:18,userSelect:"none",WebkitUserSelect:"none"}}>
+                    {lane}
+                  </div>
+                ))}
+              </div>
+              {rpComment&&(<div style={{padding:"4px 12px",borderRadius:8,...LG.pill}}><div style={{fontSize:10,fontWeight:600,color:rpCombo>=5?C.gold:C.text}}>{rpComment}</div></div>)}
+              {rpPhase==="result"&&(<div style={{display:"flex",gap:10,marginTop:8,animation:"fadeIn 0.5s ease"}}>
+                <div onClick={()=>{setRpPhase(null);startRhythmPuff();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.purple}15`,border:`1px solid ${C.purple}30`,fontSize:13,fontWeight:800,color:C.purple}}>🔄 Again</div>
+                <div onClick={rpEndGame} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.text3}10`,border:`1px solid ${C.text3}20`,fontSize:13,fontWeight:800,color:C.text3}}>Done ✓</div>
+              </div>)}
+            </div>
+          </div>
+        );
+      }
+
+      // ═══════════════════════════════════════════════════════════════
+      // TUG OF WAR 💪 — Render
+      // ═══════════════════════════════════════════════════════════════
+      if(gameActive.id==="tugofwar" && towPhase) {
+        const youWinning = towPosition > 50;
+        const barColor = youWinning ? C.cyan : C.red;
+        return (
+          <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden",display:"flex",flexDirection:"column",alignItems:"center",
+            background:`radial-gradient(ellipse at 50% 50%, ${C.blue}06, transparent 50%), rgba(5,5,16,0.97)`,
+            animation:screenShake?"shake 0.4s ease":"none"}}>
+            {overlayBack(()=>{if(towInterval.current)clearInterval(towInterval.current);setGameActive(null);setTowPhase(null);})}
+            {screenFlash && <div style={{position:"absolute",inset:0,zIndex:200,pointerEvents:"none",opacity:0,background:screenFlash==="goal"?"rgba(0,255,100,0.25)":"rgba(255,50,50,0.2)",animation:"flashOverlay 0.4s ease forwards"}}/>}
+            {confettiParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size*0.6,background:p.color,borderRadius:1,transform:`rotate(${p.rot}deg)`,zIndex:210,pointerEvents:"none",animation:`confettiFall ${1.5+Math.random()}s ease-out forwards`}}/>))}
+            <div style={{display:"flex",flexDirection:"column",alignItems:"center",maxWidth:380,width:"100%",padding:"50px 16px 20px",gap:12,zIndex:10,flex:1}}>
+              <div style={{fontSize:16,fontWeight:900,letterSpacing:3,color:C.blue,textShadow:`0 0 20px ${C.blue}40`}}>💪 TUG OF WAR</div>
+              <div style={{display:"flex",gap:12,alignItems:"center"}}>
+                <span style={{fontSize:24,fontWeight:900,color:C.cyan}}>YOU</span>
+                <span style={{fontSize:20,fontWeight:900,color:C.gold,background:`${C.gold}15`,padding:"2px 10px",borderRadius:8}}>{towTimer}s</span>
+                <span style={{fontSize:24,fontWeight:900,color:C.red}}>AI</span>
+              </div>
+              {/* Tug bar */}
+              <div style={{position:"relative",width:"100%",maxWidth:340,height:40,borderRadius:20,background:"rgba(255,255,255,0.05)",border:`2px solid rgba(255,255,255,0.1)`,overflow:"hidden",marginTop:8}}>
+                {/* Your side (left=cyan) */}
+                <div style={{position:"absolute",left:0,top:0,bottom:0,width:`${towPosition}%`,background:`linear-gradient(90deg,${C.cyan}40,${C.cyan}20)`,transition:"width 0.1s",borderRadius:"20px 0 0 20px"}}/>
+                {/* Center marker */}
+                <div style={{position:"absolute",left:"50%",top:0,bottom:0,width:2,background:"rgba(255,255,255,0.3)",transform:"translateX(-50%)"}}/>
+                {/* Position indicator */}
+                <div style={{position:"absolute",left:`${towPosition}%`,top:"50%",transform:"translate(-50%,-50%)",width:24,height:24,borderRadius:"50%",
+                  background:barColor,boxShadow:`0 0 15px ${barColor}80`,transition:"left 0.1s",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12}}>💪</div>
+              </div>
+              <div style={{display:"flex",justifyContent:"space-between",width:"100%",maxWidth:340}}>
+                <span style={{fontSize:8,color:C.cyan}}>← YOUR SIDE</span>
+                <span style={{fontSize:8,color:C.text3}}>Position: {Math.round(towPosition)}%</span>
+                <span style={{fontSize:8,color:C.red}}>AI SIDE →</span>
+              </div>
+              {/* Stats */}
+              <div style={{display:"flex",gap:20,marginTop:4}}>
+                <span style={{fontSize:10,color:C.cyan}}>Your puffs: {towPuffs}</span>
+                <span style={{fontSize:10,color:C.red}}>AI puffs: {towAiPuffs}</span>
+              </div>
+              {/* Commentary */}
+              {towComment&&(<div style={{padding:"4px 12px",borderRadius:8,...LG.pill}}><div style={{fontSize:11,fontWeight:700,color:C.text}}>{towComment}</div></div>)}
+              {/* PUFF button */}
+              {towPhase==="playing"&&(<div onClick={towPuff} onTouchStart={(e)=>{e.preventDefault();towPuff();}}
+                style={{padding:"20px 0",borderRadius:16,cursor:"pointer",textAlign:"center",width:"100%",maxWidth:300,
+                  background:`linear-gradient(135deg,${C.cyan}20,${C.blue}10)`,border:`2px solid ${C.cyan}30`,
+                  animation:"countPulse 0.5s infinite",userSelect:"none",WebkitUserSelect:"none",marginTop:8}}>
+                <div style={{fontSize:22,fontWeight:900,color:C.cyan,letterSpacing:2}}>💨 PUFF TO PULL!</div>
+                <div style={{fontSize:9,color:C.text3,marginTop:3}}>Spam puff to win!</div>
+              </div>)}
+              {towPhase==="result"&&(<div style={{textAlign:"center",animation:"fadeIn 0.5s ease"}}>
+                <div style={{fontSize:50,marginBottom:8}}>{towPosition>50?"🏆":"😤"}</div>
+                <div style={{fontSize:22,fontWeight:900,color:towPosition>50?C.green:C.red}}>{towPosition>50?"YOU WIN!":"AI WINS!"}</div>
+                <div style={{display:"flex",gap:10,marginTop:12,justifyContent:"center"}}>
+                  <div onClick={()=>{setTowPhase(null);startTugOfWar();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.blue}15`,border:`1px solid ${C.blue}30`,fontSize:13,fontWeight:800,color:C.blue}}>🔄 Again</div>
+                  <div onClick={towEndGame} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.text3}10`,border:`1px solid ${C.text3}20`,fontSize:13,fontWeight:800,color:C.text3}}>Done ✓</div>
+                </div>
+              </div>)}
+            </div>
+          </div>
+        );
+      }
+
       // Generic game
       return (
         <div style={overlayStyle}>{overlayBack(()=>setGameActive(null))}
@@ -7662,6 +8268,11 @@ export default function MoodLabArena() {
         @keyframes duelEyeGlow{0%,100%{opacity:0.5;box-shadow:0 0 4px currentColor}50%{opacity:1;box-shadow:0 0 12px currentColor,0 0 24px currentColor}}
         @keyframes duelMuzzle{0%{transform:scale(0.3);opacity:1}50%{transform:scale(1.5);opacity:0.8}100%{transform:scale(2);opacity:0}}
         @keyframes duelStar{0%,100%{opacity:0.2}50%{opacity:0.8}}
+        @keyframes goalBurst{0%{transform:scale(0.3);opacity:0}40%{transform:scale(1.15);opacity:1}70%{transform:scale(0.95)}100%{transform:scale(1);opacity:1}}
+        @keyframes bpWobble{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2deg)}}
+        @keyframes bpWobbleFast{0%,100%{transform:rotate(-4deg) scale(1.02)}25%{transform:rotate(3deg) scale(0.98)}50%{transform:rotate(-3deg) scale(1.01)}75%{transform:rotate(4deg) scale(0.99)}}
+        @keyframes bpInflate{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
+        @keyframes bpExplode{0%{transform:scale(1);opacity:1}50%{transform:scale(2.5);opacity:0.8}100%{transform:scale(4);opacity:0}}
         *{-webkit-tap-highlight-color:transparent;user-select:none;box-sizing:border-box}
         input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
         input[type=number]{-moz-appearance:textfield}
