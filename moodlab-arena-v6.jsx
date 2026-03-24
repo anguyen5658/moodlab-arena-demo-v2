@@ -9560,26 +9560,57 @@ export default function MoodLabArena() {
       {renderInputPanel()}
       {renderAskPrompt()}
 
-      {/* ═══ GLOBAL BACK BUTTON — rendered at ROOT level, outside ALL game containers ═══ */}
+      {/* ═══ GLOBAL TOP NAV — Home + Back, rendered at ROOT level ═══ */}
       {(gameActive || matchmaking || selectedGame || wcPhase || fanMode) && (
-        <button type="button" onClick={()=>{
-          cleanupAllGames();
-          if(gameActive){setGameActive(null);setKickState(null);setIsFK2Mode(false);isFK2Ref.current=false;setIsFK3Mode(false);isFK3Ref.current=false;setDuelPhase&&setDuelPhase(null);setBpPhase(null);setRrPhase(null);setPpPhase(null);setRpPhase(null);setTowPhase(null);}
-          if(matchmaking)setMatchmaking(null);
-          if(selectedGame)setSelectedGame(null);
-          if(wcPhase){wcExitTournament();}
-          if(fanMode){setFanMode(null);setFanTeam(null);setFanDevice(null);}
-        }} style={{
-          position:"absolute",top:10,left:10,zIndex:99999,
-          width:36,height:36,borderRadius:18,
-          display:"flex",alignItems:"center",justifyContent:"center",
-          background:"rgba(10,14,30,0.9)",border:"1px solid rgba(255,255,255,0.15)",
-          color:"#E8EBF6",fontSize:20,fontWeight:400,lineHeight:1,
-          padding:0,margin:0,outline:"none",cursor:"pointer",
-          WebkitAppearance:"none",MozAppearance:"none",appearance:"none",
-          WebkitTapHighlightColor:"transparent",
-          backdropFilter:"blur(10px)",boxShadow:"0 2px 10px rgba(0,0,0,0.5)",
-        }}>←</button>
+        <div style={{position:"absolute",top:8,left:0,right:0,zIndex:99999,display:"flex",alignItems:"center",padding:"0 10px",gap:6,pointerEvents:"none"}}>
+          {/* 🏠 HOME — always go back to Arcade homepage */}
+          <button type="button" onClick={()=>{
+            cleanupAllGames();
+            setGameActive(null);setKickState(null);setIsFK2Mode(false);isFK2Ref.current=false;setIsFK3Mode(false);isFK3Ref.current=false;
+            setBpPhase(null);setRrPhase(null);setPpPhase(null);setRpPhase(null);setTowPhase(null);
+            setMatchmaking(null);setSelectedGame(null);setFanMode(null);setFanTeam(null);setFanDevice(null);
+            if(wcPhase)wcExitTournament();
+          }} style={{
+            pointerEvents:"auto",width:34,height:34,borderRadius:12,
+            display:"flex",alignItems:"center",justifyContent:"center",
+            background:"rgba(10,14,30,0.88)",border:"1px solid rgba(255,255,255,0.12)",
+            color:"#E8EBF6",fontSize:15,padding:0,margin:0,outline:"none",cursor:"pointer",
+            WebkitAppearance:"none",MozAppearance:"none",appearance:"none",
+            WebkitTapHighlightColor:"transparent",backdropFilter:"blur(8px)",
+            boxShadow:"0 2px 8px rgba(0,0,0,0.4)",
+          }}>🏠</button>
+          {/* ◀ BACK — go back one step */}
+          <button type="button" onClick={()=>{
+            cleanupAllGames();
+            // Smart back: figure out what to close based on current state
+            if(gameActive) {
+              // In a game → go back to game selection
+              setGameActive(null);setKickState(null);setIsFK2Mode(false);isFK2Ref.current=false;setIsFK3Mode(false);isFK3Ref.current=false;
+              setBpPhase(null);setRrPhase(null);setPpPhase(null);setRpPhase(null);setTowPhase(null);
+            } else if(matchmaking) {
+              setMatchmaking(null);
+            } else if(fanMode==="watching"||fanMode==="device_select") {
+              setFanMode("team_select");
+            } else if(fanMode) {
+              setFanMode(null);setFanTeam(null);setFanDevice(null);
+            } else if(wcPhase==="group"||wcPhase==="knockout"||wcPhase==="result") {
+              // In tournament match → back to tournament screen
+              wcExitTournament();
+            } else if(wcPhase) {
+              wcExitTournament();
+            } else if(selectedGame) {
+              setSelectedGame(null);
+            }
+          }} style={{
+            pointerEvents:"auto",width:34,height:34,borderRadius:12,
+            display:"flex",alignItems:"center",justifyContent:"center",
+            background:"rgba(10,14,30,0.88)",border:"1px solid rgba(255,255,255,0.12)",
+            color:"#E8EBF6",fontSize:15,padding:0,margin:0,outline:"none",cursor:"pointer",
+            WebkitAppearance:"none",MozAppearance:"none",appearance:"none",
+            WebkitTapHighlightColor:"transparent",backdropFilter:"blur(8px)",
+            boxShadow:"0 2px 8px rgba(0,0,0,0.4)",
+          }}>◀</button>
+        </div>
       )}
 
       {/* Bottom Nav — Floating pill dock (hidden on arena hub) */}
