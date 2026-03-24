@@ -912,6 +912,67 @@ export default function MoodLabArena() {
         }
       }
 
+      // ── BALL FLIGHT ANIMATION (runs per frame) ──
+      if(state.cameraMode === "shoot" && state.flightActive && !state.flightDone) {
+        state.flightProgress += 0.025;
+        if(state.flightProgress >= 1) { state.flightProgress = 1; state.flightDone = true; }
+        const p = state.flightProgress;
+        const peakHeight = Math.max(state.ballTarget.y, state.gH * 0.7) + 2.0;
+        const peakX = state.ballTarget.x * 0.5;
+        const peakZ = state.ballStart.z * 0.4;
+        const t1 = 1 - p;
+        ball.position.x = t1*t1*state.ballStart.x + 2*t1*p*peakX + p*p*state.ballTarget.x;
+        ball.position.y = t1*t1*state.ballStart.y + 2*t1*p*peakHeight + p*p*state.ballTarget.y;
+        ball.position.z = t1*t1*state.ballStart.z + 2*t1*p*peakZ + p*p*state.ballTarget.z;
+        ball.rotation.x += 0.35;
+        ball.rotation.z += 0.12;
+        // Camera follows
+        const camZ = 12 - p * 8;
+        const camX = ball.position.x * 0.25;
+        const camY = 1.5 + (ball.position.y - 1.5) * 0.3;
+        camera.position.x += (camX - camera.position.x) * 0.08;
+        camera.position.y += (camY - camera.position.y) * 0.08;
+        camera.position.z += (camZ - camera.position.z) * 0.08;
+        camera.lookAt(ball.position.x*0.4, ball.position.y*0.5+0.8, Math.min(ball.position.z, 2));
+        state.targetFOV = 60 - p * 22;
+        // Vapor trail
+        if(Math.random() < 0.6) {
+          const tGeo = new THREE.SphereGeometry(0.07, 4, 4);
+          const tMat = new THREE.MeshBasicMaterial({color:0xaaddff,transparent:true,opacity:0.5});
+          const tMesh = new THREE.Mesh(tGeo, tMat);
+          tMesh.position.copy(ball.position);
+          tMesh.position.x += (Math.random()-0.5)*0.08;
+          scene.add(tMesh);
+          state.trailParticles.push({mesh:tMesh});
+        }
+        // Keeper dive
+        if(p > 0.3 && !state.keeperDiving) { state.keeperDiving = true; state.keeperDiveTarget = state.ballTarget.x; }
+        if(state.keeperDiving) {
+          keeperGroup.position.x += (state.keeperDiveTarget * 0.85 - keeperGroup.position.x) * 0.06;
+          const diveDir = state.keeperDiveTarget > 0 ? 1 : -1;
+          keeperGroup.rotation.z += diveDir * 0.025;
+          // Move arms toward ball
+          if(keeperGroup.children[4]) keeperGroup.children[4].rotation.z = Math.PI/3 * diveDir;
+          if(keeperGroup.children[5]) keeperGroup.children[5].rotation.z = -Math.PI/3 * diveDir;
+        }
+      }
+
+      // ── SAVE BALL FLIGHT (keeper POV — ball flying toward you) ──
+      if(state.cameraMode === "save" && state.saveBallActive && !state.saveBallDone) {
+        state.saveBallProgress += 0.035;
+        if(state.saveBallProgress >= 1) { state.saveBallProgress = 1; state.saveBallDone = true; }
+        const p = state.saveBallProgress;
+        const tX = state.saveBallTargetX || 0;
+        const tY = state.saveBallTargetY || 1.0;
+        ball.position.x = tX * p;
+        ball.position.y = 0.22 + (tY - 0.22) * p + Math.sin(p * Math.PI) * 1.0;
+        ball.position.z = 18 - p * 18.5;
+        ball.rotation.x -= 0.4;
+        ball.rotation.z += 0.15;
+        const sc = 1 + p * 1.5;
+        ball.scale.set(sc, sc, sc);
+      }
+
       // Crowd wave animation
       crowdDots.forEach((cd, i) => {
         cd.position.y += Math.sin(t*2 + i*0.3) * 0.003;
@@ -966,6 +1027,11 @@ export default function MoodLabArena() {
       s.keeperGroup.visible = true;
       s.povGloveGroup.visible = false;
       s.targetFOV = 60;
+      s.flightActive = false; s.flightDone = false; s.keeperDiving = false;
+      s.saveBallActive = false; s.saveBallDone = false;
+      s.ball.position.set(0, 0.22, 11); s.ball.scale.set(1,1,1);
+      s.keeperGroup.position.set(0, 0, 0.5); s.keeperGroup.rotation.set(0,0,0);
+      s.camera.position.set(0, 1.5, 12); s.camera.lookAt(0, 1.2, 0);
       s.aimLineV.visible = kickCharging && kickPower > 0;
       s.aimLineH.visible = false;
       s.dot.visible = false;
@@ -998,74 +1064,26 @@ export default function MoodLabArena() {
         s.dot.material.color.setHex(isPerfect ? 0x34d399 : 0xffffff);
       }
     } else if(kickState === "flight") {
-      // ── BALL FLIGHT: Camera follows ball, zooms in ──
+      // ── BALL FLIGHT: Set flags for animation loop ──
       s.aimLineV.visible = false;
       s.aimLineH.visible = false;
       s.dot.visible = false;
       s.keeperGroup.visible = true;
       s.povGloveGroup.visible = false;
-
-      if(!s.flightDone) {
-        s.flightProgress += 0.02;
-        if(s.flightProgress >= 1) {
-          s.flightProgress = 1;
-          s.flightDone = true;
-        }
-        const p = s.flightProgress;
-        const peakHeight = Math.max(s.ballTarget.y, gH * 0.7) + 2.0;
-        const peakX = s.ballTarget.x * 0.5;
-        const peakZ = s.ballStart.z * 0.4;
-        const t1 = 1 - p;
-        s.ball.position.x = t1*t1*s.ballStart.x + 2*t1*p*peakX + p*p*s.ballTarget.x;
-        s.ball.position.y = t1*t1*s.ballStart.y + 2*t1*p*peakHeight + p*p*s.ballTarget.y;
-        s.ball.position.z = t1*t1*s.ballStart.z + 2*t1*p*peakZ + p*p*s.ballTarget.z;
-
-        s.ball.rotation.x += 0.35;
-        s.ball.rotation.z += 0.12;
-
-        // Camera follows ball and zooms in
-        const camTargetZ = 12 - p * 8;
-        const camTargetX = s.ball.position.x * 0.25;
-        const camTargetY = 1.5 + (s.ball.position.y - 1.5) * 0.3;
-        s.camera.position.x += (camTargetX - s.camera.position.x) * 0.08;
-        s.camera.position.y += (camTargetY - s.camera.position.y) * 0.08;
-        s.camera.position.z += (camTargetZ - s.camera.position.z) * 0.08;
-        s.camera.lookAt(
-          s.ball.position.x * 0.4,
-          s.ball.position.y * 0.5 + 0.8,
-          Math.min(s.ball.position.z, 2)
-        );
-        s.targetFOV = 60 - p * 22;
-
-        // Vapor trail
-        if(Math.random() < 0.6) {
-          const trailGeo = new THREE.SphereGeometry(0.07, 4, 4);
-          const trailMat = new THREE.MeshBasicMaterial({ color:0xaaddff, transparent:true, opacity:0.5 });
-          const trailMesh = new THREE.Mesh(trailGeo, trailMat);
-          trailMesh.position.copy(s.ball.position);
-          trailMesh.position.x += (Math.random()-0.5)*0.08;
-          trailMesh.position.y += (Math.random()-0.5)*0.08;
-          s.scene.add(trailMesh);
-          s.trailParticles.push({ mesh:trailMesh });
-        }
-
-        // Keeper dive
-        if(p > 0.3 && !s.keeperDiving) {
-          s.keeperDiving = true;
-          s.keeperDiveTarget = s.ballTarget.x;
-        }
-        if(s.keeperDiving) {
-          const diveSpeed = 0.06;
-          s.keeperGroup.position.x += (s.keeperDiveTarget * 0.85 - s.keeperGroup.position.x) * diveSpeed;
-          const diveDir = s.keeperDiveTarget > 0 ? 1 : -1;
-          s.keeperGroup.rotation.z += diveDir * 0.025;
-          s.keeperGroup.children[4].rotation.z = Math.PI/3 * diveDir;
-          s.keeperGroup.children[5].rotation.z = -Math.PI/3 * diveDir;
-          s.keeperGroup.children[6].position.x = -0.65 + s.keeperDiveTarget * 0.3;
-          s.keeperGroup.children[7].position.x = 0.65 + s.keeperDiveTarget * 0.3;
-          s.keeperGroup.children[6].position.y = 1.5 + Math.abs(s.keeperDiveTarget) * 0.15;
-          s.keeperGroup.children[7].position.y = 1.5 + Math.abs(s.keeperDiveTarget) * 0.15;
-        }
+      s.cameraMode = "shoot";
+      // Activate flight in animation loop (if not already)
+      if(!s.flightActive) {
+        s.flightActive = true;
+        s.flightProgress = 0;
+        s.flightDone = false;
+        s.keeperDiving = false;
+        // Set ball start + target from FK2 aim values
+        const xPos = (fk2X / 100 - 0.5) * s.gW;
+        const yPos = (fk2Y / 100) * s.gH;
+        s.ballStart = { x: 0, y: 0.22, z: 11 };
+        s.ballTarget = { x: xPos, y: Math.max(yPos, 0.3), z: 0.3 };
+        s.ball.position.set(0, 0.22, 11);
+        s.ball.visible = true;
       }
     } else if(kickState === "shoot_result") {
       s.aimLineV.visible = false;
@@ -1154,25 +1172,16 @@ export default function MoodLabArena() {
       s.keeperGroup.visible = false;
       s.povGloveGroup.visible = true;
       s.ball.visible = true;
-      if(!s.saveBallDone) {
-        s.saveBallProgress += 0.035;
-        if(s.saveBallProgress >= 1) {
-          s.saveBallProgress = 1;
-          s.saveBallDone = true;
-        }
-        const p = s.saveBallProgress;
+      // Activate save ball flight in animation loop
+      if(!s.saveBallActive) {
+        s.saveBallActive = true;
+        s.saveBallProgress = 0;
+        s.saveBallDone = false;
         const aiZone = kickAiZone !== null ? kickAiZone : 0;
         const col = aiZone % 3;
         const row = Math.floor(aiZone / 3);
-        const targetX = (col - 1) * 2.2;
-        const targetY = row === 0 ? 0.6 : 1.8;
-        s.ball.position.x = targetX * p;
-        s.ball.position.y = 0.22 + (targetY - 0.22) * p + Math.sin(p * Math.PI) * 1.0;
-        s.ball.position.z = 18 - p * 18.5;
-        s.ball.rotation.x -= 0.4;
-        s.ball.rotation.z += 0.15;
-        const sc = 1 + p * 1.5;
-        s.ball.scale.set(sc, sc, sc);
+        s.saveBallTargetX = (col - 1) * 2.2;
+        s.saveBallTargetY = row === 0 ? 0.6 : 1.8;
       }
     } else if(kickState === "save_result") {
       s.cameraMode = "save";
