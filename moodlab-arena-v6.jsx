@@ -4619,13 +4619,6 @@ export default function MoodLabArena() {
             {/* Tension tint — screen gets progressively redder */}
             {isTensionPhase && <div style={{position:"absolute",inset:0,background:`rgba(180,20,0,${0.02+duelStaredownStage*0.03})`,transition:"background 1s ease",pointerEvents:"none",zIndex:2}}/>}
 
-            {/* ═══ AI COMMENTATOR ═══ */}
-            {commentatorText && <div style={{position:"absolute",top:8,left:80,right:10,zIndex:215,display:"flex",alignItems:"center",animation:"fadeIn 0.3s ease",pointerEvents:"none"}}>
-              <div style={{flex:1,padding:"5px 10px",borderRadius:8,background:`rgba(15,8,3,0.75)`,backdropFilter:"blur(8px)",border:`1px solid rgba(139,69,19,0.3)`,display:"flex",alignItems:"center",gap:4}}>
-                <span style={{fontSize:10,flexShrink:0}}>🤠</span>
-                <span style={{fontSize:8,fontWeight:600,color:C.gold,fontStyle:"italic",lineHeight:1.2}}>{commentatorText}</span>
-              </div>
-            </div>}
 
             {/* ═══ BACK BUTTON ═══ */}
 
@@ -5061,13 +5054,6 @@ export default function MoodLabArena() {
               </div>
             </div>}
 
-            {/* ═══ AI COMMENTATOR — aligned with back button ═══ */}
-            {commentatorText && <div style={{position:"absolute",top:8,left:80,right:10,zIndex:215,display:"flex",alignItems:"center",animation:"fadeIn 0.3s ease",pointerEvents:"none"}}>
-              <div style={{flex:1,padding:"5px 10px",borderRadius:8,background:`rgba(6,8,15,0.7)`,backdropFilter:"blur(8px)",border:`1px solid ${C.border}`,display:"flex",alignItems:"center",gap:4}}>
-                <span style={{fontSize:10,flexShrink:0}}>🎙️</span>
-                <span style={{fontSize:8,fontWeight:600,color:C.text,fontStyle:"italic",lineHeight:1.2}}>{commentatorText}</span>
-              </div>
-            </div>}
 
             {/* ═══ MATCH INTRO — COMBINED VS + STATS + COUNTDOWN ═══ */}
             {matchIntro && (
@@ -6068,13 +6054,6 @@ export default function MoodLabArena() {
               </div>
             </div>}
 
-            {/* ═══ AI COMMENTATOR ═══ */}
-            {commentatorText && <div style={{position:"absolute",top:8,left:80,right:10,zIndex:215,display:"flex",alignItems:"center",animation:"fadeIn 0.3s ease",pointerEvents:"none"}}>
-              <div style={{flex:1,padding:"5px 10px",borderRadius:8,background:`rgba(6,8,15,0.7)`,backdropFilter:"blur(8px)",border:`1px solid ${C.border}`,display:"flex",alignItems:"center",gap:4}}>
-                <span style={{fontSize:10,flexShrink:0}}>🎙️</span>
-                <span style={{fontSize:8,fontWeight:600,color:C.text,fontStyle:"italic",lineHeight:1.2}}>{commentatorText}</span>
-              </div>
-            </div>}
 
             {/* ═══ MATCH INTRO ═══ */}
             {matchIntro && (
@@ -9544,56 +9523,50 @@ export default function MoodLabArena() {
       {renderInputPanel()}
       {renderAskPrompt()}
 
-      {/* ═══ GLOBAL TOP NAV — Home + Back, rendered at ROOT level ═══ */}
+      {/* ═══ GLOBAL NAV — NATIVE DOM BUTTONS (bypass React event delegation) ═══ */}
       {(gameActive || matchmaking || selectedGame || wcPhase || fanMode) && (
-        <div style={{position:"absolute",top:8,left:0,right:0,zIndex:99999,display:"flex",alignItems:"center",padding:"0 10px",gap:6,pointerEvents:"none"}}>
-          {/* 🏠 HOME — always go back to Arcade homepage */}
-          <button type="button" onClick={()=>{
+        <div ref={(el)=>{
+          if(!el || el._navBound) return;
+          el._navBound = true;
+          // Use native DOM addEventListener — React's synthetic events may be blocked by game overlays
+          const homeBtn = el.querySelector('[data-nav="home"]');
+          const backBtn = el.querySelector('[data-nav="back"]');
+          if(homeBtn) homeBtn.addEventListener('click', ()=>{
             cleanupAllGames();
             setGameActive(null);setKickState(null);setIsFK2Mode(false);isFK2Ref.current=false;setIsFK3Mode(false);isFK3Ref.current=false;
             setBpPhase(null);setRrPhase(null);setPpPhase(null);setRpPhase(null);setTowPhase(null);
             setMatchmaking(null);setSelectedGame(null);setFanMode(null);setFanTeam(null);setFanDevice(null);
             if(wcPhase)wcExitTournament();
-          }} style={{
-            pointerEvents:"auto",width:34,height:34,borderRadius:12,
-            display:"flex",alignItems:"center",justifyContent:"center",
-            background:"rgba(10,14,30,0.88)",border:"1px solid rgba(255,255,255,0.12)",
-            color:"#E8EBF6",fontSize:15,padding:0,margin:0,outline:"none",cursor:"pointer",
-            WebkitAppearance:"none",MozAppearance:"none",appearance:"none",
-            WebkitTapHighlightColor:"transparent",backdropFilter:"blur(8px)",
-            boxShadow:"0 2px 8px rgba(0,0,0,0.4)",
-          }}>🏠</button>
-          {/* ◀ BACK — go back one step */}
-          <button type="button" onClick={()=>{
+          }, {capture:true});
+          if(backBtn) backBtn.addEventListener('click', ()=>{
             cleanupAllGames();
-            // Smart back: figure out what to close based on current state
-            if(gameActive) {
-              // In a game → go back to game selection
-              setGameActive(null);setKickState(null);setIsFK2Mode(false);isFK2Ref.current=false;setIsFK3Mode(false);isFK3Ref.current=false;
-              setBpPhase(null);setRrPhase(null);setPpPhase(null);setRpPhase(null);setTowPhase(null);
-            } else if(matchmaking) {
-              setMatchmaking(null);
-            } else if(fanMode==="watching"||fanMode==="device_select") {
-              setFanMode("team_select");
-            } else if(fanMode) {
-              setFanMode(null);setFanTeam(null);setFanDevice(null);
-            } else if(wcPhase==="group"||wcPhase==="knockout"||wcPhase==="result") {
-              // In tournament match → back to tournament screen
-              wcExitTournament();
-            } else if(wcPhase) {
-              wcExitTournament();
-            } else if(selectedGame) {
-              setSelectedGame(null);
-            }
-          }} style={{
-            pointerEvents:"auto",width:34,height:34,borderRadius:12,
-            display:"flex",alignItems:"center",justifyContent:"center",
-            background:"rgba(10,14,30,0.88)",border:"1px solid rgba(255,255,255,0.12)",
-            color:"#E8EBF6",fontSize:15,padding:0,margin:0,outline:"none",cursor:"pointer",
+            if(gameActive){setGameActive(null);setKickState(null);setIsFK2Mode(false);isFK2Ref.current=false;setIsFK3Mode(false);isFK3Ref.current=false;setBpPhase(null);setRrPhase(null);setPpPhase(null);setRpPhase(null);setTowPhase(null);}
+            else if(matchmaking){setMatchmaking(null);}
+            else if(fanMode){setFanMode(null);setFanTeam(null);setFanDevice(null);}
+            else if(wcPhase){wcExitTournament();}
+            else if(selectedGame){setSelectedGame(null);}
+          }, {capture:true});
+        }} style={{position:"absolute",bottom:70,left:0,right:0,zIndex:99999,display:"flex",justifyContent:"center",gap:8,pointerEvents:"none"}}>
+          <button data-nav="home" type="button" style={{
+            pointerEvents:"auto",padding:"8px 16px",borderRadius:14,
+            display:"flex",alignItems:"center",gap:5,
+            background:"rgba(10,14,30,0.92)",border:"1px solid rgba(255,255,255,0.15)",
+            color:"#E8EBF6",fontSize:12,fontWeight:700,
+            outline:"none",cursor:"pointer",
             WebkitAppearance:"none",MozAppearance:"none",appearance:"none",
-            WebkitTapHighlightColor:"transparent",backdropFilter:"blur(8px)",
-            boxShadow:"0 2px 8px rgba(0,0,0,0.4)",
-          }}>◀</button>
+            WebkitTapHighlightColor:"transparent",backdropFilter:"blur(10px)",
+            boxShadow:"0 4px 16px rgba(0,0,0,0.5)",
+          }}><span style={{fontSize:16}}>🏠</span> Home</button>
+          <button data-nav="back" type="button" style={{
+            pointerEvents:"auto",padding:"8px 16px",borderRadius:14,
+            display:"flex",alignItems:"center",gap:5,
+            background:"rgba(10,14,30,0.92)",border:"1px solid rgba(255,255,255,0.15)",
+            color:"#E8EBF6",fontSize:12,fontWeight:700,
+            outline:"none",cursor:"pointer",
+            WebkitAppearance:"none",MozAppearance:"none",appearance:"none",
+            WebkitTapHighlightColor:"transparent",backdropFilter:"blur(10px)",
+            boxShadow:"0 4px 16px rgba(0,0,0,0.5)",
+          }}><span style={{fontSize:16}}>◀</span> Back</button>
         </div>
       )}
 
