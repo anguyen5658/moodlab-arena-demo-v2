@@ -4302,25 +4302,16 @@ export default function MoodLabArena() {
     setConfettiParticles([]); setSmokeParticles([]);
   };
 
-  const overlayBack = (onClose) => {
-    const doBack = (e) => {
-      e.stopPropagation(); e.preventDefault();
-      try { playFx("tap"); } catch(ex) {}
-      cleanupAllGames();
-      onClose();
-    };
-    return (
-      <div data-back="true"
-        onClick={doBack}
-        onTouchEnd={(e)=>{e.stopPropagation();e.preventDefault();doBack(e);}}
-        onTouchStart={(e)=>{e.stopPropagation();}}
-        onMouseDown={(e)=>{e.stopPropagation();}}
-        onMouseUp={(e)=>{e.stopPropagation();}}
-        style={{position:"absolute",top:8,left:10,zIndex:9999,cursor:"pointer",padding:"10px 16px",borderRadius:12,background:"rgba(6,8,15,0.92)",backdropFilter:"blur(12px)",border:"1px solid rgba(255,255,255,0.15)",WebkitTapHighlightColor:"transparent",touchAction:"manipulation",boxShadow:"0 2px 12px rgba(0,0,0,0.5)"}}>
-        <span style={{fontSize:13,fontWeight:700,color:"#E8EBF6",pointerEvents:"none",userSelect:"none",WebkitUserSelect:"none"}}>← Back</span>
-      </div>
-    );
-  };
+  const overlayBack = (onClose) => (
+    <button type="button" data-back="true" onClick={()=>{cleanupAllGames();onClose();}}
+      style={{position:"absolute",top:12,left:12,zIndex:9999,width:40,height:40,borderRadius:20,
+        display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",
+        background:"rgba(10,14,30,0.85)",border:"1px solid rgba(255,255,255,0.12)",
+        color:"#E8EBF6",fontSize:18,fontWeight:700,lineHeight:1,padding:0,margin:0,
+        outline:"none",WebkitAppearance:"none",WebkitTapHighlightColor:"transparent",
+        backdropFilter:"blur(8px)",boxShadow:"0 2px 8px rgba(0,0,0,0.4)",
+      }}>✕</button>
+  );
 
   // ── Reusable Game Chat Panel — can be dropped into any game render ──
   const renderGameChatPanel = (gameName) => (
