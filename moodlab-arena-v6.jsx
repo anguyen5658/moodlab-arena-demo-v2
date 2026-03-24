@@ -98,9 +98,10 @@ const LG = {
 const PLAY_GAMES = [
   { id:"finalkick", name:"Final Kick", emoji:"⚽", players:"2", time:"1-2m", type:"Skill", color:C.cyan, desc:"Penalty kick 1v1. Chọn hướng sút, chọn hướng cản.", hot:true, inputs:["puff","button","tap"] },
   { id:"finalkick2", name:"Final Kick 2", emoji:"⚽🔥", players:"2", time:"2-3m", type:"Precision", color:C.gold, desc:"Double puff! Aim X-axis + Y-axis separately.", hot:true, inputs:["puff","button"] },
+  { id:"finalkick3", name:"Final Kick 3D", emoji:"⚽🌐", players:"2", time:"2-3m", type:"3D Precision", color:C.purple, desc:"3D behind-the-ball view! Double puff aim in 3D.", hot:true, inputs:["puff","button"] },
   { id:"hotpotato", name:"Hot Potato", emoji:"💣", players:"3-8", time:"1-3m", type:"Luck", color:C.orange, desc:"Bom nhảy ngẫu nhiên. Puff để pass. Ai bị nổ = loại.", inputs:["puff","button"] },
   { id:"russian", name:"Russian Roulette", emoji:"🎲", players:"2-6", time:"1-2m", type:"Luck", color:C.red, desc:"Lần lượt puff. Random ai bị loại. Tension cực cao.", inputs:["puff","button"] },
-  { id:"wildwest", name:"Wild West Duel", emoji:"🤠", players:"2", time:"15-30s", type:"Reaction", color:C.gold, desc:"Đếm ngược, ai puff nhanh hơn thắng.", hot:true, inputs:["puff","button"] },
+  { id:"wildwest", name:"Wild West Duel", emoji:"🤠", players:"2", time:"1-2m", type:"Reaction", color:C.gold, desc:"Best of 5 showdown! Wait for DRAW, puff fastest. Reaction time in ms.", hot:true, inputs:["puff","button","tap"] },
   { id:"balloon", name:"Balloon Pop", emoji:"🎈", players:"2-8", time:"1-3m", type:"Strategy", color:C.pink, desc:"Puff bóng phình dần. Ai làm nổ thì thua.", inputs:["puff","button"] },
   { id:"puffpong", name:"Puff Pong", emoji:"🏓", players:"2", time:"1-2m", type:"Skill", color:C.green, desc:"Bóng bàn ảo. Puff = đánh bóng. Timing là tất cả.", inputs:["puff","tap"] },
   { id:"rhythm", name:"Rhythm Puff", emoji:"🎵", players:"1-4", time:"1-3m", type:"Rhythm", color:C.purple, desc:"Nốt nhạc rơi, puff đúng nhịp. Guitar Hero style.", inputs:["puff","button"] },
@@ -330,9 +331,34 @@ export default function MoodLabArena() {
   const [betAmount, setBetAmount] = useState(50);
   const [predictLocked, setPredictLocked] = useState({});
 
-  // ── Duel ──
+  // ── Duel (Wild West) ──
   const [duelState, setDuelState] = useState(null);
   const [duelResult, setDuelResult] = useState(null);
+  const [duelPhase, setDuelPhase] = useState("menu"); // "menu"|"intro"|"staredown"|"ready"|"steady"|"draw"|"result"|"round_result"|"final"
+  const [duelRound, setDuelRound] = useState(0);
+  const [duelScore, setDuelScore] = useState({you:0, ai:0});
+  const [duelOpponent, setDuelOpponent] = useState(null);
+  const [duelStats, setDuelStats] = useState({fastestDraw:999, avgDraw:0, drawTimes:[], fouls:0, wins:0, streak:0});
+  const [duelRoundResults, setDuelRoundResults] = useState([]);
+  const [duelTumbleweed, setDuelTumbleweed] = useState(false);
+  const [duelDustParticles, setDuelDustParticles] = useState([]);
+  const duelDrawTime = useRef(null);
+  const duelTimerRef = useRef(null);
+  const duelSteadyTimerRef = useRef(null);
+  const [duelIntroStage, setDuelIntroStage] = useState(null);
+  const [duelIntroCount, setDuelIntroCount] = useState(3);
+  const [duelAudienceReactions, setDuelAudienceReactions] = useState([]);
+  const [duelFiredShot, setDuelFiredShot] = useState(false);
+
+  const DUEL_OPPONENTS = [
+    {name:"Sheriff Puffington",emoji:"🤠",img:"https://api.dicebear.com/9.x/adventurer/svg?seed=Sheriff&backgroundColor=transparent",rank:"#1",record:"420-69",taunt:"This town ain't big enough for the two of us",speed:350},
+    {name:"Quick Draw McGraw",emoji:"🔫",img:"https://api.dicebear.com/9.x/adventurer/svg?seed=QuickDraw&backgroundColor=transparent",rank:"#3",record:"380-88",taunt:"0.2 seconds is all I need",speed:280},
+    {name:"Cactus Jack",emoji:"🌵",img:"https://api.dicebear.com/9.x/bottts-neutral/svg?seed=CactusJack&backgroundColor=transparent",rank:"#7",record:"301-120",taunt:"Prickly and fast",speed:320},
+    {name:"Dusty Rhodes",emoji:"🏜️",img:"https://api.dicebear.com/9.x/adventurer/svg?seed=DustyRhodes&backgroundColor=transparent",rank:"#12",record:"250-140",taunt:"Faster than a tumbleweed in a tornado",speed:400},
+    {name:"Dynamite Dan",emoji:"🧨",img:"https://api.dicebear.com/9.x/bottts-neutral/svg?seed=DynamiteDan&backgroundColor=transparent",rank:"#5",record:"350-95",taunt:"BOOM. Already drew.",speed:300},
+    {name:"Whiskey Wilma",emoji:"🥃",img:"https://api.dicebear.com/9.x/adventurer/svg?seed=WhiskeyWilma&backgroundColor=transparent",rank:"#15",record:"220-160",taunt:"I shoot straighter when I'm drunk",speed:450},
+  ];
+  const duelOpponentRef = useRef(null);
 
   // ── Final Kick ──
   const [kickState, setKickState] = useState(null); // null|"shoot"|"power"|"flight"|"shoot_result"|"save_ready"|"save_countdown"|"save_dive"|"save_result"|"round_result"|"final"
@@ -369,6 +395,11 @@ export default function MoodLabArena() {
   const [fk2X, setFk2X] = useState(0);
   const [fk2Y, setFk2Y] = useState(0);
   const [fk2XDone, setFk2XDone] = useState(false);
+  // ── Final Kick 3 (3D) ──
+  const [isFK3Mode, setIsFK3Mode] = useState(false);
+  const isFK3Ref = useRef(false);
+  const threeCanvasRef = useRef(null);
+  const threeSceneRef = useRef(null);
   const [audioOn, setAudioOn] = useState(true);
   const [arcadeTab, setArcadeTab] = useState("games");
 
@@ -452,7 +483,7 @@ export default function MoodLabArena() {
   // ── World Cup Tournament ──
   const [wcTeam, setWcTeam] = useState(null);           // selected team {id,name,flag,...}
   const [wcTournament, setWcTournament] = useState(null); // active tournament state {group,opponents,standings,knockoutRound,...}
-  const [wcGameId, setWcGameId] = useState("finalkick");  // which FK variant for WC ("finalkick" or "finalkick2")
+  const [wcGameId, setWcGameId] = useState("finalkick");  // which FK variant for WC ("finalkick" or "finalkick2" or "finalkick3")
   const [wcPhase, setWcPhase] = useState(null);          // null|"team_select"|"group_draw"|"group_stage"|"knockout"|"result"
   const [wcCooldown, setWcCooldown] = useState(null);    // timestamp of last tournament entry
   const [wcMatchday, setWcMatchday] = useState(0);       // current matchday in group (0-2)
@@ -476,7 +507,7 @@ export default function MoodLabArena() {
   const activeInput = getActiveInputInfo();
 
   // ── EFFECTS ──
-  useEffect(() => { const t=setInterval(()=>{setTick(p=>p+1);if(gameActive&&(gameActive.id==="finalkick"||gameActive.id==="finalkick2")&&kickState&&Math.random()<0.3)spawnAudienceBubble();},1000); return()=>clearInterval(t); }, [gameActive,kickState]);
+  useEffect(() => { const t=setInterval(()=>{setTick(p=>p+1);if(gameActive&&(gameActive.id==="finalkick"||gameActive.id==="finalkick2"||gameActive.id==="finalkick3")&&kickState&&Math.random()<0.3)spawnAudienceBubble();},1000); return()=>clearInterval(t); }, [gameActive,kickState]);
   useEffect(() => { const t=setInterval(()=>setMainStage(p=>(p+1)%3),5000); return()=>clearInterval(t); }, []);
   useEffect(() => { const t=setInterval(()=>setTickerOffset(p=>p-0.5),30); return()=>clearInterval(t); }, []);
 
@@ -509,6 +540,428 @@ export default function MoodLabArena() {
     }
     return()=>{if(actionTimerRef.current){clearInterval(actionTimerRef.current);actionTimerRef.current=null;}};
   }, [kickState, kickCharging, matchIntro]);
+
+  // ── THREE.JS 3D SCENE FOR FK3 ──
+  useEffect(() => {
+    const isFK3Now = isFK3Mode || isFK3Ref.current;
+    const isShoot3D = ["shoot_x","shoot_y","flight","shoot_result"].includes(kickState);
+    if(!isFK3Now || !isShoot3D || typeof THREE === "undefined") {
+      // Cleanup if leaving 3D
+      if(threeSceneRef.current) {
+        const s = threeSceneRef.current;
+        if(s.animId) cancelAnimationFrame(s.animId);
+        if(s.renderer) { s.renderer.dispose(); s.renderer.domElement.remove(); }
+        threeSceneRef.current = null;
+      }
+      return;
+    }
+    // Don't re-init if already running
+    if(threeSceneRef.current) return;
+    const container = threeCanvasRef.current;
+    if(!container) return;
+
+    const W = 300, H = 200;
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.FogExp2(0x050520, 0.025);
+    scene.background = new THREE.Color(0x050520);
+
+    const camera = new THREE.PerspectiveCamera(55, W/H, 0.1, 200);
+    camera.position.set(0, 1.2, 12);
+    camera.lookAt(0, 1.5, 0);
+
+    const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:false });
+    renderer.setSize(W, H);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    container.innerHTML = "";
+    container.appendChild(renderer.domElement);
+    renderer.domElement.style.borderRadius = "12px";
+
+    // Ground
+    const groundGeo = new THREE.PlaneGeometry(40, 30);
+    const groundMat = new THREE.MeshStandardMaterial({ color:0x1a5c2a, roughness:0.9 });
+    const ground = new THREE.Mesh(groundGeo, groundMat);
+    ground.rotation.x = -Math.PI/2;
+    ground.receiveShadow = true;
+    scene.add(ground);
+
+    // Grid lines on ground
+    const gridHelper = new THREE.GridHelper(30, 30, 0x2a7c3a, 0x2a7c3a);
+    gridHelper.position.y = 0.01;
+    gridHelper.material.opacity = 0.15;
+    gridHelper.material.transparent = true;
+    scene.add(gridHelper);
+
+    // Goal dimensions (real-ish scale)
+    const gW = 7.32, gH = 2.44, postR = 0.06;
+    const postMat = new THREE.MeshStandardMaterial({ color:0xffffff, emissive:0x00ccff, emissiveIntensity:0.6, metalness:0.8, roughness:0.2 });
+
+    // Left post
+    const lPost = new THREE.Mesh(new THREE.CylinderGeometry(postR, postR, gH, 8), postMat);
+    lPost.position.set(-gW/2, gH/2, 0);
+    lPost.castShadow = true;
+    scene.add(lPost);
+
+    // Right post
+    const rPost = new THREE.Mesh(new THREE.CylinderGeometry(postR, postR, gH, 8), postMat);
+    rPost.position.set(gW/2, gH/2, 0);
+    rPost.castShadow = true;
+    scene.add(rPost);
+
+    // Crossbar
+    const crossbar = new THREE.Mesh(new THREE.CylinderGeometry(postR, postR, gW+postR*2, 8), postMat);
+    crossbar.rotation.z = Math.PI/2;
+    crossbar.position.set(0, gH, 0);
+    crossbar.castShadow = true;
+    scene.add(crossbar);
+
+    // Net (wireframe behind posts)
+    const netGeo = new THREE.PlaneGeometry(gW, gH, 12, 6);
+    const netMat = new THREE.MeshBasicMaterial({ color:0xaaddff, wireframe:true, transparent:true, opacity:0.12 });
+    const net = new THREE.Mesh(netGeo, netMat);
+    net.position.set(0, gH/2, -0.5);
+    scene.add(net);
+
+    // Back net (bottom)
+    const netBottomGeo = new THREE.PlaneGeometry(gW, 1.5, 12, 3);
+    const netBottom = new THREE.Mesh(netBottomGeo, netMat.clone());
+    netBottom.rotation.x = -Math.PI/2;
+    netBottom.position.set(0, 0.01, -1);
+    scene.add(netBottom);
+
+    // Ball
+    const ballGeo = new THREE.SphereGeometry(0.22, 16, 16);
+    const ballMat = new THREE.MeshStandardMaterial({ color:0xffffff, roughness:0.3, metalness:0.1 });
+    const ball = new THREE.Mesh(ballGeo, ballMat);
+    ball.position.set(0, 0.22, 11);
+    ball.castShadow = true;
+    scene.add(ball);
+
+    // Keeper (capsule shape)
+    const keeperGroup = new THREE.Group();
+    const bodyGeo = new THREE.CylinderGeometry(0.25, 0.2, 1.2, 8);
+    const bodyMat = new THREE.MeshStandardMaterial({ color:0xff3333, roughness:0.6 });
+    const body = new THREE.Mesh(bodyGeo, bodyMat);
+    body.position.y = 0.8;
+    keeperGroup.add(body);
+    const headGeo = new THREE.SphereGeometry(0.2, 8, 8);
+    const headMat = new THREE.MeshStandardMaterial({ color:0xffcc88, roughness:0.5 });
+    const head = new THREE.Mesh(headGeo, headMat);
+    head.position.y = 1.6;
+    keeperGroup.add(head);
+    // Arms
+    const armGeo = new THREE.CylinderGeometry(0.06, 0.06, 0.7, 6);
+    const armMat = new THREE.MeshStandardMaterial({ color:0xff3333, roughness:0.6 });
+    const lArm = new THREE.Mesh(armGeo, armMat);
+    lArm.position.set(-0.35, 1.1, 0);
+    lArm.rotation.z = Math.PI/6;
+    keeperGroup.add(lArm);
+    const rArm = new THREE.Mesh(armGeo, armMat);
+    rArm.position.set(0.35, 1.1, 0);
+    rArm.rotation.z = -Math.PI/6;
+    keeperGroup.add(rArm);
+    // Gloves
+    const gloveGeo = new THREE.SphereGeometry(0.1, 6, 6);
+    const gloveMat = new THREE.MeshStandardMaterial({ color:0x00ff88, emissive:0x00ff88, emissiveIntensity:0.3 });
+    const lGlove = new THREE.Mesh(gloveGeo, gloveMat);
+    lGlove.position.set(-0.6, 1.35, 0);
+    keeperGroup.add(lGlove);
+    const rGlove = new THREE.Mesh(gloveGeo, gloveMat);
+    rGlove.position.set(0.6, 1.35, 0);
+    keeperGroup.add(rGlove);
+    keeperGroup.position.set(0, 0, 0.5);
+    scene.add(keeperGroup);
+
+    // Aim lines (vertical + horizontal neon lines on goal plane)
+    const aimLineVGeo = new THREE.PlaneGeometry(0.04, gH);
+    const aimLineVMat = new THREE.MeshBasicMaterial({ color:0x00e5ff, transparent:true, opacity:0.9, side:THREE.DoubleSide });
+    const aimLineV = new THREE.Mesh(aimLineVGeo, aimLineVMat);
+    aimLineV.position.set(0, gH/2, 0.05);
+    aimLineV.visible = false;
+    scene.add(aimLineV);
+
+    const aimLineHGeo = new THREE.PlaneGeometry(gW, 0.04);
+    const aimLineHMat = new THREE.MeshBasicMaterial({ color:0xfb923c, transparent:true, opacity:0.9, side:THREE.DoubleSide });
+    const aimLineH = new THREE.Mesh(aimLineHGeo, aimLineHMat);
+    aimLineH.position.set(0, gH/2, 0.05);
+    aimLineH.visible = false;
+    scene.add(aimLineH);
+
+    // Crosshair dot
+    const dotGeo = new THREE.SphereGeometry(0.08, 8, 8);
+    const dotMat = new THREE.MeshBasicMaterial({ color:0xffffff });
+    const dot = new THREE.Mesh(dotGeo, dotMat);
+    dot.position.set(0, gH/2, 0.1);
+    dot.visible = false;
+    scene.add(dot);
+
+    // Stadium lights
+    const light1 = new THREE.PointLight(0x00e5ff, 80, 50);
+    light1.position.set(-8, 12, 5);
+    light1.castShadow = true;
+    scene.add(light1);
+    const light2 = new THREE.PointLight(0xffd93d, 60, 50);
+    light2.position.set(8, 12, 5);
+    scene.add(light2);
+    const ambient = new THREE.AmbientLight(0x334466, 0.8);
+    scene.add(ambient);
+    // Rim light behind goal
+    const rimLight = new THREE.PointLight(0xc084fc, 30, 30);
+    rimLight.position.set(0, 5, -5);
+    scene.add(rimLight);
+
+    // Vapor trail particles for flight
+    const trailParticles = [];
+
+    // Result particles
+    const resultParticles = [];
+
+    const state = {
+      scene, camera, renderer, ball, keeperGroup, net,
+      aimLineV, aimLineH, dot, trailParticles, resultParticles,
+      gW, gH, animId: null, startTime: Date.now(),
+      ballStart: new THREE.Vector3(0, 0.22, 11),
+      ballTarget: new THREE.Vector3(0, 1, -0.3),
+      flightProgress: 0, flightDone: false,
+      keeperDiveTarget: 0, keeperDiving: false,
+      resultShown: false,
+    };
+    threeSceneRef.current = state;
+
+    const animate = () => {
+      state.animId = requestAnimationFrame(animate);
+      const t = (Date.now() - state.startTime) / 1000;
+
+      // Subtle camera sway
+      camera.position.x = Math.sin(t * 0.3) * 0.15;
+      camera.position.y = 1.2 + Math.sin(t * 0.5) * 0.05;
+
+      // Keeper idle animation
+      keeperGroup.position.x = Math.sin(t * 1.5) * 0.3;
+      keeperGroup.children.forEach((c, i) => {
+        if(i === 0) c.rotation.z = Math.sin(t * 2) * 0.03; // body sway
+      });
+
+      // Update trail particles
+      for(let i = state.trailParticles.length - 1; i >= 0; i--) {
+        const p = state.trailParticles[i];
+        p.mesh.material.opacity -= 0.02;
+        p.mesh.scale.multiplyScalar(0.97);
+        if(p.mesh.material.opacity <= 0) {
+          scene.remove(p.mesh);
+          state.trailParticles.splice(i, 1);
+        }
+      }
+
+      // Update result particles
+      for(let i = state.resultParticles.length - 1; i >= 0; i--) {
+        const p = state.resultParticles[i];
+        p.mesh.position.add(p.vel);
+        p.vel.y -= 0.003;
+        p.mesh.material.opacity -= 0.015;
+        if(p.mesh.material.opacity <= 0) {
+          scene.remove(p.mesh);
+          state.resultParticles.splice(i, 1);
+        }
+      }
+
+      renderer.render(scene, camera);
+    };
+    animate();
+
+    return () => {
+      if(state.animId) cancelAnimationFrame(state.animId);
+      if(state.renderer) { state.renderer.dispose(); state.renderer.domElement.remove(); }
+      threeSceneRef.current = null;
+    };
+  }, [isFK3Mode, kickState]);
+
+  // ── FK3 3D scene updates (aim lines, ball flight, keeper dive) ──
+  useEffect(() => {
+    const s = threeSceneRef.current;
+    if(!s) return;
+    const isFK3Now = isFK3Mode || isFK3Ref.current;
+    if(!isFK3Now) return;
+
+    const gW = s.gW, gH = s.gH;
+
+    // Update aim lines based on kickState and kickPower
+    if(kickState === "shoot_x") {
+      s.aimLineV.visible = kickCharging && kickPower > 0;
+      s.aimLineH.visible = false;
+      s.dot.visible = false;
+      if(kickCharging && kickPower > 0) {
+        const xPos = (kickPower / 100 - 0.5) * gW;
+        s.aimLineV.position.x = xPos;
+        const isPerfect = kickPower >= kickSweetMin && kickPower <= kickSweetMax;
+        const isOOB = kickPower < 10 || kickPower > 90;
+        s.aimLineV.material.color.setHex(isOOB ? 0xff4444 : isPerfect ? 0x34d399 : 0x00e5ff);
+      }
+    } else if(kickState === "shoot_y") {
+      s.aimLineV.visible = true;
+      const lockedX = (fk2X / 100 - 0.5) * gW;
+      s.aimLineV.position.x = lockedX;
+      s.aimLineV.material.color.setHex(0x34d399);
+      s.aimLineV.material.opacity = 0.5;
+
+      s.aimLineH.visible = kickCharging && kickPower > 0;
+      s.dot.visible = kickCharging && kickPower > 0;
+      if(kickCharging && kickPower > 0) {
+        const yPos = (kickPower / 100) * gH;
+        s.aimLineH.position.y = yPos;
+        const isPerfect = kickPower >= kickSweetMin && kickPower <= kickSweetMax;
+        const isOOB = kickPower > 95;
+        s.aimLineH.material.color.setHex(isOOB ? 0xff4444 : isPerfect ? 0x34d399 : 0xfb923c);
+
+        s.dot.position.set(lockedX, yPos, 0.1);
+        s.dot.material.color.setHex(isPerfect ? 0x34d399 : 0xffffff);
+      }
+    } else if(kickState === "flight") {
+      s.aimLineV.visible = false;
+      s.aimLineH.visible = false;
+      s.dot.visible = false;
+
+      // Animate ball flight
+      if(!s.flightDone) {
+        s.flightProgress += 0.025;
+        if(s.flightProgress >= 1) {
+          s.flightProgress = 1;
+          s.flightDone = true;
+        }
+        const p = s.flightProgress;
+        // Bezier curve: start -> peak -> target
+        const peak = new THREE.Vector3(
+          s.ballTarget.x * 0.5,
+          Math.max(s.ballTarget.y, gH * 0.7) + 1.5,
+          s.ballStart.z * (1 - p * 0.6)
+        );
+        const t1 = 1 - p;
+        s.ball.position.x = t1*t1*s.ballStart.x + 2*t1*p*peak.x + p*p*s.ballTarget.x;
+        s.ball.position.y = t1*t1*s.ballStart.y + 2*t1*p*peak.y + p*p*s.ballTarget.y;
+        s.ball.position.z = t1*t1*s.ballStart.z + 2*t1*p*peak.z + p*p*s.ballTarget.z;
+
+        // Ball spin
+        s.ball.rotation.x += 0.3;
+        s.ball.rotation.z += 0.1;
+
+        // Camera follow
+        s.camera.position.z = 12 - p * 5;
+        s.camera.lookAt(s.ball.position.x * 0.3, 1.5, 0);
+
+        // Vapor trail
+        if(Math.random() < 0.5) {
+          const trailGeo = new THREE.SphereGeometry(0.06, 4, 4);
+          const trailMat = new THREE.MeshBasicMaterial({ color:0xaaddff, transparent:true, opacity:0.5 });
+          const trailMesh = new THREE.Mesh(trailGeo, trailMat);
+          trailMesh.position.copy(s.ball.position);
+          s.scene.add(trailMesh);
+          s.trailParticles.push({ mesh:trailMesh });
+        }
+
+        // Keeper dive
+        if(p > 0.3 && !s.keeperDiving) {
+          s.keeperDiving = true;
+          // Determine dive direction from ball target
+          s.keeperDiveTarget = s.ballTarget.x;
+        }
+        if(s.keeperDiving) {
+          const diveSpeed = 0.08;
+          s.keeperGroup.position.x += (s.keeperDiveTarget * 0.8 - s.keeperGroup.position.x) * diveSpeed;
+          const diveDir = s.keeperDiveTarget > 0 ? 1 : -1;
+          s.keeperGroup.rotation.z += diveDir * 0.02;
+          // Arms stretch
+          s.keeperGroup.children[2].rotation.z = Math.PI/3 * diveDir; // left arm
+          s.keeperGroup.children[3].rotation.z = -Math.PI/3 * diveDir; // right arm
+        }
+      }
+    } else if(kickState === "shoot_result") {
+      s.aimLineV.visible = false;
+      s.aimLineH.visible = false;
+      s.dot.visible = false;
+
+      if(!s.resultShown && kickBallAnim) {
+        s.resultShown = true;
+        const isGoal = kickBallAnim.result === "goal";
+        const isMiss = kickBallAnim.result === "miss";
+
+        if(isGoal) {
+          // Green particle burst
+          for(let i = 0; i < 20; i++) {
+            const pGeo = new THREE.SphereGeometry(0.05+Math.random()*0.05, 4, 4);
+            const pMat = new THREE.MeshBasicMaterial({ color:0x34d399, transparent:true, opacity:0.8 });
+            const pMesh = new THREE.Mesh(pGeo, pMat);
+            pMesh.position.copy(s.ball.position);
+            const vel = new THREE.Vector3((Math.random()-0.5)*0.15, Math.random()*0.1, (Math.random()-0.5)*0.1);
+            s.scene.add(pMesh);
+            s.resultParticles.push({ mesh:pMesh, vel });
+          }
+          // Net deform
+          if(s.net.geometry.attributes.position) {
+            const pos = s.net.geometry.attributes.position;
+            for(let i = 0; i < pos.count; i++) {
+              const dx = pos.getX(i) - s.ball.position.x;
+              const dy = pos.getY(i) - s.ball.position.y;
+              const dist = Math.sqrt(dx*dx + dy*dy);
+              if(dist < 1.5) pos.setZ(i, -0.3 * (1 - dist/1.5));
+            }
+            pos.needsUpdate = true;
+          }
+          // Camera shake
+          s.camera.position.x += (Math.random()-0.5)*0.3;
+          s.camera.position.y += (Math.random()-0.5)*0.2;
+        } else if(isMiss) {
+          // Ball flies past — orange particles
+          for(let i = 0; i < 10; i++) {
+            const pGeo = new THREE.SphereGeometry(0.04, 4, 4);
+            const pMat = new THREE.MeshBasicMaterial({ color:0xff4444, transparent:true, opacity:0.6 });
+            const pMesh = new THREE.Mesh(pGeo, pMat);
+            pMesh.position.copy(s.ball.position);
+            const vel = new THREE.Vector3((Math.random()-0.5)*0.1, Math.random()*0.08, -0.05);
+            s.scene.add(pMesh);
+            s.resultParticles.push({ mesh:pMesh, vel });
+          }
+        } else {
+          // Saved — orange flash particles
+          for(let i = 0; i < 12; i++) {
+            const pGeo = new THREE.SphereGeometry(0.04, 4, 4);
+            const pMat = new THREE.MeshBasicMaterial({ color:0xfb923c, transparent:true, opacity:0.7 });
+            const pMesh = new THREE.Mesh(pGeo, pMat);
+            pMesh.position.copy(s.keeperGroup.position);
+            pMesh.position.y += 1;
+            const vel = new THREE.Vector3((Math.random()-0.5)*0.12, Math.random()*0.08, (Math.random()-0.5)*0.08);
+            s.scene.add(pMesh);
+            s.resultParticles.push({ mesh:pMesh, vel });
+          }
+        }
+      }
+    }
+  }, [kickState, kickPower, kickCharging, fk2X, fk2Y, kickBallAnim, isFK3Mode]);
+
+  // ── FK3: Set ball target when entering flight ──
+  useEffect(() => {
+    const s = threeSceneRef.current;
+    if(!s) return;
+    const isFK3Now = isFK3Mode || isFK3Ref.current;
+    if(!isFK3Now || kickState !== "flight") return;
+
+    // Set target from fk2X and fk2Y
+    const xNorm = (fk2X / 100 - 0.5) * s.gW; // -gW/2 to gW/2
+    const yNorm = (fk2Y / 100) * s.gH;       // 0 to gH
+    s.ballTarget = new THREE.Vector3(xNorm, Math.max(0.22, yNorm), -0.3);
+    s.ballStart = new THREE.Vector3(0, 0.22, 11);
+    s.ball.position.set(0, 0.22, 11);
+    s.flightProgress = 0;
+    s.flightDone = false;
+    s.keeperDiving = false;
+    s.resultShown = false;
+    // Reset camera
+    s.camera.position.set(0, 1.2, 12);
+    // Reset keeper
+    s.keeperGroup.position.set(0, 0, 0.5);
+    s.keeperGroup.rotation.z = 0;
+    s.keeperGroup.children[2].rotation.z = Math.PI/6;
+    s.keeperGroup.children[3].rotation.z = -Math.PI/6;
+  }, [kickState, isFK3Mode]);
 
   // Bot chat
   useEffect(() => {
@@ -590,19 +1043,235 @@ export default function MoodLabArena() {
       setMatchmaking({game,mode,stage:"searching",input});
       setTimeout(()=>{
         setMatchmaking(p=>p?{...p,stage:"found",opp:mode==="ai"?"🤖 AI Bot":mode==="random"?"🎲 Player_847":"👫 Minh"}:null);
-        setTimeout(()=>{setMatchmaking(null);setGameActive({...game,activeInput:input});if(game.id==="wildwest")startDuel();if(game.id==="finalkick"||game.id==="finalkick2"){startKick(game.id);startMatchIntro(kickOpponent.current);}},800);
+        setTimeout(()=>{setMatchmaking(null);setGameActive({...game,activeInput:input});if(game.id==="wildwest")startDuel();if(game.id==="finalkick"||game.id==="finalkick2"||game.id==="finalkick3"){startKick(game.id);startMatchIntro(kickOpponent.current);}},800);
       },mode==="ai"?400:1200);
     });
   };
 
+  // ── Wild West Duel — Full Game Engine ──
   const startDuel = () => {
-    setDuelState("ready"); setDuelResult(null);
-    setTimeout(()=>setDuelState("steady"),1000);
-    setTimeout(()=>{const d=1500+Math.random()*2000;setTimeout(()=>setDuelState("shoot"),d);},2000);
+    // Pick random opponent
+    const opp = DUEL_OPPONENTS[Math.floor(Math.random()*DUEL_OPPONENTS.length)];
+    duelOpponentRef.current = opp;
+    setDuelOpponent(opp);
+    setDuelRound(0);
+    setDuelScore({you:0, ai:0});
+    setDuelRoundResults([]);
+    setDuelResult(null);
+    setDuelFiredShot(false);
+    // Start intro sequence
+    setDuelPhase("intro");
+    setDuelIntroStage("enter");
+    setDuelIntroCount(3);
+    playFx("crowd");
+    setCommentary("The duelists approach... " + opp.emoji);
+    setTimeout(()=>{
+      setDuelIntroStage("stats");
+      setCommentary("Check the stats! Who's the fastest gun? 📊");
+    },1200);
+    setTimeout(()=>{
+      setDuelIntroStage("countdown");
+      setDuelIntroCount(3);
+      playFx("whistle");
+      setCommentary("HIGH NOON approaches...");
+    },2400);
+    setTimeout(()=>setDuelIntroCount(2),3100);
+    setTimeout(()=>setDuelIntroCount(1),3800);
+    setTimeout(()=>{
+      setDuelIntroStage("go");
+      setCommentary("🤠 DUEL! May the fastest draw win!");
+      triggerFlash("goal"); playFx("crowd");
+    },4500);
+    setTimeout(()=>{
+      setDuelIntroStage(null);
+      setDuelPhase("staredown");
+      startDuelRound(0);
+    },5200);
   };
+
+  const startDuelRound = (roundNum) => {
+    setDuelFiredShot(false);
+    setDuelResult(null);
+    setDuelPhase("staredown");
+    duelDrawTime.current = null;
+    setDuelTumbleweed(Math.random() > 0.5);
+    // Spawn dust particles
+    setDuelDustParticles(Array.from({length:6},(_,i)=>({id:Date.now()+i, x:Math.random()*100, y:60+Math.random()*30, size:2+Math.random()*4, dur:3+Math.random()*3})));
+    setCommentary(pick(["Eyes locked... fingers twitching... 👀","The desert wind howls... 🌪️","You can hear a pin drop... 🤫","Sweat drips... who draws first? 💧"]));
+
+    setTimeout(()=>{
+      setDuelPhase("ready");
+      playFx("tap");
+      setCommentary("READY...");
+    }, 800 + Math.random()*400);
+
+    // STEADY after 1-1.5s
+    duelTimerRef.current = setTimeout(()=>{
+      setDuelPhase("steady");
+      playFx("select");
+      setCommentary("STEADY...");
+
+      // DRAW after random 1-4s (prevents timing exploits)
+      const steadyDuration = 1000 + Math.random() * 3000;
+      duelSteadyTimerRef.current = setTimeout(()=>{
+        setDuelPhase("draw");
+        duelDrawTime.current = Date.now();
+        triggerShake();
+        triggerFlash("miss");
+        playFx("whistle");
+        setCommentary("🔥 DRAW! PUFF NOW!");
+
+        // Auto-timeout after 3s
+        duelTimerRef.current = setTimeout(()=>{
+          if(duelDrawTime.current) {
+            // Player was too slow
+            const aiSpeed = getAiDrawSpeed(roundNum);
+            setDuelResult({win:false, you:3000, ai:aiSpeed, timeout:true});
+            setDuelPhase("result");
+            duelDrawTime.current = null;
+            setDuelFiredShot(true);
+            playFx("lose");
+            setCommentary(pick(["Too slow, partner! 🐌🤠","You froze up! AI drew ages ago!","Tumbleweed is faster than you! 💀"]));
+            handleDuelRoundEnd(false, false);
+          }
+        }, 3000);
+      }, steadyDuration);
+    }, 1000 + Math.random()*500);
+  };
+
+  const getAiDrawSpeed = (round) => {
+    const opp = duelOpponentRef.current || DUEL_OPPONENTS[0];
+    // AI gets faster each round: base speed - (round * 30-50ms)
+    const base = opp.speed;
+    const speedup = round * (30 + Math.random()*20);
+    const jitter = (Math.random()-0.5) * 80;
+    return Math.max(180, Math.floor(base - speedup + jitter));
+  };
+
   const duelShoot = () => {
-    if(duelState==="shoot"){const you=Math.floor(200+Math.random()*300),ai=Math.floor(400+Math.random()*400);const win=you<ai;setDuelResult({win,you,ai});setDuelState("result");if(win){setCoins(c=>c+50);notify("🤠 YOU WIN! +50",C.green);}else notify("💀 AI faster!",C.red);}
-    else if(duelState&&duelState!=="shoot"&&duelState!=="result"){setDuelResult({foul:true});setDuelState("result");notify("⚠ FOUL!",C.red);}
+    // Prevent double-tap
+    if(duelFiredShot) return;
+
+    // FOUL — drew before DRAW phase
+    if(duelPhase === "staredown" || duelPhase === "ready" || duelPhase === "steady") {
+      setDuelFiredShot(true);
+      clearTimeout(duelTimerRef.current);
+      clearTimeout(duelSteadyTimerRef.current);
+      duelDrawTime.current = null;
+      setDuelResult({foul:true});
+      setDuelPhase("result");
+      playFx("error");
+      triggerShake();
+      setDuelStats(s=>({...s, fouls:s.fouls+1}));
+      setCommentary(pick(["FOUL! Jumped the gun! 🔫😂","Bro shot before DRAW literally 💀","Trigger happy much? Automatic loss!","Easy there cowboy! Too early! 🤠"]));
+      notify("⚠ FOUL! Drew too early!", C.red);
+      // Foul = auto-lose round
+      handleDuelRoundEnd(false, true);
+      return;
+    }
+
+    // Valid shot during DRAW phase
+    if(duelPhase === "draw" && duelDrawTime.current) {
+      setDuelFiredShot(true);
+      clearTimeout(duelTimerRef.current);
+      const playerTime = Date.now() - duelDrawTime.current;
+      duelDrawTime.current = null;
+      const aiTime = getAiDrawSpeed(duelRound);
+      const win = playerTime < aiTime;
+      setDuelResult({win, you:playerTime, ai:aiTime});
+      setDuelPhase("result");
+
+      // Update stats
+      setDuelStats(s=>{
+        const times = [...s.drawTimes, playerTime];
+        return {
+          ...s,
+          fastestDraw: Math.min(s.fastestDraw, playerTime),
+          avgDraw: Math.round(times.reduce((a,b)=>a+b,0)/times.length),
+          drawTimes: times,
+        };
+      });
+
+      if(win) {
+        playFx("win"); playFx("crowd");
+        triggerFlash("goal");
+        spawnSmoke(10);
+        if(playerTime < 200) {
+          setCommentary("LIGHTNING FAST! " + playerTime + "ms! 🤠⚡ INHUMAN REFLEXES!");
+          spawnConfetti(40, [C.gold, C.orange, "#fff"]);
+        } else if(playerTime < 300) {
+          setCommentary("QUICK DRAW! " + playerTime + "ms! 🔥 Faster than a rattlesnake!");
+        } else {
+          setCommentary("You got 'em! " + playerTime + "ms beats " + aiTime + "ms! 🤠");
+        }
+        notify("🤠 Round won! " + playerTime + "ms!", C.green);
+      } else {
+        playFx("lose");
+        triggerFlash("miss");
+        spawnSmoke(6);
+        setCommentary(pick([
+          "💀 " + aiTime + "ms vs your " + playerTime + "ms! AI was faster!",
+          duelOpponentRef.current.name + " drew first! " + aiTime + "ms! 🔫",
+          "Not quick enough, partner! " + aiTime + "ms beats " + playerTime + "ms!",
+        ]));
+        notify("💀 AI drew faster! " + aiTime + "ms", C.red);
+      }
+      handleDuelRoundEnd(win, false);
+    }
+  };
+
+  const handleDuelRoundEnd = (win, wasFoul) => {
+    const newResults = [...duelRoundResults, {win, foul:wasFoul, you:win?0:0, ai:0}];
+    setDuelRoundResults(newResults);
+    const newScore = {...duelScore};
+    if(win) newScore.you++; else newScore.ai++;
+    setDuelScore(newScore);
+
+    // Check if match is over (best of 5 = first to 3)
+    setTimeout(()=>{
+      if(newScore.you >= 3 || newScore.ai >= 3) {
+        // Match over
+        setDuelPhase("final");
+        const matchWin = newScore.you >= 3;
+        if(matchWin) {
+          playFx("win"); playFx("crowd");
+          spawnConfetti(60, [C.gold, C.orange, "#fff", C.green]);
+          setCoins(c=>c+150);
+          setDuelStats(s=>({...s, wins:s.wins+1, streak:s.streak+1}));
+          setCommentary(pick(["🏆 FASTEST GUN IN THE WEST! +150 coins!","CHAMPION DUELIST! " + duelOpponentRef.current.name + " tips their hat! 🤠","YOU'RE THE SHERIFF NOW! 🌟"]));
+          notify("🏆 DUEL WON! +150 coins!", C.gold);
+        } else {
+          playFx("lose");
+          setDuelStats(s=>({...s, streak:0}));
+          setCommentary(pick(["💀 " + duelOpponentRef.current.name + " wins the duel!","Outdrawn! Better luck next time, partner!","The AI claims the bounty! 🤠"]));
+          notify("💀 Duel lost!", C.red);
+        }
+      } else {
+        // Next round
+        setDuelPhase("round_result");
+        setTimeout(()=>{
+          const nextRound = duelRound + 1;
+          setDuelRound(nextRound);
+          startDuelRound(nextRound);
+        }, 2000);
+      }
+    }, 1500);
+  };
+
+  const resetDuel = () => {
+    clearTimeout(duelTimerRef.current);
+    clearTimeout(duelSteadyTimerRef.current);
+    duelDrawTime.current = null;
+    setDuelPhase("menu");
+    setDuelRound(0);
+    setDuelScore({you:0,ai:0});
+    setDuelResult(null);
+    setDuelRoundResults([]);
+    setDuelFiredShot(false);
+    setDuelIntroStage(null);
+    setDuelTumbleweed(false);
+    setDuelDustParticles([]);
+    setDuelState(null);
   };
   // ── Sound FX — real audio files + synthesized fallbacks ──
   const playAudio = useCallback((src, vol=0.5) => {
@@ -716,7 +1385,9 @@ export default function MoodLabArena() {
   // gameId param needed because gameActive may not be set yet (React async state)
   const startKick = (gameId) => {
     const resolvedId = gameId || gameActive?.id || "finalkick";
-    const isFK2 = resolvedId === "finalkick2";
+    const isFK3 = resolvedId === "finalkick3";
+    const isFK2 = resolvedId === "finalkick2" || isFK3;
+    setIsFK3Mode(isFK3); isFK3Ref.current = isFK3;
     const baseOpp = pick(AI_OPPONENTS);
     // If user has a team selected (quick play), assign opponent a random nation too
     if(wcTeam && !gameActive?.wcMode) {
@@ -2513,32 +3184,397 @@ export default function MoodLabArena() {
       );
     }
     if(gameActive) {
-      // Wild West Duel
+      // ═══════════════════════════════════════════════════════════
+      // ── WILD WEST DUEL — IMMERSIVE VERSION ──
+      // ═══════════════════════════════════════════════════════════
       if(gameActive.id==="wildwest") {
+        const wwOpp = duelOpponentRef.current || DUEL_OPPONENTS[0];
+        const wwPhase = duelPhase;
+        const isDrawPhase = wwPhase === "draw";
+        const isTensionPhase = ["staredown","ready","steady"].includes(wwPhase);
+        const wwSunsetIntensity = isTensionPhase ? 1.3 : isDrawPhase ? 1.8 : 1;
+        const wwVignetteIntensity = isTensionPhase ? 0.7 : isDrawPhase ? 0.9 : 0.4;
+        const wwScreenPulse = wwPhase === "ready" ? "duelHeartbeat 1.5s ease-in-out infinite" : wwPhase === "steady" ? "duelHeartbeat 1s ease-in-out infinite" : "none";
+
         return (
-          <div style={overlayStyle}>{overlayBack(()=>{setGameActive(null);setDuelState(null);setDuelResult(null);})}
-            <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",textAlign:"center",padding:20}}>
-              <div style={{fontSize:10,fontWeight:800,color:C.gold,letterSpacing:2,marginBottom:20}}>🤠 WILD WEST DUEL</div>
-              {duelState==="ready" && <div style={{fontSize:40,fontWeight:900,color:C.text,animation:"breathe 1s infinite"}}>READY...</div>}
-              {duelState==="steady" && <div style={{fontSize:40,fontWeight:900,color:C.gold,animation:"breathe 0.8s infinite"}}>STEADY...</div>}
-              {duelState==="shoot" && <div onClick={duelShoot} style={{cursor:"pointer"}}><div style={{fontSize:48,fontWeight:900,color:C.red,animation:"pulse 0.3s infinite",textShadow:`0 0 30px ${C.red}`}}>SHOOT!</div><div style={{fontSize:12,color:C.text3,marginTop:8}}>Puff NOW!</div></div>}
-              {!["ready","steady","shoot","result"].includes(duelState) && duelState && <div onClick={duelShoot} style={{cursor:"pointer",fontSize:14,color:C.text3}}>Waiting...</div>}
-              {duelState==="result" && duelResult && (
-                <div style={{animation:"fadeIn 0.3s ease"}}>
-                  {duelResult.foul ? <div style={{fontSize:28,fontWeight:900,color:C.red}}>⚠ FOUL!</div> :
-                    duelResult.win ? <div><div style={{fontSize:28,fontWeight:900,color:C.green}}>🤠 YOU WIN!</div><div style={{fontSize:12,color:C.text3,marginTop:6}}>You: {duelResult.you}ms · AI: {duelResult.ai}ms</div><div style={{fontSize:12,color:C.gold,marginTop:4}}>+50 coins</div></div> :
-                    <div><div style={{fontSize:28,fontWeight:900,color:C.red}}>💀 DEFEATED</div><div style={{fontSize:12,color:C.text3,marginTop:6}}>You: {duelResult.you}ms · AI: {duelResult.ai}ms</div></div>
-                  }
-                  <div onClick={()=>{startDuel();}} style={{marginTop:20,padding:"10px 24px",borderRadius:10,cursor:"pointer",background:`${C.gold}15`,border:`1px solid ${C.gold}30`,fontSize:13,fontWeight:700,color:C.gold}}>Rematch</div>
-                </div>
-              )}
+          <div style={{...overlayStyle, background:"none", overflow:"hidden", animation:screenShake?"shake 0.4s ease":"none"}} onClick={()=>{if(["staredown","ready","steady","draw"].includes(wwPhase)) duelShoot();}}>
+
+            {/* ═══ SCREEN FLASH OVERLAY ═══ */}
+            {screenFlash && <div style={{position:"absolute",inset:0,zIndex:200,pointerEvents:"none",opacity:0,
+              background:screenFlash==="goal"?"rgba(0,255,100,0.25)":screenFlash==="save"?"rgba(255,165,0,0.2)":screenFlash==="miss"?"rgba(255,50,50,0.25)":"rgba(255,0,0,0.3)",
+              animation:"flashOverlay 0.4s ease forwards",
+            }}/>}
+
+            {/* ═══ DESERT SUNSET BACKGROUND ═══ */}
+            <div style={{position:"absolute",inset:0,background:`
+              linear-gradient(180deg,
+                #1a0a2e 0%,
+                #2d1b4e ${10*wwSunsetIntensity}%,
+                #6b2fa0 ${20*wwSunsetIntensity}%,
+                #d4556b ${35*wwSunsetIntensity}%,
+                #e8875c ${50*wwSunsetIntensity}%,
+                #f4a742 ${65*wwSunsetIntensity}%,
+                #c87533 ${80*wwSunsetIntensity}%,
+                #8b4513 90%,
+                #3d1f0a 100%)`,
+              transition:"all 0.8s ease",
+              animation: wwPhase==="steady" ? "duelHeatShimmer 3s ease-in-out infinite" : "none",
+            }}/>
+
+            {/* Desert heat shimmer overlay */}
+            {isTensionPhase && <div style={{position:"absolute",inset:0,background:"transparent",animation:"duelHeatShimmer 4s ease-in-out infinite",opacity:0.3,backgroundImage:"repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,167,66,0.03) 2px, rgba(255,167,66,0.03) 4px)"}}/>}
+
+            {/* Sun glow */}
+            <div style={{position:"absolute",top:"8%",left:"50%",transform:"translateX(-50%)",width:80,height:80,borderRadius:"50%",background:"radial-gradient(circle, rgba(255,200,50,0.8) 0%, rgba(255,140,50,0.4) 30%, transparent 70%)",filter:"blur(8px)",opacity:wwSunsetIntensity*0.6,transition:"opacity 0.8s"}}/>
+
+            {/* ═══ WESTERN TOWN SILHOUETTE ═══ */}
+            <div style={{position:"absolute",bottom:"28%",left:0,right:0,height:80,overflow:"hidden"}}>
+              {/* Buildings silhouette */}
+              <svg viewBox="0 0 400 80" style={{width:"100%",height:"100%",position:"absolute",bottom:0}} preserveAspectRatio="none">
+                <path d="M0,80 L0,55 L15,55 L15,40 L20,38 L25,40 L25,55 L40,55 L40,35 L42,30 L44,28 L46,30 L48,35 L48,55 L55,55 L55,45 L70,45 L70,30 L75,25 L80,30 L80,55 L90,55 L90,50 L95,50 L95,38 L97,35 L99,38 L99,55 L110,55 L110,48 L130,48 L130,55 L140,55 L140,30 L142,20 L145,18 L148,20 L150,30 L150,55 L160,55 L160,42 L175,42 L175,55 L185,55 L185,35 L190,32 L195,28 L200,25 L205,28 L210,32 L215,35 L215,55 L225,55 L225,50 L240,50 L240,55 L250,55 L250,38 L252,33 L255,30 L258,33 L260,38 L260,55 L280,55 L280,45 L285,42 L290,45 L290,55 L300,55 L300,35 L310,35 L310,20 L312,15 L315,12 L318,15 L320,20 L320,55 L335,55 L335,48 L350,48 L350,55 L365,55 L365,40 L370,38 L375,40 L375,55 L390,55 L390,50 L400,50 L400,80 Z" fill="#1a0a05" opacity="0.95"/>
+                {/* Water tower */}
+                <rect x="305" y="8" width="20" height="8" fill="#1a0a05" opacity="0.95"/>
+                <rect x="312" y="16" width="6" height="20" fill="#1a0a05" opacity="0.95"/>
+                {/* Saloon sign */}
+                <rect x="185" y="32" width="30" height="5" rx="1" fill="#2a1505" opacity="0.8"/>
+              </svg>
             </div>
+
+            {/* ═══ GROUND / DESERT FLOOR ═══ */}
+            <div style={{position:"absolute",bottom:0,left:0,right:0,height:"28%",background:"linear-gradient(180deg, #8b4513 0%, #6b3410 30%, #4a2008 60%, #2d1205 100%)"}}/>
+            {/* Ground texture dots */}
+            <div style={{position:"absolute",bottom:0,left:0,right:0,height:"28%",backgroundImage:"radial-gradient(circle, rgba(139,69,19,0.3) 1px, transparent 1px)",backgroundSize:"20px 20px",opacity:0.5}}/>
+
+            {/* ═══ TUMBLEWEED ═══ */}
+            {duelTumbleweed && isTensionPhase && (
+              <div style={{position:"absolute",bottom:"30%",fontSize:24,animation:"duelTumbleweed 6s linear infinite",opacity:0.7,filter:"drop-shadow(0 2px 4px rgba(0,0,0,0.5))"}}>🌾</div>
+            )}
+
+            {/* ═══ DUST PARTICLES ═══ */}
+            {duelDustParticles.map(p=>(
+              <div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size,borderRadius:"50%",background:"rgba(210,170,120,0.4)",animation:`duelDust ${p.dur}s ease-in-out infinite`,filter:"blur(1px)"}}/>
+            ))}
+
+            {/* ═══ VIGNETTE (dark edges during tension) ═══ */}
+            <div style={{position:"absolute",inset:0,background:`radial-gradient(ellipse at 50% 50%, transparent 40%, rgba(0,0,0,${wwVignetteIntensity}) 100%)`,transition:"all 0.8s ease",pointerEvents:"none",zIndex:2}}/>
+
+            {/* Screen pulse animation during tension */}
+            <div style={{position:"absolute",inset:0,animation:wwScreenPulse,pointerEvents:"none",zIndex:1}}/>
+
+            {/* ═══ BACK BUTTON ═══ */}
+            {overlayBack(()=>{resetDuel(); setGameActive(null);})}
+
+            {/* ═══ MATCH INTRO OVERLAY ═══ */}
+            {duelIntroStage && (
+              <div style={{position:"absolute",inset:0,zIndex:50,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
+                background:`radial-gradient(ellipse at 50% 30%, rgba(244,167,66,0.08) 0%, transparent 50%),
+                  radial-gradient(ellipse at 50% 70%, rgba(139,69,19,0.06) 0%, transparent 50%),
+                  rgba(4,8,18,0.92)`,
+                backdropFilter:"blur(12px)",animation:"fadeIn 0.3s ease",
+              }}>
+                {/* Spotlight beams */}
+                <div style={{position:"absolute",top:0,left:"20%",width:2,height:"40%",background:`linear-gradient(180deg, ${C.gold}25, transparent)`,filter:"blur(3px)"}}/>
+                <div style={{position:"absolute",top:0,right:"20%",width:2,height:"40%",background:`linear-gradient(180deg, ${C.orange}25, transparent)`,filter:"blur(3px)"}}/>
+
+                {/* Title badge */}
+                <div style={{marginBottom:16,padding:"4px 16px",borderRadius:20,background:`${C.gold}12`,border:`1px solid ${C.gold}30`}}>
+                  <span style={{fontSize:9,fontWeight:800,color:C.gold,letterSpacing:3}}>🤠 HIGH NOON SHOWDOWN</span>
+                </div>
+
+                {/* VS PLAYERS */}
+                <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:20,marginBottom:16}}>
+                  {/* Player left */}
+                  <div style={{textAlign:"center",animation:"slideInLeft 0.8s ease"}}>
+                    <div style={{width:60,height:60,borderRadius:16,overflow:"hidden",border:`2px solid ${C.cyan}60`,background:`${C.cyan}10`,margin:"0 auto 6px",boxShadow:`0 0 20px ${C.cyan}30`}}>
+                      <img src={PLAYER_IMG} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}} onError={(e)=>{e.target.outerHTML='<div style="font-size:32px;text-align:center;padding-top:10px">😎</div>';}}/>
+                    </div>
+                    <div style={{fontSize:14,fontWeight:900,color:C.cyan,textShadow:`0 0 10px ${C.cyan}40`}}>Steve</div>
+                    <div style={{fontSize:8,color:C.text3}}>Lv.24 · Gunslinger</div>
+                  </div>
+
+                  {/* VS center */}
+                  <div style={{textAlign:"center",minWidth:50}}>
+                    {duelIntroStage==="countdown" ? (
+                      <div style={{fontSize:60,fontWeight:900,color:C.gold,textShadow:`0 0 40px ${C.gold}60`,animation:"countPulse 0.8s ease",lineHeight:1}}>
+                        {duelIntroCount}
+                      </div>
+                    ) : duelIntroStage==="go" ? (
+                      <div style={{fontSize:24,fontWeight:900,color:C.green,textShadow:`0 0 20px ${C.green}60`,animation:"countPulse 0.5s ease",lineHeight:1}}>
+                        🔫
+                      </div>
+                    ) : (
+                      <div style={{fontSize:24,fontWeight:900,color:C.gold,textShadow:`0 0 20px ${C.gold}60`,animation:"countPulse 1.5s infinite"}}>VS</div>
+                    )}
+                  </div>
+
+                  {/* Opponent right */}
+                  <div style={{textAlign:"center",animation:"slideInRight 0.8s ease"}}>
+                    <div style={{width:60,height:60,borderRadius:16,overflow:"hidden",border:`2px solid ${C.orange}60`,background:`${C.orange}10`,margin:"0 auto 6px",boxShadow:`0 0 20px ${C.orange}30`}}>
+                      <img src={wwOpp.img} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}} onError={(e)=>{e.target.outerHTML='<div style="font-size:32px;text-align:center;padding-top:10px">'+wwOpp.emoji+'</div>';}}/>
+                    </div>
+                    <div style={{fontSize:14,fontWeight:900,color:C.orange,textShadow:`0 0 10px ${C.orange}40`}}>{wwOpp.name}</div>
+                    <div style={{fontSize:8,color:C.text3}}>{wwOpp.rank} · {wwOpp.record}</div>
+                  </div>
+                </div>
+
+                {/* STATS TABLE */}
+                {(duelIntroStage==="stats"||duelIntroStage==="countdown"||duelIntroStage==="go") && (
+                  <div style={{width:"80%",maxWidth:280,padding:"10px 14px",borderRadius:14,...GLASS_CLEAR,animation:"fadeIn 0.5s ease",marginBottom:12}}>
+                    <div style={{fontSize:8,fontWeight:800,color:C.gold,marginBottom:8,textAlign:"center",letterSpacing:2}}>📊 GUNSLINGER STATS</div>
+                    {[
+                      [duelStats.fastestDraw < 999 ? duelStats.fastestDraw+"ms" : "---","Fastest Draw",(wwOpp.speed-50+Math.floor(Math.random()*40))+"ms"],
+                      [duelStats.wins+"","Duels Won",wwOpp.record.split("-")[0]],
+                      [duelStats.fouls+"","Fouls 💀",Math.floor(Math.random()*15)+""],
+                      [duelStats.streak+"","Win Streak",Math.floor(Math.random()*8)+""],
+                    ].map(([l,mid,r],i)=>(
+                      <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4,padding:"2px 0",borderBottom:i<3?`1px solid ${C.border}`:"none"}}>
+                        <span style={{fontSize:11,fontWeight:800,color:C.cyan,minWidth:35}}>{l}</span>
+                        <span style={{fontSize:8,color:C.text3,flex:1,textAlign:"center"}}>{mid}</span>
+                        <span style={{fontSize:11,fontWeight:800,color:C.orange,minWidth:35,textAlign:"right"}}>{r}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* GO text */}
+                {duelIntroStage==="go" && (
+                  <div style={{animation:"fadeIn 0.2s ease",marginTop:4}}>
+                    <div style={{fontSize:28,fontWeight:900,color:C.gold,textShadow:`0 0 30px ${C.gold}60`,animation:"countPulse 0.5s ease",textAlign:"center"}}>
+                      HIGH NOON!
+                    </div>
+                  </div>
+                )}
+
+                <div style={{marginTop:12,fontSize:8,color:C.text3}}>
+                  👁 {120+Math.floor(Math.random()*80)} watching · 🤠 Best of 5
+                </div>
+              </div>
+            )}
+
+            {/* ═══ MAIN GAME AREA ═══ */}
+            <div style={{position:"relative",zIndex:10,flex:1,display:"flex",flexDirection:"column",pointerEvents: duelIntroStage ? "none" : "auto"}}>
+
+              {/* ── TOP BAR: Round tracker + Score ── */}
+              <div style={{padding:"40px 16px 8px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                {/* Round dots */}
+                <div style={{display:"flex",gap:4,alignItems:"center"}}>
+                  {[0,1,2,3,4].map(i=>{
+                    const rr = duelRoundResults[i];
+                    return (
+                      <div key={i} style={{width:20,height:20,borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,fontWeight:800,
+                        background: rr ? (rr.win ? `${C.green}30` : `${C.red}30`) : i===duelRound ? `${C.gold}30` : "rgba(255,255,255,0.06)",
+                        border: `1px solid ${rr ? (rr.win ? C.green+"60" : C.red+"60") : i===duelRound ? C.gold+"60" : "rgba(255,255,255,0.1)"}`,
+                        color: rr ? (rr.win ? C.green : C.red) : i===duelRound ? C.gold : C.text3,
+                        boxShadow: i===duelRound ? `0 0 8px ${C.gold}30` : "none",
+                      }}>
+                        {rr ? (rr.win ? "W" : rr.foul ? "F" : "L") : (i+1)}
+                      </div>
+                    );
+                  })}
+                  <span style={{fontSize:8,color:C.text3,marginLeft:4}}>R{duelRound+1}/5</span>
+                </div>
+
+                {/* Score */}
+                <div style={{display:"flex",alignItems:"center",gap:8,padding:"4px 12px",borderRadius:12,...GLASS_CLEAR}}>
+                  <span style={{fontSize:14,fontWeight:900,color:C.cyan}}>{duelScore.you}</span>
+                  <span style={{fontSize:8,color:C.text3}}>-</span>
+                  <span style={{fontSize:14,fontWeight:900,color:C.orange}}>{duelScore.ai}</span>
+                </div>
+              </div>
+
+              {/* ── DUELIST ARENA — Two characters facing each other ── */}
+              <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",position:"relative",padding:"0 20px"}}>
+
+                {/* The two duelists */}
+                <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:isTensionPhase?30:isDrawPhase?20:40,width:"100%",maxWidth:320,marginBottom:20,transition:"gap 0.8s ease"}}>
+                  {/* Player character */}
+                  <div style={{textAlign:"center",animation: wwPhase==="staredown" ? "duelBreathe 2s ease-in-out infinite" : "none",transition:"transform 0.3s"}}>
+                    <div style={{fontSize:50,filter:`drop-shadow(0 0 ${isTensionPhase?15:8}px ${C.cyan}60)`,transition:"filter 0.5s",transform: duelResult?.win ? "scale(1.2)" : duelResult && !duelResult.win ? "rotate(-20deg) translateY(10px)" : "none"}}>
+                      😎
+                    </div>
+                    <div style={{fontSize:9,fontWeight:800,color:C.cyan,marginTop:4,textShadow:`0 0 8px ${C.cyan}40`}}>Steve</div>
+                    {/* Gun smoke on shot */}
+                    {duelResult && !duelResult.foul && (
+                      <div style={{position:"absolute",left:"25%",top:"40%",width:30,height:30,borderRadius:"50%",background:"radial-gradient(circle, rgba(200,200,200,0.6) 0%, transparent 70%)",animation:"duelSmoke 1s ease-out forwards",pointerEvents:"none"}}/>
+                    )}
+                  </div>
+
+                  {/* VS / Phase text center */}
+                  <div style={{textAlign:"center",minWidth:60,position:"relative"}}>
+                    {wwPhase==="staredown" && (
+                      <div style={{fontSize:10,fontWeight:800,color:C.gold,opacity:0.6,animation:"duelBreathe 2s ease-in-out infinite",letterSpacing:2}}>
+                        . . .
+                      </div>
+                    )}
+                    {wwPhase==="ready" && (
+                      <div style={{animation:"fadeIn 0.3s ease"}}>
+                        <div style={{fontSize:28,fontWeight:900,color:C.text,textShadow:"0 0 20px rgba(255,255,255,0.3)",animation:"duelBreathe 1.5s ease-in-out infinite"}}>READY</div>
+                      </div>
+                    )}
+                    {wwPhase==="steady" && (
+                      <div style={{animation:"fadeIn 0.3s ease"}}>
+                        <div style={{fontSize:28,fontWeight:900,color:C.gold,textShadow:`0 0 25px ${C.gold}60`,animation:"duelBreathe 1s ease-in-out infinite"}}>STEADY</div>
+                      </div>
+                    )}
+                    {wwPhase==="draw" && (
+                      <div style={{animation:"fadeIn 0.1s ease"}}>
+                        <div style={{fontSize:36,fontWeight:900,color:C.red,textShadow:`0 0 40px ${C.red}`,animation:"pulse 0.3s infinite",letterSpacing:3}}>DRAW!</div>
+                        <div style={{fontSize:10,fontWeight:700,color:"#fff",marginTop:6,animation:"pulse 0.5s infinite",opacity:0.9}}>PUFF NOW!</div>
+                      </div>
+                    )}
+                    {(wwPhase==="result" || wwPhase==="round_result") && duelResult && (
+                      <div style={{animation:"fadeIn 0.3s ease"}}>
+                        {duelResult.foul ? (
+                          <div>
+                            <div style={{fontSize:22,fontWeight:900,color:C.red,textShadow:`0 0 20px ${C.red}60`}}>FOUL!</div>
+                            <div style={{fontSize:8,color:C.text3,marginTop:4}}>Drew too early!</div>
+                          </div>
+                        ) : duelResult.win ? (
+                          <div>
+                            <div style={{fontSize:18,fontWeight:900,color:C.green,textShadow:`0 0 15px ${C.green}60`}}>FASTER!</div>
+                            <div style={{fontSize:9,color:C.text3,marginTop:4}}>{duelResult.you}ms vs {duelResult.ai}ms</div>
+                          </div>
+                        ) : (
+                          <div>
+                            <div style={{fontSize:18,fontWeight:900,color:C.red,textShadow:`0 0 15px ${C.red}60`}}>SLOWER!</div>
+                            <div style={{fontSize:9,color:C.text3,marginTop:4}}>{duelResult.you}ms vs {duelResult.ai}ms</div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* AI character */}
+                  <div style={{textAlign:"center",animation: wwPhase==="staredown" ? "duelBreathe 2.2s ease-in-out infinite" : "none",transition:"transform 0.3s"}}>
+                    <div style={{fontSize:50,filter:`drop-shadow(0 0 ${isTensionPhase?15:8}px ${C.orange}60)`,transition:"filter 0.5s",transform: duelResult && !duelResult.win && !duelResult.foul ? "scale(1.2)" : duelResult?.win ? "rotate(20deg) translateY(10px)" : duelResult?.foul ? "scale(1.1)" : "none"}}>
+                      {wwOpp.emoji}
+                    </div>
+                    <div style={{fontSize:9,fontWeight:800,color:C.orange,marginTop:4,textShadow:`0 0 8px ${C.orange}40`}}>{wwOpp.name.split(" ")[0]}</div>
+                    {/* Gun smoke on AI shot */}
+                    {duelResult && !duelResult.foul && !duelResult.win && (
+                      <div style={{position:"absolute",right:"25%",top:"40%",width:30,height:30,borderRadius:"50%",background:"radial-gradient(circle, rgba(200,200,200,0.6) 0%, transparent 70%)",animation:"duelSmoke 1s ease-out forwards",pointerEvents:"none"}}/>
+                    )}
+                  </div>
+                </div>
+
+                {/* ── Tension indicator / Instructions ── */}
+                {wwPhase==="staredown" && (
+                  <div style={{animation:"fadeIn 0.5s ease",textAlign:"center"}}>
+                    <div style={{fontSize:9,color:C.text3,letterSpacing:2,textTransform:"uppercase"}}>Eyes locked... wait for DRAW</div>
+                    <div style={{fontSize:8,color:C.red+"80",marginTop:4}}>Puff before DRAW = FOUL</div>
+                  </div>
+                )}
+              </div>
+
+              {/* ── BOTTOM PANEL ── */}
+              <div style={{padding:"8px 16px 20px",position:"relative",zIndex:20}}>
+                {/* Commentator bar */}
+                {commentatorText && (
+                  <div style={{textAlign:"center",padding:"6px 14px",borderRadius:12,...GLASS_CARD,marginBottom:8,animation:"fadeIn 0.3s ease"}}>
+                    <span style={{fontSize:10,fontWeight:700,color:C.gold}}>{commentatorText}</span>
+                  </div>
+                )}
+
+                {/* Stats bar during gameplay */}
+                {!["final","intro"].includes(wwPhase) && !duelIntroStage && (
+                  <div style={{display:"flex",justifyContent:"space-around",padding:"8px 12px",borderRadius:14,...GLASS_CARD}}>
+                    <div style={{textAlign:"center"}}>
+                      <div style={{fontSize:12,fontWeight:900,color:C.cyan}}>{duelStats.fastestDraw < 999 ? duelStats.fastestDraw+"ms" : "---"}</div>
+                      <div style={{fontSize:7,color:C.text3}}>Best Draw</div>
+                    </div>
+                    <div style={{textAlign:"center"}}>
+                      <div style={{fontSize:12,fontWeight:900,color:C.gold}}>{duelStats.avgDraw || "---"}{duelStats.avgDraw ? "ms" : ""}</div>
+                      <div style={{fontSize:7,color:C.text3}}>Avg Draw</div>
+                    </div>
+                    <div style={{textAlign:"center"}}>
+                      <div style={{fontSize:12,fontWeight:900,color:C.red}}>{duelStats.fouls}</div>
+                      <div style={{fontSize:7,color:C.text3}}>Fouls</div>
+                    </div>
+                    <div style={{textAlign:"center"}}>
+                      <div style={{fontSize:12,fontWeight:900,color:C.green}}>{duelStats.streak}</div>
+                      <div style={{fontSize:7,color:C.text3}}>Streak</div>
+                    </div>
+                  </div>
+                )}
+
+                {/* FINAL RESULTS PANEL */}
+                {wwPhase==="final" && (
+                  <div style={{textAlign:"center",padding:"16px",borderRadius:16,...GLASS_CARD,animation:"fadeIn 0.5s ease"}}>
+                    <div style={{fontSize:32,marginBottom:4}}>{duelScore.you >= 3 ? "🏆" : "💀"}</div>
+                    <div style={{fontSize:22,fontWeight:900,color:duelScore.you>=3?C.gold:C.red,textShadow:`0 0 20px ${duelScore.you>=3?C.gold:C.red}40`,marginBottom:4}}>
+                      {duelScore.you >= 3 ? "FASTEST GUN IN THE WEST!" : "OUTDRAWN!"}
+                    </div>
+                    <div style={{fontSize:11,color:C.text2,marginBottom:12}}>
+                      Final Score: {duelScore.you} - {duelScore.ai}
+                    </div>
+
+                    {/* Round recap */}
+                    <div style={{display:"flex",justifyContent:"center",gap:6,marginBottom:12}}>
+                      {duelRoundResults.map((rr,i)=>(
+                        <div key={i} style={{padding:"4px 8px",borderRadius:8,background:rr.win?`${C.green}15`:`${C.red}15`,border:`1px solid ${rr.win?C.green:C.red}30`,fontSize:8,fontWeight:700,color:rr.win?C.green:C.red}}>
+                          R{i+1}: {rr.foul?"FOUL":rr.win?"WIN":"LOSS"}
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Stats summary */}
+                    <div style={{display:"flex",justifyContent:"space-around",marginBottom:12,padding:"8px",borderRadius:10,background:"rgba(255,255,255,0.03)"}}>
+                      <div style={{textAlign:"center"}}>
+                        <div style={{fontSize:13,fontWeight:900,color:C.cyan}}>{duelStats.fastestDraw < 999 ? duelStats.fastestDraw+"ms" : "---"}</div>
+                        <div style={{fontSize:7,color:C.text3}}>Fastest</div>
+                      </div>
+                      <div style={{textAlign:"center"}}>
+                        <div style={{fontSize:13,fontWeight:900,color:C.gold}}>{duelStats.avgDraw||"---"}{duelStats.avgDraw?"ms":""}</div>
+                        <div style={{fontSize:7,color:C.text3}}>Average</div>
+                      </div>
+                      <div style={{textAlign:"center"}}>
+                        <div style={{fontSize:13,fontWeight:900,color:C.red}}>{duelStats.fouls}</div>
+                        <div style={{fontSize:7,color:C.text3}}>Fouls</div>
+                      </div>
+                    </div>
+
+                    {duelScore.you >= 3 && <div style={{fontSize:11,color:C.gold,fontWeight:700,marginBottom:8}}>+150 coins earned! 🪙</div>}
+
+                    <div style={{display:"flex",gap:8,justifyContent:"center"}}>
+                      <div onClick={(e)=>{e.stopPropagation();startDuel();}} style={{padding:"10px 20px",borderRadius:10,cursor:"pointer",background:`${C.gold}15`,border:`1px solid ${C.gold}30`,fontSize:13,fontWeight:700,color:C.gold}}>
+                        Rematch 🔄
+                      </div>
+                      <div onClick={(e)=>{e.stopPropagation();resetDuel();setGameActive(null);}} style={{padding:"10px 20px",borderRadius:10,cursor:"pointer",background:"rgba(255,255,255,0.05)",border:`1px solid ${C.border}`,fontSize:13,fontWeight:700,color:C.text2}}>
+                        Exit
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Audience reaction bar */}
+                {isTensionPhase && (
+                  <div style={{display:"flex",justifyContent:"center",gap:6,marginTop:8,animation:"fadeIn 0.5s ease"}}>
+                    {["😰","🤫","👀","💨","🔥"].map((e,i)=>(
+                      <div key={i} style={{width:28,height:28,borderRadius:14,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,...LG.pill,cursor:"pointer",animation:`duelBreathe ${2+i*0.3}s ease-in-out infinite`}}
+                        onClick={(ev)=>{ev.stopPropagation();playFx("tap");}}>
+                        {e}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* ═══ CONFETTI PARTICLES ═══ */}
+            {confettiParticles.map(p=>(
+              <div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size,background:p.color,borderRadius:p.size>4?"1px":"50%",animation:`confettiFall 2s ease-in forwards`,transform:`rotate(${p.rot}deg)`,zIndex:60,pointerEvents:"none"}}/>
+            ))}
+            {/* ═══ SMOKE PARTICLES ═══ */}
+            {smokeParticles.map(p=>(
+              <div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size,borderRadius:"50%",background:"radial-gradient(circle, rgba(200,200,200,0.3) 0%, transparent 70%)",animation:`smokeRise ${p.dur}s ease-out forwards`,zIndex:55,pointerEvents:"none"}}/>
+            ))}
           </div>
         );
       }
       // Final Kick ⚽ — IMMERSIVE VERSION
-      if((gameActive.id==="finalkick"||gameActive.id==="finalkick2") && kickState) {
-        const isFK2 = isFK2Mode || isFK2Ref.current || gameActive.id==="finalkick2"; // triple fallback
+      if((gameActive.id==="finalkick"||gameActive.id==="finalkick2"||gameActive.id==="finalkick3") && kickState) {
+        const isFK2 = isFK2Mode || isFK2Ref.current || gameActive.id==="finalkick2" || gameActive.id==="finalkick3"; // triple fallback
+        const isFK3 = isFK3Mode || isFK3Ref.current || gameActive.id==="finalkick3";
         const pool = getDevicePool();
         const inp = gameActive.activeInput;
         const inpInfo = INPUT_TYPES.find(t=>t.id===inp)||INPUT_TYPES[0];
@@ -2780,7 +3816,7 @@ export default function MoodLabArena() {
               }}/>
             ))}
 
-            {overlayBack(()=>{setGameActive(null);setKickState(null);setIsFK2Mode(false);isFK2Ref.current=false;})}
+            {overlayBack(()=>{setGameActive(null);setKickState(null);setIsFK2Mode(false);isFK2Ref.current=false;setIsFK3Mode(false);isFK3Ref.current=false;})}
 
 
 <div style={{position:"relative",zIndex:2,flex:1,display:"flex",flexDirection:"column",alignItems:"center",padding:"38px 14px 52px",height:"100%",overflowY:"auto"}}>
@@ -2862,8 +3898,21 @@ export default function MoodLabArena() {
                 )}
               </div>
 
-              {/* ═══ GOAL FRAME — 3D perspective ═══ */}
-              <div style={{perspective:"600px",marginBottom:4}}>
+              {/* ═══ FK3 3D CANVAS (shoot phases only) ═══ */}
+              {isFK3 && isShootPhase && (
+                <div style={{position:"relative",width:300,height:200,marginBottom:4,borderRadius:12,overflow:"hidden",border:`2px solid ${C.purple}30`,boxShadow:`0 0 30px ${C.purple}15, 0 8px 32px rgba(0,0,0,0.4)`}}>
+                  <div ref={threeCanvasRef} style={{width:300,height:200}} />
+                  {/* 3D badge */}
+                  <div style={{position:"absolute",top:6,right:6,padding:"2px 6px",borderRadius:6,background:`${C.purple}30`,border:`1px solid ${C.purple}50`,fontSize:7,fontWeight:800,color:C.purple,zIndex:10}}>3D VIEW</div>
+                  {/* FK2 aim overlay info on 3D */}
+                  {kickState==="shoot_x" && <div style={{position:"absolute",bottom:6,left:"50%",transform:"translateX(-50%)",padding:"2px 10px",borderRadius:6,background:"rgba(0,0,0,0.6)",fontSize:8,fontWeight:700,color:C.cyan,zIndex:10}}>{"← HORIZONTAL AIM →"}</div>}
+                  {kickState==="shoot_y" && <div style={{position:"absolute",bottom:6,left:"50%",transform:"translateX(-50%)",padding:"2px 10px",borderRadius:6,background:"rgba(0,0,0,0.6)",fontSize:8,fontWeight:700,color:C.orange,zIndex:10}}>{"↕ VERTICAL AIM"}</div>}
+                  {kickState==="flight" && <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",fontSize:24,animation:"pulse 0.5s infinite",zIndex:10,pointerEvents:"none"}}>⚽</div>}
+                </div>
+              )}
+
+              {/* ═══ GOAL FRAME — 2D (FK1/FK2, or FK3 save phase) ═══ */}
+              {(!isFK3 || !isShootPhase) && <><div style={{perspective:"600px",marginBottom:4}}>
                 <div style={{
                   position:"relative",width:goalW,height:goalH,cursor:kickState==="shoot"||kickState==="save_dive"?"pointer":"default",
                   border:`3px solid rgba(255,255,255,0.2)`,
@@ -3015,6 +4064,7 @@ export default function MoodLabArena() {
               <div style={{width:goalW,height:20,background:`linear-gradient(180deg, ${C.green}08, transparent)`,borderRadius:"0 0 8px 8px",display:"flex",alignItems:"center",justifyContent:"center",marginBottom:8}}>
                 {kickState==="shoot" && <div style={{width:6,height:6,borderRadius:"50%",background:`${C.text}20`,boxShadow:`0 0 8px ${C.text}10`}}/>}
               </div>
+              </>}
 
               {/* ═══ PUFF DURATION METER — Hold to puff ═══ */}
               {kickState==="power" && inp!=="tap" && (()=>{
@@ -4322,7 +5372,7 @@ export default function MoodLabArena() {
       const pool = getDevicePool();
       const canEnterWC = wcCanEnter();
       const cooldownMs = wcCooldownRemaining();
-      const isFinalkick = selectedGame.id === "finalkick" || selectedGame.id === "finalkick2";
+      const isFinalkick = selectedGame.id === "finalkick" || selectedGame.id === "finalkick2" || selectedGame.id === "finalkick3";
       return (
         <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden"}}>
           {/* Background — matching other pages */}
@@ -4478,12 +5528,12 @@ export default function MoodLabArena() {
 
                 {/* Hero */}
                 <div style={{textAlign:"center",marginBottom:16,paddingTop:8}}>
-                  <div style={{fontSize:40,marginBottom:4}}>{selectedGame.id==="finalkick2"?"⚽🔥":"⚽"}</div>
-                  <div style={{fontSize:18,fontWeight:900,color:C.text}}>{selectedGame.id==="finalkick2"?"Final Kick 2":"Final Kick"}</div>
-                  <div style={{fontSize:10,color:C.text2}}>{selectedGame.id==="finalkick2"?"Double Puff Precision — 2 Puffs, 1 Shot!":"1v1 Penalty Shootout Powered by Puff"}</div>
+                  <div style={{fontSize:40,marginBottom:4}}>{selectedGame.id==="finalkick3"?"⚽🌐":selectedGame.id==="finalkick2"?"⚽🔥":"⚽"}</div>
+                  <div style={{fontSize:18,fontWeight:900,color:C.text}}>{selectedGame.id==="finalkick3"?"Final Kick 3D":selectedGame.id==="finalkick2"?"Final Kick 2":"Final Kick"}</div>
+                  <div style={{fontSize:10,color:C.text2}}>{selectedGame.id==="finalkick3"?"3D Behind-the-Ball View — Double Puff in 3D!":selectedGame.id==="finalkick2"?"Double Puff Precision — 2 Puffs, 1 Shot!":"1v1 Penalty Shootout Powered by Puff"}</div>
                 </div>
 
-                {selectedGame.id==="finalkick" ? (<>
+                {(selectedGame.id==="finalkick") ? (<>
 
                 {/* ═══ SECTION 1: GAME FLOW DIAGRAM ═══ */}
                 <div style={{padding:"12px",borderRadius:16,...GLASS_CARD,marginBottom:12}}>
@@ -4651,7 +5701,7 @@ export default function MoodLabArena() {
                   </div>
                 </div>
 
-                </>) : selectedGame.id==="finalkick2" ? (<>
+                </>) : (selectedGame.id==="finalkick2"||selectedGame.id==="finalkick3") ? (<>
 
                 {/* ═══ FK2 SECTION 1: DOUBLE PUFF FLOW ═══ */}
                 <div style={{padding:"12px",borderRadius:16,...GLASS_CARD,marginBottom:12}}>
@@ -6088,6 +7138,12 @@ export default function MoodLabArena() {
         @keyframes slideInLeft{from{transform:translateX(-80px);opacity:0}to{transform:translateX(0);opacity:1}}
         @keyframes slideInRight{from{transform:translateX(80px);opacity:0}to{transform:translateX(0);opacity:1}}
         @keyframes bubbleFloat{0%{transform:translateY(0) scale(1);opacity:0.6}50%{opacity:0.4}100%{transform:translateY(-200px) scale(0.3) translateX(20px);opacity:0}}
+        @keyframes duelHeartbeat{0%,100%{background:rgba(0,0,0,0);transform:scale(1)}50%{background:rgba(30,0,0,0.15);transform:scale(1.005)}}
+        @keyframes duelHeatShimmer{0%,100%{transform:scaleY(1)}50%{transform:scaleY(1.002) translateY(-0.5px)}}
+        @keyframes duelTumbleweed{0%{left:-10%;transform:rotate(0deg)}100%{left:110%;transform:rotate(720deg)}}
+        @keyframes duelDust{0%,100%{transform:translateX(0) translateY(0);opacity:0.2}25%{transform:translateX(15px) translateY(-8px);opacity:0.5}50%{transform:translateX(30px) translateY(2px);opacity:0.3}75%{transform:translateX(10px) translateY(-5px);opacity:0.4}}
+        @keyframes duelBreathe{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.03);opacity:0.85}}
+        @keyframes duelSmoke{0%{transform:scale(0.5);opacity:0.6}100%{transform:scale(3) translateY(-40px);opacity:0}}
         *{-webkit-tap-highlight-color:transparent;user-select:none;box-sizing:border-box}
         input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
         input[type=number]{-moz-appearance:textfield}
