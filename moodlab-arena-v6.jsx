@@ -4286,6 +4286,8 @@ export default function MoodLabArena() {
     // Kill RR setTimeout chain guard
     if(window._rrActive) { window._rrActive.v = false; window._rrActive = null; }
     if(window._rpActive) { window._rpActive.v = false; window._rpActive = null; }
+    if(window._wwActive) { window._wwActive.v = false; window._wwActive = null; }
+    if(window._bpActive) { window._bpActive.v = false; window._bpActive = null; }
     // Three.js cleanup
     if(threeSceneRef.current){
       const r=threeSceneRef.current.renderer;if(r){r.dispose();r.forceContextLoss();}
@@ -4860,7 +4862,7 @@ export default function MoodLabArena() {
               </div>
 
               {/* ── BOTTOM PANEL: Reactions + Audience + Chat/Stats ── */}
-              <div style={{position:"absolute",bottom:0,left:0,right:0,zIndex:20,display:"flex",flexDirection:"column"}}>
+              <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:300,display:"flex",flexDirection:"column",maxHeight:"35%"}}>
                 {/* Reaction bar */}
                 <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:2,padding:"3px 6px",...GLASS_CLEAR,borderRadius:"10px 10px 0 0"}}>
                   {[{e:"😰"},{e:"🤠"},{e:"👀"},{e:"🔥"},{e:"💀"},{e:"💨"},{e:"😂"},{e:"🤫"}].map((r,i)=>(
