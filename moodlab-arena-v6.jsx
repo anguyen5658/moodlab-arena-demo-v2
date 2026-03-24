@@ -411,6 +411,9 @@ export default function MoodLabArena() {
   const isFK3Ref = useRef(false);
   const threeCanvasRef = useRef(null);
   const threeSceneRef = useRef(null);
+  const [fk3GloveX, setFk3GloveX] = useState(0.5); // 0-1 normalized X (0=left, 1=right)
+  const [fk3GloveY, setFk3GloveY] = useState(0.5); // 0-1 normalized Y (0=bottom, 1=top)
+  const fk3GloveRef = useRef({x:0.5, y:0.5}); // sync ref for animation loop
   const [audioOn, setAudioOn] = useState(true);
   const [arcadeTab, setArcadeTab] = useState("games");
 
@@ -957,6 +960,14 @@ export default function MoodLabArena() {
         }
       }
 
+      // ── MOVE POV GLOVES based on touch/mouse position ──
+      if(state.cameraMode === "save" && state.povGloveGroup && state.povGloveGroup.visible) {
+        const gx = (fk3GloveRef.current.x - 0.5) * 5.0; // map 0-1 to -2.5 to 2.5
+        const gy = (fk3GloveRef.current.y - 0.5) * 3.0 - 1.5; // map 0-1 to -3 to 1.5
+        state.povGloveGroup.position.x += (gx - state.povGloveGroup.position.x) * 0.15;
+        state.povGloveGroup.position.y += (gy - state.povGloveGroup.position.y) * 0.15;
+      }
+
       // ── SAVE BALL FLIGHT (keeper POV — ball flying toward you) ──
       if(state.cameraMode === "save" && state.saveBallActive && !state.saveBallDone) {
         state.saveBallProgress += 0.035;
@@ -971,6 +982,23 @@ export default function MoodLabArena() {
         ball.rotation.z += 0.15;
         const sc = 1 + p * 1.5;
         ball.scale.set(sc, sc, sc);
+
+        // Auto-detect save when ball arrives close to camera
+        if(p >= 0.9 && !state.saveChecked) {
+          state.saveChecked = true;
+          // Check distance between gloves and ball
+          const glovePos = state.povGloveGroup.position;
+          const ballPos = ball.position;
+          const dist = Math.sqrt(Math.pow(glovePos.x - ballPos.x, 2) + Math.pow(glovePos.y - ballPos.y, 2));
+          // Map to zone based on glove position for game logic
+          const gx = fk3GloveRef.current.x;
+          const gy = fk3GloveRef.current.y;
+          const col = gx < 0.33 ? 0 : gx < 0.67 ? 1 : 2;
+          const row = gy > 0.5 ? 0 : 1;
+          const gloveZone = row * 3 + col;
+          // Trigger the kickDive with the mapped zone
+          if(typeof kickDive === "function") kickDive(gloveZone);
+        }
       }
 
       // Crowd wave animation
@@ -1153,6 +1181,7 @@ export default function MoodLabArena() {
       s.keeperGroup.visible = false;
       s.povGloveGroup.visible = true;
       s.targetFOV = 70;
+      s.saveChecked = false; // reset save check for new round
       s.camera.position.set(0, 1.2, -0.5);
       s.camera.lookAt(0, 1.2, 20);
       s.ball.position.set(0, 0.22, 18);
@@ -4259,6 +4288,31 @@ export default function MoodLabArena() {
 
             {/* ═══ FK3 FULLSCREEN 3D CANVAS — Behind all UI ═══ */}
             {isFK3 && <div ref={threeCanvasRef} style={{position:"absolute",inset:0,zIndex:1,pointerEvents:"none"}} />}
+            {/* FK3 Glove Control — touch/mouse overlay for save phase */}
+            {isFK3 && isSavePhase && <div
+              style={{position:"absolute",inset:0,zIndex:2,cursor:"grab",touchAction:"none"}}
+              onMouseMove={(e)=>{
+                const rect = e.currentTarget.getBoundingClientRect();
+                const x = (e.clientX - rect.left) / rect.width;
+                const y = 1 - (e.clientY - rect.top) / rect.height;
+                setFk3GloveX(Math.max(0,Math.min(1,x))); setFk3GloveY(Math.max(0,Math.min(1,y)));
+                fk3GloveRef.current = {x:Math.max(0,Math.min(1,x)), y:Math.max(0,Math.min(1,y))};
+              }}
+              onTouchMove={(e)=>{
+                e.preventDefault();
+                const touch = e.touches[0];
+                const rect = e.currentTarget.getBoundingClientRect();
+                const x = (touch.clientX - rect.left) / rect.width;
+                const y = 1 - (touch.clientY - rect.top) / rect.height;
+                setFk3GloveX(Math.max(0,Math.min(1,x))); setFk3GloveY(Math.max(0,Math.min(1,y)));
+                fk3GloveRef.current = {x:Math.max(0,Math.min(1,x)), y:Math.max(0,Math.min(1,y))};
+              }}
+              onTouchStart={(e)=>e.preventDefault()}
+            >
+              {kickState==="save_dive" && <div style={{position:"absolute",bottom:20,left:"50%",transform:"translateX(-50%)",zIndex:10,padding:"6px 16px",borderRadius:10,background:"rgba(0,0,0,0.6)",backdropFilter:"blur(4px)"}}>
+                <span style={{fontSize:11,fontWeight:800,color:C.orange,animation:"pulse 0.8s infinite"}}>🧤 MOVE TO CATCH THE BALL!</span>
+              </div>}
+            </div>}
 
 <div style={{position:"relative",zIndex:isFK3?3:2,flex:1,display:"flex",flexDirection:"column",alignItems:"center",padding:"38px 14px 52px",height:"100%",overflowY:"auto"}}>
 
