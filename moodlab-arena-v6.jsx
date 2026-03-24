@@ -6815,21 +6815,27 @@ export default function MoodLabArena() {
                     {isCur && <div style={{width:4,height:4,borderRadius:"50%",background:p.isYou?C.cyan:C.orange,animation:"pulse 0.8s infinite"}}/>}
                   </div>);})}
               </div>
-              {/* Balloon */}
+              {/* Balloon + Glow Ring + Air Badge + Audience */}
               <div style={{position:"relative",display:"flex",alignItems:"center",justifyContent:"center",width:220,height:220,marginBottom:4}}>
-                {bpPhase!=="popped"&&bpPhase!=="result"&&(<div style={{fontSize:Math.round(60+airPct*0.8),transform:`scale(${balloonScale})`,transition:bpCharging?"transform 0.1s":"transform 0.5s cubic-bezier(0.34,1.56,0.64,1)",filter:`drop-shadow(0 0 ${10+airPct*0.3}px ${bpBalloonColor}60)`,animation:bpShaking?(dangerZone?"bpWobbleFast 0.15s infinite":"bpWobble 0.3s infinite"):bpCharging?"bpInflate 0.3s infinite":"gentleFloat 3s infinite",userSelect:"none"}}>🎈</div>)}
+                {bpPhase!=="popped"&&bpPhase!=="result"&&(<div style={{position:"absolute",width:Math.round(80+airPct*1.2),height:Math.round(80+airPct*1.2),borderRadius:"50%",background:`radial-gradient(circle, ${bpBalloonColor}15 0%, ${bpBalloonColor}05 50%, transparent 70%)`,border:`1px solid ${bpBalloonColor}12`,animation:dangerZone?"bpDangerPulse 0.5s ease-in-out infinite":nearPop?"pulse 1.5s ease-in-out infinite":"pulse 3s ease-in-out infinite",transition:"all 1s ease",pointerEvents:"none"}}/>)}
+                {bpPhase!=="popped"&&bpPhase!=="result"&&(<div style={{position:"absolute",top:8,right:20,padding:"3px 8px",borderRadius:10,background:`${bpBalloonColor}15`,border:`1px solid ${bpBalloonColor}25`,zIndex:5}}><span style={{fontSize:9,fontWeight:900,color:bpBalloonColor}}>{Math.round(airPct)}%</span></div>)}
+                {bpPhase!=="popped"&&bpPhase!=="result"&&(<div style={{fontSize:Math.round(60+airPct*0.8),transform:`scale(${balloonScale})`,transition:bpCharging?"transform 0.1s":"transform 0.5s cubic-bezier(0.34,1.56,0.64,1)",filter:`drop-shadow(0 0 ${10+airPct*0.3}px ${bpBalloonColor}60) hue-rotate(${dangerZone?-20:nearPop?-10:0}deg)`,animation:bpShaking?(dangerZone?"bpWobbleFast 0.15s infinite":"bpWobble 0.3s infinite"):bpCharging?"bpInflate 0.3s infinite":"gentleFloat 3s infinite",userSelect:"none"}}>🎈</div>)}
                 {bpPopping&&(<div style={{position:"absolute",display:"flex",alignItems:"center",justifyContent:"center"}}><div style={{fontSize:80,animation:"bpExplode 0.6s ease-out forwards"}}>💥</div></div>)}
                 {bpPhase==="result"&&(<div style={{textAlign:"center",animation:"fadeIn 0.5s ease"}}><div style={{fontSize:60,marginBottom:8}}>{bpLoser&&bpLoser.isYou?"💀":"🎉"}</div><div style={{fontSize:18,fontWeight:900,color:bpLoser&&bpLoser.isYou?C.red:C.green}}>{bpLoser&&bpLoser.isYou?"YOU POPPED IT!":(bpLoser?bpLoser.name:"???")+" POPPED IT!"}</div></div>)}
               </div>
-              {/* Commentary */}
-              {bpComment&&(<div style={{textAlign:"center",padding:"6px 16px",borderRadius:12,...LG.pill,animation:"fadeIn 0.3s ease"}}><div style={{fontSize:11,fontWeight:600,color:C.text,fontStyle:"italic"}}>"{bpComment}"</div></div>)}
+              {/* WC Badge */}
+              {gameActive?.wcMode&&(<div style={{padding:"4px 12px",borderRadius:8,background:`${C.gold}12`,border:`1px solid ${C.gold}20`,marginBottom:4,display:"flex",alignItems:"center",gap:4,zIndex:20}}><span style={{fontSize:10}}>🏆</span><span style={{fontSize:8,fontWeight:800,color:C.gold}}>{gameActive?.wcKnockout?"KNOCKOUT":"GROUP"} MATCH</span>{wcTeam&&<span style={{fontSize:10}}>{wcTeam.flag}</span>}</div>)}
+              {/* Enhanced Commentary */}
+              {bpComment&&(<div style={{textAlign:"center",padding:"8px 16px",borderRadius:14,background:"rgba(6,16,30,0.75)",backdropFilter:"blur(8px)",border:`1px solid ${dangerZone?C.red:C.pink}18`,boxShadow:`0 0 16px ${dangerZone?C.red:C.pink}08`,animation:"fadeIn 0.3s ease",maxWidth:320}}><div style={{fontSize:8,fontWeight:700,color:dangerZone?C.red:C.gold,letterSpacing:1,marginBottom:2}}>COMMENTATOR</div><div style={{fontSize:11,fontWeight:600,color:C.text,fontStyle:"italic"}}>"{bpComment}"</div></div>)}
+              {/* Audience Reaction Bar */}
+              {bpPhase!=="intro"&&bpPhase!=="result"&&(<div style={{display:"flex",gap:3,marginTop:6,opacity:0.7}}>{["😮","😬","🫣","🤭","😱"].map((e,i)=>(<div key={i} style={{fontSize:nearPop?(dangerZone?14:12):10,animation:dangerZone&&i>2?`bpWobble ${0.3+i*0.1}s infinite`:"none",transition:"font-size 0.3s",opacity:airPct>i*20?1:0.3}}>{e}</div>))}<div style={{fontSize:8,color:C.text3,alignSelf:"center",marginLeft:4}}>{dangerZone?"CROWD PANICKING!":nearPop?"Crowd nervous...":"Crowd watching..."}</div></div>)}
               {/* Puff button */}
               {isYourTurn&&(<div style={{width:"100%",marginTop:8}}>
                 <div style={{width:"100%",height:8,borderRadius:6,background:"rgba(255,255,255,0.05)",overflow:"hidden",marginBottom:8}}><div style={{width:bpPuffAmount+"%",height:"100%",borderRadius:6,background:bpPuffAmount>75?`linear-gradient(90deg,${C.orange},${C.red})`:`linear-gradient(90deg,${C.green},${C.cyan})`,transition:"width 0.05s linear"}}/></div>
                 <div onMouseDown={bpStartCharge} onMouseUp={bpStopCharge} onMouseLeave={()=>{if(bpCharging)bpStopCharge();}} onTouchStart={(e)=>{e.preventDefault();bpStartCharge();}} onTouchEnd={bpStopCharge}
                   style={{padding:"14px 0",borderRadius:16,cursor:"pointer",textAlign:"center",userSelect:"none",background:bpCharging?`linear-gradient(135deg,${C.orange}30,${C.red}20)`:`linear-gradient(135deg,${C.cyan}15,${C.pink}10)`,border:`2px solid ${bpCharging?C.orange:C.cyan}30`,transform:bpCharging?"scale(0.97)":"scale(1)",transition:"all 0.2s"}}>
                   <div style={{fontSize:18,fontWeight:900,letterSpacing:2,color:bpCharging?C.orange:C.cyan}}>{bpCharging?"💨 PUFFING...":"HOLD TO PUFF 💨"}</div>
-                  <div style={{fontSize:9,color:C.text3,marginTop:3}}>{bpCharging?"Release to add air!":"Min 5% · Hold longer = more air"}</div>
+                  <div style={{fontSize:9,color:C.text3,marginTop:3}}>{bpCharging?("Tier: "+(puffTier==="safe"?"TAP 😐":puffTier==="medium"?"SHORT 😤":puffTier==="long"?"LONG 🌬️":"BLINKER 🫁🔥")+" · Release to add air!"):"Min 5% · Hold longer = more air"}</div>
                 </div></div>)}
               {bpPhase==="ai_turn"&&bpCharging&&(<div style={{width:"100%",marginTop:8}}><div style={{width:"100%",height:6,borderRadius:4,background:"rgba(255,255,255,0.05)",overflow:"hidden"}}><div style={{width:bpPuffAmount+"%",height:"100%",borderRadius:4,background:`linear-gradient(90deg,${C.orange},${C.red})`,transition:"width 0.05s linear"}}/></div><div style={{textAlign:"center",fontSize:8,color:C.orange,marginTop:4,animation:"pulse 0.5s infinite"}}>{(curP?curP.name:"AI")+" is puffing... 💨"}</div></div>)}
               {/* Result actions */}
@@ -6972,12 +6978,14 @@ export default function MoodLabArena() {
         const isPlaying = towPhase==="playing"||towPhase==="suddendeath";
         const isSuddenDeath = towPhase==="suddendeath";
         const timerDanger = towTimer<=5;
-        const cameraShift = (towPosition-50)*0.3;
+        const strainPct = Math.min(1, Math.abs(towPosition-50)/35);
+        const crowdWave = towCrowdHype > 50;
+        const flameA = (towFlameFlicker%2===0);
         return (
           <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden",display:"flex",flexDirection:"column",alignItems:"center",
-            background:`radial-gradient(ellipse at 50% 50%, ${C.blue}06, transparent 50%), rgba(5,5,16,0.97)`,
+            background:"linear-gradient(180deg, #0a0618 0%, #1a0a2e 25%, #0d1a2f 50%, #0a0a14 100%)",
             animation:screenShake?"shake 0.4s ease":"none"}}>
-            {overlayBack(()=>{if(towInterval.current)clearInterval(towInterval.current);setGameActive(null);setTowPhase(null);})}
+            {overlayBack(()=>{towCleanup();setGameActive(null);setTowPhase(null);})}
             {screenFlash && <div style={{position:"absolute",inset:0,zIndex:200,pointerEvents:"none",opacity:0,background:screenFlash==="goal"?"rgba(0,255,100,0.25)":"rgba(255,50,50,0.2)",animation:"flashOverlay 0.4s ease forwards"}}/>}
             {confettiParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size*0.6,background:p.color,borderRadius:1,transform:`rotate(${p.rot}deg)`,zIndex:210,pointerEvents:"none",animation:`confettiFall ${1.5+Math.random()}s ease-out forwards`}}/>))}
             <div style={{display:"flex",flexDirection:"column",alignItems:"center",maxWidth:380,width:"100%",padding:"50px 16px 20px",gap:12,zIndex:10,flex:1}}>
@@ -7048,7 +7056,7 @@ export default function MoodLabArena() {
       const pool = getDevicePool();
       const canEnterWC = wcCanEnter();
       const cooldownMs = wcCooldownRemaining();
-      const isFinalkick = selectedGame.id === "finalkick" || selectedGame.id === "finalkick2" || selectedGame.id === "finalkick3" || selectedGame.id === "russian" || selectedGame.id === "puffpong" || selectedGame.id === "balloon";
+      const isFinalkick = ["finalkick","finalkick2","finalkick3","russian","puffpong","balloon","rhythm","tugofwar","wildwest"].includes(selectedGame.id);
       return (
         <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden"}}>
           {/* Background — matching other pages */}
@@ -7124,7 +7132,7 @@ export default function MoodLabArena() {
             </div>
 
             {/* ═══ SECTION B: TOURNAMENT ═══ */}
-            {(isFinalkick || selectedGame.id==="wildwest") && (
+            {isFinalkick && (
               <div style={{width:"100%",maxWidth:340}}>
                 <div style={{fontSize:10,fontWeight:800,color:C.gold,letterSpacing:1.5,marginBottom:6}}>🏆 TOURNAMENT</div>
                 <div style={{
@@ -7139,10 +7147,10 @@ export default function MoodLabArena() {
 
                   <div style={{position:"relative",zIndex:1}}>
                     <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
-                      <span style={{fontSize:24}}>{selectedGame.id==="wildwest"?"🤠":"⚽"}</span>
+                      <span style={{fontSize:24}}>{selectedGame.id==="wildwest"?"🤠":selectedGame.id==="russian"?"🔫":"⚽"}</span>
                       <div>
-                        <div style={{fontSize:14,fontWeight:900,color:C.gold,textShadow:`0 0 10px ${C.gold}30`}}>{selectedGame.id==="wildwest"?"Showdown Cup 2026":"World Cup 2026"}</div>
-                        <div style={{fontSize:8,color:C.text2}}>{selectedGame.id==="wildwest"?"48 Gunslingers · Group + Knockout":"48 Teams · Group Stage + Knockout"}</div>
+                        <div style={{fontSize:14,fontWeight:900,color:C.gold,textShadow:`0 0 10px ${C.gold}30`}}>{selectedGame.id==="wildwest"?"Showdown Cup 2026":selectedGame.id==="russian"?"Roulette Championship 2026":"World Cup 2026"}</div>
+                        <div style={{fontSize:8,color:C.text2}}>{selectedGame.id==="wildwest"?"48 Gunslingers · Group + Knockout":selectedGame.id==="russian"?"48 Players · Survival Tournament":"48 Teams · Group Stage + Knockout"}</div>
                       </div>
                     </div>
 
@@ -7565,7 +7573,7 @@ export default function MoodLabArena() {
                   <div style={{position:"absolute",top:-30,left:"50%",transform:"translateX(-50%)",width:180,height:80,borderRadius:"50%",background:`radial-gradient(circle, ${C.gold}12, transparent)`,filter:"blur(20px)",pointerEvents:"none"}}/>
                   <div style={{position:"relative",zIndex:1}}>
                   <div style={{fontSize:10,fontWeight:900,color:C.gold,letterSpacing:3,marginBottom:10,textAlign:"center",textShadow:`0 0 12px ${C.gold}30`}}>🌅 DUEL FLOW</div>
-                  <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
+                  <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:3}}>
                     {[
                       {step:"1",icon:"3️⃣",label:"Countdown",sub:"3... 2... 1... tension builds",color:C.gold,arrow:true,glow:false},
                       {step:"2",icon:"👀",label:"Staredown",sub:"Eyes lock. Desert wind blows. WAIT!",color:C.orange,arrow:true,glow:true},
@@ -7574,102 +7582,199 @@ export default function MoodLabArena() {
                       {step:"5",icon:"🏆",label:"Best of 5",sub:"First to 3 wins takes the bounty!",color:C.cyan,arrow:false,glow:false},
                     ].map((s,i)=>(
                       <React.Fragment key={i}>
-                        <div style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"6px 10px",borderRadius:10,background:`${s.color}08`,border:`1px solid ${s.color}15`}}>
-                          <div style={{width:28,height:28,borderRadius:8,background:`${s.color}20`,border:`1px solid ${s.color}30`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,flexShrink:0}}>{s.icon}</div>
-                          <div style={{flex:1}}>
-                            <div style={{fontSize:10,fontWeight:800,color:s.color}}>{s.label}</div>
-                            <div style={{fontSize:7,color:C.text3}}>{s.sub}</div>
+                        <div style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"7px 10px",borderRadius:12,background:`${s.color}08`,border:`1px solid ${s.color}18`,boxShadow:s.glow?`0 0 12px ${s.color}10`:"none",position:"relative",overflow:"hidden"}}>
+                          {s.glow && <div style={{position:"absolute",inset:0,background:`linear-gradient(90deg, transparent, ${s.color}04, transparent)`,animation:"lightSweep 3s infinite",pointerEvents:"none"}}/>}
+                          <div style={{width:30,height:30,borderRadius:10,background:`linear-gradient(135deg, ${s.color}30, ${s.color}15)`,border:`1.5px solid ${s.color}40`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,flexShrink:0,boxShadow:`0 2px 8px ${s.color}15`,position:"relative",zIndex:1}}>{s.icon}</div>
+                          <div style={{flex:1,position:"relative",zIndex:1}}>
+                            <div style={{fontSize:10,fontWeight:900,color:s.color,textShadow:`0 0 8px ${s.color}20`}}>{s.label}</div>
+                            <div style={{fontSize:7,color:C.text2,lineHeight:1.3}}>{s.sub}</div>
                           </div>
-                          <div style={{width:18,height:18,borderRadius:"50%",background:`${s.color}15`,border:`1px solid ${s.color}30`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,fontWeight:900,color:s.color}}>{s.step}</div>
+                          <div style={{width:20,height:20,borderRadius:"50%",background:`linear-gradient(135deg, ${s.color}25, ${s.color}10)`,border:`1.5px solid ${s.color}35`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:900,color:s.color,position:"relative",zIndex:1}}>{s.step}</div>
                         </div>
-                        {s.arrow && <div style={{fontSize:10,color:C.text3+"60",lineHeight:1}}>↓</div>}
+                        {s.arrow && <div style={{fontSize:12,color:`${C.gold}40`,lineHeight:1,textShadow:`0 0 6px ${C.gold}15`}}>⬇</div>}
                       </React.Fragment>
                     ))}
                   </div>
+                  </div>
                 </div>
 
-                {/* ═══ WILD WEST — SECTION 2: PUFF BONUS TIERS ═══ */}
-                <div style={{padding:"12px",borderRadius:16,...GLASS_CARD,marginBottom:12}}>
-                  <div style={{fontSize:9,fontWeight:800,color:C.lime,letterSpacing:2,marginBottom:8,textAlign:"center"}}>💨 PUFF HOLD BONUS</div>
-                  <div style={{fontSize:8,color:C.text2,textAlign:"center",marginBottom:8}}>Hold your puff longer after DRAW for bonus coins!</div>
-                  <div style={{height:32,borderRadius:16,overflow:"hidden",display:"flex",marginBottom:6,border:`2px solid ${C.border}`}}>
-                    <div style={{width:"20%",background:`${C.text3}25`,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                      <span style={{fontSize:6,fontWeight:800,color:C.text3}}>TAP</span>
+                {/* ═══ SECTION 2: REACTION TIMING VISUAL ═══ */}
+                <div style={{padding:"14px 12px",borderRadius:16,...GLASS_CARD,marginBottom:12,position:"relative",overflow:"hidden"}}>
+                  <div style={{position:"absolute",top:0,right:0,width:60,height:60,borderRadius:"50%",background:`radial-gradient(circle, ${C.red}08, transparent)`,filter:"blur(15px)",pointerEvents:"none"}}/>
+                  <div style={{fontSize:10,fontWeight:900,color:C.red,letterSpacing:3,marginBottom:6,textAlign:"center",textShadow:`0 0 12px ${C.red}30`}}>⏱ REACTION TIMING</div>
+                  <div style={{fontSize:8,color:C.text2,textAlign:"center",marginBottom:10}}>Your reaction time in milliseconds decides who wins!</div>
+                  <div style={{position:"relative",height:38,borderRadius:19,overflow:"hidden",marginBottom:8,border:`2px solid ${C.border}`,background:"rgba(0,0,0,0.3)"}}>
+                    <div style={{position:"absolute",inset:0,display:"flex"}}>
+                      <div style={{width:"15%",background:`linear-gradient(90deg, ${C.green}35, ${C.green}25)`,display:"flex",alignItems:"center",justifyContent:"center",borderRight:`1px solid ${C.green}50`}}>
+                        <div style={{textAlign:"center"}}><div style={{fontSize:7,fontWeight:900,color:C.green}}>BLAZING</div><div style={{fontSize:5,color:C.green+"90"}}>{"<"}150ms</div></div>
+                      </div>
+                      <div style={{width:"20%",background:`${C.lime}15`,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                        <div style={{textAlign:"center"}}><div style={{fontSize:6,fontWeight:800,color:C.lime}}>FAST</div><div style={{fontSize:5,color:C.text3}}>150-250ms</div></div>
+                      </div>
+                      <div style={{width:"25%",background:`${C.cyan}10`,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                        <div style={{textAlign:"center"}}><div style={{fontSize:6,fontWeight:700,color:C.cyan}}>GOOD</div><div style={{fontSize:5,color:C.text3}}>250-400ms</div></div>
+                      </div>
+                      <div style={{width:"20%",background:`${C.orange}10`,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                        <div style={{textAlign:"center"}}><div style={{fontSize:6,fontWeight:700,color:C.orange}}>SLOW</div><div style={{fontSize:5,color:C.text3}}>400-600ms</div></div>
+                      </div>
+                      <div style={{width:"20%",background:`${C.red}15`,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                        <div style={{textAlign:"center"}}><div style={{fontSize:6,fontWeight:800,color:C.red}}>SLEEPY</div><div style={{fontSize:5,color:C.text3}}>600ms+</div></div>
+                      </div>
                     </div>
-                    <div style={{width:"20%",background:`${C.cyan}15`,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                      <span style={{fontSize:6,fontWeight:700,color:C.cyan}}>QUICK</span>
+                    <div style={{position:"absolute",top:2,bottom:2,left:"10%",width:3,borderRadius:2,background:C.green,boxShadow:`0 0 8px ${C.green}`,animation:"duelBreathe 2s ease-in-out infinite",zIndex:2}}/>
+                  </div>
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:5}}>
+                    <div style={{padding:"8px 4px",borderRadius:10,background:`${C.green}08`,border:`1px solid ${C.green}18`,textAlign:"center"}}>
+                      <div style={{fontSize:20,marginBottom:2}}>🤠</div>
+                      <div style={{fontSize:8,fontWeight:900,color:C.green}}>YOU WIN</div>
+                      <div style={{fontSize:6,color:C.text3}}>Faster draw</div>
                     </div>
-                    <div style={{width:"25%",background:`linear-gradient(90deg, ${C.green}25, ${C.lime}30)`,display:"flex",alignItems:"center",justifyContent:"center",border:`2px solid ${C.green}50`,borderRadius:4}}>
-                      <span style={{fontSize:7,fontWeight:900,color:C.green}}>POWER 💨</span>
+                    <div style={{padding:"8px 4px",borderRadius:10,background:`${C.red}08`,border:`1px solid ${C.red}18`,textAlign:"center"}}>
+                      <div style={{fontSize:20,marginBottom:2}}>💀</div>
+                      <div style={{fontSize:8,fontWeight:900,color:C.red}}>OUTDRAWN</div>
+                      <div style={{fontSize:6,color:C.text3}}>AI was faster</div>
                     </div>
-                    <div style={{width:"35%",background:`${C.gold}20`,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                      <span style={{fontSize:6,fontWeight:800,color:C.gold}}>LEGENDARY 🌟</span>
+                    <div style={{padding:"8px 4px",borderRadius:10,background:`${C.orange}08`,border:`1px solid ${C.orange}18`,textAlign:"center"}}>
+                      <div style={{fontSize:20,marginBottom:2}}>⚠️</div>
+                      <div style={{fontSize:8,fontWeight:900,color:C.orange}}>FOUL!</div>
+                      <div style={{fontSize:6,color:C.text3}}>Drew too early</div>
                     </div>
                   </div>
+                </div>
+
+                {/* ═══ WILD WEST — SECTION 3: PUFF BONUS TIERS ═══ */}
+                <div style={{padding:"14px 12px",borderRadius:16,marginBottom:12,position:"relative",overflow:"hidden",
+                  background:`linear-gradient(135deg, rgba(132,204,22,0.06) 0%, rgba(244,167,66,0.04) 100%)`,
+                  border:`1px solid ${C.lime}15`,boxShadow:`inset 0 1px 0 ${C.lime}10`}}>
+                  <div style={{fontSize:10,fontWeight:900,color:C.lime,letterSpacing:3,marginBottom:4,textAlign:"center",textShadow:`0 0 12px ${C.lime}30`}}>💨 PUFF HOLD BONUS</div>
+                  <div style={{fontSize:8,color:C.text2,textAlign:"center",marginBottom:10}}>After DRAW, hold your puff longer for extra coins!</div>
+                  {/* Power meter visual */}
+                  <div style={{height:36,borderRadius:18,overflow:"hidden",display:"flex",marginBottom:8,border:`2px solid ${C.border}`,position:"relative",background:"rgba(0,0,0,0.25)"}}>
+                    <div style={{width:"18%",background:`linear-gradient(90deg, ${C.text3}20, ${C.text3}12)`,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                      <span style={{fontSize:7,fontWeight:800,color:C.text3}}>TAP</span>
+                    </div>
+                    <div style={{width:"22%",background:`linear-gradient(90deg, ${C.cyan}12, ${C.cyan}08)`,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                      <span style={{fontSize:7,fontWeight:700,color:C.cyan}}>QUICK</span>
+                    </div>
+                    <div style={{width:"25%",background:`linear-gradient(90deg, ${C.green}22, ${C.lime}28)`,display:"flex",alignItems:"center",justifyContent:"center",borderLeft:`2px solid ${C.green}40`,borderRight:`2px solid ${C.green}40`,position:"relative"}}>
+                      <span style={{fontSize:8,fontWeight:900,color:C.green}}>POWER 💨</span>
+                    </div>
+                    <div style={{width:"35%",background:`linear-gradient(90deg, ${C.gold}18, ${C.gold}25)`,display:"flex",alignItems:"center",justifyContent:"center",position:"relative"}}>
+                      <span style={{fontSize:7,fontWeight:900,color:C.gold}}>LEGENDARY 🌟</span>
+                    </div>
+                  </div>
+                  {/* Time labels */}
+                  <div style={{display:"flex",justifyContent:"space-between",padding:"0 4px",marginBottom:8}}>
+                    <span style={{fontSize:6,color:C.text3}}>{"<"}0.5s</span>
+                    <span style={{fontSize:6,color:C.cyan}}>0.5-1.5s</span>
+                    <span style={{fontSize:6,color:C.green,fontWeight:800}}>1.5-3s</span>
+                    <span style={{fontSize:6,color:C.gold,fontWeight:800}}>3s+ BLINKER</span>
+                  </div>
+                  {/* Tier cards with rewards */}
                   <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",gap:4}}>
                     {[
-                      {label:"Tap",bonus:"Basic",color:C.text3},
-                      {label:"Quick",bonus:"+10",color:C.cyan},
-                      {label:"Power",bonus:"+25",color:C.green},
-                      {label:"Legend",bonus:"+50",color:C.gold},
+                      {label:"Tap",coins:"+0",color:C.text3,emoji:"👆"},
+                      {label:"Quick",coins:"+10",color:C.cyan,emoji:"⚡"},
+                      {label:"Power",coins:"+25",color:C.green,emoji:"💨"},
+                      {label:"Legend",coins:"+50",color:C.gold,emoji:"🌟"},
                     ].map((t,i)=>(
-                      <div key={i} style={{padding:"6px 4px",borderRadius:8,background:`${t.color}08`,border:`1px solid ${t.color}15`,textAlign:"center"}}>
-                        <div style={{fontSize:8,fontWeight:800,color:t.color}}>{t.label}</div>
-                        <div style={{fontSize:7,color:C.text3}}>{t.bonus}</div>
+                      <div key={i} style={{padding:"8px 4px",borderRadius:10,background:`${t.color}08`,border:`1px solid ${t.color}18`,textAlign:"center"}}>
+                        <div style={{fontSize:14,marginBottom:2}}>{t.emoji}</div>
+                        <div style={{fontSize:8,fontWeight:900,color:t.color}}>{t.label}</div>
+                        <div style={{fontSize:10,fontWeight:900,color:t.color,marginTop:2}}>{t.coins}</div>
+                        <div style={{fontSize:5,color:C.text3,marginTop:1}}>coins</div>
                       </div>
                     ))}
                   </div>
                 </div>
 
-                {/* ═══ WILD WEST — SECTION 3: CONTROLS ═══ */}
-                <div style={{padding:"12px",borderRadius:16,...GLASS_CARD,marginBottom:12}}>
-                  <div style={{fontSize:9,fontWeight:800,color:C.orange,letterSpacing:2,marginBottom:8,textAlign:"center"}}>🎮 CONTROLS</div>
+                {/* ═══ SECTION 4: DUEL ARENA VISUAL ═══ */}
+                <div style={{padding:"14px 12px",borderRadius:16,...GLASS_CARD,marginBottom:12,position:"relative",overflow:"hidden"}}>
+                  <div style={{fontSize:10,fontWeight:900,color:C.orange,letterSpacing:3,marginBottom:8,textAlign:"center",textShadow:`0 0 12px ${C.orange}30`}}>🏜️ THE ARENA</div>
+                  {/* Mini duel scene */}
+                  <div style={{position:"relative",width:"100%",height:100,borderRadius:12,overflow:"hidden",marginBottom:10,
+                    background:"linear-gradient(180deg, #150a2e 0%, #6b2fa0 20%, #c04060 35%, #f4a742 55%, #8b4513 80%, #3d1f0a 100%)"}}>
+                    <div style={{position:"absolute",top:"10%",left:"50%",transform:"translateX(-50%)",width:30,height:30,borderRadius:"50%",background:"radial-gradient(circle, rgba(255,200,50,0.9), rgba(255,140,50,0.4), transparent)",filter:"blur(4px)"}}/>
+                    <div style={{position:"absolute",bottom:0,left:0,right:0,height:"25%",background:"linear-gradient(180deg, #8b4513, #5a2a0e)"}}/>
+                    <div style={{position:"absolute",bottom:"22%",left:"18%",fontSize:28,transform:"scaleX(-1)",filter:"drop-shadow(0 4px 8px rgba(0,0,0,0.7))"}}>😎</div>
+                    <div style={{position:"absolute",bottom:"22%",right:"18%",fontSize:28,filter:"drop-shadow(0 4px 8px rgba(0,0,0,0.7))"}}>🤠</div>
+                    <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",fontSize:11,fontWeight:900,color:"#fff",textShadow:"0 0 10px rgba(255,0,0,0.6)",letterSpacing:3}}>VS</div>
+                    <div style={{position:"absolute",bottom:"20%",left:"6%",fontSize:14,opacity:0.3}}>🌵</div>
+                    <div style={{position:"absolute",bottom:"18%",right:"4%",fontSize:10,opacity:0.25}}>🌵</div>
+                  </div>
                   <div style={{display:"flex",gap:6}}>
-                    <div style={{flex:1,padding:"8px",borderRadius:10,background:`${C.red}06`,border:`1px solid ${C.red}12`,textAlign:"center"}}>
-                      <div style={{fontSize:18,marginBottom:2}}>⏳</div>
-                      <div style={{fontSize:8,fontWeight:800,color:C.red}}>WAIT for DRAW!</div>
-                      <div style={{fontSize:7,color:C.text3}}>Don't tap early = foul!</div>
+                    <div style={{flex:1,padding:"10px 6px",borderRadius:12,background:`linear-gradient(135deg, ${C.red}10, ${C.red}04)`,border:`1px solid ${C.red}20`,textAlign:"center"}}>
+                      <div style={{fontSize:22,marginBottom:3}}>⏳</div>
+                      <div style={{fontSize:9,fontWeight:900,color:C.red}}>WAIT for DRAW!</div>
+                      <div style={{fontSize:7,color:C.text2,marginTop:2}}>Patience is key</div>
+                      <div style={{fontSize:6,color:C.red+"80",marginTop:2}}>Early tap = FOUL</div>
                     </div>
-                    <div style={{flex:1,padding:"8px",borderRadius:10,background:`${C.green}06`,border:`1px solid ${C.green}12`,textAlign:"center"}}>
-                      <div style={{fontSize:18,marginBottom:2}}>💨</div>
-                      <div style={{fontSize:8,fontWeight:800,color:C.green}}>TAP & HOLD</div>
-                      <div style={{fontSize:7,color:C.text3}}>Puff when DRAW appears</div>
+                    <div style={{flex:1,padding:"10px 6px",borderRadius:12,background:`linear-gradient(135deg, ${C.green}10, ${C.green}04)`,border:`1px solid ${C.green}20`,textAlign:"center"}}>
+                      <div style={{fontSize:22,marginBottom:3}}>💨</div>
+                      <div style={{fontSize:9,fontWeight:900,color:C.green}}>TAP then HOLD</div>
+                      <div style={{fontSize:7,color:C.text2,marginTop:2}}>React instantly</div>
+                      <div style={{fontSize:6,color:C.green+"80",marginTop:2}}>Hold = bonus coins</div>
                     </div>
                   </div>
                 </div>
 
-                {/* ═══ WILD WEST — SECTION 4: SPECIAL FEATURES ═══ */}
-                <div style={{padding:"12px",borderRadius:16,...GLASS_CARD,marginBottom:12}}>
-                  <div style={{fontSize:9,fontWeight:800,color:C.purple,letterSpacing:2,marginBottom:8,textAlign:"center"}}>✨ SPECIAL FEATURES</div>
+                {/* ═══ SECTION 5: SPECIAL FEATURES ═══ */}
+                <div style={{padding:"14px 12px",borderRadius:16,...GLASS_CARD,marginBottom:12}}>
+                  <div style={{fontSize:10,fontWeight:900,color:C.purple,letterSpacing:3,marginBottom:8,textAlign:"center",textShadow:`0 0 12px ${C.purple}30`}}>✨ SPECIAL FEATURES</div>
                   <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
                     {[
-                      {icon:"🏆",title:"Best of 5",desc:"First to 3 wins!",color:C.gold},
-                      {icon:"🤖",title:"AI Speeds Up",desc:"Gets faster each round",color:C.cyan},
-                      {icon:"⚠️",title:"Foul = Auto-Lose",desc:"Draw early & you lose the round",color:C.red},
-                      {icon:"💰",title:"Coin Bonus",desc:"Longer puff = more coins!",color:C.lime},
+                      {icon:"🏆",title:"Best of 5",desc:"First to 3 round wins takes the match!",color:C.gold},
+                      {icon:"🤖",title:"AI Adapts",desc:"Gets faster each round — stay sharp!",color:C.cyan},
+                      {icon:"⚠️",title:"Foul System",desc:"Draw before DRAW = auto-lose round",color:C.red},
+                      {icon:"💰",title:"Coin Bonus",desc:"Longer puff hold = more coins earned",color:C.lime},
+                      {icon:"🌊",title:"Dust Storm",desc:"10+ viewers puff = arena clouds up!",color:C.orange},
+                      {icon:"🐍",title:"Traitor Badge",desc:"Switch sides mid-duel for the badge!",color:C.purple},
                     ].map((f,i)=>(
-                      <div key={i} style={{padding:"8px",borderRadius:10,background:`${f.color}06`,border:`1px solid ${f.color}12`,textAlign:"center"}}>
-                        <div style={{fontSize:16,marginBottom:2}}>{f.icon}</div>
-                        <div style={{fontSize:8,fontWeight:800,color:f.color}}>{f.title}</div>
-                        <div style={{fontSize:7,color:C.text3}}>{f.desc}</div>
+                      <div key={i} style={{padding:"10px 6px",borderRadius:12,background:`linear-gradient(135deg, ${f.color}08, ${f.color}03)`,border:`1px solid ${f.color}15`,textAlign:"center",position:"relative",overflow:"hidden"}}>
+                        <div style={{fontSize:18,marginBottom:3}}>{f.icon}</div>
+                        <div style={{fontSize:9,fontWeight:900,color:f.color}}>{f.title}</div>
+                        <div style={{fontSize:7,color:C.text2,lineHeight:1.3,marginTop:2}}>{f.desc}</div>
                       </div>
                     ))}
                   </div>
                 </div>
 
-                {/* ═══ WILD WEST — SECTION 5: PRO TIPS ═══ */}
-                <div style={{padding:"12px",borderRadius:16,background:`${C.gold}06`,border:`1px solid ${C.gold}15`,marginBottom:8}}>
-                  <div style={{fontSize:9,fontWeight:800,color:C.gold,letterSpacing:2,marginBottom:6,textAlign:"center"}}>🧠 PRO TIPS</div>
-                  <div style={{display:"flex",flexDirection:"column",gap:4}}>
+                {/* ═══ SECTION 6: SHOWDOWN CUP PATH ═══ */}
+                <div style={{padding:"14px 12px",borderRadius:16,...GLASS_CARD,marginBottom:12}}>
+                  <div style={{fontSize:10,fontWeight:900,color:C.gold,letterSpacing:3,marginBottom:8,textAlign:"center",textShadow:`0 0 12px ${C.gold}30`}}>🏆 SHOWDOWN CUP PATH</div>
+                  <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:3,flexWrap:"wrap"}}>
+                    {[{label:"Group",sub:"3 duels",color:C.cyan},{label:"R32",sub:"Win or bust",color:C.blue},{label:"R16",sub:"Knockout",color:C.green},{label:"QF",sub:"Quarter",color:C.lime},{label:"SF",sub:"Semi",color:C.gold},{label:"FINAL",sub:"🏆",color:C.gold}].map((r,i)=>(
+                      <React.Fragment key={i}>
+                        <div style={{padding:"6px 7px",borderRadius:8,background:`${r.color}12`,border:`1px solid ${r.color}22`,textAlign:"center",minWidth:42}}>
+                          <div style={{fontSize:8,fontWeight:900,color:r.color}}>{r.label}</div>
+                          <div style={{fontSize:6,color:C.text3}}>{r.sub}</div>
+                        </div>
+                        {i<5 && <span style={{fontSize:9,color:C.text3+"60"}}>→</span>}
+                      </React.Fragment>
+                    ))}
+                  </div>
+                  <div style={{display:"flex",gap:4,marginTop:8,justifyContent:"center"}}>
+                    <div style={{padding:"4px 8px",borderRadius:6,background:`${C.gold}12`,border:`1px solid ${C.gold}20`,fontSize:7,fontWeight:700,color:C.gold}}>🥇 50K pts</div>
+                    <div style={{padding:"4px 8px",borderRadius:6,background:"rgba(192,192,192,0.08)",border:"1px solid rgba(192,192,192,0.2)",fontSize:7,fontWeight:700,color:"#C0C0C0"}}>🥈 25K</div>
+                    <div style={{padding:"4px 8px",borderRadius:6,background:"rgba(205,127,50,0.08)",border:"1px solid rgba(205,127,50,0.2)",fontSize:7,fontWeight:700,color:"#CD7F32"}}>🥉 10K</div>
+                  </div>
+                </div>
+
+                {/* ═══ SECTION 7: SHERIFF'S TIPS ═══ */}
+                <div style={{padding:"14px 12px",borderRadius:16,marginBottom:8,position:"relative",overflow:"hidden",background:`linear-gradient(135deg, ${C.gold}06, rgba(139,69,19,0.08))`,border:`1px solid ${C.gold}18`}}>
+                  <div style={{position:"absolute",top:-10,right:-10,fontSize:30,opacity:0.06,transform:"rotate(15deg)",pointerEvents:"none"}}>🤠</div>
+                  <div style={{fontSize:10,fontWeight:900,color:C.gold,letterSpacing:3,marginBottom:8,textAlign:"center",textShadow:`0 0 12px ${C.gold}30`}}>🧠 SHERIFF'S TIPS</div>
+                  <div style={{display:"flex",flexDirection:"column",gap:5}}>
                     {[
-                      "Wait for DRAW! — tapping early is a foul and auto-lose round",
-                      "Longer puff = bigger coin bonus, but riskier if AI is fast",
-                      "AI gets faster every round — stay focused in rounds 4-5!",
-                      "Blinker hold is hilarious but risky — only for the bold 🤠",
-                    ].map((tip,i)=>(
-                      <div key={i} style={{display:"flex",gap:6,alignItems:"flex-start"}}>
-                        <span style={{fontSize:8,color:C.gold,fontWeight:900,flexShrink:0}}>💡</span>
-                        <span style={{fontSize:8,color:C.text2,lineHeight:1.3}}>{tip}</span>
+                      {tip:"Wait for DRAW! Tapping early is a foul and auto-lose round",icon:"⏳",color:C.red},
+                      {tip:"Longer puff = bigger coin bonus, but riskier if AI is fast",icon:"💨",color:C.lime},
+                      {tip:"AI speeds up every round — stay razor-sharp in rounds 4-5!",icon:"🤖",color:C.cyan},
+                      {tip:"Watch the staredown intensity — it hints when DRAW is coming",icon:"👀",color:C.orange},
+                      {tip:"Blinker hold (3s+) is hilarious but risky — only for the bold!",icon:"🌟",color:C.gold},
+                    ].map((t,i)=>(
+                      <div key={i} style={{display:"flex",gap:8,alignItems:"center",padding:"5px 8px",borderRadius:8,background:`${t.color}05`,border:`1px solid ${t.color}10`}}>
+                        <span style={{fontSize:14,flexShrink:0}}>{t.icon}</span>
+                        <span style={{fontSize:8,color:C.text2,lineHeight:1.3,fontWeight:500}}>{t.tip}</span>
                       </div>
                     ))}
                   </div>
@@ -7704,86 +7809,26 @@ export default function MoodLabArena() {
                       </React.Fragment>
                     ))}
                   </div>
-                </div>
-
-                {/* ═══ RUSSIAN ROULETTE — SECTION 2: DODGE CHANCE METER ═══ */}
-                <div style={{padding:"12px",borderRadius:16,...GLASS_CARD,marginBottom:12}}>
-                  <div style={{fontSize:9,fontWeight:800,color:C.lime,letterSpacing:2,marginBottom:8,textAlign:"center"}}>💨 PUFF = DODGE CHANCE</div>
-                  <div style={{fontSize:8,color:C.text2,textAlign:"center",marginBottom:8}}>Hold your puff longer to increase your dodge chance!</div>
-                  <div style={{height:32,borderRadius:16,overflow:"hidden",display:"flex",marginBottom:6,border:`2px solid ${C.border}`}}>
-                    <div style={{width:"15%",background:`${C.red}25`,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                      <span style={{fontSize:6,fontWeight:800,color:C.red}}>TAP 0%</span>
-                    </div>
-                    <div style={{width:"15%",background:`${C.orange}15`,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                      <span style={{fontSize:6,fontWeight:700,color:C.orange}}>3%</span>
-                    </div>
-                    <div style={{width:"25%",background:`${C.cyan}15`,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                      <span style={{fontSize:6,fontWeight:700,color:C.cyan}}>8%</span>
-                    </div>
-                    <div style={{width:"20%",background:`linear-gradient(90deg, ${C.green}25, ${C.lime}30)`,display:"flex",alignItems:"center",justifyContent:"center",border:`2px solid ${C.green}50`,borderRadius:4}}>
-                      <span style={{fontSize:7,fontWeight:900,color:C.green}}>15% 💨</span>
-                    </div>
-                    <div style={{width:"25%",background:`${C.gold}20`,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                      <span style={{fontSize:6,fontWeight:800,color:C.gold}}>30% 🌟</span>
-                    </div>
-                  </div>
-                  <div style={{display:"flex",justifyContent:"space-between",padding:"0 2px",marginBottom:6}}>
-                    <span style={{fontSize:6,color:C.text3}}>{'<'}1s</span>
-                    <span style={{fontSize:6,color:C.text3}}>1-1.5s</span>
-                    <span style={{fontSize:6,color:C.text3}}>1.5-3s</span>
-                    <span style={{fontSize:6,color:C.green,fontWeight:800}}>3-5s</span>
-                    <span style={{fontSize:6,color:C.gold}}>5s+ Blinker</span>
-                  </div>
-                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
-                    <div style={{padding:"8px",borderRadius:10,background:`${C.green}08`,border:`1px solid ${C.green}15`,textAlign:"center"}}>
-                      <div style={{fontSize:18,marginBottom:2}}>😅</div>
-                      <div style={{fontSize:8,fontWeight:800,color:C.green}}>DODGED!</div>
-                      <div style={{fontSize:7,color:C.text3}}>Lucky — you survive this round</div>
-                    </div>
-                    <div style={{padding:"8px",borderRadius:10,background:`${C.red}08`,border:`1px solid ${C.red}15`,textAlign:"center"}}>
-                      <div style={{fontSize:18,marginBottom:2}}>💀</div>
-                      <div style={{fontSize:8,fontWeight:800,color:C.red}}>BANG!</div>
-                      <div style={{fontSize:7,color:C.text3}}>Eliminated — watch as ghost</div>
-                    </div>
                   </div>
                 </div>
 
-                {/* ═══ RUSSIAN ROULETTE — SECTION 3: SPECIAL FEATURES ═══ */}
-                <div style={{padding:"12px",borderRadius:16,...GLASS_CARD,marginBottom:12}}>
-                  <div style={{fontSize:9,fontWeight:800,color:C.purple,letterSpacing:2,marginBottom:8,textAlign:"center"}}>✨ SPECIAL FEATURES</div>
-                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
-                    {[
-                      {icon:"🔫",title:"6 Chambers",desc:"1 bullet, 6 slots — 16.7% base chance",color:C.red},
-                      {icon:"👻",title:"Ghost Mode",desc:"Watch after elimination!",color:C.purple},
-                      {icon:"🏆",title:"Last Standing",desc:"Sole survivor wins!",color:C.gold},
-                      {icon:"💨",title:"Blinker Dodge",desc:"5s+ puff = 30% dodge chance!",color:C.lime},
-                    ].map((f,i)=>(
-                      <div key={i} style={{padding:"8px",borderRadius:10,background:`${f.color}06`,border:`1px solid ${f.color}12`,textAlign:"center"}}>
-                        <div style={{fontSize:16,marginBottom:2}}>{f.icon}</div>
-                        <div style={{fontSize:8,fontWeight:800,color:f.color}}>{f.title}</div>
-                        <div style={{fontSize:7,color:C.text3}}>{f.desc}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                {/* ═══ RUSSIAN ROULETTE — SECTION 2: REVOLVER VISUAL ═══ */}
+                <div style={{padding:"14px",borderRadius:16,...GLASS_CARD,marginBottom:12,position:"relative",overflow:"hidden"}}><div style={{position:"absolute",inset:0,background:`radial-gradient(circle at 50% 50%, ${C.gold}06, transparent 60%)`,pointerEvents:"none"}}/><div style={{position:"relative",zIndex:1}}>
+                  <div style={{fontSize:9,fontWeight:800,color:C.gold,letterSpacing:2,marginBottom:10,textAlign:"center"}}>🔫 THE REVOLVER</div>
+                  <div style={{display:"flex",justifyContent:"center",marginBottom:10}}><div style={{position:"relative",width:120,height:120}}>{[0,1,2,3,4,5].map((ch,i)=>{const angle=(i*60-90)*Math.PI/180;const cx=60+40*Math.cos(angle);const cy=60+40*Math.sin(angle);const isBullet=i===0;return <div key={i} style={{position:"absolute",left:cx-12,top:cy-12,width:24,height:24,borderRadius:"50%",background:isBullet?`radial-gradient(circle, ${C.red}40, ${C.red}15)`:`rgba(255,255,255,0.04)`,border:`2px solid ${isBullet?C.red+"80":"rgba(255,255,255,0.12)"}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:isBullet?10:8,boxShadow:isBullet?`0 0 12px ${C.red}30`:"none"}}>{isBullet?"💀":"○"}</div>;})}<div style={{position:"absolute",left:48,top:48,width:24,height:24,borderRadius:"50%",background:`${C.gold}15`,border:`1px solid ${C.gold}25`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:12}}>🎲</div></div></div>
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:6}}>{[{n:"6",l:"CHAMBERS",c:C.cyan},{n:"1",l:"BULLET",c:C.red},{n:"16.7%",l:"BASE RISK",c:C.gold}].map((s,i)=>(<div key={i} style={{padding:"8px 4px",borderRadius:10,background:`${s.c}06`,border:`1px solid ${s.c}12`,textAlign:"center"}}><div style={{fontSize:16,marginBottom:2}}>{s.n}</div><div style={{fontSize:7,fontWeight:800,color:s.c}}>{s.l}</div></div>))}</div>
+                </div></div>
 
-                {/* ═══ RUSSIAN ROULETTE — SECTION 4: PRO TIPS ═══ */}
-                <div style={{padding:"12px",borderRadius:16,background:`${C.red}06`,border:`1px solid ${C.red}15`,marginBottom:8}}>
-                  <div style={{fontSize:9,fontWeight:800,color:C.red,letterSpacing:2,marginBottom:6,textAlign:"center"}}>🧠 PRO TIPS</div>
-                  <div style={{display:"flex",flexDirection:"column",gap:4}}>
-                    {[
-                      "Puff LONG for max dodge chance — Blinker (5s+) gives 30%!",
-                      "Tapping gives 0% dodge — you WILL get hit if the bullet is in your chamber",
-                      "Ghost mode lets you spectate and cheer after elimination 👻",
-                      "The tension builds each round as chambers get eliminated!",
-                    ].map((tip,i)=>(
-                      <div key={i} style={{display:"flex",gap:6,alignItems:"flex-start"}}>
-                        <span style={{fontSize:8,color:C.red,fontWeight:900,flexShrink:0}}>💡</span>
-                        <span style={{fontSize:8,color:C.text2,lineHeight:1.3}}>{tip}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                {/* ═══ RUSSIAN ROULETTE — SECTION 3: PUFF DODGE METER ═══ */}
+                <div style={{padding:"14px",borderRadius:16,...GLASS_CARD,marginBottom:12,position:"relative",overflow:"hidden"}}><div style={{position:"absolute",inset:0,background:`linear-gradient(180deg, ${C.lime}04, transparent 60%)`,pointerEvents:"none"}}/><div style={{position:"relative",zIndex:1}}><div style={{fontSize:9,fontWeight:800,color:C.lime,letterSpacing:2,marginBottom:6,textAlign:"center"}}>💨 PUFF = DODGE CHANCE</div><div style={{fontSize:8,color:C.text2,textAlign:"center",marginBottom:10}}>Hold your puff longer to increase survival odds!</div><div style={{height:36,borderRadius:18,overflow:"hidden",display:"flex",marginBottom:6,border:`2px solid ${C.border}`,boxShadow:"inset 0 2px 8px rgba(0,0,0,0.3)"}}><div style={{width:"12%",background:`linear-gradient(135deg, ${C.red}30, ${C.red}15)`,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:6,fontWeight:900,color:C.red}}>TAP</span></div><div style={{width:"13%",background:`linear-gradient(135deg, ${C.orange}20, ${C.orange}10)`,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:6,fontWeight:800,color:C.orange}}>3%</span></div><div style={{width:"25%",background:`linear-gradient(135deg, ${C.cyan}15, ${C.cyan}08)`,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:6,fontWeight:700,color:C.cyan}}>8%</span></div><div style={{width:"22%",background:`linear-gradient(135deg, ${C.green}30, ${C.lime}20)`,display:"flex",alignItems:"center",justifyContent:"center",border:`2px solid ${C.green}50`,borderRadius:4}}><span style={{fontSize:7,fontWeight:900,color:C.green}}>15% 💨</span></div><div style={{width:"28%",background:`linear-gradient(135deg, ${C.gold}25, ${C.gold}12)`,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:7,fontWeight:900,color:C.gold}}>30% MAX</span></div></div><div style={{display:"flex",justifyContent:"space-between",padding:"0 4px",marginBottom:8}}><span style={{fontSize:6,color:C.red,fontWeight:700}}>{'<'}1s</span><span style={{fontSize:6,color:C.orange}}>1-1.5s</span><span style={{fontSize:6,color:C.cyan}}>1.5-3s</span><span style={{fontSize:6,color:C.green,fontWeight:800}}>3-5s</span><span style={{fontSize:6,color:C.gold,fontWeight:800}}>5s+ BLINKER</span></div><div style={{display:"flex",flexDirection:"column",gap:4}}>{[{tier:"TAP",time:"< 1s",dodge:"0%",desc:"No protection — pure luck",color:C.red,emoji:"😐"},{tier:"SHORT",time:"1-1.5s",dodge:"3%",desc:"Barely a breath",color:C.orange,emoji:"😤"},{tier:"GOOD",time:"1.5-3s",dodge:"8%",desc:"Decent puff",color:C.cyan,emoji:"💨"},{tier:"LONG",time:"3-5s",dodge:"15%",desc:"Strong lungs — solid",color:C.green,emoji:"🌬️"},{tier:"BLINKER",time:"5s+",dodge:"30%",desc:"MAX dodge — smoke screen!",color:C.gold,emoji:"🫁🔥"}].map((t,i)=>(<div key={i} style={{display:"flex",alignItems:"center",gap:6,padding:"5px 8px",borderRadius:8,background:`${t.color}06`,border:`1px solid ${t.color}12`}}><span style={{fontSize:14,flexShrink:0}}>{t.emoji}</span><div style={{flex:1}}><div style={{display:"flex",alignItems:"center",gap:4}}><span style={{fontSize:8,fontWeight:900,color:t.color}}>{t.tier}</span><span style={{fontSize:7,color:C.text3}}>({t.time})</span></div><div style={{fontSize:7,color:C.text3}}>{t.desc}</div></div><div style={{padding:"3px 8px",borderRadius:6,background:`${t.color}15`,border:`1px solid ${t.color}25`}}><span style={{fontSize:9,fontWeight:900,color:t.color}}>{t.dodge}</span></div></div>))}</div><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6,marginTop:8}}><div style={{padding:"10px",borderRadius:12,background:`${C.green}08`,border:`1px solid ${C.green}15`,textAlign:"center"}}><div style={{fontSize:22,marginBottom:3}}>😮‍💨</div><div style={{fontSize:9,fontWeight:900,color:C.green}}>*CLICK*</div><div style={{fontSize:7,color:C.text3,marginTop:2}}>Survive!</div></div><div style={{padding:"10px",borderRadius:12,background:`${C.red}08`,border:`1px solid ${C.red}15`,textAlign:"center"}}><div style={{fontSize:22,marginBottom:3}}>💥</div><div style={{fontSize:9,fontWeight:900,color:C.red}}>BANG!</div><div style={{fontSize:7,color:C.text3,marginTop:2}}>Ghost mode</div></div></div></div></div>
+                {/* ═══ RUSSIAN ROULETTE — SECTION 4: THE PLAYERS ═══ */}
+                <div style={{padding:"14px",borderRadius:16,...GLASS_CARD,marginBottom:12}}><div style={{fontSize:9,fontWeight:800,color:C.purple,letterSpacing:2,marginBottom:8,textAlign:"center"}}>👥 THE TABLE</div><div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:6}}>{[{emoji:"🤠",name:"Lucky Luke",trait:"Cocky",color:C.gold},{emoji:"😰",name:"Nervous Nick",trait:"Shaky",color:C.orange},{emoji:"💪",name:"Bold Betty",trait:"Fearless",color:C.green},{emoji:"😎",name:"Chill Chad",trait:"Cool",color:C.cyan},{emoji:"😓",name:"Sweaty Steve",trait:"Panicky",color:C.red},{emoji:"😤",name:"YOU",trait:"Puff!",color:C.lime}].map((p,i)=>(<div key={i} style={{padding:"8px 4px",borderRadius:10,background:p.name==="YOU"?`${p.color}12`:`${p.color}06`,border:`1px solid ${p.name==="YOU"?p.color+"30":p.color+"12"}`,textAlign:"center"}}><div style={{fontSize:18,marginBottom:2}}>{p.emoji}</div><div style={{fontSize:7,fontWeight:800,color:p.color}}>{p.name}</div><div style={{fontSize:6,color:C.text3,marginTop:1}}>{p.trait}</div></div>))}</div></div>
+                {/* ═══ RUSSIAN ROULETTE — SECTION 5: FEATURES ═══ */}
+                <div style={{padding:"14px",borderRadius:16,...GLASS_CARD,marginBottom:12}}><div style={{fontSize:9,fontWeight:800,color:C.cyan,letterSpacing:2,marginBottom:8,textAlign:"center"}}>✨ SPECIAL FEATURES</div><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>{[{icon:"🔫",title:"6-Chamber Revolver",desc:"Spin after each kill",color:C.red},{icon:"👻",title:"Ghost Mode",desc:"Watch after you're out!",color:C.purple},{icon:"❤️",title:"Heartbeat System",desc:"Heart races with tension",color:C.red},{icon:"🫁",title:"Blinker Dodge",desc:"5s+ = 30% dodge max!",color:C.lime},{icon:"💡",title:"Swinging Lamp",desc:"Poker room atmosphere",color:C.gold},{icon:"🏆",title:"Last Standing",desc:"Sole survivor wins!",color:C.gold}].map((f,i)=>(<div key={i} style={{padding:"8px",borderRadius:10,background:`${f.color}06`,border:`1px solid ${f.color}12`,textAlign:"center"}}><div style={{fontSize:18,marginBottom:3}}>{f.icon}</div><div style={{fontSize:8,fontWeight:800,color:f.color}}>{f.title}</div><div style={{fontSize:7,color:C.text3,marginTop:1}}>{f.desc}</div></div>))}</div></div>
+                {/* ═══ RUSSIAN ROULETTE — SECTION 6: TOURNAMENT ═══ */}
+                <div style={{padding:"14px",borderRadius:16,...GLASS_CARD,marginBottom:12}}><div style={{fontSize:9,fontWeight:800,color:C.gold,letterSpacing:2,marginBottom:8,textAlign:"center"}}>🏆 TOURNAMENT PATH</div><div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:3,flexWrap:"wrap"}}>{[{label:"Group",sub:"3 matches",color:C.cyan},{label:"R32",sub:"Survive",color:C.blue},{label:"R16",sub:"Knockout",color:C.green},{label:"QF",sub:"Quarter",color:C.lime},{label:"SF",sub:"Semi",color:C.gold},{label:"FINAL",sub:"🏆",color:C.gold}].map((r,i)=>(<React.Fragment key={i}><div style={{padding:"5px 6px",borderRadius:8,background:`${r.color}10`,border:`1px solid ${r.color}20`,textAlign:"center",minWidth:40}}><div style={{fontSize:8,fontWeight:800,color:r.color}}>{r.label}</div><div style={{fontSize:6,color:C.text3}}>{r.sub}</div></div>{i<5&&<span style={{fontSize:8,color:C.text3+"60"}}>→</span>}</React.Fragment>))}</div><div style={{display:"flex",gap:4,marginTop:8,justifyContent:"center"}}><div style={{padding:"4px 8px",borderRadius:6,background:`${C.gold}12`,border:`1px solid ${C.gold}20`,fontSize:7,fontWeight:700,color:C.gold}}>🥇 50K</div><div style={{padding:"4px 8px",borderRadius:6,background:"rgba(192,192,192,0.08)",border:"1px solid rgba(192,192,192,0.2)",fontSize:7,fontWeight:700,color:"#C0C0C0"}}>🥈 25K</div><div style={{padding:"4px 8px",borderRadius:6,background:"rgba(205,127,50,0.08)",border:"1px solid rgba(205,127,50,0.2)",fontSize:7,fontWeight:700,color:"#CD7F32"}}>🥉 10K</div></div></div>
+                {/* ═══ RUSSIAN ROULETTE — SECTION 7: PRO TIPS ═══ */}
+                <div style={{padding:"14px",borderRadius:16,background:`linear-gradient(135deg, ${C.red}06, rgba(0,0,0,0))`,border:`1px solid ${C.red}15`,marginBottom:8,position:"relative",overflow:"hidden"}}><div style={{position:"absolute",top:-20,right:-20,fontSize:60,opacity:0.03,pointerEvents:"none"}}>🧠</div><div style={{position:"relative",zIndex:1}}><div style={{fontSize:9,fontWeight:800,color:C.red,letterSpacing:2,marginBottom:8,textAlign:"center"}}>🧠 PRO TIPS</div><div style={{display:"flex",flexDirection:"column",gap:5}}>{[{tip:"Puff LONG — Blinker (5s+) gives 30% dodge!",icon:"💨",color:C.lime},{tip:"Tapping = 0% dodge — pure luck",icon:"⚠️",color:C.red},{tip:"Cylinder re-spins after every elimination",icon:"🔄",color:C.gold},{tip:"AI personalities have different puff patterns",icon:"👀",color:C.cyan},{tip:"Ghost mode after elimination",icon:"👻",color:C.purple},{tip:"Heartbeat accelerates with tension",icon:"❤️",color:C.red}].map((t,i)=>(<div key={i} style={{display:"flex",gap:6,alignItems:"flex-start"}}><div style={{width:20,height:20,borderRadius:6,background:`${t.color}10`,border:`1px solid ${t.color}15`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,flexShrink:0}}>{t.icon}</div><span style={{fontSize:8,color:C.text2,lineHeight:1.4}}>{t.tip}</span></div>))}</div></div></div>
 
                 </>) : (selectedGame.id==="balloon") ? (<>
 
@@ -7945,10 +7990,10 @@ export default function MoodLabArena() {
                   </div>
                 </div>
 
-                {/* ═══ PUFF PONG — SECTION 2: CONTROLS VISUAL ═══ */}
+                {/* ═══ PUFF PONG — SECTION 2: NEON TABLE DIAGRAM ═══ */}
                 <div style={{padding:"12px",borderRadius:16,...GLASS_CARD,marginBottom:12}}>
-                  <div style={{fontSize:9,fontWeight:800,color:C.cyan,letterSpacing:2,marginBottom:8,textAlign:"center"}}>🎮 CONTROLS</div>
-                  <div style={{fontSize:8,color:C.text2,textAlign:"center",marginBottom:8}}>Tap UP or DOWN to move your paddle!</div>
+                  <div style={{fontSize:9,fontWeight:800,color:C.cyan,letterSpacing:2,marginBottom:8,textAlign:"center"}}>🏓 NEON TABLE</div>
+                  <div style={{fontSize:8,color:C.text2,textAlign:"center",marginBottom:8}}>The arena where puff meets precision!</div>
                   <div style={{position:"relative",width:"100%",aspectRatio:"3/2",border:`2px solid ${C.border}`,borderRadius:8,background:`rgba(255,255,255,0.02)`,marginBottom:6,overflow:"hidden"}}>
                     {/* Center line */}
                     <div style={{position:"absolute",top:0,left:"50%",width:1,height:"100%",background:`${C.text3}20`,borderLeft:`1px dashed ${C.text3}30`}}/>
