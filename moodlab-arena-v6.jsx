@@ -1063,7 +1063,6 @@ export default function MoodLabArena() {
   const kickDive = (zone) => {
     if(kickState!=="save_dive") return;
     setKickSaveZone(zone);
-    setKickDiveAnim(zone);
     setKickState("save_result");
     playFx("kick");
 
@@ -1072,7 +1071,13 @@ export default function MoodLabArena() {
     const sameZone = zone === aiKickZone;
     const aiScores = !sameZone || (sameZone && Math.random() < (pool.aiScore - 0.20));
 
-    setKickBallAnim({zone:aiKickZone, power:70, result: aiScores ? "goal" : "saved"});
+    // Clear any stale ball anim from shoot phase first, then set save phase anim
+    setKickBallAnim(null);
+    setKickDiveAnim(zone);
+    // Small delay to ensure React commits the null before setting new value
+    setTimeout(()=>{
+      setKickBallAnim({zone:aiKickZone, power:70, result: aiScores ? "goal" : "saved"});
+    }, 50);
 
     setTimeout(()=>{
       if(aiScores) {
