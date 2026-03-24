@@ -4297,20 +4297,30 @@ export default function MoodLabArena() {
     setDimLights(false); setScreenShake(false); setScreenFlash(null);
     setKickCharging(false); setIsFK2Mode(false); setIsFK3Mode(false);
     isFK2Ref.current=false; isFK3Ref.current=false;
+    setMatchIntro(null);
     setCommentatorText(""); setPuffBubbles([]); setAudienceBubbles([]);
     setConfettiParticles([]); setSmokeParticles([]);
   };
 
-  const overlayBack = (onClose) => (
-    <div data-back="true" onClick={(e)=>{e.stopPropagation();playFx("back");cleanupAllGames();onClose();}}
-      onTouchStart={(e)=>{e.stopPropagation();}}
-      onTouchEnd={(e)=>{e.stopPropagation();}}
-      onMouseDown={(e)=>{e.stopPropagation();}}
-      onMouseUp={(e)=>{e.stopPropagation();}}
-      style={{position:"fixed",top:8,left:10,zIndex:9999,cursor:"pointer",padding:"8px 14px",borderRadius:10,background:`rgba(6,8,15,0.85)`,backdropFilter:"blur(12px)",border:`1px solid ${C.border}`,WebkitTapHighlightColor:"transparent",touchAction:"manipulation"}}>
-      <span style={{fontSize:12,fontWeight:700,color:C.text2,pointerEvents:"none"}}>← Back</span>
-    </div>
-  );
+  const overlayBack = (onClose) => {
+    const doBack = (e) => {
+      e.stopPropagation(); e.preventDefault();
+      try { playFx("tap"); } catch(ex) {}
+      cleanupAllGames();
+      onClose();
+    };
+    return (
+      <div data-back="true"
+        onClick={doBack}
+        onTouchEnd={(e)=>{e.stopPropagation();e.preventDefault();doBack(e);}}
+        onTouchStart={(e)=>{e.stopPropagation();}}
+        onMouseDown={(e)=>{e.stopPropagation();}}
+        onMouseUp={(e)=>{e.stopPropagation();}}
+        style={{position:"absolute",top:8,left:10,zIndex:9999,cursor:"pointer",padding:"10px 16px",borderRadius:12,background:"rgba(6,8,15,0.92)",backdropFilter:"blur(12px)",border:"1px solid rgba(255,255,255,0.15)",WebkitTapHighlightColor:"transparent",touchAction:"manipulation",boxShadow:"0 2px 12px rgba(0,0,0,0.5)"}}>
+        <span style={{fontSize:13,fontWeight:700,color:"#E8EBF6",pointerEvents:"none",userSelect:"none",WebkitUserSelect:"none"}}>← Back</span>
+      </div>
+    );
+  };
 
   // ── Reusable Game Chat Panel — can be dropped into any game render ──
   const renderGameChatPanel = (gameName) => (
