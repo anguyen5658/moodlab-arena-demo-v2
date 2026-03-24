@@ -786,92 +786,70 @@ export default function MoodLabArena() {
   // Check if blinker territory (held 4.5s+, power is dropping fast)
   const isPuffBlinker = useRef(false);
 
-  // ── FK2 auto-sweep: line bounces back and forth, tap to stop ──
-  const [fk2Sweep, setFk2Sweep] = useState(0);
-  const fk2SweepRef = useRef(null);
-  const fk2SweepDir = useRef(1);
-  useEffect(() => {
-    if((isFK2Mode || isFK2Ref.current) && (kickState==="shoot_x"||kickState==="shoot_y") && !matchIntro) {
-      // Auto-sweep the crosshair line back and forth
-      if(fk2SweepRef.current) clearInterval(fk2SweepRef.current);
-      setFk2Sweep(5);
-      fk2SweepDir.current = 1;
-      fk2SweepRef.current = setInterval(()=>{
-        setFk2Sweep(p => {
-          const speed = 1.8; // % per tick
-          let next = p + speed * fk2SweepDir.current;
-          if(next >= 95) { next = 95; fk2SweepDir.current = -1; }
-          if(next <= 5) { next = 5; fk2SweepDir.current = 1; }
-          return next;
-        });
-      }, 25);
-    } else {
-      if(fk2SweepRef.current) { clearInterval(fk2SweepRef.current); fk2SweepRef.current = null; }
-    }
-    return () => { if(fk2SweepRef.current) { clearInterval(fk2SweepRef.current); fk2SweepRef.current = null; } };
-  }, [isFK2Mode, kickState, matchIntro]);
+  // ── FK2: Hold-to-puff for X and Y axes ──
+  // X: hold longer = further RIGHT. Y: hold longer = HIGHER.
+  // Uses same kickPower (0-100%) as FK1 but maps to position instead of shot power.
 
-  // FK2 tap to lock position
-  const fk2TapLock = () => {
-    if(matchIntro) return;
-    playFx("kick");
-    const pos = fk2Sweep;
-    if(kickState === "shoot_x") {
-      if(fk2SweepRef.current) { clearInterval(fk2SweepRef.current); fk2SweepRef.current = null; }
-      setFk2X(pos);
-      setFk2XDone(true);
-      setFk2Phase("y");
-      setKickState("shoot_y");
-      // Check if in sweet spot
-      const inSweet = pos >= kickSweetMin && pos <= kickSweetMax;
-      const outOfBounds = pos < 10 || pos > 90;
-      if(outOfBounds) { setKickComment(pick(["WIDE! Ball going sideways 🌊","That's row Z! 💀","Off the map! 😂"])); playFx("laugh"); }
-      else if(inSweet) { setKickComment("Nice X! Now lock the HEIGHT! ↕️ 🎯"); }
-      else { setKickComment("X locked! Now aim HEIGHT! ↕️ 💨"); }
-      playFx("select");
-    } else if(kickState === "shoot_y") {
-      if(fk2SweepRef.current) { clearInterval(fk2SweepRef.current); fk2SweepRef.current = null; }
-      setFk2Y(pos);
-      setFk2Phase(null);
-      // Map X+Y to zone
-      const col = fk2X < 33 ? 0 : fk2X < 67 ? 1 : 2;
-      const row = pos > 50 ? 0 : 1;
-      const zone = row * 3 + col;
-      const xOutOfBounds = fk2X < 10 || fk2X > 90;
-      const yOutOfBounds = pos > 95;
-      const xInSweet = fk2X >= kickSweetMin && fk2X <= kickSweetMax;
-      const yInSweet = pos >= kickSweetMin && pos <= kickSweetMax;
-      const bothSweet = xInSweet && yInSweet;
-      const forceMiss = xOutOfBounds || yOutOfBounds;
-      setKickAim(zone);
-      if(yOutOfBounds) { setKickComment(pick(["OVER THE BAR! 🚀","Ball in orbit 🛸","That's a satellite 💀"])); playFx("laugh"); }
-      else if(bothSweet) { setKickComment(pick(["DOUBLE SWEET SPOT! 🎯🎯","SNIPER PUFF! 🔥","PRECISION KING! 👑"])); }
-      // Execute kick
-      const avgPower = Math.round((fk2X + pos) / 2);
-      const elapsed = 2.0; // simulated
-      if(forceMiss) {
-        setKickState("flight"); playFx("kick");
-        setKickBallAnim({zone, power:avgPower, result:"missed", wasBlinker:false});
-        triggerFlash("miss"); triggerShake();
-        setTimeout(()=>{ setKickState("shoot_result"); playFx("lose"); setCommentary(pick(["The ball has left the PLANET!","Off target! 💀","Not even close!"])); },800);
-        setTimeout(()=>{ setKickState("save_ready"); setKickBallAnim(null); },2600);
-      } else {
-        const aiSaveZone = Math.floor(Math.random()*6);
-        setKickAiZone(aiSaveZone);
-        setKickDiveAnim(aiSaveZone);
-        setKickState("flight"); playFx("kick");
-        const pool = getDevicePool();
-        const sameZone = zone === aiSaveZone;
-        const aiSaves = bothSweet ? (sameZone && Math.random() < pool.aiSave) : true; // only sweet spot scores
-        const isGoal = !aiSaves;
-        setKickBallAnim({zone, power:avgPower, result:isGoal?"goal":"saved", wasBlinker:false});
-        setTimeout(()=>{
-          setKickState("shoot_result");
-          if(isGoal) { setKickScore(s=>({...s,you:s.you+1})); setKickStats(s=>({...s,goals:s.goals+1,perfects:s.perfects+1})); playFx("win"); playFx("crowd"); triggerFlash("goal"); triggerShake(); spawnConfetti(40); setCommentary(pick(["WHAT A GOAL!","DOUBLE PRECISION GOAL! 🎯🎯","TOP BINS!"])); }
-          else { playFx("lose"); triggerFlash("save"); setCommentary(pick(["SAVED!","The keeper reads it!","Denied! 🧤"])); if(!bothSweet) { setKickComment(pick(["Missed the sweet spot 😬","Need BOTH axes perfect!","Almost... 💨"])); playFx("laugh"); } }
-        },800);
-        setTimeout(()=>{ setKickState("save_ready"); setKickBallAnim(null); },2600);
-      }
+  // FK2 lock X position (called from kickStopCharge)
+  const fk2LockX = (xPos) => {
+    setFk2X(xPos);
+    setFk2XDone(true);
+    setFk2Phase("y");
+    setKickState("shoot_y");
+    setKickPower(0); setKickCharging(false);
+    const inSweet = xPos >= kickSweetMin && xPos <= kickSweetMax;
+    const outOfBounds = xPos < 10 || xPos > 90;
+    if(outOfBounds) { setKickComment(pick(["WIDE! Too far! 🌊","That's the stands! 💀","Off the pitch! 😂"])); playFx("laugh"); }
+    else if(inSweet) { setKickComment("Nice X aim! 🎯 Now puff for HEIGHT! ↕️"); }
+    else { setKickComment("X locked! Now HOLD TO PUFF for height! ↕️ 💨"); }
+    playFx("select");
+    setCommentary("Horizontal locked! Now aim VERTICAL! ↕️");
+  };
+
+  // FK2 lock Y position + execute kick (called from kickStopCharge)
+  const fk2LockY = (yPos) => {
+    setFk2Y(yPos);
+    setFk2Phase(null);
+    setKickCharging(false);
+    // Map X+Y to zone (3 cols x 2 rows)
+    const col = fk2X < 33 ? 0 : fk2X < 67 ? 1 : 2;
+    const row = yPos > 50 ? 0 : 1; // high puff = top row
+    const zone = row * 3 + col;
+    const xOutOfBounds = fk2X < 10 || fk2X > 90;
+    const yOutOfBounds = yPos > 95;
+    const xInSweet = fk2X >= kickSweetMin && fk2X <= kickSweetMax;
+    const yInSweet = yPos >= kickSweetMin && yPos <= kickSweetMax;
+    const bothSweet = xInSweet && yInSweet;
+    const forceMiss = xOutOfBounds || yOutOfBounds;
+    setKickAim(zone);
+    if(yOutOfBounds) { setKickComment(pick(["OVER THE BAR! 🚀","Ball in orbit 🛸","That's a satellite 💀"])); playFx("laugh"); }
+    else if(xOutOfBounds) { setKickComment(pick(["WIDE LEFT/RIGHT! 🌊","Ball's in the car park 💀"])); playFx("laugh"); }
+    else if(bothSweet) { setKickComment(pick(["DOUBLE SWEET SPOT! 🎯🎯","SNIPER PUFF! 🔥","PRECISION KING! 👑"])); }
+    else if(!xInSweet && !yInSweet) { setKickComment(pick(["Both axes off 😬","Need better puff control!"])); playFx("laugh"); }
+    // Execute kick
+    const avgPower = Math.round((fk2X + yPos) / 2);
+    if(forceMiss) {
+      setKickState("flight"); playFx("kick");
+      setKickBallAnim({zone, power:avgPower, result:"missed", wasBlinker:false});
+      triggerFlash("miss"); triggerShake(); spawnSmoke(8);
+      setCommentary(pick(["The ball has left the PLANET! 🛸💀","Off target! Way off!","Not even close! 😂"]));
+      setTimeout(()=>{ setKickState("shoot_result"); playFx("lose"); },800);
+      setTimeout(()=>{ setKickState("save_ready"); setKickBallAnim(null); },2600);
+    } else {
+      const aiSaveZone = Math.floor(Math.random()*6);
+      setKickAiZone(aiSaveZone); setKickDiveAnim(aiSaveZone);
+      setKickState("flight"); playFx("kick");
+      const pool = getDevicePool();
+      const sameZone = zone === aiSaveZone;
+      const aiSaves = bothSweet ? (sameZone && Math.random() < pool.aiSave) : true;
+      const isGoal = !aiSaves;
+      setKickBallAnim({zone, power:avgPower, result:isGoal?"goal":"saved", wasBlinker:false});
+      setTimeout(()=>{
+        setKickState("shoot_result");
+        if(isGoal) { setKickScore(s=>({...s,you:s.you+1})); setKickStats(s=>({...s,goals:s.goals+1,perfects:s.perfects+1})); playFx("win"); playFx("crowd"); triggerFlash("goal"); triggerShake(); spawnConfetti(40); spawnSmoke(5); setCommentary(pick(["WHAT A GOAL! DOUBLE PRECISION! 🎯🎯","TOP BINS! The crowd erupts!","CLINICAL! Both axes PERFECT!"])); }
+        else { playFx("lose"); triggerFlash("save"); setCommentary(pick(["SAVED!","The keeper reads it!","Denied! 🧤"])); if(!bothSweet) { setKickComment(pick(["Missed the sweet spot 😬","Need BOTH axes in the zone!","Almost... keep practicing! 💨"])); playFx("laugh"); } }
+      },800);
+      setTimeout(()=>{ setKickState("save_ready"); setKickBallAnim(null); },2600);
     }
   };
 
@@ -886,8 +864,9 @@ export default function MoodLabArena() {
   };
 
   const kickStartCharge = () => {
-    if(kickState!=="power") return; // FK2 uses fk2TapLock, not charge
-    if(kickAim===null) return;
+    // FK1: only charge during "power" state (after zone pick). FK2: charge during shoot_x/shoot_y.
+    if(!["power","shoot_x","shoot_y"].includes(kickState)) return;
+    if(kickState==="power" && kickAim===null) return; // FK1 needs zone picked first
     if(kickCharging) return;
     setKickCharging(true); setKickPower(0); setDimLights(true);
     puffStartTime.current = Date.now();
@@ -931,9 +910,13 @@ export default function MoodLabArena() {
     const elapsed = (Date.now() - puffStartTime.current) / 1000;
     const wasBlinker = elapsed >= 4.5;
 
-    // FK2 uses fk2TapLock instead of charge — should never reach here
-    // but guard just in case
-    if(isFK2Mode) return;
+    // FK2: route to X or Y lock function with current power as position
+    if(isFK2Mode || isFK2Ref.current) {
+      const pos = kickPower; // 0-100% maps to position
+      if(kickState==="shoot_x" || fk2Phase==="x") { fk2LockX(pos); return; }
+      if(kickState==="shoot_y" || fk2Phase==="y") { fk2LockY(pos); return; }
+      return;
+    }
 
     setKickPower(p=>{
       // Add minor intensity variance (+/- 5%)
@@ -2911,13 +2894,9 @@ export default function MoodLabArena() {
               </div>
 
               {/* ═══ GOAL FRAME — 3D perspective ═══ */}
-              <div style={{perspective:"600px",marginBottom:4}}
-                {...(isFK2 && (kickState==="shoot_x"||kickState==="shoot_y") ? {
-                  onClick:fk2TapLock,
-                } : {})}
-              >
+              <div style={{perspective:"600px",marginBottom:4}}>
                 <div style={{
-                  position:"relative",width:goalW,height:goalH,cursor:isFK2&&(kickState==="shoot_x"||kickState==="shoot_y")?"pointer":"default",
+                  position:"relative",width:goalW,height:goalH,cursor:kickState==="shoot"||kickState==="save_dive"?"pointer":"default",
                   border:`3px solid rgba(255,255,255,0.2)`,
                   borderBottom:`4px solid ${C.green}80`,
                   borderRadius:"12px 12px 0 0",
@@ -2940,43 +2919,44 @@ export default function MoodLabArena() {
                   <div style={{position:"absolute",top:0,left:"66.6%",width:1,height:"100%",background:`rgba(255,255,255,0.12)`}}/>
                   <div style={{position:"absolute",top:"50%",left:0,width:"100%",height:1,background:`rgba(255,255,255,0.12)`}}/>
 
-                  {/* FK2 crosshair lines — auto-sweeping, tap to lock */}
-                  {isFK2 && kickState==="shoot_x" && (
-                    <div style={{position:"absolute",top:0,bottom:0,left:`${fk2Sweep}%`,width:3,
-                      background:(fk2Sweep<10||fk2Sweep>90)?C.red:(fk2Sweep>=kickSweetMin&&fk2Sweep<=kickSweetMax)?C.green:C.cyan,
-                      boxShadow:`0 0 12px ${(fk2Sweep<10||fk2Sweep>90)?C.red:(fk2Sweep>=kickSweetMin&&fk2Sweep<=kickSweetMax)?C.green:C.cyan}`,
-                      zIndex:5,pointerEvents:"none",
+                  {/* FK2: Vertical line showing X position (during shoot_x charging) */}
+                  {isFK2 && kickState==="shoot_x" && kickCharging && kickPower>0 && (
+                    <div style={{position:"absolute",top:0,bottom:0,left:`${kickPower}%`,width:3,
+                      background:(kickPower<10||kickPower>90)?C.red:(kickPower>=kickSweetMin&&kickPower<=kickSweetMax)?C.green:C.cyan,
+                      boxShadow:`0 0 12px ${(kickPower<10||kickPower>90)?C.red:(kickPower>=kickSweetMin&&kickPower<=kickSweetMax)?C.green:C.cyan}`,
+                      zIndex:5,pointerEvents:"none",transition:"left 0.06s linear",
                     }}/>
                   )}
-                  {isFK2 && kickState==="shoot_y" && <>
-                    {/* Locked X line */}
-                    <div style={{position:"absolute",top:0,bottom:0,left:`${fk2X}%`,width:2,background:`${C.green}80`,boxShadow:`0 0 6px ${C.green}40`,zIndex:4,pointerEvents:"none"}}/>
-                    {/* Moving Y line (auto-sweeping) */}
-                    <div style={{position:"absolute",left:0,right:0,bottom:`${fk2Sweep}%`,height:3,
-                      background:fk2Sweep>95?C.red:(fk2Sweep>=kickSweetMin&&fk2Sweep<=kickSweetMax)?C.green:C.orange,
-                      boxShadow:`0 0 12px ${fk2Sweep>95?C.red:(fk2Sweep>=kickSweetMin&&fk2Sweep<=kickSweetMax)?C.green:C.orange}`,
-                      zIndex:5,pointerEvents:"none",
+                  {/* FK2: Locked X line + horizontal Y line (during shoot_y) */}
+                  {isFK2 && (kickState==="shoot_y"||fk2XDone) && (
+                    <div style={{position:"absolute",top:0,bottom:0,left:`${fk2X}%`,width:2,background:`${C.green}80`,boxShadow:`0 0 8px ${C.green}40`,zIndex:4,pointerEvents:"none"}}/>
+                  )}
+                  {isFK2 && kickState==="shoot_y" && kickCharging && kickPower>0 && <>
+                    <div style={{position:"absolute",left:0,right:0,bottom:`${kickPower}%`,height:3,
+                      background:kickPower>95?C.red:(kickPower>=kickSweetMin&&kickPower<=kickSweetMax)?C.green:C.orange,
+                      boxShadow:`0 0 12px ${kickPower>95?C.red:(kickPower>=kickSweetMin&&kickPower<=kickSweetMax)?C.green:C.orange}`,
+                      zIndex:5,pointerEvents:"none",transition:"bottom 0.06s linear",
                     }}/>
-                    {/* Crosshair dot where lines intersect */}
-                    <div style={{position:"absolute",left:`${fk2X}%`,bottom:`${fk2Sweep}%`,width:12,height:12,borderRadius:"50%",
+                    {/* Crosshair dot at intersection */}
+                    <div style={{position:"absolute",left:`${fk2X}%`,bottom:`${kickPower}%`,width:10,height:10,borderRadius:"50%",
                       background:"#fff",border:`2px solid ${C.green}`,transform:"translate(-50%,50%)",
-                      boxShadow:`0 0 15px ${C.green}`,zIndex:6,pointerEvents:"none",
+                      boxShadow:`0 0 12px ${C.green}`,zIndex:6,pointerEvents:"none",
                     }}/>
                   </>}
                   {/* FK2 out-of-bounds zones */}
                   {isFK2 && kickState==="shoot_x" && <>
-                    <div style={{position:"absolute",top:0,bottom:0,left:0,width:"10%",background:`${C.red}10`,borderRight:`1px dashed ${C.red}30`,pointerEvents:"none",zIndex:3}}/>
-                    <div style={{position:"absolute",top:0,bottom:0,right:0,width:"10%",background:`${C.red}10`,borderLeft:`1px dashed ${C.red}30`,pointerEvents:"none",zIndex:3}}/>
+                    <div style={{position:"absolute",top:0,bottom:0,left:0,width:"10%",background:`${C.red}08`,borderRight:`1px dashed ${C.red}25`,pointerEvents:"none",zIndex:3}}/>
+                    <div style={{position:"absolute",top:0,bottom:0,right:0,width:"10%",background:`${C.red}08`,borderLeft:`1px dashed ${C.red}25`,pointerEvents:"none",zIndex:3}}/>
                   </>}
                   {isFK2 && kickState==="shoot_y" && (
-                    <div style={{position:"absolute",top:0,left:0,right:0,height:"5%",background:`${C.red}10`,borderBottom:`1px dashed ${C.red}30`,pointerEvents:"none",zIndex:3}}/>
+                    <div style={{position:"absolute",top:0,left:0,right:0,height:"5%",background:`${C.red}08`,borderBottom:`1px dashed ${C.red}25`,pointerEvents:"none",zIndex:3}}/>
                   )}
                   {/* FK2 sweet spot indicator on edge */}
                   {isFK2 && kickState==="shoot_x" && (
-                    <div style={{position:"absolute",bottom:-5,left:`${kickSweetMin}%`,width:`${kickSweetMax-kickSweetMin}%`,height:4,background:C.green,borderRadius:2,opacity:0.6,zIndex:3}}/>
+                    <div style={{position:"absolute",bottom:-4,left:`${kickSweetMin}%`,width:`${kickSweetMax-kickSweetMin}%`,height:3,background:C.green,borderRadius:2,opacity:0.5,zIndex:3}}/>
                   )}
                   {isFK2 && kickState==="shoot_y" && (
-                    <div style={{position:"absolute",right:-5,bottom:`${kickSweetMin}%`,height:`${kickSweetMax-kickSweetMin}%`,width:4,background:C.green,borderRadius:2,opacity:0.6,zIndex:3}}/>
+                    <div style={{position:"absolute",right:-4,bottom:`${kickSweetMin}%`,height:`${kickSweetMax-kickSweetMin}%`,width:3,background:C.green,borderRadius:2,opacity:0.5,zIndex:3}}/>
                   )}
 
                   {/* Tap zones with glow effect (FK1 only + save_dive for both) */}
@@ -3211,18 +3191,40 @@ export default function MoodLabArena() {
                     <span style={{fontSize:7,color:C.red}}>OVER BAR</span>
                     <span style={{fontSize:7,color:C.green}}>X: {Math.round(fk2X)}% ✓</span>
                   </div>}
-                  {/* TAP TO LOCK button */}
-                  <div onClick={fk2TapLock} style={{
-                    marginTop:4,padding:"14px 20px",borderRadius:14,cursor:"pointer",textAlign:"center",
-                    background:`linear-gradient(135deg, ${kickState==="shoot_x"?C.cyan:C.orange}20, ${kickState==="shoot_x"?C.cyan:C.orange}08)`,
-                    border:`1px solid ${kickState==="shoot_x"?C.cyan:C.orange}40`,
-                    fontSize:16,fontWeight:900,
-                    color:kickState==="shoot_x"?C.cyan:C.orange,
-                    animation:"countPulse 1s infinite",
-                    boxShadow:`0 0 20px ${kickState==="shoot_x"?C.cyan:C.orange}15`,
-                    userSelect:"none",WebkitUserSelect:"none",
-                  }}>
-                    {kickState==="shoot_x"?"👆 TAP TO LOCK ← →":"👆 TAP TO LOCK ↕"}
+                  {/* HOLD TO PUFF button for FK2 — X or Y */}
+                  <div
+                    onMouseDown={()=>{kickStartCharge();playFx("charge");}}
+                    onMouseUp={kickStopCharge}
+                    onMouseLeave={kickStopCharge}
+                    onTouchStart={(e)=>{e.preventDefault();kickStartCharge();playFx("charge");}}
+                    onTouchEnd={kickStopCharge}
+                    style={{
+                      marginTop:4,padding:kickCharging?"14px 20px":"12px 20px",borderRadius:14,cursor:"pointer",textAlign:"center",
+                      background:kickCharging
+                        ? `linear-gradient(135deg, ${kickState==="shoot_x"?C.cyan:C.orange}30, ${kickState==="shoot_x"?C.cyan:C.orange}10)`
+                        : `linear-gradient(135deg, ${kickState==="shoot_x"?C.cyan:C.orange}20, ${kickState==="shoot_x"?C.cyan:C.orange}08)`,
+                      border:`1px solid ${kickCharging?(kickState==="shoot_x"?C.cyan:C.orange)+"60":(kickState==="shoot_x"?C.cyan:C.orange)+"40"}`,
+                      fontSize:14,fontWeight:900,
+                      color:kickState==="shoot_x"?C.cyan:C.orange,
+                      animation:kickCharging?"none":"countPulse 1s infinite",
+                      boxShadow:kickCharging?`0 0 25px ${kickState==="shoot_x"?C.cyan:C.orange}25`:`0 0 15px ${kickState==="shoot_x"?C.cyan:C.orange}12`,
+                      transform:kickCharging?"scale(1.03)":"scale(1)",
+                      transition:"all 0.15s",
+                      userSelect:"none",WebkitUserSelect:"none",
+                    }}
+                  >
+                    {kickCharging
+                      ? (kickState==="shoot_x"
+                        ? `← PUFFING... ${Math.round(kickPower)}% →`
+                        : `↕ PUFFING... ${Math.round(kickPower)}%`)
+                      : (kickState==="shoot_x"
+                        ? "💨 HOLD TO PUFF — AIM LEFT/RIGHT ← →"
+                        : "💨 HOLD TO PUFF — AIM HEIGHT ↕")}
+                    <div style={{fontSize:7,color:`${kickState==="shoot_x"?C.cyan:C.orange}70`,marginTop:2}}>
+                      {kickCharging
+                        ? (kickState==="shoot_x"?"Longer puff = further RIGHT":"Longer puff = HIGHER")
+                        : (kickState==="shoot_x"?"Hold & release to set horizontal position":"Hold & release to set vertical position")}
+                    </div>
                   </div>
                 </div>
               )}
