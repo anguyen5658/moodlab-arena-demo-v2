@@ -4260,6 +4260,30 @@ export default function MoodLabArena() {
   // ═════════════════════════════════════════
   const overlayStyle = {position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,background:"rgba(5,5,16,0.97)",backdropFilter:"blur(16px)",display:"flex",flexDirection:"column",overflowY:"auto"};
   // ── Universal game cleanup — stops ALL intervals, animations, resets state ──
+  // ── Global nav: show/hide HTML buttons outside React + wire window functions ──
+  const goHome = useCallback(() => {
+    cleanupAllGames();
+    setGameActive(null);setKickState(null);setIsFK2Mode(false);isFK2Ref.current=false;setIsFK3Mode(false);isFK3Ref.current=false;
+    setBpPhase(null);setRrPhase(null);setPpPhase(null);setRpPhase(null);setTowPhase(null);
+    setMatchmaking(null);setSelectedGame(null);setFanMode(null);setFanTeam(null);setFanDevice(null);
+    try{wcExitTournament();}catch(e){}
+  }, []);
+  const goBack = useCallback(() => {
+    cleanupAllGames();
+    if(gameActive){setGameActive(null);setKickState(null);setIsFK2Mode(false);isFK2Ref.current=false;setIsFK3Mode(false);isFK3Ref.current=false;setBpPhase(null);setRrPhase(null);setPpPhase(null);setRpPhase(null);setTowPhase(null);}
+    else if(matchmaking){setMatchmaking(null);}
+    else if(fanMode){setFanMode(null);setFanTeam(null);setFanDevice(null);}
+    else if(wcPhase){try{wcExitTournament();}catch(e){}}
+    else if(selectedGame){setSelectedGame(null);}
+  }, [gameActive,matchmaking,fanMode,wcPhase,selectedGame]);
+  useEffect(()=>{
+    window.__moodlabGoHome = goHome;
+    window.__moodlabGoBack = goBack;
+    // Show/hide the HTML nav buttons
+    const nav = document.getElementById('global-nav');
+    if(nav) nav.style.display = (gameActive||matchmaking||selectedGame||wcPhase||fanMode) ? 'flex' : 'none';
+  });
+
   const cleanupAllGames = () => {
     // FK intervals
     if(kickChargeInterval.current){clearInterval(kickChargeInterval.current);kickChargeInterval.current=null;}
@@ -9523,52 +9547,7 @@ export default function MoodLabArena() {
       {renderInputPanel()}
       {renderAskPrompt()}
 
-      {/* ═══ GLOBAL NAV — NATIVE DOM BUTTONS (bypass React event delegation) ═══ */}
-      {(gameActive || matchmaking || selectedGame || wcPhase || fanMode) && (
-        <div ref={(el)=>{
-          if(!el || el._navBound) return;
-          el._navBound = true;
-          // Use native DOM addEventListener — React's synthetic events may be blocked by game overlays
-          const homeBtn = el.querySelector('[data-nav="home"]');
-          const backBtn = el.querySelector('[data-nav="back"]');
-          if(homeBtn) homeBtn.addEventListener('click', ()=>{
-            cleanupAllGames();
-            setGameActive(null);setKickState(null);setIsFK2Mode(false);isFK2Ref.current=false;setIsFK3Mode(false);isFK3Ref.current=false;
-            setBpPhase(null);setRrPhase(null);setPpPhase(null);setRpPhase(null);setTowPhase(null);
-            setMatchmaking(null);setSelectedGame(null);setFanMode(null);setFanTeam(null);setFanDevice(null);
-            if(wcPhase)wcExitTournament();
-          }, {capture:true});
-          if(backBtn) backBtn.addEventListener('click', ()=>{
-            cleanupAllGames();
-            if(gameActive){setGameActive(null);setKickState(null);setIsFK2Mode(false);isFK2Ref.current=false;setIsFK3Mode(false);isFK3Ref.current=false;setBpPhase(null);setRrPhase(null);setPpPhase(null);setRpPhase(null);setTowPhase(null);}
-            else if(matchmaking){setMatchmaking(null);}
-            else if(fanMode){setFanMode(null);setFanTeam(null);setFanDevice(null);}
-            else if(wcPhase){wcExitTournament();}
-            else if(selectedGame){setSelectedGame(null);}
-          }, {capture:true});
-        }} style={{position:"absolute",bottom:70,left:0,right:0,zIndex:99999,display:"flex",justifyContent:"center",gap:8,pointerEvents:"none"}}>
-          <button data-nav="home" type="button" style={{
-            pointerEvents:"auto",padding:"8px 16px",borderRadius:14,
-            display:"flex",alignItems:"center",gap:5,
-            background:"rgba(10,14,30,0.92)",border:"1px solid rgba(255,255,255,0.15)",
-            color:"#E8EBF6",fontSize:12,fontWeight:700,
-            outline:"none",cursor:"pointer",
-            WebkitAppearance:"none",MozAppearance:"none",appearance:"none",
-            WebkitTapHighlightColor:"transparent",backdropFilter:"blur(10px)",
-            boxShadow:"0 4px 16px rgba(0,0,0,0.5)",
-          }}><span style={{fontSize:16}}>🏠</span> Home</button>
-          <button data-nav="back" type="button" style={{
-            pointerEvents:"auto",padding:"8px 16px",borderRadius:14,
-            display:"flex",alignItems:"center",gap:5,
-            background:"rgba(10,14,30,0.92)",border:"1px solid rgba(255,255,255,0.15)",
-            color:"#E8EBF6",fontSize:12,fontWeight:700,
-            outline:"none",cursor:"pointer",
-            WebkitAppearance:"none",MozAppearance:"none",appearance:"none",
-            WebkitTapHighlightColor:"transparent",backdropFilter:"blur(10px)",
-            boxShadow:"0 4px 16px rgba(0,0,0,0.5)",
-          }}><span style={{fontSize:16}}>◀</span> Back</button>
-        </div>
-      )}
+      {/* Nav buttons are in index.html OUTSIDE React — controlled via window.__moodlabGoHome/GoBack */}
 
       {/* Bottom Nav — Floating pill dock (hidden on arena hub) */}
       <div style={{position:"fixed",bottom:16,left:"50%",transform:"translateX(-50%)",zIndex:50,display:(tab==="arena"&&!zone)?"none":"flex",justifyContent:"center"}}>
