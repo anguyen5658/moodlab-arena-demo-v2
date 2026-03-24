@@ -1438,7 +1438,7 @@ export default function MoodLabArena() {
       }, stage3);
 
       // PHASE 3: DRAW! (puff to shoot)
-      const drawTimer = setTimeout(()=>{
+      duelTimerRef.current = setTimeout(()=>{
         setDuelPhase("draw");
         duelDrawTime.current = Date.now();
         triggerShake();
@@ -1451,7 +1451,8 @@ export default function MoodLabArena() {
         duelTimerRef.current = setTimeout(()=>{
           if(duelDrawTime.current) {
             const aiSpeed = getAiDrawSpeed(roundNum);
-            setDuelResult({win:false, you:3000, ai:aiSpeed, timeout:true, puffDur:0, bonus:null});
+            const timeoutResult = {win:false, you:3000, ai:aiSpeed, timeout:true, puffDur:0, bonus:null, bonusCoins:0};
+            setDuelResult(timeoutResult);
             setDuelPhase("result");
             duelDrawTime.current = null;
             setDuelFiredShot(true);
@@ -1459,13 +1460,10 @@ export default function MoodLabArena() {
             setTimeout(()=>setDuelMuzzleFlash(null),500);
             playFx("lose");
             setCommentary(pick(["Too slow, partner! AI drew ages ago!","You froze up! Tumbleweed is faster!","Asleep at high noon!"]));
-            handleDuelRoundEnd(false, false);
+            handleDuelRoundEnd(false, false, timeoutResult);
           }
         }, 3000);
       }, tensionBase);
-
-      // Store for cleanup
-      duelTimerRef.current = drawTimer;
     }, 3200); // After 3..2..1..DRAW! countdown
   };
 
@@ -1488,14 +1486,15 @@ export default function MoodLabArena() {
       clearTimeout(duelTimerRef.current);
       clearTimeout(duelSteadyTimerRef.current);
       duelDrawTime.current = null;
-      setDuelResult({foul:true});
+      const foulResult = {foul:true, bonusCoins:0};
+      setDuelResult(foulResult);
       setDuelPhase("result");
       playFx("error");
       triggerShake();
       setDuelStats(s=>({...s, fouls:s.fouls+1}));
       setCommentary(pick(["FOUL! Jumped the gun!","Shot before DRAW! Automatic loss!","Trigger happy much?","Easy there cowboy! Too early!"]));
       notify("FOUL! Drew too early!", C.red);
-      handleDuelRoundEnd(false, true);
+      handleDuelRoundEnd(false, true, foulResult);
       return;
     }
 
@@ -1592,11 +1591,11 @@ export default function MoodLabArena() {
       setCommentary(pick(roasts));
       notify("AI drew faster! " + aiTime + "ms", C.red);
     }
-    handleDuelRoundEnd(win, false);
+    handleDuelRoundEnd(win, false, result);
   };
 
-  const handleDuelRoundEnd = (win, wasFoul) => {
-    const rr = duelResult || {};
+  const handleDuelRoundEnd = (win, wasFoul, resultOverride) => {
+    const rr = resultOverride || duelResult || {};
     const newResults = [...duelRoundResults, {win, foul:wasFoul, you:rr.you||0, ai:rr.ai||0, bonus:rr.bonus||null, bonusCoins:rr.bonusCoins||0, puffDur:rr.puffDur||0}];
     setDuelRoundResults(newResults);
     const newScore = {...duelScore};
