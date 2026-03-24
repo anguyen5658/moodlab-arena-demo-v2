@@ -9560,6 +9560,28 @@ export default function MoodLabArena() {
       {renderInputPanel()}
       {renderAskPrompt()}
 
+      {/* ═══ GLOBAL BACK BUTTON — rendered at ROOT level, outside ALL game containers ═══ */}
+      {(gameActive || matchmaking || selectedGame || wcPhase || fanMode) && (
+        <button type="button" onClick={()=>{
+          cleanupAllGames();
+          if(gameActive){setGameActive(null);setKickState(null);setIsFK2Mode(false);isFK2Ref.current=false;setIsFK3Mode(false);isFK3Ref.current=false;setDuelPhase&&setDuelPhase(null);setBpPhase(null);setRrPhase(null);setPpPhase(null);setRpPhase(null);setTowPhase(null);}
+          if(matchmaking)setMatchmaking(null);
+          if(selectedGame)setSelectedGame(null);
+          if(wcPhase){wcExitTournament();}
+          if(fanMode){setFanMode(null);setFanTeam(null);setFanDevice(null);}
+        }} style={{
+          position:"absolute",top:10,left:10,zIndex:99999,
+          width:36,height:36,borderRadius:18,
+          display:"flex",alignItems:"center",justifyContent:"center",
+          background:"rgba(10,14,30,0.9)",border:"1px solid rgba(255,255,255,0.15)",
+          color:"#E8EBF6",fontSize:20,fontWeight:400,lineHeight:1,
+          padding:0,margin:0,outline:"none",cursor:"pointer",
+          WebkitAppearance:"none",MozAppearance:"none",appearance:"none",
+          WebkitTapHighlightColor:"transparent",
+          backdropFilter:"blur(10px)",boxShadow:"0 2px 10px rgba(0,0,0,0.5)",
+        }}>←</button>
+      )}
+
       {/* Bottom Nav — Floating pill dock (hidden on arena hub) */}
       <div style={{position:"fixed",bottom:16,left:"50%",transform:"translateX(-50%)",zIndex:50,display:(tab==="arena"&&!zone)?"none":"flex",justifyContent:"center"}}>
         <div style={{display:"inline-flex",alignItems:"center",gap:3,padding:"4px 5px",borderRadius:100,
