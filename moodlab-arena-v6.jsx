@@ -2745,6 +2745,11 @@ export default function MoodLabArena() {
 
             {overlayBack(()=>{setGameActive(null);setKickState(null);setIsFK2Mode(false);isFK2Ref.current=false;})}
 
+            {/* DEBUG: remove after testing */}
+            <div style={{position:"absolute",top:8,right:10,zIndex:300,padding:"2px 6px",borderRadius:4,background:"rgba(255,0,0,0.8)",fontSize:8,fontWeight:900,color:"#fff"}}>
+              {isFK2?"FK2":"FK1"} | {kickState} | mode:{isFK2Mode?"Y":"N"} ref:{isFK2Ref.current?"Y":"N"} gid:{gameActive?.id}
+            </div>
+
             <div style={{position:"relative",zIndex:2,flex:1,display:"flex",flexDirection:"column",alignItems:"center",padding:"38px 14px 52px",height:"100%",overflowY:"auto"}}>
 
               {/* ═══ VS ARENA HEADER WITH CHARACTER IMAGES ═══ */}
