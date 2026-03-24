@@ -2197,11 +2197,12 @@ export default function MoodLabArena() {
     setRpComment("");setRpRating(null);setRpParticles([]);setRpStageFlash(0);setRpBlinker(false);setRpPuffHeld(false);
     setRpBeat(0);setRpCrowdJump(false);setRpIntroStep(0);setRpPhase("intro");
     playFx("crowd");setCommentary("The stage is set... 🎵");
-    setTimeout(()=>setRpIntroStep(1),400);
-    setTimeout(()=>setRpIntroStep(2),1200);
-    setTimeout(()=>setRpIntroStep(3),2200);
-    setTimeout(()=>{setRpIntroStep(4);playFx("whistle");},3000);
-    setTimeout(()=>{
+    const rpActive={v:true}; window._rpActive=rpActive;
+    setTimeout(()=>{if(!rpActive.v)return;setRpIntroStep(1);},400);
+    setTimeout(()=>{if(!rpActive.v)return;setRpIntroStep(2);},1200);
+    setTimeout(()=>{if(!rpActive.v)return;setRpIntroStep(3);},2200);
+    setTimeout(()=>{if(!rpActive.v)return;setRpIntroStep(4);playFx("whistle");},3000);
+    setTimeout(()=>{if(!rpActive.v)return;
       setRpPhase("playing");setRpIntroStep(0);setCommentary("DROP THE BEAT! 🎵🔥");
       if(rpInterval.current)clearInterval(rpInterval.current);
       let beatCount=0;let currentSpeed=3;
@@ -4284,6 +4285,7 @@ export default function MoodLabArena() {
     if(switchPuffTimer.current){clearInterval(switchPuffTimer.current);switchPuffTimer.current=null;}
     // Kill RR setTimeout chain guard
     if(window._rrActive) { window._rrActive.v = false; window._rrActive = null; }
+    if(window._rpActive) { window._rpActive.v = false; window._rpActive = null; }
     // Three.js cleanup
     if(threeSceneRef.current){
       const r=threeSceneRef.current.renderer;if(r){r.dispose();r.forceContextLoss();}
@@ -4305,7 +4307,7 @@ export default function MoodLabArena() {
 
   // ── Reusable Game Chat Panel — can be dropped into any game render ──
   const renderGameChatPanel = (gameName) => (
-    <div style={{position:"absolute",bottom:0,left:0,right:0,zIndex:30,maxHeight:"35%",display:"flex",flexDirection:"column"}}>
+    <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:300,maxHeight:"30%",display:"flex",flexDirection:"column"}}>
       {/* Reaction emoji bar */}
       <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:2,padding:"3px 6px",...GLASS_CLEAR,borderRadius:"10px 10px 0 0"}}>
         {[{e:"😂"},{e:"👏"},{e:"😱"},{e:"🔥"},{e:"💀"},{e:"😘"},{e:"👋"},{e:"💨"}].map((r,i)=>(
