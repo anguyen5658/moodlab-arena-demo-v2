@@ -4304,9 +4304,11 @@ export default function MoodLabArena() {
   const overlayBack = (onClose) => (
     <div data-back="true" onClick={(e)=>{e.stopPropagation();playFx("back");cleanupAllGames();onClose();}}
       onTouchStart={(e)=>{e.stopPropagation();}}
+      onTouchEnd={(e)=>{e.stopPropagation();}}
       onMouseDown={(e)=>{e.stopPropagation();}}
-      style={{position:"absolute",top:8,left:10,zIndex:250,cursor:"pointer",padding:"5px 10px",borderRadius:8,background:`rgba(6,8,15,0.7)`,backdropFilter:"blur(8px)",border:`1px solid ${C.border}`}}>
-      <span style={{fontSize:11,fontWeight:600,color:C.text2}}>← Back</span>
+      onMouseUp={(e)=>{e.stopPropagation();}}
+      style={{position:"fixed",top:8,left:10,zIndex:9999,cursor:"pointer",padding:"8px 14px",borderRadius:10,background:`rgba(6,8,15,0.85)`,backdropFilter:"blur(12px)",border:`1px solid ${C.border}`,WebkitTapHighlightColor:"transparent",touchAction:"manipulation"}}>
+      <span style={{fontSize:12,fontWeight:700,color:C.text2,pointerEvents:"none"}}>← Back</span>
     </div>
   );
 
