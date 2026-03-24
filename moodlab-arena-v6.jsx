@@ -826,7 +826,7 @@ export default function MoodLabArena() {
     if(yOutOfBounds) { setKickComment(pick(["OVER THE BAR! 🚀","Ball in orbit 🛸","That's a satellite 💀"])); playFx("laugh"); }
     else if(xOutOfBounds) { setKickComment(pick(["WIDE LEFT/RIGHT! 🌊","Ball's in the car park 💀"])); playFx("laugh"); }
     else if(bothSweet) { setKickComment(pick(["DOUBLE SWEET SPOT! 🎯🎯","SNIPER PUFF! 🔥","PRECISION KING! 👑"])); }
-    else if(!xInSweet && !yInSweet) { setKickComment(pick(["Both axes off 😬","Need better puff control!"])); playFx("laugh"); }
+    else if(!xInSweet && !yInSweet) { setKickComment(pick(["Both axes off 😬","Need better puff control!"])); }
     // Execute kick
     const avgPower = Math.round((fk2X + yPos) / 2);
     if(forceMiss) {
@@ -899,17 +899,19 @@ export default function MoodLabArena() {
       // Random audience bubbles (less frequent)
       if(Math.random()<0.1) spawnAudienceBubble();
 
-      // Update commentary based on zone
-      if(elapsed > 4.5 && !isPuffBlinker.current) {
-        isPuffBlinker.current = true;
-        setKickComment(pick(["BLINKER! 💀 You hit the cutoff!","Bro your lungs ok?? 🫁💀","DEVICE SAYS STOP 🚨","That's a blinker hit my guy 😂"]));
-        playFx("laugh");
-      } else if(elapsed > 3.5 && elapsed <= 4.5) {
-        setKickComment("Too long! Power dropping... 📉😬");
-      } else if(elapsed > 2.5 && elapsed <= 3.5) {
-        setKickComment(pick(["💨👑 SWEET SPOT! Release NOW!","PERFECT PUFF ZONE! 🎯","THIS IS IT! LET GO! 🔥"]));
-      } else if(elapsed > 1.5 && elapsed <= 2.5) {
-        setKickComment("Keep going... almost there 💨");
+      // Update commentary based on zone — FK1 only (FK2 uses position, not power zones)
+      if(!isFK2Ref.current) {
+        if(elapsed > 4.5 && !isPuffBlinker.current) {
+          isPuffBlinker.current = true;
+          setKickComment(pick(["BLINKER! 💀 You hit the cutoff!","Bro your lungs ok?? 🫁💀","DEVICE SAYS STOP 🚨","That's a blinker hit my guy 😂"]));
+          playFx("laugh");
+        } else if(elapsed > 3.5 && elapsed <= 4.5) {
+          setKickComment("Too long! Power dropping... 📉😬");
+        } else if(elapsed > 2.5 && elapsed <= 3.5) {
+          setKickComment(pick(["💨👑 SWEET SPOT! Release NOW!","PERFECT PUFF ZONE! 🎯","THIS IS IT! LET GO! 🔥"]));
+        } else if(elapsed > 1.5 && elapsed <= 2.5) {
+          setKickComment("Keep going... almost there 💨");
+        }
       }
 
       // Auto-stop at 5.5s (blinker max)
@@ -1043,6 +1045,9 @@ export default function MoodLabArena() {
   };
 
   const kickSaveStart = () => {
+    // Clear previous shot visuals
+    setKickAim(null); setKickBallAnim(null); setKickDiveAnim(null);
+    if(isFK2Ref.current) { setFk2X(0); setFk2Y(0); setFk2XDone(false); setFk2Phase(null); }
     const aiKickZone = Math.floor(Math.random()*6);
     setKickAiZone(aiKickZone);
     setKickState("save_countdown");
