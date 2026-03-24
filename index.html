@@ -44,28 +44,7 @@
 </head>
 <body>
   <div id="root"></div>
-  <button id="back-btn">←</button>
-  <script>
-    // Back button — outside React, uses highest possible z-index
-    document.getElementById('back-btn').addEventListener('click', function(e) {
-      e.stopPropagation();
-      // Try React goBack first, fallback to page reload
-      if (window.__moodlabGoBack) {
-        window.__moodlabGoBack();
-      } else {
-        window.location.reload();
-      }
-    });
-    document.getElementById('back-btn').addEventListener('touchend', function(e) {
-      e.preventDefault();
-      e.stopPropagation();
-      if (window.__moodlabGoBack) {
-        window.__moodlabGoBack();
-      } else {
-        window.location.reload();
-      }
-    });
-  </script>
+  <button id="back-btn" onclick="window.location.reload()">←</button>
   <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
