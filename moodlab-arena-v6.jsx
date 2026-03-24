@@ -844,12 +844,19 @@ export default function MoodLabArena() {
       const pool = getDevicePool();
       const sameZone = zone === aiSaveZone;
 
-      // FK2 scoring: based on accuracy + zone difference (NOT sweet spot)
-      // Both sweet = 90% goal. One sweet = 60% goal. Neither sweet = 35% goal.
-      // If AI picks same zone, reduce by pool.aiSave chance
-      let goalChance = bothSweet ? 0.90 : (xInSweet || yInSweet) ? 0.60 : 0.35;
-      if(sameZone) goalChance *= (1 - pool.aiSave); // AI has a chance to save if same zone
-      const isGoal = Math.random() < goalChance;
+      // FK2 scoring: if you aimed at a different zone than the keeper, you score!
+      // Same zone = keeper has a chance to save based on pool
+      // Sweet spot = bonus (guaranteed goal even if same zone)
+      let isGoal;
+      if(bothSweet) {
+        isGoal = true; // Double sweet spot = always goal, no matter what
+      } else if(sameZone) {
+        // Keeper is in the right zone — they have a real chance to save
+        isGoal = Math.random() > pool.aiSave; // e.g. 50% save chance for standard pool
+      } else {
+        // You aimed at a DIFFERENT zone than the keeper — goal!
+        isGoal = true;
+      }
 
       setKickBallAnim({zone, power:avgPower, result:isGoal?"goal":"saved", wasBlinker:false});
       setTimeout(()=>{
@@ -2775,12 +2782,8 @@ export default function MoodLabArena() {
 
             {overlayBack(()=>{setGameActive(null);setKickState(null);setIsFK2Mode(false);isFK2Ref.current=false;})}
 
-            {/* DEBUG: remove after testing */}
-            <div style={{position:"absolute",top:8,right:10,zIndex:300,padding:"2px 6px",borderRadius:4,background:"rgba(255,0,0,0.8)",fontSize:8,fontWeight:900,color:"#fff"}}>
-              {isFK2?"FK2":"FK1"} | {kickState} | mode:{isFK2Mode?"Y":"N"} ref:{isFK2Ref.current?"Y":"N"} gid:{gameActive?.id}
-            </div>
 
-            <div style={{position:"relative",zIndex:2,flex:1,display:"flex",flexDirection:"column",alignItems:"center",padding:"38px 14px 52px",height:"100%",overflowY:"auto"}}>
+<div style={{position:"relative",zIndex:2,flex:1,display:"flex",flexDirection:"column",alignItems:"center",padding:"38px 14px 52px",height:"100%",overflowY:"auto"}}>
 
               {/* ═══ VS ARENA HEADER WITH CHARACTER IMAGES ═══ */}
               <div style={{width:"100%",maxWidth:390,marginTop:28,marginBottom:4}}>
