@@ -4230,8 +4230,45 @@ export default function MoodLabArena() {
   // ── RENDER: GAME OVERLAYS ──
   // ═════════════════════════════════════════
   const overlayStyle = {position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,background:"rgba(5,5,16,0.97)",backdropFilter:"blur(16px)",display:"flex",flexDirection:"column",overflowY:"auto"};
+  // ── Universal game cleanup — stops ALL intervals, animations, resets state ──
+  const cleanupAllGames = () => {
+    // FK intervals
+    if(kickChargeInterval.current){clearInterval(kickChargeInterval.current);kickChargeInterval.current=null;}
+    if(fk2SweepRef.current){clearInterval(fk2SweepRef.current);fk2SweepRef.current=null;}
+    if(actionTimerRef.current){clearInterval(actionTimerRef.current);actionTimerRef.current=null;}
+    // Duel intervals
+    if(duelPuffInterval.current){clearInterval(duelPuffInterval.current);duelPuffInterval.current=null;}
+    if(duelDrawTime.current) duelDrawTime.current=null;
+    // Balloon Pop
+    if(bpChargeInterval.current){clearInterval(bpChargeInterval.current);bpChargeInterval.current=null;}
+    // Russian Roulette
+    if(rrPuffInterval.current){clearInterval(rrPuffInterval.current);rrPuffInterval.current=null;}
+    // Puff Pong
+    if(ppRaf.current){cancelAnimationFrame(ppRaf.current);ppRaf.current=null;}
+    if(ppInterval.current){clearInterval(ppInterval.current);ppInterval.current=null;}
+    if(ppG.current) ppG.current.paused=true;
+    // Rhythm Puff
+    if(rpInterval.current){clearInterval(rpInterval.current);rpInterval.current=null;}
+    // Tug of War
+    if(towInterval.current){clearInterval(towInterval.current);towInterval.current=null;}
+    if(towPhysics.current){clearInterval(towPhysics.current);towPhysics.current=null;}
+    // Switch puff
+    if(switchPuffTimer.current){clearInterval(switchPuffTimer.current);switchPuffTimer.current=null;}
+    // Three.js cleanup
+    if(threeSceneRef.current){
+      const r=threeSceneRef.current.renderer;if(r){r.dispose();r.forceContextLoss();}
+      threeSceneRef.current=null;
+    }
+    // Reset common state
+    setDimLights(false); setScreenShake(false); setScreenFlash(null);
+    setKickCharging(false); setIsFK2Mode(false); setIsFK3Mode(false);
+    isFK2Ref.current=false; isFK3Ref.current=false;
+    setCommentatorText(""); setPuffBubbles([]); setAudienceBubbles([]);
+    setConfettiParticles([]); setSmokeParticles([]);
+  };
+
   const overlayBack = (onClose) => (
-    <div onClick={()=>{playFx("back");onClose();}} style={{position:"absolute",top:8,left:10,zIndex:250,cursor:"pointer",padding:"5px 10px",borderRadius:8,background:`rgba(6,8,15,0.7)`,backdropFilter:"blur(8px)",border:`1px solid ${C.border}`}}>
+    <div onClick={()=>{playFx("back");cleanupAllGames();onClose();}} style={{position:"absolute",top:8,left:10,zIndex:250,cursor:"pointer",padding:"5px 10px",borderRadius:8,background:`rgba(6,8,15,0.7)`,backdropFilter:"blur(8px)",border:`1px solid ${C.border}`}}>
       <span style={{fontSize:11,fontWeight:600,color:C.text2}}>← Back</span>
     </div>
   );
