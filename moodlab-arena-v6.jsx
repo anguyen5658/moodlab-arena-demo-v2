@@ -601,7 +601,7 @@ export default function MoodLabArena() {
   // ── World Cup Tournament ──
   const [wcTeam, setWcTeam] = useState(null);           // selected team {id,name,flag,...}
   const [wcTournament, setWcTournament] = useState(null); // active tournament state {group,opponents,standings,knockoutRound,...}
-  const [wcGameId, setWcGameId] = useState("finalkick");  // which FK variant for WC ("finalkick" or "finalkick2" or "finalkick3")
+  const [wcGameId, setWcGameId] = useState("finalkick");  // which game variant for WC ("finalkick"|"finalkick2"|"finalkick3"|"puffpong"|"balloon"|"russian")
   const [wcPhase, setWcPhase] = useState(null);          // null|"team_select"|"group_draw"|"group_stage"|"knockout"|"result"
   const [wcCooldown, setWcCooldown] = useState(null);    // timestamp of last tournament entry
   const [wcMatchday, setWcMatchday] = useState(0);       // current matchday in group (0-2)
@@ -1829,6 +1829,18 @@ export default function MoodLabArena() {
           setCommentary(pick([((duelOpponentRef.current||{}).name||"AI")+" wins the duel!","Outdrawn! Better luck next time partner!","The AI claims the bounty!"]));
           notify("Duel lost!", C.red);
         }
+        // Handle WC tournament progression for wildwest
+        if(gameActive?.wcMode) {
+          const myS = newScore.you;
+          const aiS = newScore.ai;
+          const isKnockout = gameActive?.wcKnockout;
+          const matchIdx = gameActive?.wcMatchIdx;
+          setTimeout(() => {
+            resetDuel(); setGameActive(null);
+            if(isKnockout) wcFinishKnockoutMatch(myS, aiS);
+            else wcFinishGroupMatch(matchIdx, myS, aiS);
+          }, 3500);
+        }
       } else {
         setDuelPhase("round_result");
         setTimeout(()=>{
@@ -1973,7 +1985,10 @@ export default function MoodLabArena() {
     let amt;if(e<1.0)amt=5+Math.round(Math.random()*3);else if(e<2.0)amt=8+Math.round(Math.random()*6);else if(e<4.0)amt=14+Math.round(Math.random()*6);else amt=20+Math.round(Math.random()*10);
     playFx("kick");setBpPuffAmount(0);
     bpProcessPuff(bpCurrentTurn,amt,bpPlayers,bpAirLevel,bpPopThreshold);};
-  const bpEndGame = () => {const won=bpLoser&&!bpLoser.isYou;const r=won?80+Math.floor(Math.random()*40):10;setCoins(c=>c+r);notify(won?"🎈 SURVIVED! +"+r+" coins!":"💀 Popped! +"+r,won?C.green:C.red);setGameActive(null);setBpPhase(null);};
+  const bpEndGame = () => {const won=bpLoser&&!bpLoser.isYou;const r=won?80+Math.floor(Math.random()*40):10;setCoins(c=>c+r);notify(won?"🎈 SURVIVED! +"+r+" coins!":"💀 Popped! +"+r,won?C.green:C.red);
+    // WC tournament integration — report result as score (survived=3, popped=0 for group scoring)
+    if(gameActive?.wcMode){const myS=won?3:0;const aiS=won?0:3;if(gameActive.wcKnockout){wcFinishKnockoutMatch(myS,aiS);}else if(gameActive.wcMatchIdx!==undefined){wcFinishGroupMatch(gameActive.wcMatchIdx,myS,aiS);}}
+    setGameActive(null);setBpPhase(null);};
 
   // ═══════════════════════════════════════════════════════════════
   // RUSSIAN ROULETTE — Logic
@@ -2136,7 +2151,10 @@ export default function MoodLabArena() {
   const ppMovePaddle=(dir)=>{const g=ppG.current;g.py=Math.max(10,Math.min(90,g.py+dir*6));setPpPaddleY(g.py);};
   const ppPuffUp=()=>{setPpPuffHeld(true);const g=ppG.current;if(ppInterval.current)clearInterval(ppInterval.current);ppInterval.current=setInterval(()=>{if(!g.paused){g.py=Math.max(10,g.py-4);setPpPaddleY(g.py);}},50);};
   const ppPuffRelease=()=>{setPpPuffHeld(false);if(ppInterval.current){clearInterval(ppInterval.current);ppInterval.current=null;}const g=ppG.current;ppInterval.current=setInterval(()=>{if(!g.paused){g.py=Math.min(90,g.py+1.2);setPpPaddleY(g.py);}},80);};
-  const ppEndGame=()=>{if(ppRaf.current)cancelAnimationFrame(ppRaf.current);if(ppInterval.current){clearInterval(ppInterval.current);ppInterval.current=null;}ppG.current.paused=true;const won=ppScore.you>ppScore.ai;const r=won?80:15;setCoins(c=>c+r);notify(won?"🏓 Won! +"+r:"🏓 Lost! +"+r,won?C.green:C.red);setGameActive(null);setPpPhase(null);setPpIntro(0);};
+  const ppEndGame=()=>{if(ppRaf.current)cancelAnimationFrame(ppRaf.current);if(ppInterval.current){clearInterval(ppInterval.current);ppInterval.current=null;}ppG.current.paused=true;const won=ppScore.you>ppScore.ai;const r=won?80:15;setCoins(c=>c+r);notify(won?"🏓 Won! +"+r:"🏓 Lost! +"+r,won?C.green:C.red);
+    // WC tournament integration
+    if(gameActive?.wcMode){const my=ppScore.you;const ai=ppScore.ai;if(gameActive.wcKnockout){wcFinishKnockoutMatch(my,ai);}else if(gameActive.wcMatchIdx!==undefined){wcFinishGroupMatch(gameActive.wcMatchIdx,my,ai);}}
+    setGameActive(null);setPpPhase(null);setPpIntro(0);};
 
   // ═══════════════════════════════════════════════════════════════
   // RHYTHM PUFF — Logic
@@ -3112,8 +3130,11 @@ export default function MoodLabArena() {
     const fkGame = PLAY_GAMES.find(g => g.id === wcGameId) || PLAY_GAMES.find(g => g.id === "finalkick");
     const input = wcDeviceInput || "puff";
     setGameActive({ ...fkGame, activeInput: input, wcMode: true, wcMatchIdx: matchIdx });
-    startKick(fkGame.id);
-    startMatchIntro(kickOpponent.current);
+    if(fkGame.id === "wildwest") { duelOpponentRef.current = kickOpponent.current; setDuelOpponent(kickOpponent.current); startDuel(); }
+    else if(fkGame.id === "puffpong") { startPuffPong(); }
+    else if(fkGame.id === "balloon") { startBalloonPop(); }
+    else if(fkGame.id === "russian") { startRussianRoulette(); }
+    else { startKick(fkGame.id); startMatchIntro(kickOpponent.current); }
   };
 
   const wcFinishGroupMatch = (matchIdx, myScore, aiScore) => {
@@ -3209,8 +3230,11 @@ export default function MoodLabArena() {
     const fkGame = PLAY_GAMES.find(g => g.id === wcGameId) || PLAY_GAMES.find(g => g.id === "finalkick");
     const input = wcDeviceInput || "puff";
     setGameActive({ ...fkGame, activeInput: input, wcMode: true, wcKnockout: true, wcRoundIdx: wcBracket.currentRound });
-    startKick(fkGame.id);
-    startMatchIntro(kickOpponent.current);
+    if(fkGame.id === "wildwest") { duelOpponentRef.current = kickOpponent.current; setDuelOpponent(kickOpponent.current); startDuel(); }
+    else if(fkGame.id === "puffpong") { startPuffPong(); }
+    else if(fkGame.id === "balloon") { startBalloonPop(); }
+    else if(fkGame.id === "russian") { startRussianRoulette(); }
+    else { startKick(fkGame.id); startMatchIntro(kickOpponent.current); }
   };
 
   const wcFinishKnockoutMatch = (myScore, aiScore) => {
@@ -6755,6 +6779,10 @@ export default function MoodLabArena() {
             </div>
             {/* FLOATING CONFETTI BG */}
             {[...Array(10)].map((_,i)=>(<div key={"bgconf"+i} style={{position:"absolute",left:(8+i*9)+"%",top:(-5-i*3)+"%",width:4+i%3*2,height:8+i%3*3,background:["#FF4D8D","#FFD93D","#00E5FF","#C084FC","#34D399","#FB923C","#FF4444","#60A5FA","#7FFF00","#FF69B4"][i],borderRadius:1,opacity:0.12,transform:`rotate(${i*35}deg)`,animation:`bpFloatDown ${8+i*2}s linear infinite`,animationDelay:i*0.7+"s",pointerEvents:"none"}}/>))}
+            {/* CARNIVAL LANTERNS */}
+            {[...Array(6)].map((_,i)=>(<div key={"bplantern"+i} style={{position:"absolute",top:(15+i*12)+"%",left:i%2===0?"3%":"88%",width:10,height:14,borderRadius:"50% 50% 40% 40%",background:`radial-gradient(circle, ${["#FFD93D","#FF4D8D","#00E5FF","#C084FC","#FB923C","#34D399"][i]}50 0%, transparent 70%)`,opacity:0.2+Math.sin(i*0.9)*0.08,animation:`gentleFloat ${3+i%3}s ease-in-out infinite`,animationDelay:i*0.6+"s",pointerEvents:"none",zIndex:1,boxShadow:`0 0 12px ${["#FFD93D","#FF4D8D","#00E5FF","#C084FC","#FB923C","#34D399"][i]}30`}}/>))}
+            {/* GROUND GLOW */}
+            <div style={{position:"absolute",bottom:0,left:0,right:0,height:"25%",background:dangerZone?"linear-gradient(0deg, rgba(200,30,30,0.12) 0%, transparent 100%)":nearPop?"linear-gradient(0deg, rgba(160,60,100,0.08) 0%, transparent 100%)":"linear-gradient(0deg, rgba(100,60,200,0.06) 0%, transparent 100%)",transition:"background 1.5s ease",pointerEvents:"none",zIndex:1}}/>
             {/* VIGNETTE */}
             <div style={{position:"absolute",inset:0,background:`radial-gradient(ellipse at 50% 45%, transparent 30%, rgba(0,0,0,${dangerZone?0.7:nearPop?0.5:0.35}) 100%)`,transition:"all 1s ease",pointerEvents:"none",zIndex:2}}/>
             {/* DANGER PULSE */}
@@ -6935,7 +6963,7 @@ export default function MoodLabArena() {
       }
 
       // ═══════════════════════════════════════════════════════════════
-      // TUG OF WAR 💪 — Immersive Colosseum Render
+      // TUG OF WAR 💪 — Immersive Colosseum Render (FK-Quality Overhaul)
       // ═══════════════════════════════════════════════════════════════
       if(gameActive.id==="tugofwar" && towPhase) {
         const youWinning = towPosition > 50;
@@ -7020,7 +7048,7 @@ export default function MoodLabArena() {
       const pool = getDevicePool();
       const canEnterWC = wcCanEnter();
       const cooldownMs = wcCooldownRemaining();
-      const isFinalkick = selectedGame.id === "finalkick" || selectedGame.id === "finalkick2" || selectedGame.id === "finalkick3";
+      const isFinalkick = selectedGame.id === "finalkick" || selectedGame.id === "finalkick2" || selectedGame.id === "finalkick3" || selectedGame.id === "russian" || selectedGame.id === "puffpong" || selectedGame.id === "balloon";
       return (
         <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden"}}>
           {/* Background — matching other pages */}
@@ -7096,7 +7124,7 @@ export default function MoodLabArena() {
             </div>
 
             {/* ═══ SECTION B: TOURNAMENT ═══ */}
-            {isFinalkick && (
+            {(isFinalkick || selectedGame.id==="wildwest") && (
               <div style={{width:"100%",maxWidth:340}}>
                 <div style={{fontSize:10,fontWeight:800,color:C.gold,letterSpacing:1.5,marginBottom:6}}>🏆 TOURNAMENT</div>
                 <div style={{
@@ -7111,10 +7139,10 @@ export default function MoodLabArena() {
 
                   <div style={{position:"relative",zIndex:1}}>
                     <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
-                      <span style={{fontSize:24}}>⚽</span>
+                      <span style={{fontSize:24}}>{selectedGame.id==="wildwest"?"🤠":"⚽"}</span>
                       <div>
-                        <div style={{fontSize:14,fontWeight:900,color:C.gold,textShadow:`0 0 10px ${C.gold}30`}}>World Cup 2026</div>
-                        <div style={{fontSize:8,color:C.text2}}>48 Teams · Group Stage + Knockout</div>
+                        <div style={{fontSize:14,fontWeight:900,color:C.gold,textShadow:`0 0 10px ${C.gold}30`}}>{selectedGame.id==="wildwest"?"Showdown Cup 2026":"World Cup 2026"}</div>
+                        <div style={{fontSize:8,color:C.text2}}>{selectedGame.id==="wildwest"?"48 Gunslingers · Group + Knockout":"48 Teams · Group Stage + Knockout"}</div>
                       </div>
                     </div>
 
@@ -7529,16 +7557,21 @@ export default function MoodLabArena() {
 
                 </>) : (selectedGame.id==="wildwest") ? (<>
 
-                {/* ═══ WILD WEST DUEL — SECTION 1: GAME FLOW ═══ */}
-                <div style={{padding:"12px",borderRadius:16,...GLASS_CARD,marginBottom:12}}>
-                  <div style={{fontSize:9,fontWeight:800,color:C.gold,letterSpacing:2,marginBottom:8,textAlign:"center"}}>⚡ GAME FLOW</div>
+                {/* ═══ WILD WEST DUEL — SECTION 1: DUEL FLOW VISUAL DIAGRAM ═══ */}
+                <div style={{padding:"14px 12px",borderRadius:16,marginBottom:12,position:"relative",overflow:"hidden",
+                  background:`linear-gradient(135deg, rgba(139,69,19,0.12) 0%, rgba(244,167,66,0.06) 50%, rgba(139,69,19,0.08) 100%)`,
+                  border:`1px solid ${C.gold}20`,boxShadow:`0 0 20px ${C.gold}06, inset 0 1px 0 ${C.gold}10`}}>
+                  {/* Decorative sunset glow */}
+                  <div style={{position:"absolute",top:-30,left:"50%",transform:"translateX(-50%)",width:180,height:80,borderRadius:"50%",background:`radial-gradient(circle, ${C.gold}12, transparent)`,filter:"blur(20px)",pointerEvents:"none"}}/>
+                  <div style={{position:"relative",zIndex:1}}>
+                  <div style={{fontSize:10,fontWeight:900,color:C.gold,letterSpacing:3,marginBottom:10,textAlign:"center",textShadow:`0 0 12px ${C.gold}30`}}>🌅 DUEL FLOW</div>
                   <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
                     {[
-                      {step:"1",icon:"3️⃣",label:"Countdown",sub:"3... 2... 1... staredown begins",color:C.gold,arrow:true},
-                      {step:"2",icon:"👀",label:"Staredown",sub:"Wait for DRAW! Don't move yet!",color:C.orange,arrow:true},
-                      {step:"3",icon:"🔫",label:"DRAW!",sub:"Tap/Puff the moment you see DRAW!",color:C.red,arrow:true},
-                      {step:"4",icon:"💨",label:"Hold to Puff",sub:"Longer puff = bigger coin bonus",color:C.lime,arrow:true},
-                      {step:"5",icon:"🏆",label:"Best of 5",sub:"First to 3 wins takes the duel!",color:C.cyan,arrow:false},
+                      {step:"1",icon:"3️⃣",label:"Countdown",sub:"3... 2... 1... tension builds",color:C.gold,arrow:true,glow:false},
+                      {step:"2",icon:"👀",label:"Staredown",sub:"Eyes lock. Desert wind blows. WAIT!",color:C.orange,arrow:true,glow:true},
+                      {step:"3",icon:"🔫",label:"DRAW!",sub:"Screen flashes RED — TAP or PUFF NOW!",color:C.red,arrow:true,glow:true},
+                      {step:"4",icon:"💨",label:"Hold & Puff",sub:"Keep holding for bigger coin bonus!",color:C.lime,arrow:true,glow:false},
+                      {step:"5",icon:"🏆",label:"Best of 5",sub:"First to 3 wins takes the bounty!",color:C.cyan,arrow:false,glow:false},
                     ].map((s,i)=>(
                       <React.Fragment key={i}>
                         <div style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"6px 10px",borderRadius:10,background:`${s.color}08`,border:`1px solid ${s.color}15`}}>
@@ -7644,16 +7677,19 @@ export default function MoodLabArena() {
 
                 </>) : (selectedGame.id==="russian") ? (<>
 
-                {/* ═══ RUSSIAN ROULETTE — SECTION 1: GAME FLOW ═══ */}
-                <div style={{padding:"12px",borderRadius:16,...GLASS_CARD,marginBottom:12}}>
-                  <div style={{fontSize:9,fontWeight:800,color:C.red,letterSpacing:2,marginBottom:8,textAlign:"center"}}>⚡ GAME FLOW</div>
+                {/* ═══ RUSSIAN ROULETTE — SECTION 1: GAME FLOW DIAGRAM ═══ */}
+                <div style={{padding:"14px",borderRadius:16,...GLASS_CARD,marginBottom:12,position:"relative",overflow:"hidden"}}>
+                  <div style={{position:"absolute",inset:0,background:`radial-gradient(ellipse at 50% 0%, ${C.red}08, transparent 70%)`,pointerEvents:"none"}}/>
+                  <div style={{position:"relative",zIndex:1}}>
+                  <div style={{fontSize:9,fontWeight:800,color:C.red,letterSpacing:2,marginBottom:10,textAlign:"center"}}>💀 GAME FLOW</div>
                   <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
                     {[
-                      {step:"1",icon:"👥",label:"4-6 Players Join",sub:"Everyone takes a seat at the table",color:C.cyan,arrow:true},
-                      {step:"2",icon:"🔄",label:"Spin Cylinder",sub:"6 chambers, 1 bullet — who's it gonna be?",color:C.gold,arrow:true},
-                      {step:"3",icon:"👉",label:"Your Turn",sub:"The chamber points at you...",color:C.orange,arrow:true},
-                      {step:"4",icon:"💨",label:"Hold to Puff",sub:"Longer puff = higher dodge chance!",color:C.lime,arrow:true},
-                      {step:"5",icon:"💀",label:"Survive or Bang!",sub:"Last one standing wins it all!",color:C.red,arrow:false},
+                      {step:"1",icon:"🪑",label:"Sit at the Table",sub:"4-6 players join the circle of fate",color:C.cyan,arrow:true},
+                      {step:"2",icon:"🔄",label:"Spin the Cylinder",sub:"6 chambers, 1 bullet — destiny loads...",color:C.gold,arrow:true},
+                      {step:"3",icon:"🔫",label:"Pull the Trigger",sub:"The revolver points at you — no escape",color:C.orange,arrow:true},
+                      {step:"4",icon:"💨",label:"PUFF to Dodge!",sub:"Hold your breath — longer puff = higher dodge %",color:C.lime,arrow:true},
+                      {step:"5",icon:"😮‍💨",label:"*Click* ... Safe",sub:"Empty chamber — you live another round",color:C.green,arrow:true},
+                      {step:"6",icon:"💥",label:"BANG! Eliminated",sub:"Last one standing takes the crown!",color:C.red,arrow:false},
                     ].map((s,i)=>(
                       <React.Fragment key={i}>
                         <div style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"6px 10px",borderRadius:10,background:`${s.color}08`,border:`1px solid ${s.color}15`}}>
@@ -7751,102 +7787,131 @@ export default function MoodLabArena() {
 
                 </>) : (selectedGame.id==="balloon") ? (<>
 
-                {/* ═══ BALLOON POP — SECTION 1: GAME FLOW ═══ */}
-                <div style={{padding:"12px",borderRadius:16,...GLASS_CARD,marginBottom:12}}>
-                  <div style={{fontSize:9,fontWeight:800,color:C.gold,letterSpacing:2,marginBottom:8,textAlign:"center"}}>⚡ GAME FLOW</div>
-                  <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
+                {/* ═══ BALLOON POP — SECTION 1: GAME FLOW (FK-QUALITY) ═══ */}
+                <div style={{padding:"14px",borderRadius:16,...GLASS_CARD,marginBottom:12,position:"relative",overflow:"hidden"}}>
+                  <div style={{position:"absolute",top:0,left:"-50%",width:"200%",height:"100%",background:`linear-gradient(90deg, transparent, ${C.pink}06, transparent)`,animation:"lightSweep 4s infinite",pointerEvents:"none"}}/>
+                  <div style={{fontSize:9,fontWeight:800,color:C.gold,letterSpacing:2,marginBottom:10,textAlign:"center",position:"relative"}}>⚡ GAME FLOW</div>
+                  <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4,position:"relative"}}>
                     {[
-                      {step:"1",icon:"👥",label:"4-6 Players Join",sub:"Everyone sits in a circle",color:C.cyan,arrow:true},
-                      {step:"2",icon:"🎈",label:"Take Turns",sub:"One player at a time puffs",color:C.pink,arrow:true},
-                      {step:"3",icon:"💨",label:"Hold to Puff",sub:"Your puff inflates the balloon!",color:C.lime,arrow:true},
-                      {step:"4",icon:"😰",label:"Balloon Grows",sub:"Each puff adds 5-20% air",color:C.orange,arrow:true},
-                      {step:"5",icon:"💥",label:"POP = You Lose!",sub:"Last one to pop it is eliminated!",color:C.red,arrow:false},
+                      {step:"1",icon:"👥",label:"4-6 Players Join",sub:"You + AI opponents sit in a circle",color:C.cyan,arrow:true},
+                      {step:"2",icon:"🎈",label:"Take Turns Puffing",sub:"One player inflates each round",color:C.pink,arrow:true},
+                      {step:"3",icon:"💨",label:"Hold & Release",sub:"Hold = charge puff power, release = add air!",color:C.lime,arrow:true},
+                      {step:"4",icon:"📈",label:"Balloon Grows",sub:"Color shifts green \u2192 yellow \u2192 orange \u2192 RED!",color:C.orange,arrow:true},
+                      {step:"5",icon:"💥",label:"POP = Eliminated!",sub:"The player who pops it LOSES!",color:C.red,arrow:false},
                     ].map((s,i)=>(
                       <React.Fragment key={i}>
-                        <div style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"6px 10px",borderRadius:10,background:`${s.color}08`,border:`1px solid ${s.color}15`}}>
-                          <div style={{width:28,height:28,borderRadius:8,background:`${s.color}20`,border:`1px solid ${s.color}30`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,flexShrink:0}}>{s.icon}</div>
+                        <div style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"8px 10px",borderRadius:12,background:`${s.color}08`,border:`1px solid ${s.color}18`,boxShadow:`0 0 12px ${s.color}06`}}>
+                          <div style={{width:32,height:32,borderRadius:10,background:`linear-gradient(135deg, ${s.color}25, ${s.color}10)`,border:`1px solid ${s.color}35`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0,boxShadow:`0 0 8px ${s.color}15`}}>{s.icon}</div>
                           <div style={{flex:1}}>
-                            <div style={{fontSize:10,fontWeight:800,color:s.color}}>{s.label}</div>
-                            <div style={{fontSize:7,color:C.text3}}>{s.sub}</div>
+                            <div style={{fontSize:10,fontWeight:800,color:s.color,letterSpacing:0.5}}>{s.label}</div>
+                            <div style={{fontSize:7,color:C.text3,lineHeight:1.3}}>{s.sub}</div>
                           </div>
-                          <div style={{width:18,height:18,borderRadius:"50%",background:`${s.color}15`,border:`1px solid ${s.color}30`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,fontWeight:900,color:s.color}}>{s.step}</div>
+                          <div style={{width:20,height:20,borderRadius:"50%",background:`linear-gradient(135deg, ${s.color}20, ${s.color}08)`,border:`1px solid ${s.color}35`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,fontWeight:900,color:s.color}}>{s.step}</div>
                         </div>
-                        {s.arrow && <div style={{fontSize:10,color:C.text3+"60",lineHeight:1}}>↓</div>}
+                        {s.arrow && <div style={{fontSize:12,color:`${C.pink}40`,lineHeight:1,animation:"pulse 2s infinite",animationDelay:i*0.2+"s"}}>↓</div>}
                       </React.Fragment>
                     ))}
                   </div>
                 </div>
 
-                {/* ═══ BALLOON POP — SECTION 2: BALLOON FILL METER ═══ */}
-                <div style={{padding:"12px",borderRadius:16,...GLASS_CARD,marginBottom:12}}>
-                  <div style={{fontSize:9,fontWeight:800,color:C.pink,letterSpacing:2,marginBottom:8,textAlign:"center"}}>🎈 BALLOON FILL LEVEL</div>
-                  <div style={{fontSize:8,color:C.text2,textAlign:"center",marginBottom:8}}>Balloon changes color as it fills up with air!</div>
-                  <div style={{height:32,borderRadius:16,overflow:"hidden",display:"flex",marginBottom:6,border:`2px solid ${C.border}`}}>
-                    <div style={{width:"25%",background:`${C.green}20`,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                      <span style={{fontSize:6,fontWeight:800,color:C.green}}>SAFE 🟢</span>
-                    </div>
-                    <div style={{width:"25%",background:`${C.gold}15`,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                      <span style={{fontSize:6,fontWeight:700,color:C.gold}}>CAUTION 🟡</span>
-                    </div>
-                    <div style={{width:"25%",background:`${C.orange}20`,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                      <span style={{fontSize:7,fontWeight:800,color:C.orange}}>DANGER 🟠</span>
-                    </div>
-                    <div style={{width:"25%",background:`${C.red}25`,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                      <span style={{fontSize:6,fontWeight:900,color:C.red}}>POP! 🔴</span>
-                    </div>
+                {/* ═══ BALLOON POP — SECTION 2: ANIMATED INFLATION DIAGRAM ═══ */}
+                <div style={{padding:"14px",borderRadius:16,...GLASS_CARD,marginBottom:12,position:"relative",overflow:"hidden"}}>
+                  <div style={{fontSize:9,fontWeight:800,color:C.pink,letterSpacing:2,marginBottom:10,textAlign:"center"}}>🎈 BALLOON INFLATION STAGES</div>
+                  <div style={{display:"flex",alignItems:"flex-end",justifyContent:"center",gap:12,marginBottom:10,padding:"10px 0"}}>
+                    {[
+                      {size:22,color:"#4CAF50",label:"Small",pct:"0-30%",glow:"#4CAF5040"},
+                      {size:30,color:"#8BC34A",label:"Growing",pct:"30-50%",glow:"#8BC34A40"},
+                      {size:38,color:"#FFD93D",label:"Medium",pct:"50-65%",glow:"#FFD93D40"},
+                      {size:46,color:"#FF9800",label:"Large",pct:"65-80%",glow:"#FF980050"},
+                      {size:54,color:"#F44336",label:"DANGER!",pct:"80%+",glow:"#F4433660"},
+                    ].map((b,i)=>(
+                      <div key={i} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
+                        <div style={{fontSize:b.size,animation:i===4?"bpWobble 0.4s infinite":i===3?"gentleFloat 2s infinite":"none",filter:`drop-shadow(0 0 ${4+i*3}px ${b.glow})`}}>🎈</div>
+                        <div style={{fontSize:7,fontWeight:800,color:b.color}}>{b.label}</div>
+                        <div style={{fontSize:6,color:C.text3}}>{b.pct}</div>
+                      </div>
+                    ))}
                   </div>
-                  <div style={{display:"flex",justifyContent:"space-between",padding:"0 2px",marginBottom:6}}>
-                    <span style={{fontSize:6,color:C.green}}>0-40%</span>
-                    <span style={{fontSize:6,color:C.gold}}>40-60%</span>
-                    <span style={{fontSize:6,color:C.orange}}>60-80%</span>
-                    <span style={{fontSize:6,color:C.red,fontWeight:800}}>80-120% BOOM</span>
+                  <div style={{height:28,borderRadius:14,overflow:"hidden",display:"flex",marginBottom:6,border:`2px solid ${C.border}`,position:"relative"}}>
+                    <div style={{position:"absolute",inset:0,background:"linear-gradient(90deg, #4CAF5020 0%, #8BC34A18 25%, #FFD93D18 50%, #FF980020 75%, #F4433628 100%)"}}/>
+                    {[{w:"30%",color:C.green,label:"SAFE",e:"😌"},{w:"20%",color:C.gold,label:"CAUTION",e:"😐"},{w:"20%",color:C.orange,label:"DANGER",e:"😰"},{w:"30%",color:C.red,label:"CRITICAL",e:"💀"}].map((z,i)=>(
+                      <div key={i} style={{width:z.w,display:"flex",alignItems:"center",justifyContent:"center",position:"relative",zIndex:1}}>
+                        <span style={{fontSize:6,fontWeight:800,color:z.color,textShadow:`0 0 6px ${z.color}40`}}>{z.e} {z.label}</span>
+                      </div>
+                    ))}
                   </div>
-                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
-                    <div style={{padding:"8px",borderRadius:10,background:`${C.green}08`,border:`1px solid ${C.green}15`,textAlign:"center"}}>
-                      <div style={{fontSize:18,marginBottom:2}}>💨</div>
-                      <div style={{fontSize:8,fontWeight:800,color:C.green}}>SHORT PUFF = SAFE</div>
-                      <div style={{fontSize:7,color:C.text3}}>Adds less air, less risk</div>
-                    </div>
-                    <div style={{padding:"8px",borderRadius:10,background:`${C.red}08`,border:`1px solid ${C.red}15`,textAlign:"center"}}>
-                      <div style={{fontSize:18,marginBottom:2}}>💥</div>
-                      <div style={{fontSize:8,fontWeight:800,color:C.red}}>LONG PUFF = RISKY</div>
-                      <div style={{fontSize:7,color:C.text3}}>Adds more air, might POP!</div>
-                    </div>
-                  </div>
+                  <div style={{fontSize:7,color:C.text3,textAlign:"center",fontStyle:"italic"}}>Pop threshold randomized 80-120% each game!</div>
                 </div>
 
-                {/* ═══ BALLOON POP — SECTION 3: SPECIAL FEATURES ═══ */}
-                <div style={{padding:"12px",borderRadius:16,...GLASS_CARD,marginBottom:12}}>
-                  <div style={{fontSize:9,fontWeight:800,color:C.purple,letterSpacing:2,marginBottom:8,textAlign:"center"}}>✨ SPECIAL FEATURES</div>
-                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
+                {/* ═══ BALLOON POP — SECTION 3: PUFF TIER CHART ═══ */}
+                <div style={{padding:"14px",borderRadius:16,...GLASS_CARD,marginBottom:12}}>
+                  <div style={{fontSize:9,fontWeight:800,color:C.cyan,letterSpacing:2,marginBottom:8,textAlign:"center"}}>💨 PUFF POWER TIERS</div>
+                  <div style={{fontSize:8,color:C.text2,textAlign:"center",marginBottom:10}}>Hold longer = more air added = more risk!</div>
+                  <div style={{display:"flex",flexDirection:"column",gap:5}}>
                     {[
-                      {icon:"🎨",title:"Color Change",desc:"Green → Yellow → Orange → RED!",color:C.orange},
-                      {icon:"😵‍💫",title:"Wobble Effect",desc:"Balloon wobbles near popping!",color:C.pink},
-                      {icon:"🎲",title:"Random Pop",desc:"Pop threshold is 80-120%",color:C.red},
-                      {icon:"🏆",title:"Last Standing",desc:"Don't be the one who pops it!",color:C.gold},
-                    ].map((f,i)=>(
-                      <div key={i} style={{padding:"8px",borderRadius:10,background:`${f.color}06`,border:`1px solid ${f.color}12`,textAlign:"center"}}>
-                        <div style={{fontSize:16,marginBottom:2}}>{f.icon}</div>
-                        <div style={{fontSize:8,fontWeight:800,color:f.color}}>{f.title}</div>
-                        <div style={{fontSize:7,color:C.text3}}>{f.desc}</div>
+                      {tier:"TAP",hold:"< 1s",air:"+5-8%",risk:"Minimal",color:C.green,emoji:"😐",bar:15,riskColor:C.green},
+                      {tier:"SHORT",hold:"1-2s",air:"+8-14%",risk:"Low",color:C.cyan,emoji:"😤",bar:35,riskColor:C.cyan},
+                      {tier:"LONG",hold:"2-4s",air:"+14-20%",risk:"Medium",color:C.gold,emoji:"🌬️",bar:60,riskColor:C.gold},
+                      {tier:"BLINKER",hold:"4s+",air:"+20-30%",risk:"EXTREME!",color:C.red,emoji:"🫁🔥",bar:95,riskColor:C.red},
+                    ].map((t,i)=>(
+                      <div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 10px",borderRadius:10,background:`${t.color}06`,border:`1px solid ${t.color}15`}}>
+                        <div style={{width:28,height:28,borderRadius:8,background:`${t.color}18`,border:`1px solid ${t.color}30`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,flexShrink:0}}>{t.emoji}</div>
+                        <div style={{flex:1}}>
+                          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:3}}>
+                            <span style={{fontSize:9,fontWeight:900,color:t.color,letterSpacing:1}}>{t.tier}</span>
+                            <span style={{fontSize:7,color:C.text3}}>Hold {t.hold}</span>
+                          </div>
+                          <div style={{height:5,borderRadius:4,background:"rgba(255,255,255,0.04)",overflow:"hidden",marginBottom:3}}>
+                            <div style={{width:t.bar+"%",height:"100%",borderRadius:4,background:`linear-gradient(90deg, ${t.color}60, ${t.color})`,boxShadow:`0 0 6px ${t.color}30`}}/>
+                          </div>
+                          <div style={{display:"flex",justifyContent:"space-between"}}>
+                            <span style={{fontSize:7,color:t.color,fontWeight:700}}>Air: {t.air}</span>
+                            <span style={{fontSize:7,color:t.riskColor,fontWeight:700}}>Risk: {t.risk}</span>
+                          </div>
+                        </div>
                       </div>
                     ))}
                   </div>
                 </div>
 
-                {/* ═══ BALLOON POP — SECTION 4: PRO TIPS ═══ */}
-                <div style={{padding:"12px",borderRadius:16,background:`${C.pink}06`,border:`1px solid ${C.pink}15`,marginBottom:8}}>
-                  <div style={{fontSize:9,fontWeight:800,color:C.pink,letterSpacing:2,marginBottom:6,textAlign:"center"}}>🧠 PRO TIPS</div>
-                  <div style={{display:"flex",flexDirection:"column",gap:4}}>
+                {/* ═══ BALLOON POP — SECTION 4: SPECIAL MECHANICS ═══ */}
+                <div style={{padding:"14px",borderRadius:16,...GLASS_CARD,marginBottom:12}}>
+                  <div style={{fontSize:9,fontWeight:800,color:C.purple,letterSpacing:2,marginBottom:8,textAlign:"center"}}>✨ GAME MECHANICS</div>
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
                     {[
-                      "Short safe puffs early — don't risk popping when balloon is low!",
-                      "Watch the balloon color — RED means it could pop any moment!",
-                      "Each puff adds 5-20% air — longer puff = more air added",
-                      "Balloon wobbles when near popping — that's your warning sign!",
-                    ].map((tip,i)=>(
-                      <div key={i} style={{display:"flex",gap:6,alignItems:"flex-start"}}>
-                        <span style={{fontSize:8,color:C.pink,fontWeight:900,flexShrink:0}}>💡</span>
-                        <span style={{fontSize:8,color:C.text2,lineHeight:1.3}}>{tip}</span>
+                      {icon:"🎨",title:"Color Shift",desc:"Balloon color telegraphs danger level in real time",color:C.orange,glow:"#FF980015"},
+                      {icon:"😵‍💫",title:"Wobble Warning",desc:"Near-pop balloon wobbles faster and faster!",color:C.pink,glow:"#FF4D8D15"},
+                      {icon:"🎲",title:"Hidden Threshold",desc:"Pop point randomized 80-120% — never know exactly!",color:C.red,glow:"#FF444415"},
+                      {icon:"🤖",title:"AI Personalities",desc:"Cautious, Reckless & Random opponents with unique play",color:C.cyan,glow:"#00E5FF15"},
+                      {icon:"💬",title:"Live Commentary",desc:"Real-time puff reactions and danger zone callouts",color:C.gold,glow:"#FFD93D15"},
+                      {icon:"🏆",title:"Survival Wins",desc:"Don't pop it — last one standing earns coins!",color:C.green,glow:"#34D39915"},
+                    ].map((f,i)=>(
+                      <div key={i} style={{padding:"10px 8px",borderRadius:12,background:f.glow,border:`1px solid ${f.color}15`,textAlign:"center",position:"relative",overflow:"hidden"}}>
+                        <div style={{position:"absolute",top:0,left:"-50%",width:"200%",height:"100%",background:`linear-gradient(90deg, transparent, ${f.color}04, transparent)`,animation:"lightSweep 5s infinite",animationDelay:i*0.4+"s",pointerEvents:"none"}}/>
+                        <div style={{fontSize:18,marginBottom:3,position:"relative"}}>{f.icon}</div>
+                        <div style={{fontSize:8,fontWeight:800,color:f.color,position:"relative"}}>{f.title}</div>
+                        <div style={{fontSize:7,color:C.text3,lineHeight:1.3,marginTop:2,position:"relative"}}>{f.desc}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* ═══ BALLOON POP — SECTION 5: PRO TIPS ═══ */}
+                <div style={{padding:"14px",borderRadius:16,background:`linear-gradient(135deg, ${C.pink}08, ${C.gold}05)`,border:`1px solid ${C.pink}18`,marginBottom:8,position:"relative",overflow:"hidden"}}>
+                  <div style={{position:"absolute",top:0,left:"-50%",width:"200%",height:"100%",background:`linear-gradient(90deg, transparent, ${C.gold}04, transparent)`,animation:"lightSweep 6s infinite",pointerEvents:"none"}}/>
+                  <div style={{fontSize:9,fontWeight:800,color:C.pink,letterSpacing:2,marginBottom:8,textAlign:"center",position:"relative"}}>🧠 PRO TIPS</div>
+                  <div style={{display:"flex",flexDirection:"column",gap:5,position:"relative"}}>
+                    {[
+                      {tip:"Start with TAP puffs — build info on the threshold before committing!",icon:"🎯"},
+                      {tip:"Watch the balloon color — once it's orange, every puff is a gamble!",icon:"👀"},
+                      {tip:"Wobbling = DANGER! If the balloon shakes, keep your puff SHORT!",icon:"⚠️"},
+                      {tip:"AI opponents have patterns — Cautious ones puff small, Reckless ones go big!",icon:"🤖"},
+                      {tip:"BLINKER puffs are a mind game — force the next player into a bad spot!",icon:"🧠"},
+                      {tip:"The pop threshold is random each game — no two games play the same!",icon:"🎲"},
+                    ].map((t,i)=>(
+                      <div key={i} style={{display:"flex",gap:8,alignItems:"flex-start",padding:"6px 8px",borderRadius:8,background:`${C.pink}04`,border:`1px solid ${C.pink}08`}}>
+                        <span style={{fontSize:12,flexShrink:0,marginTop:1}}>{t.icon}</span>
+                        <span style={{fontSize:8,color:C.text2,lineHeight:1.4,fontWeight:500}}>{t.tip}</span>
                       </div>
                     ))}
                   </div>
@@ -7859,11 +7924,11 @@ export default function MoodLabArena() {
                   <div style={{fontSize:9,fontWeight:800,color:C.gold,letterSpacing:2,marginBottom:8,textAlign:"center"}}>⚡ GAME FLOW</div>
                   <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
                     {[
-                      {step:"1",icon:"🏓",label:"Serve",sub:"Ball launches from center",color:C.cyan,arrow:true},
-                      {step:"2",icon:"⚡",label:"Ball Bounces",sub:"Ball bounces off walls and paddles",color:C.lime,arrow:true},
-                      {step:"3",icon:"👆",label:"Move Paddle",sub:"Tap UP or DOWN to position",color:C.orange,arrow:true},
-                      {step:"4",icon:"🎯",label:"Score!",sub:"Ball past opponent = 1 point",color:C.green,arrow:true},
-                      {step:"5",icon:"🏆",label:"First to 5",sub:"First player to 5 points wins!",color:C.gold,arrow:false},
+                      {step:"1",icon:"🏓",label:"Serve",sub:"Ball launches from center at random angle",color:C.cyan,arrow:true},
+                      {step:"2",icon:"💨",label:"PUFF to Move",sub:"Hold PUFF = paddle rises. Release = drifts down",color:C.lime,arrow:true},
+                      {step:"3",icon:"⚡",label:"Return the Ball",sub:"Position paddle to intercept — center hit = SMASH!",color:C.orange,arrow:true},
+                      {step:"4",icon:"🎯",label:"Score!",sub:"Ball past AI paddle = 1 point for you",color:C.green,arrow:true},
+                      {step:"5",icon:"🏆",label:"First to 5",sub:"First player to 5 points wins the match!",color:C.gold,arrow:false},
                     ].map((s,i)=>(
                       <React.Fragment key={i}>
                         <div style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"6px 10px",borderRadius:10,background:`${s.color}08`,border:`1px solid ${s.color}15`}}>
