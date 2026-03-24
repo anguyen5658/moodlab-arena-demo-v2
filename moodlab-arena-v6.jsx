@@ -2034,10 +2034,14 @@ export default function MoodLabArena() {
     setRrHeartRate(80);setRrPuffCharge(0);setRrDodgeResult(null);setRrIntroStage(0);
     setRrEliminatedList([]);setRrWinner(null);setRrChambers([false,false,false,false,false,false]);
     setRrPhase("intro");playFx("crowd");setCommentary("Russian Roulette! 🔫 "+players.length+" souls...");
-    setTimeout(()=>setRrIntroStage(1),600);setTimeout(()=>setRrIntroStage(2),1800);
-    setTimeout(()=>setRrIntroStage(3),3500);setTimeout(()=>{setRrIntroStage(4);playFx("whistle");},5000);
-    setTimeout(()=>{setRrPhase("spinning");setRrSpinAngle(1080+Math.random()*720);setRrComment(pick(RR_COMMENTS.spin));playFx("charge");spawnSmoke(10);
-      setTimeout(()=>{setRrPhase("player_turn");setRrTension(10);setRrHeartRate(90);rrStartTurn(players,0,chamber,0);},2500);},6500);
+    const rrActive = {v:true}; // guard for setTimeout chain
+    setTimeout(()=>{if(!rrActive.v)return;setRrIntroStage(1);},600);
+    setTimeout(()=>{if(!rrActive.v)return;setRrIntroStage(2);},1800);
+    setTimeout(()=>{if(!rrActive.v)return;setRrIntroStage(3);},3500);
+    setTimeout(()=>{if(!rrActive.v)return;setRrIntroStage(4);playFx("whistle");},5000);
+    setTimeout(()=>{if(!rrActive.v)return;setRrPhase("spinning");setRrSpinAngle(1080+Math.random()*720);setRrComment(pick(RR_COMMENTS.spin));playFx("charge");spawnSmoke(10);
+      setTimeout(()=>{if(!rrActive.v)return;setRrPhase("player_turn");setRrTension(10);setRrHeartRate(90);rrStartTurn(players,0,chamber,0);},2500);},6500);
+    window._rrActive=rrActive; // store ref for cleanup
   };
   const rrFindNextAlive=(players,fromIdx)=>{for(let i=1;i<=players.length;i++){const ni=(fromIdx+i)%players.length;if(players[ni].alive)return ni;}return null;};
   const rrStartTurn=(players,idx,bullet,chamberPos)=>{
@@ -4278,6 +4282,8 @@ export default function MoodLabArena() {
     if(towPhysics.current){clearInterval(towPhysics.current);towPhysics.current=null;}
     // Switch puff
     if(switchPuffTimer.current){clearInterval(switchPuffTimer.current);switchPuffTimer.current=null;}
+    // Kill RR setTimeout chain guard
+    if(window._rrActive) { window._rrActive.v = false; window._rrActive = null; }
     // Three.js cleanup
     if(threeSceneRef.current){
       const r=threeSceneRef.current.renderer;if(r){r.dispose();r.forceContextLoss();}
@@ -7149,8 +7155,27 @@ export default function MoodLabArena() {
                     <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
                       <span style={{fontSize:24}}>{selectedGame.id==="wildwest"?"🤠":selectedGame.id==="russian"?"🔫":"⚽"}</span>
                       <div>
-                        <div style={{fontSize:14,fontWeight:900,color:C.gold,textShadow:`0 0 10px ${C.gold}30`}}>{selectedGame.id==="wildwest"?"Showdown Cup 2026":selectedGame.id==="russian"?"Roulette Championship 2026":"World Cup 2026"}</div>
-                        <div style={{fontSize:8,color:C.text2}}>{selectedGame.id==="wildwest"?"48 Gunslingers · Group + Knockout":selectedGame.id==="russian"?"48 Players · Survival Tournament":"48 Teams · Group Stage + Knockout"}</div>
+                        <div style={{fontSize:14,fontWeight:900,color:C.gold,textShadow:`0 0 10px ${C.gold}30`}}>{
+                          selectedGame.id==="finalkick"?"FK1 World Cup 2026":
+                          selectedGame.id==="finalkick2"?"FK2 Precision Cup 2026":
+                          selectedGame.id==="finalkick3"?"FK3 3D Championship 2026":
+                          selectedGame.id==="wildwest"?"Showdown Cup 2026":
+                          selectedGame.id==="russian"?"Roulette Championship 2026":
+                          selectedGame.id==="balloon"?"Balloon Pop Cup 2026":
+                          selectedGame.id==="puffpong"?"Puff Pong Championship 2026":
+                          selectedGame.id==="rhythm"?"Rhythm Puff Festival 2026":
+                          selectedGame.id==="tugofwar"?"Tug of War Arena 2026":
+                          "Championship 2026"
+                        }</div>
+                        <div style={{fontSize:8,color:C.text2}}>{
+                          selectedGame.id==="wildwest"?"48 Gunslingers · Group + Knockout":
+                          selectedGame.id==="russian"?"48 Players · Survival Tournament":
+                          selectedGame.id==="balloon"?"48 Teams · Don't Pop!":
+                          selectedGame.id==="puffpong"?"48 Players · Neon Arena":
+                          selectedGame.id==="rhythm"?"48 DJs · Concert Stage":
+                          selectedGame.id==="tugofwar"?"48 Teams · Colosseum":
+                          "48 Teams · Group Stage + Knockout"
+                        }</div>
                       </div>
                     </div>
 
