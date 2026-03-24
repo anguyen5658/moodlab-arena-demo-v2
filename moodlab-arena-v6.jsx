@@ -836,7 +836,7 @@ export default function MoodLabArena() {
       triggerFlash("miss"); triggerShake(); spawnSmoke(8);
       setCommentary(pick(["The ball has left the PLANET! 🛸💀","Off target! Way off!","Not even close! 😂"]));
       setTimeout(()=>{ setKickState("shoot_result"); playFx("lose"); },800);
-      setTimeout(()=>{ setKickState("save_ready"); setKickBallAnim(null); },2600);
+      setTimeout(()=>{ setKickState("save_ready"); setKickBallAnim(null); setKickDiveAnim(null); setKickAim(null); },2600);
     } else {
       const aiSaveZone = Math.floor(Math.random()*6);
       setKickAiZone(aiSaveZone); setKickDiveAnim(aiSaveZone);
@@ -874,7 +874,7 @@ export default function MoodLabArena() {
           setKickComment(pick(["Aim for the corners! 🎯","Different zone from keeper = goal 💡","Keep trying! 💪"]));
         }
       },800);
-      setTimeout(()=>{ setKickState("save_ready"); setKickBallAnim(null); },2600);
+      setTimeout(()=>{ setKickState("save_ready"); setKickBallAnim(null); setKickDiveAnim(null); setKickAim(null); },2600);
     }
   };
 
