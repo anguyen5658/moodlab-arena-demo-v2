@@ -452,6 +452,7 @@ export default function MoodLabArena() {
   // ── World Cup Tournament ──
   const [wcTeam, setWcTeam] = useState(null);           // selected team {id,name,flag,...}
   const [wcTournament, setWcTournament] = useState(null); // active tournament state {group,opponents,standings,knockoutRound,...}
+  const [wcGameId, setWcGameId] = useState("finalkick");  // which FK variant for WC ("finalkick" or "finalkick2")
   const [wcPhase, setWcPhase] = useState(null);          // null|"team_select"|"group_draw"|"group_stage"|"knockout"|"result"
   const [wcCooldown, setWcCooldown] = useState(null);    // timestamp of last tournament entry
   const [wcMatchday, setWcMatchday] = useState(0);       // current matchday in group (0-2)
@@ -1281,7 +1282,7 @@ export default function MoodLabArena() {
     };
     setWcMatchday(matchIdx);
     // Use locked tournament device input (no ask prompt)
-    const fkGame = PLAY_GAMES.find(g => g.id === (selectedGame?.id||"finalkick"));
+    const fkGame = PLAY_GAMES.find(g => g.id === wcGameId) || PLAY_GAMES.find(g => g.id === "finalkick");
     const input = wcDeviceInput || "puff";
     setGameActive({ ...fkGame, activeInput: input, wcMode: true, wcMatchIdx: matchIdx });
     startKick(fkGame.id);
@@ -1378,7 +1379,7 @@ export default function MoodLabArena() {
       record: `${Math.floor(Math.random()*150)}-${Math.floor(Math.random()*50)}`,
       taunt: pick(["This is our moment!","You'll never take us down!","Knockout time!","Last chance, play hard!"]),
     };
-    const fkGame = PLAY_GAMES.find(g => g.id === (selectedGame?.id||"finalkick"));
+    const fkGame = PLAY_GAMES.find(g => g.id === wcGameId) || PLAY_GAMES.find(g => g.id === "finalkick");
     const input = wcDeviceInput || "puff";
     setGameActive({ ...fkGame, activeInput: input, wcMode: true, wcKnockout: true, wcRoundIdx: wcBracket.currentRound });
     startKick(fkGame.id);
@@ -4369,7 +4370,7 @@ export default function MoodLabArena() {
                   border:`1px solid ${C.gold}25`,
                   boxShadow:`0 0 30px ${C.gold}08, inset 0 1px 0 ${C.gold}10`,
                   position:"relative",overflow:"hidden",
-                }} onClick={()=>{if(canEnterWC){playFx("select");setWcPhase("team_select");setSelectedGame(null);}}}>
+                }} onClick={()=>{if(canEnterWC){playFx("select");setWcGameId(selectedGame?.id||"finalkick");setWcPhase("team_select");setSelectedGame(null);}}}>
                   {/* Gold shimmer */}
                   <div style={{position:"absolute",top:0,left:"-50%",width:"200%",height:"100%",background:`linear-gradient(90deg, transparent, ${C.gold}06, transparent)`,animation:"lightSweep 4s infinite",pointerEvents:"none"}}/>
 
@@ -4895,7 +4896,7 @@ export default function MoodLabArena() {
           taunt:"Let's see what you got!", oppTeam:awayTeam,
         };
         if(!wcTeam) setWcTeam(homeTeam);
-        const fkGame = PLAY_GAMES.find(g=>g.id===(selectedGame?.id||"finalkick"));
+        const fkGame = PLAY_GAMES.find(g=>g.id===wcGameId) || PLAY_GAMES.find(g=>g.id==="finalkick");
         setGameActive({...fkGame, activeInput:fanDevice||"puff", wcMode:true, fanSpectator:true});
         startKick(fkGame.id);
         startMatchIntro(kickOpponent.current);
