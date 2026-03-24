@@ -998,7 +998,9 @@ export default function MoodLabArena() {
         if(puffZone==="perfect") setKickComment(pick(["PERFECT PUFF GOAL! 💨👑🔥"+bonusTag,"SWEET SPOT MERCHANT! Unstoppable!"+bonusTag,"That "+holdLabel+" puff was CLINICAL 🎯"+bonusTag,"The puff-to-goal pipeline is REAL 💨→⚽","Keeper didn't stand a CHANCE 🧤💀"]));
         else setKickComment(pick(["GOLAZOOO! 🔥🔥"+bonusTag,"SHEEEESH! 🥶","NET GO BRRR 😤","That ball had SMOKE on it 💨",""+holdLabel+" puff = GOAL!"+bonusTag,"ABSOLUTE BANGER 💥"]));
       } else {
-        playFx("lose"); playFx("laugh"); triggerFlash("save");
+        playFx("lose"); triggerFlash("save");
+        // Only laugh on funny misses (tap/blinker/short), not normal saves
+        if(puffZone==="tap"||puffZone==="short"||puffZone==="blinker") playFx("laugh");
         setCommentary(pick(["SAVED! The keeper reads it perfectly!","Denied! That puff wasn't enough!","The goalkeeper says NO! 🧤","Not today! Better puff next time! 💨"]));
         if(puffZone==="tap") setKickComment(pick([
           "Did your leg fall asleep?? 🦵💤","That wasn't a kick, that was a WHISPER 😂",
@@ -1069,7 +1071,7 @@ export default function MoodLabArena() {
     setTimeout(()=>{
       if(aiScores) {
         setKickScore(s=>({...s, ai:s.ai+1}));
-        playFx("lose"); playFx("laugh"); triggerFlash("miss"); triggerShake();
+        playFx("lose"); triggerFlash("miss"); triggerShake();
         setCommentary(pick(["GOAL for the AI! The away fans celebrate!","It's in! Wrong way for the keeper!","The AI slots it home coolly!"]));
         setKickComment(pick(["Bruh... 💀",""+kickOpponent.current.name+": 'Too easy' 😂","Wrong way lmaooo 🤣","Keeper had lag 📡","You dove like a fish... wrong fish 🐟",""+kickOpponent.current.emoji+" is doing a victory dance"]));
       } else {
