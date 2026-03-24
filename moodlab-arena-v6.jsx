@@ -446,6 +446,16 @@ export default function MoodLabArena() {
   const [rrEliminated, setRrEliminated] = useState(null);
   const [rrRound, setRrRound] = useState(0);
   const [rrSpinAngle, setRrSpinAngle] = useState(0);
+  const [rrTension, setRrTension] = useState(0);
+  const [rrHeartRate, setRrHeartRate] = useState(80);
+  const [rrPuffCharge, setRrPuffCharge] = useState(0);
+  const [rrDodgeResult, setRrDodgeResult] = useState(null);
+  const [rrIntroStage, setRrIntroStage] = useState(0);
+  const [rrEliminatedList, setRrEliminatedList] = useState([]);
+  const [rrWinner, setRrWinner] = useState(null);
+  const [rrChambers, setRrChambers] = useState([false,false,false,false,false,false]);
+  const rrPuffStart = useRef(0);
+  const rrPuffInterval = useRef(null);
 
   // ── Puff Pong ──
   const [ppPhase, setPpPhase] = useState(null); // null|"playing"|"scored"|"result"
@@ -457,10 +467,19 @@ export default function MoodLabArena() {
   const [ppAiPaddleY, setPpAiPaddleY] = useState(50);
   const [ppScore, setPpScore] = useState({you:0, ai:0});
   const [ppComment, setPpComment] = useState("");
+  const [ppRally, setPpRally] = useState(0);
+  const [ppTrail, setPpTrail] = useState([]);
+  const [ppSpeed, setPpSpeed] = useState(0);
+  const [ppImpact, setPpImpact] = useState(null);
+  const [ppSmash, setPpSmash] = useState(false);
+  const [ppIntro, setPpIntro] = useState(0);
+  const [ppPuffHeld, setPpPuffHeld] = useState(false);
   const ppInterval = useRef(null);
+  const ppRaf = useRef(null);
+  const ppG = useRef({bx:50,by:50,dx:2,dy:1.5,py:50,ay:50,rally:0,trail:[],scoreY:0,scoreA:0,paused:false,smash:false,lastT:0});
 
   // ── Rhythm Puff ──
-  const [rpPhase, setRpPhase] = useState(null); // null|"playing"|"result"
+  const [rpPhase, setRpPhase] = useState(null); // null|"intro"|"playing"|"result"
   const [rpNotes, setRpNotes] = useState([]);
   const [rpScore, setRpScore] = useState(0);
   const [rpCombo, setRpCombo] = useState(0);
@@ -468,16 +487,39 @@ export default function MoodLabArena() {
   const [rpMisses, setRpMisses] = useState(0);
   const [rpComment, setRpComment] = useState("");
   const [rpBeat, setRpBeat] = useState(0);
+  const [rpRating, setRpRating] = useState(null); // null|{text,color,lane}
+  const [rpParticles, setRpParticles] = useState([]);
+  const [rpSpeed, setRpSpeed] = useState(3);
+  const [rpStageFlash, setRpStageFlash] = useState(0);
+  const [rpPuffHeld, setRpPuffHeld] = useState(false);
+  const [rpBlinker, setRpBlinker] = useState(false);
+  const [rpIntroStep, setRpIntroStep] = useState(0); // 0-4 for intro sequence
+  const [rpCrowdJump, setRpCrowdJump] = useState(false);
   const rpInterval = useRef(null);
+  const rpPuffTimer = useRef(null);
 
   // ── Tug of War ──
-  const [towPhase, setTowPhase] = useState(null); // null|"playing"|"result"
+  const [towPhase, setTowPhase] = useState(null); // null|"intro"|"playing"|"suddendeath"|"result"
   const [towPosition, setTowPosition] = useState(50); // 0=AI wins, 100=you win, 50=center
   const [towTimer, setTowTimer] = useState(30);
   const [towPuffs, setTowPuffs] = useState(0);
   const [towAiPuffs, setTowAiPuffs] = useState(0);
   const [towComment, setTowComment] = useState("");
+  const [towIntroStep, setTowIntroStep] = useState(0);
+  const [towSurge, setTowSurge] = useState(false);
+  const [towSurgeAvail, setTowSurgeAvail] = useState(false);
+  const [towHolding, setTowHolding] = useState(false);
+  const [towPuffIntensity, setTowPuffIntensity] = useState(0);
+  const [towDust, setTowDust] = useState([]);
+  const [towMudSplash, setTowMudSplash] = useState(false);
+  const [towRopeStrain, setTowRopeStrain] = useState(0);
+  const [towCrowdHype, setTowCrowdHype] = useState(0);
+  const [towFlameFlicker, setTowFlameFlicker] = useState(0);
   const towInterval = useRef(null);
+  const towPhysics = useRef(null);
+  const towSurgeTimer = useRef(null);
+  const towHoldRef = useRef(false);
+  const towPosRef = useRef(50);
 
   // ── Visual Effects Engine ──
   const [screenShake, setScreenShake] = useState(false);
@@ -1889,7 +1931,7 @@ export default function MoodLabArena() {
     {name:"MadMax420",emoji:"💀",img:"https://api.dicebear.com/9.x/bottts-neutral/svg?seed=MadMax420&backgroundColor=transparent",strategy:"reckless",taunt:"Send it or go home"},
     {name:"NervousNate",emoji:"😰",img:"https://api.dicebear.com/9.x/adventurer/svg?seed=NervousNate&backgroundColor=transparent",strategy:"cautious",taunt:"Oh god oh no..."},
   ];
-  const BP_COMMENTS = {small:["Baby puff 🍼","My grandma hits harder 👵","Ant-sized 🐜","Whisper puff 🤫","Barely a breeze 🌬️","Playing it safe huh? 😏","Coward level: MAX 🐔"],big:["MADMAN! 💀","FULL SEND! 🫁","Balloon said YIKES 😳","LUNGS OF STEEL 💪","Risky business! 🔥","That was AGGRESSIVE 😤","Brave AND stupid 🤪"],pop:["BOOOOM! 💥🎈💀","THE BALLOON HAS LEFT THE CHAT 💀","R.I.P. BALLOON 🪦","THAT SOUND! 💥","BANG! GAME OVER! 💥🎈"],shaking:["IT COULD GO ANY MOMENT! 😱","DANGER ZONE! 🚨","Everyone holding their breath! 😶","The balloon is STRESSED 😬"]};
+  const BP_COMMENTS = {small:["Baby puff 🍼","My grandma hits harder 👵","Ant-sized 🐜","Whisper puff 🤫","Barely a breeze 🌬️","That was a baby puff... are you scared?? 👶","Coward level: MAX 🐔","Mosquito breath 🦟","Did you even puff?? 💀"],big:["MADMAN! 💀","FULL SEND! 🫁","Balloon said YIKES 😳","LUNGS OF STEEL 💪","Risky business! 🔥","That was AGGRESSIVE 😤","Brave AND stupid 🤪","That balloon is looking at you funny 🎈👀"],blinker:["BLINKER PUFF! Trying to end this game in one shot 💀","ABSOLUTE PSYCHOPATH 🫁💥","BLINKER MODE ACTIVATED!! 🔥🔥🔥","Your lungs are too powerful! 🫁💀","INSANE RISK!! ARE YOU OKAY?? 😱"],pop:["BOOOOM! 💥🎈💀","THE BALLOON HAS LEFT THE CHAT 💀","R.I.P. BALLOON 🪦","POP! Your lungs are too powerful! 🫁💥","BANG! GAME OVER! 💥🎈","Balloon said 'I can't breathe' 🎈😤"],shaking:["IT COULD GO ANY MOMENT! 😱","DANGER ZONE! 🚨","Everyone holding their breath! 😶","The balloon is SWEATING 🎈💦","One more puff and it's OVER 😰","The balloon is begging for mercy 🎈🙏"]};
   const getBalloonColor = (pct) => pct<30?"#4CAF50":pct<50?"#8BC34A":pct<65?"#FFEB3B":pct<75?"#FF9800":pct<85?"#FF5722":"#F44336";
   const startBalloonPop = () => {
     const aiCount = 3+Math.floor(Math.random()*3);
@@ -1904,11 +1946,11 @@ export default function MoodLabArena() {
     setTimeout(()=>{setBpPhase("playing");setBpComment("Let the game begin! 🎈");playFx("whistle");if(players[0].isAI)setTimeout(()=>bpDoAITurn(players,0,0,threshold),1200);},2000);
   };
   const bpProcessPuff = (pidx,amount,players,airLevel,threshold) => {
-    const ca = Math.max(5,Math.min(25,amount));const newAir = airLevel+ca;const popped = newAir>=threshold;
+    const ca = Math.max(5,Math.min(30,amount));const newAir = airLevel+ca;const popped = newAir>=threshold;
     const up = players.map((p,i)=>i===pidx?{...p,puffs:p.puffs+1,totalAir:p.totalAir+ca}:p);
     const dAir = Math.min(newAir,threshold);const color = getBalloonColor((dAir/threshold)*100);const nearPop = dAir>threshold*0.7;
     setBpPlayers(up);setBpAirLevel(newAir);setBpBalloonColor(color);setBpHistory(h=>[...h,{playerIdx:pidx,amount:ca,totalAfter:newAir}]);setBpRound(r=>r+1);
-    if(ca<=7)setBpComment(pick(BP_COMMENTS.small));else if(ca>=15)setBpComment(pick(BP_COMMENTS.big));else setBpComment("Solid puff, playing smart 🧠");
+    if(ca>=20)setBpComment(pick(BP_COMMENTS.blinker));else if(ca<=7)setBpComment(pick(BP_COMMENTS.small));else if(ca>=15)setBpComment(pick(BP_COMMENTS.big));else setBpComment("Solid puff, playing smart 🧠");
     if(nearPop&&!popped){setBpShaking(true);if(dAir>threshold*0.85)setTimeout(()=>setBpComment(pick(BP_COMMENTS.shaking)),600);}
     if(popped){setBpPopping(true);setBpShaking(false);setBpLoser(up[pidx]);setBpPhase("popped");setBpComment(pick(BP_COMMENTS.pop));playFx("lose");triggerShake();triggerFlash("miss");spawnSmoke(20);playFx("crowd");
       setCommentary(up[pidx].isYou?"💥 YOU POPPED IT! 💀":"💥 "+up[pidx].name+" POPPED IT! 🎉");
@@ -1925,9 +1967,11 @@ export default function MoodLabArena() {
   };
   const bpStartCharge = () => {if(bpPhase!=="playing"||bpCharging)return;if(bpPlayers[bpCurrentTurn]&&bpPlayers[bpCurrentTurn].isAI)return;
     setBpCharging(true);setBpPuffAmount(0);bpPuffStart.current=Date.now();setDimLights(true);playFx("charge");
-    bpChargeInterval.current=setInterval(()=>{const e=(Date.now()-bpPuffStart.current)/1000;setBpPuffAmount(Math.min(100,(e/3.0)*100));if(Math.random()<0.3)spawnPuffBubble();if(e>=3.5)bpStopCharge();},50);};
+    bpChargeInterval.current=setInterval(()=>{const e=(Date.now()-bpPuffStart.current)/1000;setBpPuffAmount(Math.min(100,(e/4.5)*100));if(Math.random()<0.35)spawnPuffBubble();if(e>=5.0)bpStopCharge();},50);};
   const bpStopCharge = () => {if(!bpCharging)return;setBpCharging(false);setDimLights(false);if(bpChargeInterval.current){clearInterval(bpChargeInterval.current);bpChargeInterval.current=null;}
-    const e=(Date.now()-bpPuffStart.current)/1000;const amt=Math.round(5+Math.min(1,e/3.0)*20);playFx("kick");setBpPuffAmount(0);
+    const e=(Date.now()-bpPuffStart.current)/1000;
+    let amt;if(e<1.0)amt=5+Math.round(Math.random()*3);else if(e<2.0)amt=8+Math.round(Math.random()*6);else if(e<4.0)amt=14+Math.round(Math.random()*6);else amt=20+Math.round(Math.random()*10);
+    playFx("kick");setBpPuffAmount(0);
     bpProcessPuff(bpCurrentTurn,amt,bpPlayers,bpAirLevel,bpPopThreshold);};
   const bpEndGame = () => {const won=bpLoser&&!bpLoser.isYou;const r=won?80+Math.floor(Math.random()*40):10;setCoins(c=>c+r);notify(won?"🎈 SURVIVED! +"+r+" coins!":"💀 Popped! +"+r,won?C.green:C.red);setGameActive(null);setBpPhase(null);};
 
@@ -1935,119 +1979,474 @@ export default function MoodLabArena() {
   // RUSSIAN ROULETTE — Logic
   // ═══════════════════════════════════════════════════════════════
   const RR_AI = [
-    {name:"Lucky Luke",emoji:"🤠",img:"https://api.dicebear.com/9.x/adventurer/svg?seed=LuckyLuke&backgroundColor=transparent"},
-    {name:"Nervous Nick",emoji:"😰",img:"https://api.dicebear.com/9.x/adventurer/svg?seed=NervousNick&backgroundColor=transparent"},
-    {name:"Bold Betty",emoji:"💪",img:"https://api.dicebear.com/9.x/adventurer/svg?seed=BoldBetty&backgroundColor=transparent"},
-    {name:"Chill Chad",emoji:"😎",img:"https://api.dicebear.com/9.x/bottts-neutral/svg?seed=ChillChad&backgroundColor=transparent"},
-    {name:"Sweaty Steve",emoji:"😓",img:"https://api.dicebear.com/9.x/adventurer/svg?seed=SweatySteve&backgroundColor=transparent"},
+    {name:"Lucky Luke",emoji:"🤠",img:"https://api.dicebear.com/9.x/adventurer/svg?seed=LuckyLuke&backgroundColor=transparent",personality:"cocky"},
+    {name:"Nervous Nick",emoji:"😰",img:"https://api.dicebear.com/9.x/adventurer/svg?seed=NervousNick&backgroundColor=transparent",personality:"nervous"},
+    {name:"Bold Betty",emoji:"💪",img:"https://api.dicebear.com/9.x/adventurer/svg?seed=BoldBetty&backgroundColor=transparent",personality:"brave"},
+    {name:"Chill Chad",emoji:"😎",img:"https://api.dicebear.com/9.x/bottts-neutral/svg?seed=ChillChad&backgroundColor=transparent",personality:"chill"},
+    {name:"Sweaty Steve",emoji:"😓",img:"https://api.dicebear.com/9.x/adventurer/svg?seed=SweatySteve&backgroundColor=transparent",personality:"scared"},
   ];
-  const RR_COMMENTS = {spin:["The revolver SPINS... 🔄","Round and round it goes...","Where it stops, nobody knows! 🎲"],click:["*CLICK*... SAFE! 😮‍💨","Empty chamber! You live! ✨","The luck continues... 🍀","Phew! Not this time! 😅"],bang:["BANG! 💥🔫","IT FIRED! 💀","The chamber was LOADED! 💥"],tension:["The tension is UNREAL...","Everyone's holding their breath...","Who's next?! 😱","The revolver awaits... 🔫"]};
-  const startRussianRoulette = () => {
-    const aiCount = 3+Math.floor(Math.random()*3);
-    const shuffled = [...RR_AI].sort(()=>Math.random()-0.5).slice(0,aiCount);
-    const players = shuffled.map(a=>({...a,isYou:false,isAI:true,alive:true}));
-    const youIdx = Math.floor(Math.random()*(players.length+1));
-    players.splice(youIdx,0,{name:"You",emoji:"😤",img:PLAYER_IMG,isYou:true,isAI:false,alive:true});
-    const chamber = Math.floor(Math.random()*6);
-    setRrPlayers(players);setRrCurrentTurn(0);setRrChamber(chamber);setRrCurrentChamber(0);setRrComment("");setRrEliminated(null);setRrRound(0);setRrSpinAngle(0);setRrPhase("intro");
-    playFx("crowd");setCommentary("Russian Roulette! 🎲 1 bullet, 6 chambers...");
-    setTimeout(()=>{setRrPhase("spinning");setRrSpinAngle(720+Math.random()*720);setRrComment(pick(RR_COMMENTS.spin));playFx("charge");
-      setTimeout(()=>{setRrPhase("player_turn");setRrComment(players[0].isYou?"YOUR TURN... Hold to puff 💨":""+players[0].name+"'s turn...");playFx("select");
-        if(players[0].isAI)setTimeout(()=>rrDoTurn(players,0,chamber,0),1500);},2000);},1500);
+  const RR_COMMENTS = {
+    spin:["The revolver SPINS... 🔄","Round and round it goes...","Where it stops, nobody knows! 🎲","Fate is loading... 💀"],
+    click:["*CLICK*... SAFE! 😮‍💨","Empty chamber! You live! ✨","The luck continues... 🍀","Phew! Not this time! 😅","Your lungs just saved your life 🫁💨"],
+    bang:["BANG! 💥🔫","IT FIRED! 💀","The chamber was LOADED! 💥","Game over for this one... 🪦"],
+    tension:["The tension is UNREAL...","Everyone's holding their breath...","Who's next?! 😱","The revolver awaits... 🔫","The math ain't mathing 🧮😰"],
+    dodge:["BLINKER DODGE! Puffed so hard the bullet got scared 💀","Your lungs are your guardian angel 👼💨","Smoke screen activated! 🫁💨🫁","The cloud of smoke saved you!! 🌫️"],
+    aiPuff:["AI pulls trigger like it's checking email 📧","Nervous Nick's hands are shaking...","Bold Betty doesn't even flinch 💪","Chill Chad yawns and pulls 🥱","Lucky Luke tips his hat 🤠"],
+    yourTurn:["YOUR TURN... Hold to puff for dodge chance 💨","It's you... puff long, puff hard 😰","The revolver is pointing at YOU 🔫","Time to breathe for your life 🫁"],
   };
-  const rrDoTurn = (players,idx,bullet,chamberPos) => {
-    const newChamber = (chamberPos+1)%6;const hit = newChamber===bullet;
+  const rrGetDodgeChance = (chargePercent) => {
+    if(chargePercent<10) return 0;
+    if(chargePercent<25) return 3;
+    if(chargePercent<50) return 8;
+    if(chargePercent<80) return 15;
+    return 30;
+  };
+  const rrGetPuffTier = (chargePercent) => {
+    if(chargePercent<10) return {name:"Tap",color:C.text3,emoji:"😐"};
+    if(chargePercent<25) return {name:"Short",color:C.text2,emoji:"😤"};
+    if(chargePercent<50) return {name:"Good",color:C.cyan,emoji:"💨"};
+    if(chargePercent<80) return {name:"Long",color:C.gold,emoji:"🌬️"};
+    return {name:"BLINKER",color:C.red,emoji:"🫁🔥"};
+  };
+  const startRussianRoulette = () => {
+    const aiCount=3+Math.floor(Math.random()*3);const shuffled=[...RR_AI].sort(()=>Math.random()-0.5).slice(0,aiCount);
+    const players=shuffled.map(a=>({...a,isYou:false,isAI:true,alive:true,dodges:0,survived:0}));
+    const youIdx=Math.floor(Math.random()*(players.length+1));
+    players.splice(youIdx,0,{name:"You",emoji:"😤",img:PLAYER_IMG,isYou:true,isAI:false,alive:true,dodges:0,survived:0});
+    const chamber=Math.floor(Math.random()*6);
+    setRrPlayers(players);setRrCurrentTurn(0);setRrChamber(chamber);setRrCurrentChamber(0);
+    setRrComment("");setRrEliminated(null);setRrRound(0);setRrSpinAngle(0);setRrTension(0);
+    setRrHeartRate(80);setRrPuffCharge(0);setRrDodgeResult(null);setRrIntroStage(0);
+    setRrEliminatedList([]);setRrWinner(null);setRrChambers([false,false,false,false,false,false]);
+    setRrPhase("intro");playFx("crowd");setCommentary("Russian Roulette! 🔫 "+players.length+" souls...");
+    setTimeout(()=>setRrIntroStage(1),600);setTimeout(()=>setRrIntroStage(2),1800);
+    setTimeout(()=>setRrIntroStage(3),3500);setTimeout(()=>{setRrIntroStage(4);playFx("whistle");},5000);
+    setTimeout(()=>{setRrPhase("spinning");setRrSpinAngle(1080+Math.random()*720);setRrComment(pick(RR_COMMENTS.spin));playFx("charge");spawnSmoke(10);
+      setTimeout(()=>{setRrPhase("player_turn");setRrTension(10);setRrHeartRate(90);rrStartTurn(players,0,chamber,0);},2500);},6500);
+  };
+  const rrFindNextAlive=(players,fromIdx)=>{for(let i=1;i<=players.length;i++){const ni=(fromIdx+i)%players.length;if(players[ni].alive)return ni;}return null;};
+  const rrStartTurn=(players,idx,bullet,chamberPos)=>{
+    const p=players[idx];if(!p.alive){const next=rrFindNextAlive(players,idx);if(next===null)return;setRrCurrentTurn(next);setTimeout(()=>rrStartTurn(players,next,bullet,chamberPos),200);return;}
+    setRrCurrentTurn(idx);setRrPuffCharge(0);setRrDodgeResult(null);
+    if(p.isAI){setRrComment(pick(RR_COMMENTS.aiPuff));playFx("select");setTimeout(()=>{setRrPhase("pulling");setTimeout(()=>rrResolveTurn(players,idx,bullet,chamberPos,Math.random()*60),800);},1200+Math.random()*800);}
+    else{setRrComment(pick(RR_COMMENTS.yourTurn));setRrPhase("player_turn");playFx("select");setRrHeartRate(h=>Math.min(160,h+10));}
+  };
+  const rrResolveTurn=(players,idx,bullet,chamberPos,dodgeCharge)=>{
+    const newChamber=(chamberPos+1)%6;const isLoaded=newChamber===bullet;
     setRrCurrentChamber(newChamber);setRrRound(r=>r+1);
-    playFx("kick");
-    if(hit){setRrPhase("bang");setRrComment(pick(RR_COMMENTS.bang));setRrEliminated(players[idx]);triggerShake();triggerFlash("miss");playFx("lose");
-      setCommentary(players[idx].isYou?"💥 YOU GOT HIT! Game over!":"💥 "+players[idx].name+" is OUT! 💀");
-      const up = players.map((p,i)=>i===idx?{...p,alive:false}:p);setRrPlayers(up);
-      setTimeout(()=>{setRrPhase("result");if(!players[idx].isYou){spawnConfetti(30,[C.gold,C.green,C.cyan]);playFx("win");triggerFlash("goal");}},2000);
-    } else {
-      setRrPhase("click");setRrComment(pick(RR_COMMENTS.click));playFx("select");
-      setCommentary((players[idx].isYou?"You":""+players[idx].name)+" survived! *click* 😮‍💨");
+    const dodgePct=rrGetDodgeChance(dodgeCharge);const dodged=isLoaded&&Math.random()*100<dodgePct;
+    setRrChambers(ch=>{const c=[...ch];c[newChamber]=true;return c;});playFx("kick");
+    if(isLoaded&&!dodged){
+      setRrPhase("bang");setRrComment(pick(RR_COMMENTS.bang));setRrEliminated(players[idx]);
+      triggerShake();triggerFlash("miss");playFx("lose");spawnSmoke(12);
+      setCommentary(players[idx].isYou?"💥 YOU GOT HIT!":"💥 "+players[idx].name+" is OUT! 💀");
+      const up=players.map((p,i)=>i===idx?{...p,alive:false}:p);setRrPlayers(up);
+      setRrEliminatedList(el=>[...el,players[idx]]);setRrTension(t=>Math.min(100,t+20));setRrHeartRate(160);
       setTimeout(()=>{
-        const next = (idx+1)%players.length;setRrCurrentTurn(next);setRrPhase("player_turn");
-        setRrComment(pick(RR_COMMENTS.tension));
-        if(players[next].isAI)setTimeout(()=>rrDoTurn(players,next,bullet,newChamber),1500+Math.random()*1000);
-        else{setRrComment("YOUR TURN... 😰 Hold to puff");playFx("select");}
-      },1500);
+        const aliveCount=up.filter(p=>p.alive).length;
+        if(aliveCount<=1){const winner=up.find(p=>p.alive);setRrWinner(winner);setRrPhase("winner");
+          if(winner&&winner.isYou){spawnConfetti(50,[C.gold,C.green,C.cyan,C.pink]);playFx("win");playFx("crowd");triggerFlash("goal");}else playFx("crowd");
+          setCommentary(winner?(winner.isYou?"SURVIVOR! 👑":""+winner.name+" wins!"):"Game over!");
+        }else{const nb=Math.floor(Math.random()*6);setRrChamber(nb);setRrCurrentChamber(0);setRrChambers([false,false,false,false,false,false]);
+          setRrPhase("spinning");setRrSpinAngle(a=>a+720+Math.random()*720);setRrComment("Respinning... "+aliveCount+" remain 😰");playFx("charge");spawnSmoke(8);
+          setTimeout(()=>{const next=rrFindNextAlive(up,idx);if(next!==null){setRrPhase("player_turn");rrStartTurn(up,next,nb,0);}},2200);}
+      },2500);
+    }else if(isLoaded&&dodged){
+      setRrDodgeResult("dodged");setRrPhase("click");setRrComment(pick(RR_COMMENTS.dodge));playFx("win");triggerFlash("save");spawnSmoke(15);
+      if(dodgeCharge>=80)playFx("laugh");
+      setCommentary((players[idx].isYou?"You":""+players[idx].name)+" DODGED! "+rrGetPuffTier(dodgeCharge).emoji);
+      const up=players.map((p,i)=>i===idx?{...p,dodges:p.dodges+1,survived:p.survived+1}:p);setRrPlayers(up);setRrTension(t=>Math.min(100,t+15));
+      setTimeout(()=>{const nb=Math.floor(Math.random()*6);setRrChamber(nb);setRrCurrentChamber(0);setRrChambers([false,false,false,false,false,false]);
+        setRrPhase("spinning");setRrSpinAngle(a=>a+720+Math.random()*720);setRrComment("Respinning after dodge... 🔄");playFx("charge");
+        setTimeout(()=>{const next=rrFindNextAlive(up,idx);if(next!==null){setRrPhase("player_turn");rrStartTurn(up,next,nb,0);}},2200);},2000);
+    }else{
+      setRrPhase("click");setRrComment(pick(RR_COMMENTS.click));playFx("select");
+      const up=players.map((p,i)=>i===idx?{...p,survived:p.survived+1}:p);setRrPlayers(up);
+      setCommentary((players[idx].isYou?"You":""+players[idx].name)+" survived! *click* 😮‍💨");
+      setRrTension(t=>Math.min(100,t+8));setRrHeartRate(h=>Math.min(160,h+8));
+      setTimeout(()=>{const next=rrFindNextAlive(up,idx);if(next!==null){setRrPhase("player_turn");rrStartTurn(up,next,bullet,newChamber);}},1800);
     }
   };
-  const rrPuff = () => {if(rrPhase!=="player_turn")return;const cur=rrPlayers[rrCurrentTurn];if(!cur||cur.isAI)return;rrDoTurn(rrPlayers,rrCurrentTurn,rrChamber,rrCurrentChamber);};
-  const rrEndGame = () => {const won=rrEliminated&&!rrEliminated.isYou;const r=won?100:10;setCoins(c=>c+r);notify(won?"🎲 SURVIVED! +"+r+" coins!":"💀 Eliminated! +"+r,won?C.green:C.red);setGameActive(null);setRrPhase(null);};
+  const rrStartPuff=()=>{if(rrPhase!=="player_turn")return;const cur=rrPlayers[rrCurrentTurn];if(!cur||cur.isAI)return;
+    setRrPhase("puffing");setRrPuffCharge(0);rrPuffStart.current=Date.now();setDimLights(true);playFx("charge");
+    rrPuffInterval.current=setInterval(()=>{const e=(Date.now()-rrPuffStart.current)/1000;setRrPuffCharge(Math.min(100,(e/5.0)*100));if(Math.random()<0.3)spawnSmoke(2);if(e>=5.5)rrStopPuff();},50);};
+  const rrStopPuff=()=>{if(rrPhase!=="puffing")return;setDimLights(false);if(rrPuffInterval.current){clearInterval(rrPuffInterval.current);rrPuffInterval.current=null;}
+    const charge=Math.min(100,((Date.now()-rrPuffStart.current)/5000)*100);setRrPuffCharge(charge);setRrPhase("pulling");
+    const tier=rrGetPuffTier(charge);setRrComment(tier.name+" puff! "+tier.emoji+" ("+rrGetDodgeChance(charge)+"% dodge)");
+    if(charge>=80){playFx("laugh");setCommentary("BLINKER! 🫁🔥 Maximum dodge!");}
+    setTimeout(()=>rrResolveTurn(rrPlayers,rrCurrentTurn,rrChamber,rrCurrentChamber,charge),600);};
+  const rrPuff=()=>{if(rrPhase==="player_turn")rrStartPuff();else if(rrPhase==="puffing")rrStopPuff();};
+  const rrEndGame=()=>{const won=rrWinner&&rrWinner.isYou;const r=won?150:10;setCoins(c=>c+r);
+    notify(won?"🔫 SURVIVOR! +"+r+" coins!":"💀 Eliminated! +"+r,won?C.green:C.red);
+    setGameActive(null);setRrPhase(null);setDimLights(false);if(rrPuffInterval.current){clearInterval(rrPuffInterval.current);rrPuffInterval.current=null;}};
 
   // ═══════════════════════════════════════════════════════════════
   // PUFF PONG — Logic
   // ═══════════════════════════════════════════════════════════════
-  const startPuffPong = () => {
-    setPpBallX(50);setPpBallY(50);setPpBallDx(1.5);setPpBallDy(1);setPpPaddleY(50);setPpAiPaddleY(50);setPpScore({you:0,ai:0});setPpComment("PUFF PONG! 🏓");setPpPhase("playing");
-    playFx("whistle");setCommentary("Puff Pong! Tap/puff to move paddle! 🏓");
-    if(ppInterval.current)clearInterval(ppInterval.current);
-    ppInterval.current=setInterval(()=>{
-      setPpBallX(x=>{setPpBallY(y=>{setPpBallDx(dx=>{setPpBallDy(dy=>{
-        let nx=x+dx,ny=y+dy,ndx=dx,ndy=dy;
-        if(ny<=2||ny>=98){ndy=-dy;playFx("tap");}
-        setPpAiPaddleY(ap=>ap+(ny-ap)*0.06);
-        if(nx<=5){setPpPaddleY(pp=>{if(Math.abs(ny-pp)<12){ndx=Math.abs(dx)*1.05;ndy=dy+(ny-pp)*0.15;playFx("kick");setPpComment(pick(["Nice return! 🏓","Puff power! 💨","Clean shot! ✨"]));return pp;}
-          setPpScore(s=>{const ns={...s,ai:s.ai+1};if(ns.ai>=5){clearInterval(ppInterval.current);setPpPhase("result");setCommentary("AI wins Puff Pong! "+ns.you+"-"+ns.ai);playFx("lose");}return ns;});
-          nx=50;ny=50;ndx=1.5;ndy=1;setPpComment("AI scores! 😤");playFx("error");return pp;});}
-        if(nx>=95){setPpAiPaddleY(ap=>{if(Math.abs(ny-ap)<10){ndx=-Math.abs(dx)*1.05;ndy=dy+(ny-ap)*0.1;playFx("tap");return ap;}
-          setPpScore(s=>{const ns={...s,you:s.you+1};if(ns.you>=5){clearInterval(ppInterval.current);setPpPhase("result");setCommentary("You WIN Puff Pong! "+ns.you+"-"+ns.ai+" 🏆");playFx("win");spawnConfetti(30,[C.green,C.gold,C.cyan]);}return ns;});
-          nx=50;ny=50;ndx=-1.5;ndy=1;setPpComment("YOU SCORE! 🎉");playFx("crowd");triggerFlash("goal");return ap;});}
-        setPpBallDy(()=>ndy);return ndx;});return ny+dy;});return x+dx;});});
-    },30);
+  const PP_HIT=["Nice return! 🏓","Puff power! 💨","Clean shot! ✨","Smoked it! 🔥","Right back atcha! 🎯","THC reflexes! 💚"];
+  const PP_SMASH=["SMASH! Sound barrier broken 💥","OBLITERATED! 🌟","NUCLEAR PUFF! ☢️💨","That ball has a family! 😱","Perfect center BOOM! 💣"];
+  const PP_RALLY=["Rally {n}! Lungs are an engine 🫁🏎️","Rally {n}! INSANE 🤯","Rally {n}! Crowd ROARING 📣","{n} hits! Legendary 🔥🔥🔥"];
+  const PP_SY=["YOU SCORE! 🎉","GOOOAL! 🥅💨","AI needs firmware update 🤖","POINT! Puff powered 💨🏆","Ball faster than your delivery 📦"];
+  const PP_SA=["AI scores! 😤","Missed it! 💨","AI sneaks past! 🤖","Better positioning! 🎯","Machine strikes back! 🤖⚡"];
+  const startPuffPong=()=>{
+    if(ppRaf.current)cancelAnimationFrame(ppRaf.current);
+    if(ppInterval.current){clearInterval(ppInterval.current);ppInterval.current=null;}
+    const g=ppG.current;g.bx=50;g.by=50;g.dx=2.2;g.dy=1.2;g.py=50;g.ay=50;g.rally=0;g.trail=[];g.scoreY=0;g.scoreA=0;g.paused=false;g.smash=false;g.lastT=0;
+    setPpBallX(50);setPpBallY(50);setPpBallDx(2.2);setPpBallDy(1.2);setPpPaddleY(50);setPpAiPaddleY(50);setPpScore({you:0,ai:0});
+    setPpRally(0);setPpTrail([]);setPpSpeed(0);setPpImpact(null);setPpSmash(false);setPpComment("");setPpPuffHeld(false);
+    setPpIntro(1);setPpPhase("intro");playFx("whistle");setCommentary("Puff Pong! Puff UP, release DOWN! 🏓💨");
+    setTimeout(()=>setPpIntro(2),500);setTimeout(()=>setPpIntro(3),1000);setTimeout(()=>setPpIntro(4),1500);
+    setTimeout(()=>{setPpIntro(5);setPpComment("SERVE!");playFx("crowd");
+      setTimeout(()=>{setPpPhase("playing");setPpIntro(0);setPpComment("");ppStartLoop();},600);},2000);
   };
-  const ppMovePaddle = (dir) => {setPpPaddleY(p=>Math.max(8,Math.min(92,p+dir*8)));};
-  const ppEndGame = () => {if(ppInterval.current)clearInterval(ppInterval.current);const won=ppScore.you>ppScore.ai;const r=won?80:15;setCoins(c=>c+r);notify(won?"🏓 Won! +"+r:"🏓 Lost! +"+r,won?C.green:C.red);setGameActive(null);setPpPhase(null);};
+  const ppStartLoop=()=>{
+    const g=ppG.current;g.lastT=performance.now();
+    if(ppInterval.current)clearInterval(ppInterval.current);
+    ppInterval.current=setInterval(()=>{if(!g.paused){g.py=Math.min(90,g.py+1.2);setPpPaddleY(g.py);}},80);
+    const loop=(now)=>{
+      if(g.paused)return;const dt=Math.min((now-g.lastT)/16.667,3);g.lastT=now;
+      let nx=g.bx+g.dx*dt,ny=g.by+g.dy*dt,ndx=g.dx,ndy=g.dy;
+      g.trail.push({x:g.bx,y:g.by,age:0});if(g.trail.length>18)g.trail.shift();g.trail.forEach(t=>t.age++);
+      if(ny<=2){ny=2;ndy=Math.abs(ndy);playFx("tap");}
+      if(ny>=98){ny=98;ndy=-Math.abs(ndy);playFx("tap");}
+      const aiSpd=0.04+Math.min(Math.abs(g.dx)*0.005,0.04);
+      g.ay+=(ny-g.ay)*aiSpd*dt;g.ay=Math.max(10,Math.min(90,g.ay));
+      const spd=Math.sqrt(ndx*ndx+ndy*ndy);
+      if(nx<=6&&g.bx>6){const hd=Math.abs(ny-g.py);
+        if(hd<12){const ho=(ny-g.py)/12,sm=hd<2;ndx=Math.abs(ndx)*(sm?1.6:1.05);ndy=g.dy+ho*2.5;nx=7;
+          g.rally++;g.smash=sm;playFx("kick");setPpImpact({x:6,y:ny,t:Date.now()});setTimeout(()=>setPpImpact(null),300);
+          if(sm){setPpSmash(true);triggerShake();setPpComment(pick(PP_SMASH));setTimeout(()=>setPpSmash(false),500);}else setPpComment(pick(PP_HIT));
+          if(g.rally>0&&g.rally%10===0){setPpComment(pick(PP_RALLY).replace("{n}",g.rally));playFx("crowd");}setPpRally(g.rally);
+        }else{g.scoreA++;setPpScore({you:g.scoreY,ai:g.scoreA});triggerShake();triggerFlash("miss");playFx("error");
+          setPpComment(pick(PP_SA));g.rally=0;setPpRally(0);
+          if(g.scoreA>=5){g.paused=true;setPpPhase("result");setCommentary("AI wins Puff Pong! "+g.scoreY+"-"+g.scoreA);playFx("lose");return;}
+          nx=50;ny=50;ndx=2.2;ndy=1.2*(Math.random()>0.5?1:-1);g.trail=[];}}
+      if(nx>=94&&g.bx<94){const hd=Math.abs(ny-g.ay);
+        if(hd<10){ndx=-Math.abs(ndx)*1.03;ndy=g.dy+(ny-g.ay)*0.12;nx=93;
+          g.rally++;setPpRally(g.rally);playFx("tap");setPpImpact({x:94,y:ny,t:Date.now()});setTimeout(()=>setPpImpact(null),300);
+        }else{g.scoreY++;setPpScore({you:g.scoreY,ai:g.scoreA});triggerFlash("goal");triggerShake();playFx("crowd");
+          setPpComment(pick(PP_SY));g.rally=0;setPpRally(0);
+          if(g.scoreY>=5){g.paused=true;setPpPhase("result");setCommentary("You WIN Puff Pong! "+g.scoreY+"-"+g.scoreA+" 🏆");playFx("win");spawnConfetti(40,[C.cyan,C.gold,C.green,C.pink]);return;}
+          nx=50;ny=50;ndx=-2.2;ndy=1.2*(Math.random()>0.5?1:-1);g.trail=[];}}
+      if(Math.abs(ndx)>5.5)ndx=5.5*Math.sign(ndx);if(Math.abs(ndy)>5.5)ndy=5.5*Math.sign(ndy);
+      g.bx=nx;g.by=ny;g.dx=ndx;g.dy=ndy;
+      setPpBallX(nx);setPpBallY(ny);setPpBallDx(ndx);setPpBallDy(ndy);setPpAiPaddleY(g.ay);setPpSpeed(spd);setPpTrail([...g.trail]);
+      ppRaf.current=requestAnimationFrame(loop);};ppRaf.current=requestAnimationFrame(loop);
+  };
+  const ppMovePaddle=(dir)=>{const g=ppG.current;g.py=Math.max(10,Math.min(90,g.py+dir*6));setPpPaddleY(g.py);};
+  const ppPuffUp=()=>{setPpPuffHeld(true);const g=ppG.current;if(ppInterval.current)clearInterval(ppInterval.current);ppInterval.current=setInterval(()=>{if(!g.paused){g.py=Math.max(10,g.py-4);setPpPaddleY(g.py);}},50);};
+  const ppPuffRelease=()=>{setPpPuffHeld(false);if(ppInterval.current){clearInterval(ppInterval.current);ppInterval.current=null;}const g=ppG.current;ppInterval.current=setInterval(()=>{if(!g.paused){g.py=Math.min(90,g.py+1.2);setPpPaddleY(g.py);}},80);};
+  const ppEndGame=()=>{if(ppRaf.current)cancelAnimationFrame(ppRaf.current);if(ppInterval.current){clearInterval(ppInterval.current);ppInterval.current=null;}ppG.current.paused=true;const won=ppScore.you>ppScore.ai;const r=won?80:15;setCoins(c=>c+r);notify(won?"🏓 Won! +"+r:"🏓 Lost! +"+r,won?C.green:C.red);setGameActive(null);setPpPhase(null);setPpIntro(0);};
 
   // ═══════════════════════════════════════════════════════════════
   // RHYTHM PUFF — Logic
   // ═══════════════════════════════════════════════════════════════
   const RP_LANES = ["🎸","🥁","🎹","🎷"];
+  const RP_LANE_COLORS = [C.red,"#00E5FF",C.gold,C.purple];
+  const RP_HIT_ZONE = 82;
+  const RP_COMBO_TIERS = [{min:50,mult:10},{min:20,mult:5},{min:10,mult:3},{min:5,mult:2},{min:0,mult:1}];
+  const rpGetMultiplier = (combo) => { for(const t of RP_COMBO_TIERS){if(combo>=t.min)return t.mult;} return 1; };
+  const rpSpawnParticles = (lane, color, count=8) => {
+    const px = 12.5 + lane * 25;
+    const parts = Array.from({length:count},(_,i)=>({
+      id:Date.now()+Math.random()+i, x:px+(Math.random()-0.5)*10, y:RP_HIT_ZONE+(Math.random()-0.5)*5,
+      vx:(Math.random()-0.5)*6, vy:-2-Math.random()*4, color, size:3+Math.random()*4, life:1
+    }));
+    setRpParticles(p=>[...p,...parts]);
+    setTimeout(()=>setRpParticles(p=>p.filter(pp=>pp.id<Date.now()-600)),700);
+  };
+  const rpShowRating = (text,color,lane) => { setRpRating({text,color,lane,id:Date.now()}); setTimeout(()=>setRpRating(null),600); };
+  const rpComedy = {
+    perfect:["PERFECT! Your timing is suspiciously good... 🤔💨","NAILED IT! Are you even high right now? 🎯","FLAWLESS! The puff gods smile upon you 🙏💨","PERFECT! Supernatural rhythm 👻🎵"],
+    good:["GOOD! Almost perfect, almost sober 😏","Nice one! The beat approves 🎵","Solid hit! Keep vibing 🌊","GOOD! You're in the groove 🔥"],
+    ok:["OK! Close enough... like your aim after a blinker 😵‍💫","Ehhh, we'll count it 🤷","Barely! Like catching the last hit 💨","OK! The rhythm felt that 😬"],
+    miss:["Miss! Your finger went on vacation 🏖️","MISS! Was that a cough or a puff? 🫁","The beat is crying right now 💀","Miss! Maybe try a different strain 🌿","WHIFF! Even the crowd felt that 😱"],
+    combo5:["COMBO x5! Warming up! 🔥","5 streak! The stage lights notice you ✨"],
+    combo10:["COMBO x10! You're in the ZONE (the puff zone) 🌊","x10! The crowd is going WILD 🤯"],
+    combo20:["COMBO x20! LEGENDARY rhythm! 👑💨","x20! Are you a metronome? 🎶🔥"],
+    combo50:["COMBO x50! INHUMAN! This isn't weed, this is FOCUS 🧠💨","x50! WHAT ARE YOU?! 🫨🔥🔥🔥"],
+    blinker:["BLINKER HIT! Caught ALL the notes! 🫁🎵","BLINKER ACTIVATED! Screen clear! 💨💨💨","MEGA PUFF! Everything absorbed! 🌬️🎵"],
+    puff:["PUFF COMBO! Multiple notes in one breath! 🫁","Big puff energy! Caught them all! 💨🎵"],
+    gameover:["Game over! 10 misses... maybe try a different strain 🌿","The concert's over! Your rhythm needs rehab 🏥🎵","Stage lights OFF. Practice makes perfect puffs 💨"],
+    win:["ENCORE! ENCORE! What a performance! 🎤🔥","Standing ovation! The crowd wants MORE! 👏💨","YOU CRUSHED IT! Puff game STRONG! 🫁🏆"]
+  };
   const startRhythmPuff = () => {
-    setRpNotes([]);setRpScore(0);setRpCombo(0);setRpMaxCombo(0);setRpMisses(0);setRpComment("Get ready! 🎵");setRpPhase("playing");setRpBeat(0);
-    playFx("whistle");setCommentary("Rhythm Puff! Hit the notes! 🎵");
-    if(rpInterval.current)clearInterval(rpInterval.current);
-    let beatCount=0;
-    rpInterval.current=setInterval(()=>{
-      beatCount++;
-      setRpNotes(notes=>{
-        let nn=[...notes.map(n=>({...n,y:n.y+3})).filter(n=>{
-          if(n.y>95&&!n.hit){setRpMisses(m=>{if(m+1>=10){clearInterval(rpInterval.current);setRpPhase("result");playFx("lose");setCommentary("Song over! Too many misses!");}return m+1;});setRpCombo(0);setRpComment("Miss! 💀");playFx("error");return false;}
-          return n.y<110;})];
-        if(beatCount%12===0||(beatCount%8===0&&Math.random()>0.3)){const lane=Math.floor(Math.random()*4);nn.push({id:Date.now()+Math.random(),lane,y:0,hit:false});}
-        return nn;
-      });
-      setRpBeat(b=>b+1);
-    },60);
+    setRpNotes([]);setRpScore(0);setRpCombo(0);setRpMaxCombo(0);setRpMisses(0);setRpSpeed(3);
+    setRpComment("");setRpRating(null);setRpParticles([]);setRpStageFlash(0);setRpBlinker(false);setRpPuffHeld(false);
+    setRpBeat(0);setRpCrowdJump(false);setRpIntroStep(0);setRpPhase("intro");
+    playFx("crowd");setCommentary("The stage is set... 🎵");
+    setTimeout(()=>setRpIntroStep(1),400);
+    setTimeout(()=>setRpIntroStep(2),1200);
+    setTimeout(()=>setRpIntroStep(3),2200);
+    setTimeout(()=>{setRpIntroStep(4);playFx("whistle");},3000);
+    setTimeout(()=>{
+      setRpPhase("playing");setRpIntroStep(0);setCommentary("DROP THE BEAT! 🎵🔥");
+      if(rpInterval.current)clearInterval(rpInterval.current);
+      let beatCount=0;let currentSpeed=3;
+      rpInterval.current=setInterval(()=>{
+        beatCount++;
+        if(beatCount%500===0&&currentSpeed<6){currentSpeed+=0.4;setRpSpeed(currentSpeed);}
+        setRpBeat(b=>b+1);
+        if(beatCount%8===0)setRpStageFlash(f=>f>0?0:1);
+        setRpNotes(notes=>{
+          let nn=[...notes.map(n=>({...n,y:n.y+currentSpeed})).filter(n=>{
+            if(n.y>95&&!n.hit){
+              setRpMisses(m=>{
+                if(m+1>=10){clearInterval(rpInterval.current);setRpPhase("result");playFx("lose");
+                  setCommentary(pick(rpComedy.gameover));setRpComment(pick(rpComedy.gameover));}
+                return m+1;
+              });
+              setRpCombo(0);setRpComment(pick(rpComedy.miss));rpShowRating("MISS",C.red,n.lane);
+              playFx("error");triggerShake();return false;
+            }
+            return n.y<110;
+          })];
+          const spawnRate = beatCount<300?10:beatCount<600?8:6;
+          if(beatCount%spawnRate===0){
+            const lane=Math.floor(Math.random()*4);
+            nn.push({id:Date.now()+Math.random(),lane,y:-5,hit:false,spawned:Date.now()});
+          }
+          if(beatCount>200&&beatCount%20===0&&Math.random()>0.5){
+            const lane2=Math.floor(Math.random()*4);
+            nn.push({id:Date.now()+Math.random()+0.5,lane:lane2,y:-5,hit:false,spawned:Date.now()});
+          }
+          return nn;
+        });
+      },60);
+    },4000);
   };
   const rpHitNote = (lane) => {
-    setRpNotes(notes=>{const idx=notes.findIndex(n=>n.lane===lane&&n.y>70&&n.y<100&&!n.hit);
-      if(idx>=0){const newN=[...notes];newN[idx]={...newN[idx],hit:true};
-        const pts=10+rpCombo*2;setRpScore(s=>s+pts);setRpCombo(c=>{const nc=c+1;setRpMaxCombo(m=>Math.max(m,nc));return nc;});
-        playFx("kick");triggerFlash("save");setRpComment(rpCombo>=10?"PERFECT x"+rpCombo+"! 🔥":rpCombo>=5?"Combo x"+rpCombo+"! ⚡":"Hit! +"+pts+" 🎵");return newN;}
-      setRpCombo(0);setRpMisses(m=>m+1);setRpComment("Wrong lane! 😬");playFx("error");return notes;});
+    setRpNotes(notes=>{
+      const candidates = notes.map((n,i)=>({...n,idx:i})).filter(n=>n.lane===lane&&!n.hit);
+      const inZone = candidates.filter(n=>n.y>RP_HIT_ZONE-18&&n.y<RP_HIT_ZONE+12);
+      if(inZone.length===0){
+        setRpCombo(0);setRpMisses(m=>m+1);setRpComment("Wrong lane! 😬");playFx("error");
+        rpShowRating("MISS",C.red,lane);return notes;
+      }
+      const closest = inZone.reduce((a,b)=>Math.abs(a.y-RP_HIT_ZONE)<Math.abs(b.y-RP_HIT_ZONE)?a:b);
+      const dist = Math.abs(closest.y-RP_HIT_ZONE);
+      const newN=[...notes];newN[closest.idx]={...newN[closest.idx],hit:true};
+      let rating,pts,ratingColor;
+      if(dist<=4){rating="PERFECT";pts=100;ratingColor=C.gold;rpSpawnParticles(lane,RP_LANE_COLORS[lane],12);setRpCrowdJump(true);setTimeout(()=>setRpCrowdJump(false),300);}
+      else if(dist<=8){rating="GOOD";pts=75;ratingColor=C.green;rpSpawnParticles(lane,RP_LANE_COLORS[lane],6);}
+      else if(dist<=14){rating="OK";pts=50;ratingColor=C.orange;}
+      else{rating="MISS";pts=0;ratingColor=C.red;}
+      if(rating==="MISS"){
+        setRpCombo(0);setRpMisses(m=>m+1);setRpComment(pick(rpComedy.miss));playFx("error");
+      } else {
+        const mult = rpGetMultiplier(rpCombo);
+        const finalPts = pts * mult;
+        setRpScore(s=>s+finalPts);
+        setRpCombo(c=>{const nc=c+1;setRpMaxCombo(m=>Math.max(m,nc));
+          if(nc===50)setRpComment(pick(rpComedy.combo50));
+          else if(nc===20)setRpComment(pick(rpComedy.combo20));
+          else if(nc===10){setRpComment(pick(rpComedy.combo10));setRpCrowdJump(true);setTimeout(()=>setRpCrowdJump(false),500);}
+          else if(nc===5)setRpComment(pick(rpComedy.combo5));
+          else if(rating==="PERFECT")setRpComment(pick(rpComedy.perfect));
+          else if(rating==="GOOD")setRpComment(pick(rpComedy.good));
+          else setRpComment(pick(rpComedy.ok));
+          return nc;
+        });
+        playFx("kick");
+        if(rating==="PERFECT"){triggerFlash("save");setRpStageFlash(f=>f+1);}
+      }
+      rpShowRating(rating,ratingColor,lane);
+      return newN;
+    });
   };
-  const rpEndGame = () => {if(rpInterval.current)clearInterval(rpInterval.current);const r=Math.min(200,rpScore);setCoins(c=>c+r);notify("🎵 Score: "+rpScore+" +"+r+" coins!",C.purple);setGameActive(null);setRpPhase(null);};
+  const rpPuffHit = () => {
+    setRpNotes(notes=>{
+      const inZone = notes.filter(n=>!n.hit&&n.y>RP_HIT_ZONE-15&&n.y<RP_HIT_ZONE+10);
+      if(inZone.length===0)return notes;
+      const newN=[...notes];
+      inZone.forEach(n=>{
+        const idx=newN.findIndex(nn=>nn.id===n.id);
+        if(idx>=0)newN[idx]={...newN[idx],hit:true};
+        rpSpawnParticles(n.lane,RP_LANE_COLORS[n.lane],8);
+      });
+      const mult = rpGetMultiplier(rpCombo);
+      setRpScore(s=>s+inZone.length*75*mult);
+      setRpCombo(c=>{const nc=c+inZone.length;setRpMaxCombo(m=>Math.max(m,nc));return nc;});
+      setRpComment(inZone.length>3?pick(rpComedy.blinker):pick(rpComedy.puff));
+      playFx("kick");triggerFlash("save");setRpCrowdJump(true);setTimeout(()=>setRpCrowdJump(false),400);
+      rpShowRating("PUFF x"+inZone.length,C.cyan,1);
+      return newN;
+    });
+  };
+  const rpBlinkerPuff = () => {
+    if(rpBlinker)return;setRpBlinker(true);
+    setRpComment(pick(rpComedy.blinker));triggerFlash("blinker");playFx("win");
+    setRpNotes(notes=>{
+      const unhit=notes.filter(n=>!n.hit);
+      if(unhit.length===0)return notes;
+      const newN=notes.map(n=>n.hit?n:{...n,hit:true});
+      unhit.forEach(n=>rpSpawnParticles(n.lane,RP_LANE_COLORS[n.lane],6));
+      const mult=rpGetMultiplier(rpCombo);
+      setRpScore(s=>s+unhit.length*100*mult);
+      setRpCombo(c=>{const nc=c+unhit.length;setRpMaxCombo(m=>Math.max(m,nc));return nc;});
+      rpShowRating("BLINKER! x"+unhit.length,C.pink,2);
+      return newN;
+    });
+    const blinkerInt=setInterval(()=>{
+      setRpNotes(notes=>{
+        const unhit=notes.filter(n=>!n.hit);
+        if(unhit.length>0){
+          unhit.forEach(n=>rpSpawnParticles(n.lane,RP_LANE_COLORS[n.lane],4));
+          setRpScore(s=>s+unhit.length*50);setRpCombo(c=>c+unhit.length);
+        }
+        return notes.map(n=>({...n,hit:true}));
+      });
+    },200);
+    setTimeout(()=>{clearInterval(blinkerInt);setRpBlinker(false);},2000);
+    spawnConfetti(25,[C.pink,C.purple,C.gold,C.cyan]);
+    setRpCrowdJump(true);setTimeout(()=>setRpCrowdJump(false),2000);
+  };
+  const rpEndGame = () => {
+    if(rpInterval.current)clearInterval(rpInterval.current);
+    if(rpPuffTimer.current)clearTimeout(rpPuffTimer.current);
+    const r=Math.min(300,Math.floor(rpScore/10));
+    setCoins(c=>c+r);notify("🎵 Score: "+rpScore+" | +"+r+" coins!",C.purple);
+    if(rpScore>500){spawnConfetti(40,[C.purple,C.pink,C.gold,C.cyan]);setCommentary(pick(rpComedy.win));}
+    setGameActive(null);setRpPhase(null);
+  };
 
   // ═══════════════════════════════════════════════════════════════
-  // TUG OF WAR — Logic
+  // TUG OF WAR — Logic (Immersive Colosseum Rebuild)
   // ═══════════════════════════════════════════════════════════════
-  const startTugOfWar = () => {
-    setTowPosition(50);setTowTimer(30);setTowPuffs(0);setTowAiPuffs(0);setTowComment("PULL! 💪");setTowPhase("playing");
-    playFx("whistle");setCommentary("TUG OF WAR! Spam puff to pull! 💪");
-    if(towInterval.current)clearInterval(towInterval.current);
-    towInterval.current=setInterval(()=>{
-      setTowTimer(t=>{if(t<=1){clearInterval(towInterval.current);setTowPhase("result");
-        setTowPosition(p=>{const won=p>50;if(won){spawnConfetti(30,[C.blue,C.gold]);playFx("win");triggerFlash("goal");setCommentary("You WIN the tug! 💪🏆");}else{playFx("lose");setCommentary("AI wins the tug! 😤");}return p;});return 0;}
-        // AI pulls randomly
-        if(Math.random()<0.3){setTowPosition(p=>Math.max(0,p-1.5-Math.random()*1.5));setTowAiPuffs(a=>a+1);}
-        return t-1;});
-    },1000);
+  const TOW_COMMENTS_PULL = ["PULL! 💪","Keep going! 🔥","More power! ⚡","HARDER! 😤","HEAVE! 🏋️","Don't stop! 🫁","GRIP IT! 🤜","YANK IT! 💥"];
+  const TOW_COMMENTS_PUFF = ["PUFF HARDER! Your team needs those lungs! 🫁💪","The AI team is struggling... no THC advantage 🌿","The rope is BURNING from friction 🔥","Your lungs are ELITE 🏆","BLINKER PULL incoming! 💀","Crowd is going WILD! 📢"];
+  const TOW_COMMENTS_WIN = ["CHAMPIONS! The crowd goes INSANE! 🏆🎉","They FELL in the MUD! 😂🛁","DOMINANT! Your team is unstoppable! 💪","30 puffs in 10 seconds! Your lungs are ELITE 🏆"];
+  const TOW_COMMENTS_LOSE = ["MUD PIT! Your team took a bath 🛁😂","The AI pulled harder... regroup! 💪","Into the mud you go! 🫠","Almost had it! One more puff! 😤"];
+
+  const towCleanup = () => {
+    if(towInterval.current){clearInterval(towInterval.current);towInterval.current=null;}
+    if(towPhysics.current){clearInterval(towPhysics.current);towPhysics.current=null;}
+    if(towSurgeTimer.current){clearTimeout(towSurgeTimer.current);towSurgeTimer.current=null;}
+    towHoldRef.current=false;
   };
-  const towPuff = () => {if(towPhase!=="playing")return;setTowPosition(p=>Math.min(100,p+2+Math.random()*2));setTowPuffs(n=>n+1);playFx("kick");setTowComment(pick(["PULL! 💪","Keep going! 🔥","More power! ⚡","HARDER! 😤"]));};
-  const towEndGame = () => {if(towInterval.current)clearInterval(towInterval.current);const won=towPosition>50;const r=won?80:15;setCoins(c=>c+r);notify(won?"💪 Won! +"+r:"😤 Lost! +"+r,won?C.green:C.red);setGameActive(null);setTowPhase(null);};
+
+  const startTugOfWar = () => {
+    towCleanup();
+    setTowPosition(50);setTowTimer(30);setTowPuffs(0);setTowAiPuffs(0);
+    setTowComment("");setTowIntroStep(0);setTowSurge(false);setTowSurgeAvail(false);
+    setTowHolding(false);setTowPuffIntensity(0);setTowDust([]);setTowMudSplash(false);
+    setTowRopeStrain(0);setTowCrowdHype(0);setTowFlameFlicker(0);
+    towPosRef.current=50;towHoldRef.current=false;
+    setTowPhase("intro");
+    playFx("crowd");setCommentary("TUG OF WAR! Teams entering the arena! 🏟️");
+    let step=0;
+    const introTimer=setInterval(()=>{
+      step++;setTowIntroStep(step);
+      if(step>=4&&step<=6)playFx("tick");
+      if(step>=7){
+        clearInterval(introTimer);
+        playFx("whistle");setCommentary("PULL! Spam puff to win! 💪🫁");
+        setTowComment("PULL! 💪");
+        towStartMatch();
+      }
+    },700);
+  };
+
+  const towStartMatch = () => {
+    setTowPhase("playing");
+    let elapsed=0;
+    towInterval.current=setInterval(()=>{
+      elapsed++;
+      setTowTimer(t=>{
+        const newT=t-1;
+        if(elapsed%10===0&&elapsed<30){
+          setTowSurgeAvail(true);setTowComment("⚡ SURGE AVAILABLE! Puff NOW for 3x! ⚡");playFx("tick");
+          if(towSurgeTimer.current)clearTimeout(towSurgeTimer.current);
+          towSurgeTimer.current=setTimeout(()=>{setTowSurgeAvail(false);},3000);
+        }
+        if(newT<=5&&newT>0)playFx("tick");
+        if(newT<=0){
+          const pos=towPosRef.current;
+          if(pos>=45&&pos<=55){
+            setTowPhase("suddendeath");setTowTimer(10);
+            setTowComment("SUDDEN DEATH! 10 more seconds! ⚡💀");
+            playFx("crowd");triggerShake();setCommentary("TIED! SUDDEN DEATH! 💀");
+            return 10;
+          }
+          towFinishMatch();return 0;
+        }
+        return newT;
+      });
+      const aiStr=0.8+Math.random()*1.8;
+      if(Math.random()<0.45){
+        towPosRef.current=Math.max(0,towPosRef.current-aiStr);
+        setTowPosition(towPosRef.current);setTowAiPuffs(a=>a+1);
+        if(Math.random()<0.15){
+          towPosRef.current=Math.max(0,towPosRef.current-2.5);
+          setTowPosition(towPosRef.current);triggerShake();
+          setTowComment("AI BURST! They're pulling hard! 😤");
+        }
+      }
+      setTowFlameFlicker(f=>f+1);
+      setTowCrowdHype(Math.min(100,Math.abs(towPosRef.current-50)*2));
+      setTowRopeStrain(Math.min(1,Math.abs(towPosRef.current-50)/40));
+    },1000);
+    towPhysics.current=setInterval(()=>{
+      if(towHoldRef.current){
+        const pf=0.4+(Math.random()*0.3);
+        towPosRef.current=Math.min(100,towPosRef.current+pf);
+        setTowPosition(towPosRef.current);
+        setTowPuffIntensity(p=>Math.min(100,p+3));
+        if(Math.random()<0.3){
+          setTowDust(d=>[...d.slice(-12),{id:Date.now()+Math.random(),x:55+Math.random()*20,y:70+Math.random()*10,size:3+Math.random()*5}]);
+        }
+      } else {
+        setTowPuffIntensity(p=>Math.max(0,p-2));
+        if(towPosRef.current>50){towPosRef.current=Math.max(50,towPosRef.current-0.08);setTowPosition(towPosRef.current);}
+      }
+      setTowDust(d=>d.length>15?d.slice(-10):d);
+    },50);
+  };
+
+  const towFinishMatch = () => {
+    towCleanup();
+    const pos=towPosRef.current;const won=pos>50;
+    setTowPhase("result");
+    if(won){
+      spawnConfetti(40,[C.cyan,C.gold,C.blue,C.green]);playFx("win");triggerFlash("goal");triggerShake();
+      setTowComment(pick(TOW_COMMENTS_WIN));setCommentary("VICTORY! Your team DOMINATES! 💪🏆");
+    } else {
+      setTowMudSplash(true);playFx("lose");triggerFlash("miss");triggerShake();
+      setTowComment(pick(TOW_COMMENTS_LOSE));setCommentary("Defeat... into the mud pit! 🫠");
+      setTimeout(()=>setTowMudSplash(false),2000);
+    }
+  };
+
+  const towPuff = () => {
+    if(towPhase!=="playing"&&towPhase!=="suddendeath")return;
+    const isSudden=towPhase==="suddendeath";
+    const surgeMulti=towSurge?3:1;
+    const baseForce=isSudden?(2+Math.random()*2):(1.5+Math.random()*2);
+    const force=baseForce*surgeMulti;
+    towPosRef.current=Math.min(100,towPosRef.current+force);
+    setTowPosition(towPosRef.current);setTowPuffs(n=>n+1);playFx("kick");
+    if(towSurgeAvail&&!towSurge){
+      setTowSurge(true);setTowSurgeAvail(false);
+      setTowComment("🔥 SURGE ACTIVATED! 3x PULL POWER! 🔥");playFx("blinker");triggerFlash("blinker");triggerShake();
+      setTimeout(()=>{setTowSurge(false);setTowComment("Surge ended!");},3000);
+    } else if(towPuffs>0&&towPuffs%10===0){
+      setTowComment(pick(TOW_COMMENTS_PUFF));
+    } else {
+      setTowComment(pick(TOW_COMMENTS_PULL));
+    }
+    setTowDust(d=>[...d.slice(-12),{id:Date.now()+Math.random(),x:55+Math.random()*25,y:68+Math.random()*12,size:4+Math.random()*6}]);
+    if(force>3)triggerShake();
+  };
+
+  const towHoldStart = () => {towHoldRef.current=true;setTowHolding(true);};
+  const towHoldEnd = () => {towHoldRef.current=false;setTowHolding(false);};
+
+  const towEndGame = () => {
+    towCleanup();
+    const won=towPosRef.current>50;const r=won?80:15;
+    setCoins(c=>c+r);notify(won?"💪 Won! +"+r:"😤 Lost! +"+r,won?C.green:C.red);
+    setGameActive(null);setTowPhase(null);
+  };
 
   // ── Match Intro Sequence ──
   const startMatchIntro = (opponent) => {
@@ -3906,7 +4305,7 @@ export default function MoodLabArena() {
     }
     if(gameActive) {
       // ═══════════════════════════════════════════════════════════
-      // ── WILD WEST DUEL — CINEMATIC WESTERN v2 ──
+      // ── WILD WEST DUEL — CINEMATIC IMMERSIVE v3 (FK Quality) ──
       // ═══════════════════════════════════════════════════════════
       if(gameActive.id==="wildwest") {
         const wwOpp = duelOpponentRef.current || DUEL_OPPONENTS[0];
@@ -3919,10 +4318,12 @@ export default function MoodLabArena() {
         const wwVignetteIntensity = isTensionPhase ? (0.5 + duelStaredownStage * 0.12) : isDrawPhase ? 0.9 : 0.35;
         const wwScreenPulse = isTensionPhase ? (duelStaredownStage >= 2 ? "duelHeartbeat 0.8s ease-in-out infinite" : "duelHeartbeat 1.5s ease-in-out infinite") : "none";
         const puffMeterColor = duelPuffMeter < 20 ? C.text3 : duelPuffMeter < 45 ? C.cyan : duelPuffMeter < 70 ? C.gold : duelPuffMeter < 90 ? C.orange : C.red;
+        const isWc = gameActive?.wcMode;
 
         return (
-          <div style={{...overlayStyle, background:"none", overflow:"hidden", animation:screenShake?"shake 0.4s ease":"none",
-            filter:wwSlowMo?"saturate(1.4) contrast(1.15)":"none",transition:"filter 0.3s ease"}}
+          <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden",
+            animation:screenShake?"shake 0.4s ease":"none",
+            filter:dimLights?"brightness(0.6)":wwSlowMo?"saturate(1.4) contrast(1.15)":"brightness(1)",transition:"filter 0.3s"}}
             onMouseDown={()=>{if(["staredown","countdown","draw"].includes(wwPhase)) duelShoot();}}
             onMouseUp={()=>{if(wwPhase==="puffing") duelReleasePuff();}}
             onTouchStart={(e)=>{e.preventDefault();if(["staredown","countdown","draw"].includes(wwPhase)) duelShoot();}}
@@ -3933,6 +4334,76 @@ export default function MoodLabArena() {
               background:screenFlash==="goal"?"rgba(255,215,0,0.35)":screenFlash==="save"?"rgba(255,165,0,0.2)":screenFlash==="miss"?"rgba(255,20,20,0.4)":"rgba(255,0,0,0.3)",
               animation:"flashOverlay 0.4s ease forwards",
             }}/>}
+
+            {/* ═══ CONFETTI PARTICLES ═══ */}
+            {confettiParticles.length>0 && confettiParticles.map(p=>(
+              <div key={p.id} style={{position:"absolute",left:`${p.x}%`,top:`${p.y}%`,width:p.size,height:p.size*0.6,
+                background:p.color,borderRadius:1,transform:`rotate(${p.rot}deg)`,zIndex:210,pointerEvents:"none",
+                animation:`confettiFall ${1.5+Math.random()}s ease-out forwards`,
+              }}/>
+            ))}
+
+            {/* ═══ SMOKE PARTICLES ═══ */}
+            {smokeParticles.length>0 && smokeParticles.map(p=>(
+              <div key={p.id} style={{position:"absolute",left:`${p.x}%`,top:`${p.y}%`,width:p.size,height:p.size,
+                borderRadius:"50%",background:`radial-gradient(circle, rgba(255,255,255,0.06), transparent)`,
+                zIndex:205,pointerEvents:"none",filter:"blur(8px)",
+                animation:`smokeRise ${p.dur}s ease-out forwards`,
+              }}/>
+            ))}
+
+            {/* ═══ PUFF BUBBLES ═══ */}
+            {puffBubbles.length>0 && puffBubbles.map(b=>(
+              <div key={b.id} style={{position:"absolute",left:`${b.x}%`,bottom:`${b.y}%`,
+                zIndex:206,pointerEvents:"none",
+                animation:`bubbleFloat ${b.dur}s ease-out forwards`,
+                display:"flex",flexDirection:"column",alignItems:"center",gap:2,
+              }}>
+                <div style={{width:b.size*2.5,height:b.size*2.5,borderRadius:"50%",
+                  background:`linear-gradient(135deg, ${b.color}, ${b.color}80)`,
+                  border:`2px solid ${b.color}`,boxShadow:`0 0 10px ${b.color}40`,
+                  display:"flex",alignItems:"center",justifyContent:"center",fontSize:b.size*1.2,
+                }}>💨</div>
+                <div style={{fontSize:7,fontWeight:800,color:b.color,textShadow:`0 0 6px rgba(0,0,0,0.8)`,
+                  background:`rgba(0,0,0,0.4)`,padding:"1px 4px",borderRadius:6,
+                }}>+{(Math.random()*3+0.5).toFixed(1)}s</div>
+              </div>
+            ))}
+
+            {/* ═══ AUDIENCE BUBBLES ═══ */}
+            {audienceBubbles.length>0 && audienceBubbles.map(b=>(
+              <div key={b.id} style={{position:"absolute",left:`${b.x}%`,bottom:`${b.y}%`,
+                zIndex:204,pointerEvents:"none",opacity:0.4,
+                animation:`bubbleFloat ${b.dur}s ease-out forwards`,
+                display:"flex",flexDirection:"column",alignItems:"center",
+              }}>
+                <div style={{width:b.size*3,height:b.size*3,borderRadius:"50%",
+                  background:`radial-gradient(circle, ${b.color}, transparent)`,border:`1px solid ${b.color}`,
+                  display:"flex",alignItems:"center",justifyContent:"center",fontSize:b.size*1.5,
+                }}>{["💨","🔥","🤠","👀","🌵"][Math.floor(Math.random()*5)]}</div>
+              </div>
+            ))}
+
+            {/* ═══ SCREEN EDGE GLOW during puff ═══ */}
+            {duelPuffing && <div style={{position:"absolute",inset:0,zIndex:203,pointerEvents:"none",
+              boxShadow:`inset 0 0 60px ${C.orange}15, inset 0 0 120px ${C.gold}08`,
+              animation:"pulse 1.5s infinite",
+            }}/>}
+
+            {/* ═══ FLOATING REACTIONS ═══ */}
+            {floatingReactions.map(r=>(
+              <div key={r.id} style={{position:"absolute",left:`${r.x}%`,bottom:"25%",fontSize:22,animation:`bubbleFloat ${r.dur}s ease-out forwards`,zIndex:210,pointerEvents:"none"}}>{r.emoji}</div>
+            ))}
+
+            {/* ═══ PUFF WAVE ═══ */}
+            {puffWaveActive && <div style={{position:"absolute",bottom:0,left:0,right:0,height:"100%",zIndex:208,pointerEvents:"none",
+              background:`linear-gradient(0deg, rgba(244,167,66,0.08) 0%, rgba(139,69,19,0.04) 30%, transparent 60%)`,
+              animation:"puffWaveSweep 3s ease forwards",
+            }}>
+              <div style={{position:"absolute",bottom:"20%",left:"50%",transform:"translateX(-50%)",fontSize:12,fontWeight:900,color:C.gold,textShadow:`0 0 20px ${C.gold}`,animation:"fadeIn 0.5s ease",whiteSpace:"nowrap"}}>
+                DUST STORM! THE ARENA IS CLOUDED! 🌪️💨
+              </div>
+            </div>}
 
             {/* ═══ DRAW RED FLASH ═══ */}
             {isDrawPhase && <div style={{position:"absolute",inset:0,zIndex:3,pointerEvents:"none",background:"rgba(180,0,0,0.15)",animation:"duelRedPulse 0.4s ease-in-out infinite"}}/>}
@@ -3953,43 +4424,74 @@ export default function MoodLabArena() {
               transition:"all 1s ease",
             }}/>
 
-            {/* Stars in dark sky */}
-            {[...Array(12)].map((_,i)=>(
-              <div key={"star"+i} style={{position:"absolute",top:(2+Math.sin(i*1.7)*8)+"%",left:(5+i*8)+"%",width:i%3===0?3:2,height:i%3===0?3:2,borderRadius:"50%",background:"rgba(255,255,255,"+(0.3+Math.sin(i)*0.3)+")",animation:`duelStar ${2+i%3}s ease-in-out infinite`,animationDelay:i*0.3+"s",pointerEvents:"none"}}/>
+            {/* Stars — more stars, varied sizes */}
+            {[...Array(20)].map((_,i)=>(
+              <div key={"star"+i} style={{position:"absolute",top:(1+Math.sin(i*1.3)*10)+"%",left:(3+i*4.8)+"%",width:i%4===0?3:i%3===0?2.5:2,height:i%4===0?3:i%3===0?2.5:2,borderRadius:"50%",background:"rgba(255,255,255,"+(0.2+Math.sin(i*0.7)*0.4)+")",animation:`duelStar ${1.5+i%4}s ease-in-out infinite`,animationDelay:(i*0.2)+"s",pointerEvents:"none"}}/>
             ))}
 
-            {/* Moon */}
-            <div style={{position:"absolute",top:"4%",right:"12%",width:20,height:20,borderRadius:"50%",background:"radial-gradient(circle at 35% 35%, #f0e6d0 0%, #d4c4a0 50%, rgba(180,160,120,0.4) 100%)",boxShadow:"0 0 15px rgba(240,230,200,0.3)",opacity:wwSunsetIntensity<1.3?0.7:0.3,transition:"opacity 1s",pointerEvents:"none"}}/>
+            {/* Shooting star during high tension */}
+            {isTensionPhase && duelStaredownStage >= 2 && (
+              <div style={{position:"absolute",top:"6%",left:"10%",width:40,height:1,background:"linear-gradient(90deg, rgba(255,255,255,0.8), transparent)",transform:"rotate(35deg)",animation:"wwShootingStar 2s ease-out forwards",pointerEvents:"none"}}/>
+            )}
+
+            {/* Moon — larger with halo */}
+            <div style={{position:"absolute",top:"3%",right:"10%",width:28,height:28,borderRadius:"50%",background:"radial-gradient(circle at 35% 35%, #f5eed8 0%, #ddd0a8 40%, rgba(180,160,120,0.5) 70%, transparent 100%)",boxShadow:"0 0 20px rgba(240,230,200,0.4), 0 0 60px rgba(240,230,200,0.15)",opacity:wwSunsetIntensity<1.3?0.8:0.3,transition:"opacity 1s",pointerEvents:"none"}}/>
 
             {/* Heat shimmer */}
             {(isTensionPhase||isCountdown) && <div style={{position:"absolute",inset:0,animation:"duelHeatShimmer 3s ease-in-out infinite",opacity:0.25,backgroundImage:"repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(255,167,66,0.025) 3px, rgba(255,167,66,0.025) 6px)",pointerEvents:"none"}}/>}
 
-            {/* Sun glow (bigger, more dramatic) */}
-            <div style={{position:"absolute",top:"6%",left:"50%",transform:"translateX(-50%)",width:120,height:120,borderRadius:"50%",background:"radial-gradient(circle, rgba(255,200,50,0.9) 0%, rgba(255,140,50,0.5) 25%, rgba(255,100,30,0.2) 50%, transparent 70%)",filter:"blur(12px)",opacity:wwSunsetIntensity*0.55,transition:"opacity 1s",pointerEvents:"none"}}/>
+            {/* Sun glow */}
+            <div style={{position:"absolute",top:"5%",left:"50%",transform:"translateX(-50%)",width:140,height:140,borderRadius:"50%",background:"radial-gradient(circle, rgba(255,200,50,0.9) 0%, rgba(255,140,50,0.5) 20%, rgba(255,100,30,0.2) 45%, transparent 65%)",filter:"blur(14px)",opacity:wwSunsetIntensity*0.55,transition:"opacity 1s",pointerEvents:"none"}}/>
 
-            {/* Long shadow from sun */}
-            <div style={{position:"absolute",top:"12%",left:"50%",transform:"translateX(-50%)",width:4,height:"60%",background:"linear-gradient(180deg, rgba(255,180,50,0.15) 0%, transparent 100%)",filter:"blur(6px)",opacity:0.5,pointerEvents:"none"}}/>
+            {/* Light rays from sun */}
+            {[...Array(5)].map((_,i)=>(
+              <div key={"ray"+i} style={{position:"absolute",top:"8%",left:`${38+i*6}%`,width:2,height:`${25+i*8}%`,background:`linear-gradient(180deg, rgba(255,200,80,${0.08-i*0.01}) 0%, transparent 100%)`,filter:"blur(4px)",transform:`rotate(${-12+i*6}deg)`,transformOrigin:"top center",opacity:wwSunsetIntensity*0.6,pointerEvents:"none"}}/>
+            ))}
 
-            {/* ═══ WESTERN TOWN SILHOUETTE ═══ */}
-            <div style={{position:"absolute",bottom:"26%",left:0,right:0,height:90,overflow:"hidden",pointerEvents:"none"}}>
-              <svg viewBox="0 0 400 80" style={{width:"100%",height:"100%",position:"absolute",bottom:0}} preserveAspectRatio="none">
-                <path d="M0,80 L0,55 L15,55 L15,40 L20,38 L25,40 L25,55 L40,55 L40,35 L42,30 L44,28 L46,30 L48,35 L48,55 L55,55 L55,45 L70,45 L70,30 L75,25 L80,30 L80,55 L90,55 L90,50 L95,50 L95,38 L97,35 L99,38 L99,55 L110,55 L110,48 L130,48 L130,55 L140,55 L140,30 L142,20 L145,18 L148,20 L150,30 L150,55 L160,55 L160,42 L175,42 L175,55 L185,55 L185,35 L190,32 L195,28 L200,25 L205,28 L210,32 L215,35 L215,55 L225,55 L225,50 L240,50 L240,55 L250,55 L250,38 L252,33 L255,30 L258,33 L260,38 L260,55 L280,55 L280,45 L285,42 L290,45 L290,55 L300,55 L300,35 L310,35 L310,20 L312,15 L315,12 L318,15 L320,20 L320,55 L335,55 L335,48 L350,48 L350,55 L365,55 L365,40 L370,38 L375,40 L375,55 L390,55 L390,50 L400,50 L400,80 Z" fill="#1a0a05" opacity="0.95"/>
-                <rect x="305" y="8" width="20" height="8" fill="#1a0a05" opacity="0.95"/>
-                <rect x="312" y="16" width="6" height="20" fill="#1a0a05" opacity="0.95"/>
-                <rect x="185" y="32" width="30" height="5" rx="1" fill="#2a1505" opacity="0.8"/>
+            {/* ═══ DISTANT MOUNTAINS ═══ */}
+            <div style={{position:"absolute",bottom:"28%",left:0,right:0,height:60,overflow:"hidden",pointerEvents:"none"}}>
+              <svg viewBox="0 0 400 50" style={{width:"100%",height:"100%",position:"absolute",bottom:0}} preserveAspectRatio="none">
+                <path d="M0,50 L0,38 L20,30 L40,35 L65,20 L80,28 L100,15 L120,25 L140,18 L160,30 L180,22 L200,12 L220,25 L240,18 L260,28 L280,15 L300,22 L320,30 L340,20 L360,28 L380,32 L400,25 L400,50 Z" fill="#1a0a08" opacity="0.6"/>
               </svg>
             </div>
 
+            {/* ═══ WESTERN TOWN SILHOUETTE ═══ */}
+            <div style={{position:"absolute",bottom:"24%",left:0,right:0,height:100,overflow:"hidden",pointerEvents:"none"}}>
+              <svg viewBox="0 0 400 80" style={{width:"100%",height:"100%",position:"absolute",bottom:0}} preserveAspectRatio="none">
+                <path d="M0,80 L0,55 L15,55 L15,40 L20,38 L25,40 L25,55 L40,55 L40,35 L42,30 L44,28 L46,30 L48,35 L48,55 L55,55 L55,45 L70,45 L70,30 L75,25 L80,30 L80,55 L90,55 L90,50 L95,50 L95,38 L97,35 L99,38 L99,55 L110,55 L110,48 L130,48 L130,55 L140,55 L140,30 L142,20 L145,18 L148,20 L150,30 L150,55 L160,55 L160,42 L175,42 L175,55 L185,55 L185,35 L190,32 L195,28 L200,25 L205,28 L210,32 L215,35 L215,55 L225,55 L225,50 L240,50 L240,55 L250,55 L250,38 L252,33 L255,30 L258,33 L260,38 L260,55 L280,55 L280,45 L285,42 L290,45 L290,55 L300,55 L300,35 L310,35 L310,20 L312,15 L315,12 L318,15 L320,20 L320,55 L335,55 L335,48 L350,48 L350,55 L365,55 L365,40 L370,38 L375,40 L375,55 L390,55 L390,50 L400,50 L400,80 Z" fill="#1a0a05" opacity="0.95"/>
+                <rect x="305" y="8" width="22" height="10" fill="#1a0a05" opacity="0.95"/>
+                <rect x="313" y="18" width="6" height="22" fill="#1a0a05" opacity="0.95"/>
+                <rect x="185" y="34" width="32" height="5" rx="1" fill="#2a1505" opacity="0.8"/>
+                <rect x="144" y="12" width="2" height="8" fill="#2a1505" opacity="0.9"/>
+                <rect x="141" y="14" width="8" height="2" fill="#2a1505" opacity="0.9"/>
+                <rect x="60" y="52" width="5" height="5" fill="#3a2510" opacity="0.4"/>
+                <rect x="115" y="52" width="5" height="5" fill="#3a2510" opacity="0.3"/>
+              </svg>
+            </div>
+
+            {/* ═══ CAMPFIRE GLOW ═══ */}
+            <div style={{position:"absolute",bottom:"22%",left:"15%",width:50,height:40,borderRadius:"50%",background:"radial-gradient(circle, rgba(255,140,20,0.15) 0%, rgba(255,80,0,0.06) 40%, transparent 70%)",filter:"blur(10px)",animation:"duelBreathe 2s ease-in-out infinite",pointerEvents:"none"}}/>
+            <div style={{position:"absolute",bottom:"23.5%",left:"17%",fontSize:10,opacity:0.35,animation:"duelBreathe 1.5s ease-in-out infinite",pointerEvents:"none"}}>🔥</div>
+            <div style={{position:"absolute",bottom:"22%",right:"12%",width:40,height:35,borderRadius:"50%",background:"radial-gradient(circle, rgba(255,160,40,0.12) 0%, rgba(255,100,0,0.04) 50%, transparent 70%)",filter:"blur(8px)",animation:"duelBreathe 2.3s ease-in-out infinite",pointerEvents:"none"}}/>
+
             {/* ═══ GROUND / DESERT FLOOR ═══ */}
-            <div style={{position:"absolute",bottom:0,left:0,right:0,height:"26%",background:"linear-gradient(180deg, #8b4513 0%, #6b3410 20%, #5a2a0e 40%, #4a2008 60%, #2d1205 100%)",pointerEvents:"none"}}/>
-            <div style={{position:"absolute",bottom:0,left:0,right:0,height:"26%",backgroundImage:"radial-gradient(circle, rgba(139,69,19,0.3) 1px, transparent 1px)",backgroundSize:"18px 18px",opacity:0.4,pointerEvents:"none"}}/>
+            <div style={{position:"absolute",bottom:0,left:0,right:0,height:"24%",background:"linear-gradient(180deg, #8b4513 0%, #6b3410 20%, #5a2a0e 40%, #4a2008 60%, #2d1205 100%)",pointerEvents:"none"}}/>
+            <div style={{position:"absolute",bottom:0,left:0,right:0,height:"24%",backgroundImage:"radial-gradient(circle, rgba(139,69,19,0.3) 1px, transparent 1px)",backgroundSize:"18px 18px",opacity:0.4,pointerEvents:"none"}}/>
             {/* Cactus silhouettes */}
-            <div style={{position:"absolute",bottom:"24%",left:"8%",fontSize:20,opacity:0.15,transform:"scaleX(-1)",pointerEvents:"none"}}>🌵</div>
-            <div style={{position:"absolute",bottom:"23%",right:"6%",fontSize:16,opacity:0.12,pointerEvents:"none"}}>🌵</div>
+            <div style={{position:"absolute",bottom:"22%",left:"6%",fontSize:22,opacity:0.18,transform:"scaleX(-1)",filter:"drop-shadow(0 4px 8px rgba(0,0,0,0.5))",pointerEvents:"none"}}>🌵</div>
+            <div style={{position:"absolute",bottom:"21%",right:"5%",fontSize:18,opacity:0.14,filter:"drop-shadow(0 4px 8px rgba(0,0,0,0.5))",pointerEvents:"none"}}>🌵</div>
+            <div style={{position:"absolute",bottom:"22.5%",left:"45%",fontSize:10,opacity:0.1,pointerEvents:"none"}}>🌵</div>
+
+            {/* Vulture circling */}
+            <div style={{position:"absolute",top:"14%",left:"20%",fontSize:14,opacity:0.25,animation:"wwVulture 12s linear infinite",pointerEvents:"none"}}>🦅</div>
 
             {/* ═══ TUMBLEWEED ═══ */}
             {duelTumbleweed && isTensionPhase && (
-              <div style={{position:"absolute",bottom:"28%",fontSize:22,animation:"duelTumbleweed 7s linear infinite",opacity:0.6,filter:"drop-shadow(0 2px 6px rgba(0,0,0,0.6))",pointerEvents:"none"}}>🌾</div>
+              <div style={{position:"absolute",bottom:"26%",fontSize:24,animation:"duelTumbleweed 6s linear infinite",opacity:0.5,filter:"drop-shadow(0 3px 8px rgba(0,0,0,0.7))",pointerEvents:"none"}}>🌾</div>
+            )}
+            {/* Second tumbleweed */}
+            {duelTumbleweed && isTensionPhase && duelStaredownStage >= 2 && (
+              <div style={{position:"absolute",bottom:"24%",fontSize:16,animation:"duelTumbleweed 10s linear 2s infinite",opacity:0.3,pointerEvents:"none"}}>🌾</div>
             )}
 
             {/* ═══ DUST PARTICLES ═══ */}
@@ -4003,10 +4505,21 @@ export default function MoodLabArena() {
             {/* Screen pulse */}
             <div style={{position:"absolute",inset:0,animation:wwScreenPulse,pointerEvents:"none",zIndex:1}}/>
 
+            {/* Tension tint — screen gets progressively redder */}
+            {isTensionPhase && <div style={{position:"absolute",inset:0,background:`rgba(180,20,0,${0.02+duelStaredownStage*0.03})`,transition:"background 1s ease",pointerEvents:"none",zIndex:2}}/>}
+
+            {/* ═══ AI COMMENTATOR ═══ */}
+            {commentatorText && <div style={{position:"absolute",top:8,left:80,right:10,zIndex:215,display:"flex",alignItems:"center",animation:"fadeIn 0.3s ease",pointerEvents:"none"}}>
+              <div style={{flex:1,padding:"5px 10px",borderRadius:8,background:`rgba(15,8,3,0.75)`,backdropFilter:"blur(8px)",border:`1px solid rgba(139,69,19,0.3)`,display:"flex",alignItems:"center",gap:4}}>
+                <span style={{fontSize:10,flexShrink:0}}>🤠</span>
+                <span style={{fontSize:8,fontWeight:600,color:C.gold,fontStyle:"italic",lineHeight:1.2}}>{commentatorText}</span>
+              </div>
+            </div>}
+
             {/* ═══ BACK BUTTON ═══ */}
             {overlayBack(()=>{resetDuel(); setGameActive(null);})}
 
-            {/* ═══ MATCH INTRO OVERLAY ═══ */}
+            {/* ═══ MATCH INTRO — WWE Style ═══ */}
             {duelIntroStage && (
               <div style={{position:"absolute",inset:0,zIndex:50,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
                 background:`radial-gradient(ellipse at 50% 30%, rgba(244,167,66,0.08) 0%, transparent 50%),
@@ -4018,7 +4531,7 @@ export default function MoodLabArena() {
                 <div style={{position:"absolute",top:0,right:"20%",width:2,height:"40%",background:`linear-gradient(180deg, ${C.orange}25, transparent)`,filter:"blur(3px)"}}/>
 
                 <div style={{marginBottom:16,padding:"4px 18px",borderRadius:20,background:`${C.gold}12`,border:`1px solid ${C.gold}30`}}>
-                  <span style={{fontSize:10,fontWeight:800,color:C.gold,letterSpacing:4,textTransform:"uppercase"}}>HIGH NOON SHOWDOWN</span>
+                  <span style={{fontSize:10,fontWeight:800,color:C.gold,letterSpacing:4,textTransform:"uppercase"}}>{isWc && wcTeam ? wcTeam.flag+" " : ""}HIGH NOON SHOWDOWN</span>
                 </div>
 
                 <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:20,marginBottom:16}}>
@@ -4243,112 +4756,90 @@ export default function MoodLabArena() {
                 </div>
               </div>
 
-              {/* ── BOTTOM PANEL ── */}
-              <div style={{padding:"8px 16px 20px",position:"relative",zIndex:20}}>
-                {commentatorText && (
-                  <div style={{textAlign:"center",padding:"7px 14px",borderRadius:12,background:"rgba(20,10,5,0.6)",border:"1px solid rgba(139,69,19,0.3)",marginBottom:8,animation:"fadeIn 0.3s ease"}}>
-                    <span style={{fontSize:10,fontWeight:700,color:C.gold,letterSpacing:0.5}}>{commentatorText}</span>
+              {/* ── BOTTOM PANEL: Reactions + Audience + Chat/Stats ── */}
+              <div style={{position:"absolute",bottom:0,left:0,right:0,zIndex:20,display:"flex",flexDirection:"column"}}>
+                {/* Reaction bar */}
+                <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:2,padding:"3px 6px",...GLASS_CLEAR,borderRadius:"10px 10px 0 0"}}>
+                  {[{e:"😰"},{e:"🤠"},{e:"👀"},{e:"🔥"},{e:"💀"},{e:"💨"},{e:"😂"},{e:"🤫"}].map((r,i)=>(
+                    <div key={i} onClick={(ev)=>{ev.stopPropagation();playFx("tap");const msg={u:"You",m:r.e,c:audienceSide==="you"?C.cyan:C.orange,t:Date.now()};setSideChat(p=>({...p,[audienceSide]:[...p[audienceSide],msg]}));setFloatingReactions(p=>[...p,{id:Date.now()+i,emoji:r.e,x:15+Math.random()*70,dur:1.5+Math.random()}]);if(r.e==="😂")playFx("laugh");if(r.e==="💨"&&Math.random()<0.15&&!puffWaveActive){triggerPuffWave();playFx("crowd");setCommentary("🌪️ DUST STORM!");}}} style={{width:28,height:28,borderRadius:7,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:13,background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.06)"}}>
+                      {r.e}
+                    </div>
+                  ))}
+                  <div onClick={(ev)=>{ev.stopPropagation();playFx("tap");setAudioOn(!audioOn);}} style={{width:28,height:28,borderRadius:7,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:11,marginLeft:1,background:audioOn?`${C.green}10`:`${C.red}10`,border:`1px solid ${audioOn?C.green+"20":C.red+"20"}`}}>{audioOn?"🔊":"🔇"}</div>
+                </div>
+
+                {/* Side picker + Chat/Stats panel */}
+                <div style={{...GLASS_CARD,display:"flex",flexDirection:"column",maxHeight:"32%",overflow:"hidden"}}>
+                  <div style={{display:"flex",alignItems:"center",padding:"3px 6px",gap:3,borderBottom:`1px solid ${C.border}`}}>
+                    <div style={{flex:1,padding:"5px 6px",borderRadius:8,textAlign:"center",background:audienceSide==="you"?`${C.cyan}15`:"transparent",border:`1px solid ${audienceSide==="you"?C.cyan+"30":"transparent"}`}}>
+                      <div style={{fontSize:9,fontWeight:800,color:audienceSide==="you"?C.cyan:C.text3}}>{isWc&&wcTeam?wcTeam.flag:""} 😎 Steve</div>
+                      <div style={{fontSize:7,color:C.text3}}>👥 {sideFans.you}</div>
+                    </div>
+                    <div style={{width:70,textAlign:"center"}}>
+                      <div style={{height:4,borderRadius:2,background:`${C.text3}15`,overflow:"hidden",display:"flex",marginBottom:3}}><div style={{width:`${sideFans.you/(sideFans.you+sideFans.ai)*100}%`,background:C.cyan,transition:"width 0.5s"}}/><div style={{flex:1,background:C.orange}}/></div>
+                      <div onMouseDown={(ev)=>{ev.stopPropagation();startSwitchPuff();}} onMouseUp={(ev)=>{ev.stopPropagation();stopSwitchPuff();}} onMouseLeave={(ev)=>{ev.stopPropagation();stopSwitchPuff();}} onTouchStart={(ev)=>{ev.preventDefault();ev.stopPropagation();startSwitchPuff();}} onTouchEnd={(ev)=>{ev.preventDefault();ev.stopPropagation();stopSwitchPuff();}} style={{padding:"4px 6px",borderRadius:8,cursor:"pointer",background:switchPuffing?`${C.red}15`:`${C.gold}08`,border:`1px solid ${switchPuffing?C.red+"40":C.gold+"25"}`,userSelect:"none",WebkitUserSelect:"none",position:"relative",overflow:"hidden",transition:"all 0.2s"}}>
+                        {switchPuffing&&<div style={{position:"absolute",left:0,top:0,bottom:0,width:`${switchPuffProgress}%`,background:switchPuffProgress>=80?`${C.red}20`:`${C.gold}15`,transition:"width 0.05s linear",borderRadius:8}}/>}
+                        <div style={{position:"relative",zIndex:1}}><div style={{fontSize:7,fontWeight:800,color:switchPuffing?C.red:C.gold}}>{switchPuffing?`💨 ${(switchPuffProgress*2.5/100).toFixed(1)}s`:"🔄 Hold"} {audienceTraitor?"🐍":""}</div>{switchPuffing&&<div style={{fontSize:6,color:C.text3,marginTop:1}}>{switchPuffProgress<80?"Keep puffing...":"Almost! 🔥"}</div>}{!switchPuffing&&<div style={{fontSize:5,color:C.text3,marginTop:1}}>Puff to Switch</div>}</div>
+                      </div>
+                    </div>
+                    <div style={{flex:1,padding:"5px 6px",borderRadius:8,textAlign:"center",background:audienceSide==="ai"?`${C.orange}15`:"transparent",border:`1px solid ${audienceSide==="ai"?C.orange+"30":"transparent"}`}}>
+                      <div style={{fontSize:9,fontWeight:800,color:audienceSide==="ai"?C.orange:C.text3}}>{wwOpp.emoji} {wwOpp.name.split(" ")[0]}</div>
+                      <div style={{fontSize:7,color:C.text3}}>👥 {sideFans.ai}</div>
+                    </div>
                   </div>
-                )}
-
-                {!["final","intro"].includes(wwPhase) && !duelIntroStage && !isCountdown && (
-                  <div style={{display:"flex",justifyContent:"space-around",padding:"8px 12px",borderRadius:14,background:"rgba(20,10,5,0.5)",border:"1px solid rgba(139,69,19,0.2)"}}>
-                    <div style={{textAlign:"center"}}>
-                      <div style={{fontSize:12,fontWeight:900,color:C.cyan}}>{duelStats.fastestDraw < 999 ? duelStats.fastestDraw+"ms" : "---"}</div>
-                      <div style={{fontSize:7,color:"rgba(210,170,120,0.5)",letterSpacing:0.5}}>Best Draw</div>
-                    </div>
-                    <div style={{textAlign:"center"}}>
-                      <div style={{fontSize:12,fontWeight:900,color:C.gold}}>{duelStats.avgDraw || "---"}{duelStats.avgDraw ? "ms" : ""}</div>
-                      <div style={{fontSize:7,color:"rgba(210,170,120,0.5)",letterSpacing:0.5}}>Avg Draw</div>
-                    </div>
-                    <div style={{textAlign:"center"}}>
-                      <div style={{fontSize:12,fontWeight:900,color:C.red}}>{duelStats.fouls}</div>
-                      <div style={{fontSize:7,color:"rgba(210,170,120,0.5)",letterSpacing:0.5}}>Fouls</div>
-                    </div>
-                    <div style={{textAlign:"center"}}>
-                      <div style={{fontSize:12,fontWeight:900,color:C.green}}>{duelStats.streak}</div>
-                      <div style={{fontSize:7,color:"rgba(210,170,120,0.5)",letterSpacing:0.5}}>Streak</div>
-                    </div>
+                  <div style={{display:"flex",borderBottom:`1px solid ${C.border}`}}>
+                    {[{id:"chat",label:"💬 Chat"},{id:"stats",label:"📊 Stats"}].map(t=>(<div key={t.id} onClick={(ev)=>{ev.stopPropagation();playFx("nav");setGameBottomTab(t.id);}} style={{flex:1,padding:"3px 0",textAlign:"center",cursor:"pointer",borderBottom:gameBottomTab===t.id?`2px solid ${C.gold}`:`2px solid transparent`}}><span style={{fontSize:8,fontWeight:gameBottomTab===t.id?800:600,color:gameBottomTab===t.id?C.gold:C.text3}}>{t.label}</span></div>))}
                   </div>
-                )}
-
-                {wwPhase==="final" && (
-                  <div style={{textAlign:"center",padding:"18px",borderRadius:16,background:"rgba(15,8,3,0.8)",border:"1px solid rgba(139,69,19,0.4)",animation:"fadeIn 0.5s ease",boxShadow:"0 8px 32px rgba(0,0,0,0.5)"}}>
-                    <div style={{fontSize:36,marginBottom:6}}>{duelScore.you >= 3 ? "🏆" : "💀"}</div>
-                    <div style={{fontSize:24,fontWeight:900,color:duelScore.you>=3?C.gold:C.red,textShadow:`0 0 30px ${duelScore.you>=3?C.gold:C.red}50`,marginBottom:6,letterSpacing:2,textTransform:"uppercase"}}>
-                      {duelScore.you >= 3 ? "FASTEST GUN!" : "OUTDRAWN!"}
-                    </div>
-                    <div style={{fontSize:12,color:C.text2,marginBottom:14,letterSpacing:1}}>
-                      Final Score: {duelScore.you} - {duelScore.ai}
-                    </div>
-
-                    <div style={{display:"flex",justifyContent:"center",gap:4,marginBottom:14,flexWrap:"wrap"}}>
-                      {duelRoundResults.map((rr,i)=>(
-                        <div key={i} style={{padding:"5px 8px",borderRadius:8,background:rr.win?`${C.green}12`:`${C.red}12`,border:`1px solid ${rr.win?C.green:C.red}25`,textAlign:"center",minWidth:52}}>
-                          <div style={{fontSize:9,fontWeight:800,color:rr.win?C.green:C.red}}>{rr.foul?"FOUL":rr.win?"WIN":"LOSS"}</div>
-                          {!rr.foul && rr.you > 0 && <div style={{fontSize:7,color:C.text3,marginTop:1}}>{rr.you}ms</div>}
-                          {rr.bonus && rr.bonusCoins > 0 && <div style={{fontSize:6,color:C.gold,marginTop:1}}>+{rr.bonusCoins}</div>}
+                  <div style={{flex:1,overflowY:"auto",padding:"4px 10px 6px"}}>
+                    {gameBottomTab==="chat" ? (
+                      <div>
+                        {(()=>{const isBreak=["result","round_result","final"].includes(wwPhase);const allMsgs=isBreak?[...(sideChat.you||[]),...(sideChat.ai||[]),...mergedChat].sort((a,b)=>a.t-b.t).slice(-10):(sideChat[audienceSide]||[]).slice(-8);const chatLabel=isBreak?"🏜️ SALOON CHAT":(audienceSide==="you"?"😎 Steve's Posse":wwOpp.emoji+" "+wwOpp.name+"'s Posse");const chatColor=isBreak?C.gold:(audienceSide==="you"?C.cyan:C.orange);return <><div style={{fontSize:6,fontWeight:700,color:chatColor,marginBottom:2,display:"flex",alignItems:"center",gap:3}}><span>{chatLabel}</span>{audienceTraitor&&!isBreak&&<span style={{fontSize:6,color:C.gold}}>🐍</span>}{isBreak&&<span style={{fontSize:5,color:C.text3,background:`${C.gold}12`,padding:"1px 4px",borderRadius:3}}>OPEN</span>}<span style={{fontSize:5,color:C.text3,marginLeft:"auto"}}>👥 {sideFans.you+sideFans.ai}</span></div>{allMsgs.map((m,i)=>(<div key={i} style={{fontSize:7,marginBottom:1,lineHeight:1.3,animation:"fadeIn 0.2s ease"}}><span style={{fontWeight:700,color:m.c||C.text2}}>{m.u==="⚠ SYSTEM"?"⚠":m.u.slice(0,6)}</span><span style={{color:C.text3}}> {m.m}</span></div>))}</>;})()}
+                        {(()=>{const isBreak=["result","round_result","final"].includes(wwPhase);const sendMsg=(txt)=>{if(!txt.trim())return;const msg={u:"You",m:txt.trim(),c:audienceSide==="you"?C.cyan:C.orange,t:Date.now()};if(isBreak){setMergedChat(p=>[...p,msg]);}else{setSideChat(p=>({...p,[audienceSide]:[...p[audienceSide],msg]}));}setChatInput("");};return <div style={{display:"flex",gap:3,marginTop:2}}><input value={chatInput} onChange={e=>setChatInput(e.target.value)} onKeyDown={e=>{if(e.key==="Enter")sendMsg(chatInput);}} onClick={(ev)=>ev.stopPropagation()} onTouchStart={(ev)=>ev.stopPropagation()} placeholder={isBreak?"Saloon chat...":"Cheer..."} style={{flex:1,background:`${C.text3}06`,border:`1px solid ${C.border}`,borderRadius:6,padding:"3px 6px",fontSize:7,color:C.text,outline:"none"}}/><div onClick={(ev)=>{ev.stopPropagation();sendMsg(chatInput);}} style={{padding:"3px 7px",borderRadius:6,cursor:"pointer",fontSize:7,fontWeight:700,color:isBreak?C.gold:audienceSide==="you"?C.cyan:C.orange,...LG.tinted(isBreak?C.gold:audienceSide==="you"?C.cyan:C.orange)}}>Send</div></div>;})()}
+                      </div>
+                    ) : (
+                      <div>
+                        <div style={{display:"flex",gap:2,marginBottom:4}}>
+                          {[{v:duelStats.fastestDraw<999?duelStats.fastestDraw+"ms":"---",l:"Best",c:C.cyan,e:"⚡"},{v:duelStats.avgDraw||"---",l:"Avg",c:C.gold,e:"📊"},{v:duelStats.fouls,l:"Fouls",c:C.red,e:"⚠"},{v:duelStats.wins,l:"Wins",c:C.green,e:"🏆"},{v:duelStats.streak,l:"Streak",c:C.orange,e:"🔥"}].map((s,i)=>(<div key={i} style={{flex:1,textAlign:"center",padding:"4px 2px",borderRadius:6,background:`${s.c}06`,border:`1px solid ${s.c}15`}}><div style={{fontSize:8,marginBottom:1}}>{s.e}</div><div style={{fontSize:10,fontWeight:900,color:s.c}}>{s.v}</div><div style={{fontSize:5,color:C.text3}}>{s.l}</div></div>))}
                         </div>
-                      ))}
-                    </div>
-
-                    <div style={{display:"flex",justifyContent:"space-around",marginBottom:14,padding:"8px",borderRadius:10,background:"rgba(255,255,255,0.02)",border:"1px solid rgba(139,69,19,0.15)"}}>
-                      <div style={{textAlign:"center"}}>
-                        <div style={{fontSize:14,fontWeight:900,color:C.cyan}}>{duelStats.fastestDraw < 999 ? duelStats.fastestDraw+"ms" : "---"}</div>
-                        <div style={{fontSize:7,color:"rgba(210,170,120,0.5)"}}>Fastest</div>
-                      </div>
-                      <div style={{textAlign:"center"}}>
-                        <div style={{fontSize:14,fontWeight:900,color:C.gold}}>{duelStats.avgDraw||"---"}{duelStats.avgDraw?"ms":""}</div>
-                        <div style={{fontSize:7,color:"rgba(210,170,120,0.5)"}}>Average</div>
-                      </div>
-                      <div style={{textAlign:"center"}}>
-                        <div style={{fontSize:14,fontWeight:900,color:C.red}}>{duelStats.fouls}</div>
-                        <div style={{fontSize:7,color:"rgba(210,170,120,0.5)"}}>Fouls</div>
-                      </div>
-                    </div>
-
-                    {duelScore.you >= 3 && (
-                      <div style={{fontSize:12,color:C.gold,fontWeight:800,marginBottom:10,letterSpacing:1}}>
-                        +{150+duelRoundResults.reduce((s,r)=>s+(r.win?r.bonusCoins:0),0)} coins earned!
+                        {duelRoundResults.length>0&&(<div style={{display:"flex",gap:3,justifyContent:"center",marginTop:4}}>{duelRoundResults.map((rr,i)=>(<div key={i} style={{padding:"3px 6px",borderRadius:6,background:rr.win?`${C.green}10`:`${C.red}10`,border:`1px solid ${rr.win?C.green:C.red}20`,textAlign:"center",minWidth:40}}><div style={{fontSize:7,fontWeight:800,color:rr.win?C.green:C.red}}>{rr.foul?"FOUL":rr.win?"WIN":"LOSS"}</div>{!rr.foul&&rr.you>0&&<div style={{fontSize:6,color:C.text3}}>{rr.you}ms</div>}{rr.bonus&&rr.bonusCoins>0&&<div style={{fontSize:5,color:C.gold}}>+{rr.bonusCoins}</div>}</div>))}</div>)}
                       </div>
                     )}
+                  </div>
+                </div>
 
-                    <div style={{display:"flex",gap:8,justifyContent:"center"}}>
-                      <div onClick={(e)=>{e.stopPropagation();startDuel();}} style={{padding:"10px 22px",borderRadius:10,cursor:"pointer",background:`linear-gradient(135deg, ${C.gold}20, ${C.gold}08)`,border:`1px solid ${C.gold}40`,fontSize:13,fontWeight:800,color:C.gold,letterSpacing:1}}>
-                        REMATCH
+                {/* ═══ FINAL RESULT OVERLAY ═══ */}
+                {wwPhase==="final" && (
+                  <div style={{position:"absolute",bottom:0,left:0,right:0,zIndex:30}}>
+                    <div style={{textAlign:"center",padding:"16px 20px 24px",borderRadius:"16px 16px 0 0",...GLASS_CARD,boxShadow:"0 -8px 32px rgba(0,0,0,0.6)",animation:"fadeIn 0.5s ease"}}>
+                      <div style={{fontSize:40,marginBottom:4}}>{duelScore.you >= 3 ? "🏆" : "💀"}</div>
+                      <div style={{fontSize:26,fontWeight:900,color:duelScore.you>=3?C.gold:C.red,textShadow:`0 0 40px ${duelScore.you>=3?C.gold:C.red}50`,marginBottom:4,letterSpacing:3,textTransform:"uppercase"}}>
+                        {duelScore.you >= 3 ? "FASTEST GUN!" : "OUTDRAWN!"}
                       </div>
-                      <div onClick={(e)=>{e.stopPropagation();resetDuel();setGameActive(null);}} style={{padding:"10px 22px",borderRadius:10,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:`1px solid rgba(139,69,19,0.3)`,fontSize:13,fontWeight:700,color:C.text2}}>
-                        Exit
+                      <div style={{fontSize:13,color:C.text2,marginBottom:12}}>Final Score: {duelScore.you} - {duelScore.ai}</div>
+                      <div style={{display:"flex",justifyContent:"center",gap:4,marginBottom:12,flexWrap:"wrap"}}>
+                        {duelRoundResults.map((rr,i)=>(
+                          <div key={i} style={{padding:"5px 8px",borderRadius:8,background:rr.win?`${C.green}12`:`${C.red}12`,border:`1px solid ${rr.win?C.green:C.red}25`,textAlign:"center",minWidth:52}}>
+                            <div style={{fontSize:9,fontWeight:800,color:rr.win?C.green:C.red}}>{rr.foul?"FOUL":rr.win?"WIN":"LOSS"}</div>
+                            {!rr.foul && rr.you > 0 && <div style={{fontSize:7,color:C.text3,marginTop:1}}>{rr.you}ms</div>}
+                            {rr.bonus && rr.bonusCoins > 0 && <div style={{fontSize:6,color:C.gold,marginTop:1}}>+{rr.bonusCoins} 🪙</div>}
+                          </div>
+                        ))}
+                      </div>
+                      <div style={{display:"flex",justifyContent:"space-around",marginBottom:12,padding:"8px",borderRadius:10,background:"rgba(255,255,255,0.02)",border:"1px solid rgba(139,69,19,0.15)"}}>
+                        <div style={{textAlign:"center"}}><div style={{fontSize:15,fontWeight:900,color:C.cyan}}>{duelStats.fastestDraw<999?duelStats.fastestDraw+"ms":"---"}</div><div style={{fontSize:7,color:"rgba(210,170,120,0.5)"}}>Fastest</div></div>
+                        <div style={{textAlign:"center"}}><div style={{fontSize:15,fontWeight:900,color:C.gold}}>{duelStats.avgDraw||"---"}{duelStats.avgDraw?"ms":""}</div><div style={{fontSize:7,color:"rgba(210,170,120,0.5)"}}>Average</div></div>
+                        <div style={{textAlign:"center"}}><div style={{fontSize:15,fontWeight:900,color:C.red}}>{duelStats.fouls}</div><div style={{fontSize:7,color:"rgba(210,170,120,0.5)"}}>Fouls</div></div>
+                      </div>
+                      {duelScore.you >= 3 && <div style={{fontSize:13,color:C.gold,fontWeight:800,marginBottom:10,animation:"countPulse 1.5s infinite"}}>+{150+duelRoundResults.reduce((s,r)=>s+(r.win?r.bonusCoins:0),0)} coins earned! 🪙</div>}
+                      <div style={{display:"flex",gap:8,justifyContent:"center"}}>
+                        <div onClick={(e)=>{e.stopPropagation();startDuel();}} style={{padding:"12px 24px",borderRadius:12,cursor:"pointer",background:`linear-gradient(135deg, ${C.gold}20, ${C.gold}08)`,border:`1px solid ${C.gold}40`,fontSize:14,fontWeight:800,color:C.gold,letterSpacing:1,minWidth:44,textAlign:"center"}}>🔫 REMATCH</div>
+                        <div onClick={(e)=>{e.stopPropagation();resetDuel();setGameActive(null);}} style={{padding:"12px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:`1px solid rgba(139,69,19,0.3)`,fontSize:14,fontWeight:700,color:C.text2,minWidth:44,textAlign:"center"}}>Exit</div>
                       </div>
                     </div>
-                  </div>
-                )}
-
-                {isTensionPhase && (
-                  <div style={{display:"flex",justifyContent:"center",gap:6,marginTop:8,animation:"fadeIn 0.5s ease"}}>
-                    {["😰","🤫","👀","💨","🔥"].map((e,i)=>(
-                      <div key={i} style={{width:28,height:28,borderRadius:14,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,background:"rgba(20,10,5,0.4)",border:"1px solid rgba(139,69,19,0.2)",cursor:"pointer",animation:`duelBreathe ${2+i*0.3}s ease-in-out infinite`}}
-                        onClick={(ev)=>{ev.stopPropagation();playFx("tap");}}>
-                        {e}
-                      </div>
-                    ))}
                   </div>
                 )}
               </div>
             </div>
-
-            {/* ═══ CONFETTI ═══ */}
-            {confettiParticles.map(p=>(
-              <div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size,background:p.color,borderRadius:p.size>4?"1px":"50%",animation:`confettiFall 2s ease-in forwards`,transform:`rotate(${p.rot}deg)`,zIndex:60,pointerEvents:"none"}}/>
-            ))}
-            {/* ═══ PUFF BUBBLES ═══ */}
-            {puffBubbles.map(b=>(
-              <div key={b.id} style={{position:"absolute",left:b.x+"%",bottom:"15%",width:b.size,height:b.size,borderRadius:"50%",background:`radial-gradient(circle, rgba(200,220,255,0.25) 0%, transparent 70%)`,animation:`bubbleFloat ${b.dur}s ease-out forwards`,zIndex:55,pointerEvents:"none"}}/>
-            ))}
-            {/* ═══ SMOKE ═══ */}
-            {smokeParticles.map(p=>(
-              <div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size,borderRadius:"50%",background:"radial-gradient(circle, rgba(200,200,200,0.3) 0%, transparent 70%)",animation:`smokeRise ${p.dur}s ease-out forwards`,zIndex:55,pointerEvents:"none"}}/>
-            ))}
           </div>
         );
       }
@@ -6196,36 +6687,67 @@ export default function MoodLabArena() {
         );
       }
       // ═══════════════════════════════════════════════════════════════
-      // BALLOON POP 🎈 — Render
+      // BALLOON POP 🎈 — IMMERSIVE CARNIVAL REBUILD
       // ═══════════════════════════════════════════════════════════════
       if(gameActive.id==="balloon" && bpPhase) {
         const curP = bpPlayers[bpCurrentTurn];
         const isYourTurn = curP && curP.isYou && bpPhase === "playing";
         const airPct = Math.min(100, (bpAirLevel / bpPopThreshold) * 100);
-        const balloonScale = 0.4 + (airPct / 100) * 1.2;
+        const balloonScale = 0.4 + (airPct / 100) * 1.6;
         const nearPop = airPct > 70;
         const dangerZone = airPct > 85;
+        const isIntro = bpPhase === "intro";
+        const puffTier = bpPuffAmount < 22 ? "safe" : bpPuffAmount < 44 ? "medium" : bpPuffAmount < 89 ? "long" : "blinker";
         return (
-          <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden",display:"flex",flexDirection:"column",alignItems:"center",
-            background:`radial-gradient(ellipse at 50% 30%, ${C.pink}08, transparent 50%), rgba(5,5,16,0.97)`,
-            animation:screenShake?"shake 0.4s ease":"none",filter:dimLights?"brightness(0.6)":"brightness(1)",transition:"filter 0.3s"}}>
-            {overlayBack(()=>{setGameActive(null);setBpPhase(null);})}
-            {screenFlash && <div style={{position:"absolute",inset:0,zIndex:200,pointerEvents:"none",opacity:0,background:screenFlash==="goal"?"rgba(0,255,100,0.25)":"rgba(255,50,50,0.2)",animation:"flashOverlay 0.4s ease forwards"}}/>}
+          <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden",
+            animation:screenShake?"shake 0.4s ease":"none",filter:dimLights?"brightness(0.55)":"brightness(1)",transition:"filter 0.3s"}}>
+            {/* CARNIVAL SKY */}
+            <div style={{position:"absolute",inset:0,background:dangerZone
+              ?"linear-gradient(180deg, #1a0000 0%, #3d0a0a 15%, #6b1a1a 30%, #8b2020 45%, #a03030 55%, #c04040 70%, #602020 85%, #2a0808 100%)"
+              :nearPop?"linear-gradient(180deg, #0a0520 0%, #1a0a3d 15%, #3d1a5e 30%, #6b2060 45%, #a04070 55%, #c06050 70%, #804030 85%, #2a1508 100%)"
+              :"linear-gradient(180deg, #0a0525 0%, #150a40 12%, #201060 22%, #2d1b6e 32%, #4020a0 42%, #6040c0 52%, #8060d0 62%, #a070e0 72%, #6040a0 82%, #302060 92%, #150a30 100%)",
+              transition:"background 1.5s ease"}}/>
+            {/* STARS */}
+            {[...Array(16)].map((_,i)=>(<div key={"bpstar"+i} style={{position:"absolute",top:(3+Math.sin(i*2.1)*12)+"%",left:(3+i*6)+"%",width:i%4===0?4:i%3===0?3:2,height:i%4===0?4:i%3===0?3:2,borderRadius:"50%",background:["#FFD93D","#FF4D8D","#00E5FF","#C084FC","#34D399","#FB923C"][i%6],opacity:0.15+Math.sin(i*1.3)*0.15,animation:`bpTwinkle ${2+i%3}s ease-in-out infinite`,animationDelay:i*0.25+"s",pointerEvents:"none",boxShadow:`0 0 ${4+i%3*2}px ${["#FFD93D","#FF4D8D","#00E5FF","#C084FC","#34D399","#FB923C"][i%6]}40`}}/>))}
+            {/* BUNTING */}
+            <div style={{position:"absolute",top:0,left:0,right:0,height:40,overflow:"hidden",pointerEvents:"none",zIndex:3}}>
+              <svg viewBox="0 0 400 35" style={{width:"100%",height:"100%"}} preserveAspectRatio="none">
+                <path d="M0,8 Q25,22 50,8 Q75,22 100,8 Q125,22 150,8 Q175,22 200,8 Q225,22 250,8 Q275,22 300,8 Q325,22 350,8 Q375,22 400,8" fill="none" stroke="rgba(255,217,61,0.25)" strokeWidth="1.5"/>
+                {[...Array(8)].map((_,i)=><polygon key={i} points={`${i*50+12},9 ${i*50+25},28 ${i*50+38},9`} fill={["#FF4D8D20","#00E5FF20","#FFD93D20","#C084FC20","#34D39920","#FB923C20","#FF444420","#60A5FA20"][i]} stroke={["#FF4D8D30","#00E5FF30","#FFD93D30","#C084FC30","#34D39930","#FB923C30","#FF444430","#60A5FA30"][i]} strokeWidth="0.5"/>)}
+              </svg>
+            </div>
+            {/* FLOATING CONFETTI BG */}
+            {[...Array(10)].map((_,i)=>(<div key={"bgconf"+i} style={{position:"absolute",left:(8+i*9)+"%",top:(-5-i*3)+"%",width:4+i%3*2,height:8+i%3*3,background:["#FF4D8D","#FFD93D","#00E5FF","#C084FC","#34D399","#FB923C","#FF4444","#60A5FA","#7FFF00","#FF69B4"][i],borderRadius:1,opacity:0.12,transform:`rotate(${i*35}deg)`,animation:`bpFloatDown ${8+i*2}s linear infinite`,animationDelay:i*0.7+"s",pointerEvents:"none"}}/>))}
+            {/* VIGNETTE */}
+            <div style={{position:"absolute",inset:0,background:`radial-gradient(ellipse at 50% 45%, transparent 30%, rgba(0,0,0,${dangerZone?0.7:nearPop?0.5:0.35}) 100%)`,transition:"all 1s ease",pointerEvents:"none",zIndex:2}}/>
+            {/* DANGER PULSE */}
+            {dangerZone && bpPhase!=="popped" && bpPhase!=="result" && (<div style={{position:"absolute",inset:0,background:"rgba(255,0,0,0.08)",animation:"bpDangerPulse 0.6s ease-in-out infinite",pointerEvents:"none",zIndex:3}}/>)}
+            {/* SCREEN FLASH */}
+            {screenFlash && <div style={{position:"absolute",inset:0,zIndex:200,pointerEvents:"none",opacity:0,background:screenFlash==="goal"?"rgba(0,255,100,0.3)":"rgba(255,30,30,0.35)",animation:"flashOverlay 0.4s ease forwards"}}/>}
+            {/* CONFETTI */}
             {confettiParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size*0.6,background:p.color,borderRadius:1,transform:`rotate(${p.rot}deg)`,zIndex:210,pointerEvents:"none",animation:`confettiFall ${1.5+Math.random()}s ease-out forwards`}}/>))}
-            <div style={{display:"flex",flexDirection:"column",alignItems:"center",maxWidth:380,width:"100%",padding:"50px 16px 20px",gap:8,zIndex:10,overflowY:"auto",flex:1}}>
-              <div style={{textAlign:"center",marginBottom:4}}>
-                <div style={{fontSize:16,fontWeight:900,letterSpacing:3,color:C.pink,textShadow:`0 0 20px ${C.pink}40`}}>🎈 BALLOON POP</div>
-                <div style={{fontSize:9,color:C.text3,marginTop:2}}>Round {bpRound+1} · Air: {Math.round(airPct)}% · {bpPlayers.length} players</div>
+            {/* EXPLOSION DEBRIS */}
+            {bpPopping && [...Array(14)].map((_,i)=>{const angle=(i/14)*360;const dist=60+Math.random()*80;const dx=Math.cos(angle*Math.PI/180)*dist;const dy=Math.sin(angle*Math.PI/180)*dist;return <div key={"debris"+i} style={{position:"absolute",left:"50%",top:"40%",width:6+Math.random()*8,height:4+Math.random()*6,background:["#FF4D8D","#FFD93D","#00E5FF","#C084FC","#FB923C","#FF4444","#34D399"][i%7],borderRadius:2,zIndex:205,pointerEvents:"none",animation:"bpDebris 0.8s ease-out forwards",transform:`translate(${dx}px, ${dy}px) rotate(${Math.random()*360}deg)`,opacity:0}}/>;})}
+            <div style={{display:"flex",flexDirection:"column",alignItems:"center",position:"relative",display:"flex",flexDirection:"column",alignItems:"center",width:"100%",height:"100%",padding:"48px 16px 20px",zIndex:10}}>
+              {/* BACK */}
+              {overlayBack(()=>{setGameActive(null);setBpPhase(null);})}
+              {/* INTRO */}
+              {isIntro && (<div style={{position:"absolute",inset:0,zIndex:50,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",background:"rgba(4,4,18,0.92)",backdropFilter:"blur(16px)",animation:"fadeIn 0.3s ease"}}><div style={{fontSize:56,marginBottom:8,animation:"bpBounceIn 0.8s cubic-bezier(0.34,1.56,0.64,1)"}}>🎈</div><div style={{fontSize:28,fontWeight:900,letterSpacing:6,background:`linear-gradient(135deg, ${C.pink}, ${C.gold}, ${C.cyan})`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",animation:"bpBounceIn 0.8s cubic-bezier(0.34,1.56,0.64,1) 0.2s both",textAlign:"center"}}>BALLOON POP</div><div style={{fontSize:12,color:C.text2,marginTop:8,letterSpacing:3,fontWeight:700,animation:"bpBounceIn 0.8s ease 0.4s both"}}>DON'T POP IT!</div><div style={{display:"flex",gap:6,marginTop:20,animation:"bpBounceIn 0.8s ease 0.6s both"}}>{bpPlayers.map((p,i)=>(<div key={i} style={{width:40,height:40,borderRadius:12,overflow:"hidden",border:`2px solid ${p.isYou?C.cyan:C.pink}40`,background:`${p.isYou?C.cyan:C.pink}10`}}><img src={p.img} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}} onError={(e)=>{e.target.style.display="none";}}/></div>))}</div><div style={{marginTop:16,fontSize:11,color:C.text3,animation:"pulse 1s infinite"}}>{bpPlayers.length} players · Getting ready...</div></div>)}
+              {/* HEADER */}
+              <div style={{textAlign:"center",marginBottom:6,zIndex:20}}>
+                <div style={{fontSize:14,fontWeight:900,letterSpacing:4,background:dangerZone?`linear-gradient(135deg, ${C.red}, ${C.orange})`:`linear-gradient(135deg, ${C.pink}, ${C.gold})`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>🎈 BALLOON POP</div>
+                <div style={{fontSize:9,color:C.text3,marginTop:2,letterSpacing:1}}>Round {bpRound+1} · {bpPlayers.length} players{nearPop?" · ⚠️ DANGER":""}</div>
               </div>
-              {/* Player ring */}
-              <div style={{display:"flex",justifyContent:"center",flexWrap:"wrap",gap:6,marginBottom:4}}>
+              {/* PLAYER RING */}
+              <div style={{display:"flex",justifyContent:"center",flexWrap:"wrap",gap:8,marginBottom:8,zIndex:20}}>
                 {bpPlayers.map((p,i)=>{const isCur=i===bpCurrentTurn&&bpPhase!=="popped"&&bpPhase!=="result";const isL=bpLoser&&bpLoser.name===p.name;return(
-                  <div key={i} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:2,opacity:isL?0.4:1,transform:isCur?"scale(1.15)":"scale(1)",transition:"all 0.3s"}}>
-                    <div style={{width:36,height:36,borderRadius:10,overflow:"hidden",border:`2px solid ${isCur?(p.isYou?C.cyan:C.orange):isL?C.red:"rgba(255,255,255,0.1)"}`,background:isCur?(p.isYou?C.cyan:C.orange)+"15":"rgba(255,255,255,0.03)",position:"relative"}}>
+                  <div key={i} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:2,opacity:isL?0.35:1,transform:isCur?"scale(1.2)":"scale(1)",transition:"all 0.4s cubic-bezier(0.34,1.56,0.64,1)"}}>
+                    <div style={{width:40,height:40,borderRadius:12,overflow:"hidden",position:"relative",border:`2px solid ${isCur?(p.isYou?C.cyan:C.orange):isL?C.red:"rgba(255,255,255,0.1)"}`,background:isCur?(p.isYou?C.cyan:C.orange)+"15":"rgba(255,255,255,0.03)",boxShadow:isCur?`0 0 16px ${p.isYou?C.cyan:C.orange}40, 0 0 32px ${p.isYou?C.cyan:C.orange}15`:"none",animation:isCur?"bpPlayerGlow 1.5s ease-in-out infinite":"none"}}>
                       <img src={p.img} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}} onError={(e)=>{e.target.style.display="none";}}/>
-                      {isL && <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(0,0,0,0.6)",fontSize:18}}>💀</div>}
+                      {isL && <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(0,0,0,0.7)",fontSize:20}}>💀</div>}
                     </div>
-                    <div style={{fontSize:7,fontWeight:700,color:isCur?(p.isYou?C.cyan:C.orange):C.text3}}>{p.isYou?"YOU":p.name.slice(0,8)}</div>
+                    <div style={{fontSize:8,fontWeight:800,color:isCur?(p.isYou?C.cyan:C.orange):C.text3,textShadow:isCur?`0 0 8px ${p.isYou?C.cyan:C.orange}60`:"none"}}>{p.isYou?"YOU":p.name.slice(0,8)}</div>
+                    {isCur && <div style={{width:4,height:4,borderRadius:"50%",background:p.isYou?C.cyan:C.orange,animation:"pulse 0.8s infinite"}}/>}
                   </div>);})}
               </div>
               {/* Balloon */}
@@ -6256,16 +6778,22 @@ export default function MoodLabArena() {
       }
 
       // ═══════════════════════════════════════════════════════════════
-      // RUSSIAN ROULETTE 🎲 — Render
+      // RUSSIAN ROULETTE 🔫 — IMMERSIVE Render
       // ═══════════════════════════════════════════════════════════════
-      if(gameActive.id==="russian" && rrPhase) {
-        const curP = rrPlayers[rrCurrentTurn];
-        const isYourTurn = curP && curP.isYou && rrPhase === "player_turn";
+      if(gameActive.id==="russian"&&rrPhase){const curP=rrPlayers[rrCurrentTurn];const isYourTurn=curP&&curP.isYou&&rrPhase==="player_turn";const isPuffing=rrPhase==="puffing";const aliveCount=rrPlayers.filter(p=>p.alive).length;const tensionColor=rrTension<30?C.green:rrTension<60?C.gold:rrTension<80?C.orange:C.red;const heartSpeed=rrHeartRate>120?"rrHeartbeat 0.4s ease-in-out infinite":rrHeartRate>100?"rrHeartbeat 0.6s ease-in-out infinite":"rrHeartbeat 1s ease-in-out infinite";const puffTier=rrGetPuffTier(rrPuffCharge);const vignetteI=rrPhase==="bang"?0.9:isPuffing?0.7:0.45;
         return (
           <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden",display:"flex",flexDirection:"column",alignItems:"center",
-            background:`radial-gradient(ellipse at 50% 30%, ${C.red}08, transparent 50%), rgba(5,5,16,0.97)`,
-            animation:screenShake?"shake 0.4s ease":"none"}}>
-            {overlayBack(()=>{setGameActive(null);setRrPhase(null);})}
+            animation:screenShake?"shake 0.4s ease":"none"}} onMouseDown={()=>{if(rrPhase==="player_turn"&&curP&&curP.isYou)rrStartPuff();}} onMouseUp={()=>{if(rrPhase==="puffing")rrStopPuff();}} onTouchStart={(e)=>{e.preventDefault();if(rrPhase==="player_turn"&&curP&&curP.isYou)rrStartPuff();}} onTouchEnd={(e)=>{e.preventDefault();if(rrPhase==="puffing")rrStopPuff();}}>
+            <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg, #050208 0%, #0a0510 15%, #0d0815 30%, #12091a 50%, #0f0812 70%, #080510 100%)",zIndex:0}}/>
+            {[...Array(8)].map((_,i)=>(<div key={"rrsmk"+i} style={{position:"absolute",left:(5+i*12)+"%",top:(20+Math.sin(i*1.3)*30)+"%",width:60+i*20,height:30+i*10,borderRadius:"50%",background:`radial-gradient(ellipse, rgba(180,160,140,${0.03+Math.sin(i)*0.015}) 0%, transparent 70%)`,animation:`rrSmokeFloat ${8+i*2}s ease-in-out infinite`,animationDelay:i*1.2+"s",filter:"blur(15px)",pointerEvents:"none",zIndex:1}}/>))}
+            <div style={{position:"absolute",top:0,left:"50%",transform:"translateX(-50%)",zIndex:2,pointerEvents:"none"}}><div style={{width:2,height:30,background:"linear-gradient(180deg, rgba(80,60,40,0.6), rgba(200,160,80,0.3))",margin:"0 auto"}}/><div style={{width:16,height:8,borderRadius:"0 0 8px 8px",background:"radial-gradient(ellipse, rgba(255,200,100,0.7), rgba(180,140,60,0.4))",margin:"0 auto",boxShadow:"0 0 20px rgba(255,200,100,0.3)",animation:"rrLampSwing 4s ease-in-out infinite"}}/></div>
+            <div style={{position:"absolute",top:38,left:"50%",transform:"translateX(-50%)",width:0,height:0,borderLeft:"80px solid transparent",borderRight:"80px solid transparent",borderTop:"200px solid rgba(255,200,100,0.04)",filter:"blur(20px)",pointerEvents:"none",zIndex:1,animation:"rrLampSwing 4s ease-in-out infinite"}}/>
+            <div style={{position:"absolute",inset:0,boxShadow:`inset 0 0 ${40+rrTension}px rgba(${rrTension>50?"180,30,30":"80,40,20"},${0.15+rrTension*0.003})`,pointerEvents:"none",zIndex:3,transition:"all 1s"}}/>
+            <div style={{position:"absolute",inset:0,background:`radial-gradient(ellipse at 50% 45%, transparent 30%, rgba(0,0,0,${vignetteI}) 100%)`,pointerEvents:"none",zIndex:3,transition:"all 0.5s"}}/>
+            {rrPhase==="bang"&&<div style={{position:"absolute",inset:0,zIndex:4,pointerEvents:"none",background:"rgba(180,0,0,0.2)",animation:"duelRedPulse 0.3s ease-in-out infinite"}}/>}
+            {smokeParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size,borderRadius:"50%",background:"rgba(200,180,150,0.12)",filter:"blur(8px)",animation:`smokeRise ${p.dur}s ease-out forwards`,pointerEvents:"none",zIndex:5}}/>))}
+            {(rrPhase==="player_turn"||isPuffing)&&curP&&curP.isYou&&(<div style={{position:"absolute",inset:0,animation:heartSpeed,pointerEvents:"none",zIndex:2}}/>)}
+            {overlayBack(()=>{setGameActive(null);setRrPhase(null);setDimLights(false);if(rrPuffInterval.current){clearInterval(rrPuffInterval.current);rrPuffInterval.current=null;}})}
             {screenFlash && <div style={{position:"absolute",inset:0,zIndex:200,pointerEvents:"none",opacity:0,background:screenFlash==="goal"?"rgba(0,255,100,0.25)":"rgba(255,50,50,0.2)",animation:"flashOverlay 0.4s ease forwards"}}/>}
             {confettiParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size*0.6,background:p.color,borderRadius:1,transform:`rotate(${p.rot}deg)`,zIndex:210,pointerEvents:"none",animation:`confettiFall ${1.5+Math.random()}s ease-out forwards`}}/>))}
             <div style={{display:"flex",flexDirection:"column",alignItems:"center",maxWidth:380,width:"100%",padding:"50px 16px 20px",gap:12,zIndex:10,overflowY:"auto",flex:1}}>
@@ -6307,114 +6835,79 @@ export default function MoodLabArena() {
       }
 
       // ═══════════════════════════════════════════════════════════════
-      // PUFF PONG 🏓 — Render
+      // PUFF PONG 🏓 — Render (Immersive Neon Arcade)
       // ═══════════════════════════════════════════════════════════════
       if(gameActive.id==="puffpong" && ppPhase) {
+        const ppBSP=Math.min(ppSpeed/5,1);const ppIsI=ppPhase==="intro";
         return (
-          <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden",display:"flex",flexDirection:"column",alignItems:"center",
-            background:`radial-gradient(ellipse at 50% 50%, ${C.green}06, transparent 50%), rgba(5,5,16,0.97)`}}>
-            {overlayBack(()=>{if(ppInterval.current)clearInterval(ppInterval.current);setGameActive(null);setPpPhase(null);})}
-            {screenFlash && <div style={{position:"absolute",inset:0,zIndex:200,pointerEvents:"none",opacity:0,background:screenFlash==="goal"?"rgba(0,255,100,0.25)":"rgba(255,50,50,0.2)",animation:"flashOverlay 0.4s ease forwards"}}/>}
-            <div style={{display:"flex",flexDirection:"column",alignItems:"center",maxWidth:380,width:"100%",padding:"50px 16px 20px",gap:8,zIndex:10,flex:1}}>
-              <div style={{fontSize:16,fontWeight:900,letterSpacing:3,color:C.green,textShadow:`0 0 20px ${C.green}40`}}>🏓 PUFF PONG</div>
-              <div style={{display:"flex",gap:20,alignItems:"center",marginBottom:4}}>
-                <span style={{fontSize:24,fontWeight:900,color:C.cyan}}>{ppScore.you}</span>
-                <span style={{fontSize:12,color:C.text3}}>vs</span>
-                <span style={{fontSize:24,fontWeight:900,color:C.orange}}>{ppScore.ai}</span>
+          <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden",display:"flex",flexDirection:"column",alignItems:"center",background:"radial-gradient(ellipse at 50% 50%, rgba(0,229,255,0.04), transparent 60%), radial-gradient(ellipse at 80% 20%, rgba(255,50,80,0.03), transparent 50%), #030312",animation:screenShake?"shake 0.4s ease":"none"}}>
+            {overlayBack(()=>{if(ppRaf.current)cancelAnimationFrame(ppRaf.current);if(ppInterval.current){clearInterval(ppInterval.current);ppInterval.current=null;}ppG.current.paused=true;setGameActive(null);setPpPhase(null);})}
+            {screenFlash&&<div style={{position:"absolute",inset:0,zIndex:200,pointerEvents:"none",opacity:0,background:screenFlash==="goal"?"rgba(0,255,200,0.3)":"rgba(255,30,30,0.25)",animation:"flashOverlay 0.4s ease forwards"}}/>}
+            <div style={{display:"flex",flexDirection:"column",alignItems:"center",maxWidth:400,width:"100%",padding:"44px 12px 16px",gap:6,zIndex:10,flex:1}}>
+              <div style={{fontSize:22,fontWeight:900,letterSpacing:5,color:C.cyan,textShadow:`0 0 10px ${C.cyan}, 0 0 30px ${C.cyan}80, 0 0 60px ${C.cyan}40`,animation:ppIsI&&ppIntro>=1?"neonFlicker 2s ease":"ppNeonGlow 3s ease infinite",fontFamily:"monospace",marginBottom:2}}>PUFF PONG</div>
+              <div style={{display:"flex",gap:24,alignItems:"center",marginBottom:2}}>
+                <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:1}}><span style={{fontSize:9,fontWeight:700,color:C.cyan,letterSpacing:2,opacity:0.7}}>YOU</span><span style={{fontSize:36,fontWeight:900,color:C.cyan,fontFamily:"monospace",textShadow:`0 0 15px ${C.cyan}, 0 0 30px ${C.cyan}60`,lineHeight:1}}>{ppScore.you}</span></div>
+                <span style={{fontSize:14,color:C.text3,fontWeight:900,opacity:0.4}}>VS</span>
+                <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:1}}><span style={{fontSize:9,fontWeight:700,color:C.red,letterSpacing:2,opacity:0.7}}>AI</span><span style={{fontSize:36,fontWeight:900,color:C.red,fontFamily:"monospace",textShadow:`0 0 15px ${C.red}, 0 0 30px ${C.red}60`,lineHeight:1}}>{ppScore.ai}</span></div>
               </div>
-              {/* Table */}
-              <div style={{position:"relative",width:"100%",maxWidth:340,height:300,background:`${C.green}08`,border:`2px solid ${C.green}20`,borderRadius:12,overflow:"hidden"}}>
-                {/* Center line */}
-                <div style={{position:"absolute",left:"50%",top:0,bottom:0,width:2,borderLeft:`2px dashed ${C.green}20`}}/>
-                {/* Your paddle (left) */}
-                <div style={{position:"absolute",left:8,top:`${ppPaddleY-10}%`,width:8,height:"20%",background:C.cyan,borderRadius:4,boxShadow:`0 0 10px ${C.cyan}60`,transition:"top 0.1s"}}/>
-                {/* AI paddle (right) */}
-                <div style={{position:"absolute",right:8,top:`${ppAiPaddleY-10}%`,width:8,height:"18%",background:C.orange,borderRadius:4,boxShadow:`0 0 10px ${C.orange}60`,transition:"top 0.15s"}}/>
-                {/* Ball */}
-                <div style={{position:"absolute",left:`${ppBallX}%`,top:`${ppBallY}%`,width:12,height:12,borderRadius:"50%",background:"#fff",boxShadow:"0 0 15px rgba(255,255,255,0.8)",transform:"translate(-50%,-50%)",transition:"none"}}/>
-                {/* Touch zones */}
-                <div onMouseDown={()=>ppMovePaddle(-1)} onTouchStart={(e)=>{e.preventDefault();ppMovePaddle(-1);}} style={{position:"absolute",left:0,top:0,width:"50%",height:"50%",cursor:"pointer"}}/>
-                <div onMouseDown={()=>ppMovePaddle(1)} onTouchStart={(e)=>{e.preventDefault();ppMovePaddle(1);}} style={{position:"absolute",left:0,top:"50%",width:"50%",height:"50%",cursor:"pointer"}}/>
+              {ppRally>=3&&<div style={{fontSize:11,fontWeight:900,color:ppRally>=20?C.gold:ppRally>=10?C.orange:C.cyan,textShadow:"0 0 10px currentColor",animation:ppRally>=10?"pulse 0.6s ease infinite":"none",letterSpacing:1}}>RALLY: {ppRally} {ppRally>=30?"🔥🔥🔥":ppRally>=20?"🔥🔥":ppRally>=10?"🔥":""}</div>}
+              {ppPhase==="playing"&&<div style={{display:"flex",alignItems:"center",gap:4,opacity:0.6}}><span style={{fontSize:7,color:C.text3,fontWeight:700,letterSpacing:1}}>SPEED</span><div style={{width:60,height:3,borderRadius:2,background:"rgba(255,255,255,0.08)",overflow:"hidden"}}><div style={{width:`${ppBSP*100}%`,height:"100%",borderRadius:2,background:ppBSP>0.7?C.red:ppBSP>0.4?C.orange:C.cyan,boxShadow:`0 0 6px ${ppBSP>0.7?C.red:C.cyan}`,transition:"width 0.15s"}}/></div></div>}
+              <div style={{position:"relative",width:"100%",maxWidth:360,height:320,background:"rgba(0,10,20,0.9)",border:`2px solid ${C.cyan}30`,borderRadius:14,overflow:"hidden",boxShadow:`0 0 40px ${C.cyan}10, inset 0 0 60px rgba(0,229,255,0.03)`,opacity:ppIsI&&ppIntro<2?0:1,animation:ppIsI&&ppIntro>=2?"fadeIn 0.5s ease":"none"}}>
+                <div style={{position:"absolute",left:"50%",top:0,bottom:0,width:1,background:`linear-gradient(180deg,transparent,${C.cyan}25,${C.cyan}15,${C.cyan}25,transparent)`}}/>
+                <div style={{position:"absolute",left:"50%",top:"50%",width:40,height:40,borderRadius:"50%",border:`1px solid ${C.cyan}20`,transform:"translate(-50%,-50%)"}}/>
+                <div style={{position:"absolute",top:0,left:0,right:0,height:1,background:`${C.cyan}20`}}/>
+                <div style={{position:"absolute",bottom:0,left:0,right:0,height:1,background:`${C.cyan}20`}}/>
+                <div style={{position:"absolute",left:20,top:0,bottom:0,width:1,background:`${C.cyan}12`}}/>
+                <div style={{position:"absolute",right:20,top:0,bottom:0,width:1,background:`${C.red}12`}}/>
+                {ppRally>=5&&<><div style={{position:"absolute",top:4,left:4,fontSize:7,opacity:0.4,animation:"pulse 1.5s ease infinite"}}>📣</div><div style={{position:"absolute",top:4,right:4,fontSize:7,opacity:0.4,animation:"pulse 1.5s ease infinite 0.5s"}}>📣</div></>}
+                {ppTrail.map((t,i)=><div key={"t"+i} style={{position:"absolute",left:`${t.x}%`,top:`${t.y}%`,width:Math.max(2,8-t.age*0.3),height:Math.max(2,8-t.age*0.3),borderRadius:"50%",background:ppSmash?`rgba(255,200,0,${Math.max(0,0.3-t.age*0.015)})`:`rgba(0,229,255,${Math.max(0,0.25-t.age*0.012)})`,transform:"translate(-50%,-50%)",pointerEvents:"none"}}/>)}
+                <div style={{position:"absolute",left:8,top:`${ppPaddleY-12}%`,width:10,height:"24%",background:`linear-gradient(180deg,${C.cyan}CC,${C.cyan})`,borderRadius:5,boxShadow:`0 0 15px ${C.cyan}80, 0 0 30px ${C.cyan}40`,transition:"top 0.08s",opacity:ppIsI&&ppIntro<3?0:1,animation:ppIsI&&ppIntro>=3?"slideInLeft 0.3s ease":"none"}}/>
+                <div style={{position:"absolute",right:8,top:`${ppAiPaddleY-10}%`,width:10,height:"20%",background:`linear-gradient(180deg,${C.red}CC,${C.red})`,borderRadius:5,boxShadow:`0 0 15px ${C.red}80, 0 0 30px ${C.red}40`,transition:"top 0.12s",opacity:ppIsI&&ppIntro<3?0:1,animation:ppIsI&&ppIntro>=3?"slideInRight 0.3s ease":"none"}}/>
+                <div style={{position:"absolute",left:`${ppBallX}%`,top:`${ppBallY}%`,width:ppSmash?16:13,height:ppSmash?16:13,borderRadius:"50%",background:ppSmash?"radial-gradient(circle,#fff,#FFD93D)":"radial-gradient(circle,#fff 30%,rgba(0,229,255,0.8))",boxShadow:ppSmash?`0 0 20px ${C.gold},0 0 40px ${C.gold}80`:`0 0 12px rgba(0,229,255,0.8),0 0 25px rgba(0,229,255,0.4)`,transform:"translate(-50%,-50%)",opacity:ppIsI&&ppIntro<4?0:1,animation:ppIsI&&ppIntro>=4?"goalBurst 0.4s ease":"none"}}/>
+                {ppImpact&&<div style={{position:"absolute",left:`${ppImpact.x}%`,top:`${ppImpact.y}%`,width:30,height:30,borderRadius:"50%",background:"radial-gradient(circle,rgba(255,255,255,0.9),transparent 70%)",transform:"translate(-50%,-50%)",pointerEvents:"none",animation:"flashOverlay 0.3s ease forwards"}}/>}
+                {ppSmash&&<div style={{position:"absolute",left:"50%",top:"50%",transform:"translate(-50%,-50%)",fontSize:28,fontWeight:900,color:C.gold,textShadow:`0 0 20px ${C.gold}`,animation:"goalBurst 0.5s ease",pointerEvents:"none",zIndex:5}}>SMASH!</div>}
+                <div onMouseDown={()=>ppMovePaddle(-1)} onTouchStart={(e)=>{e.preventDefault();ppMovePaddle(-1);}} style={{position:"absolute",left:0,top:0,width:"50%",height:"50%",cursor:"pointer",zIndex:3}}/>
+                <div onMouseDown={()=>ppMovePaddle(1)} onTouchStart={(e)=>{e.preventDefault();ppMovePaddle(1);}} style={{position:"absolute",left:0,top:"50%",width:"50%",height:"50%",cursor:"pointer",zIndex:3}}/>
+                {ppIntro===5&&<div style={{position:"absolute",left:"50%",top:"50%",transform:"translate(-50%,-50%)",fontSize:32,fontWeight:900,color:C.gold,letterSpacing:6,textShadow:`0 0 20px ${C.gold}`,animation:"goalBurst 0.5s ease",zIndex:5}}>SERVE!</div>}
               </div>
-              <div style={{fontSize:8,color:C.text3,marginTop:4}}>Tap TOP/BOTTOM half to move paddle ↕</div>
-              {ppComment&&(<div style={{padding:"4px 12px",borderRadius:8,...LG.pill}}><div style={{fontSize:10,fontWeight:600,color:C.text}}>{ppComment}</div></div>)}
-              {ppPhase==="result"&&(<div style={{display:"flex",gap:10,marginTop:8,animation:"fadeIn 0.5s ease"}}>
-                <div onClick={()=>{setPpPhase(null);startPuffPong();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.green}15`,border:`1px solid ${C.green}30`,fontSize:13,fontWeight:800,color:C.green}}>🔄 Again</div>
-                <div onClick={ppEndGame} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.text3}10`,border:`1px solid ${C.text3}20`,fontSize:13,fontWeight:800,color:C.text3}}>Done ✓</div>
-              </div>)}
+              {ppPhase==="playing"&&<div style={{display:"flex",gap:8,marginTop:4,alignItems:"center"}}>
+                <div onMouseDown={()=>ppMovePaddle(-1)} onTouchStart={(e)=>{e.preventDefault();ppMovePaddle(-1);}} style={{padding:"8px 16px",borderRadius:10,cursor:"pointer",background:`${C.cyan}12`,border:`1px solid ${C.cyan}25`,fontSize:11,fontWeight:800,color:C.cyan}}>UP</div>
+                <div onMouseDown={ppPuffUp} onMouseUp={ppPuffRelease} onMouseLeave={ppPuffRelease} onTouchStart={(e)=>{e.preventDefault();ppPuffUp();}} onTouchEnd={ppPuffRelease} style={{padding:"10px 20px",borderRadius:12,cursor:"pointer",background:ppPuffHeld?`${C.cyan}30`:`${C.cyan}10`,border:`2px solid ${ppPuffHeld?C.cyan:C.cyan+"40"}`,fontSize:12,fontWeight:900,color:C.cyan,transition:"all 0.15s",transform:ppPuffHeld?"scale(0.95)":"scale(1)"}}>{ppPuffHeld?"PUFFING... 💨":"HOLD TO PUFF"}</div>
+                <div onMouseDown={()=>ppMovePaddle(1)} onTouchStart={(e)=>{e.preventDefault();ppMovePaddle(1);}} style={{padding:"8px 16px",borderRadius:10,cursor:"pointer",background:`${C.cyan}12`,border:`1px solid ${C.cyan}25`,fontSize:11,fontWeight:800,color:C.cyan}}>DOWN</div>
+              </div>}
+              <div style={{fontSize:7,color:C.text3,marginTop:2,opacity:0.5}}>PUFF = paddle UP | Release = drift DOWN | Tap UP/DOWN</div>
+              {ppComment&&<div style={{padding:"5px 14px",borderRadius:10,marginTop:2,background:"rgba(0,229,255,0.06)",border:"1px solid rgba(0,229,255,0.12)"}}><div style={{fontSize:10,fontWeight:700,color:C.text,textAlign:"center"}}>{ppComment}</div></div>}
+              {ppPhase==="result"&&<div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:8,marginTop:8,animation:"fadeIn 0.5s ease"}}>
+                <div style={{fontSize:20,fontWeight:900,color:ppScore.you>ppScore.ai?C.cyan:C.red,textShadow:"0 0 20px currentColor",letterSpacing:2}}>{ppScore.you>ppScore.ai?"YOU WIN! 🏆":"AI WINS 🤖"}</div>
+                <div style={{fontSize:11,color:C.text2}}>{ppScore.you>ppScore.ai?"Puff Pong champion! Powered by THC 💨🏆":"Better luck next puff! 💨"}</div>
+                <div style={{display:"flex",gap:10}}>
+                  <div onClick={()=>{setPpPhase(null);startPuffPong();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.cyan}12`,border:`1px solid ${C.cyan}30`,fontSize:13,fontWeight:800,color:C.cyan}}>🔄 Rematch</div>
+                  <div onClick={ppEndGame} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.text3}08`,border:`1px solid ${C.text3}15`,fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
+                </div></div>}
             </div>
           </div>
         );
       }
 
       // ═══════════════════════════════════════════════════════════════
-      // RHYTHM PUFF 🎵 — Render
+      // RHYTHM PUFF 🎵 — Render (Immersive Concert Stage)
       // ═══════════════════════════════════════════════════════════════
       if(gameActive.id==="rhythm" && rpPhase) {
-        const laneColors = [C.red,C.cyan,C.gold,C.purple];
-        return (
-          <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden",display:"flex",flexDirection:"column",alignItems:"center",
-            background:`radial-gradient(ellipse at 50% 80%, ${C.purple}08, transparent 50%), rgba(5,5,16,0.97)`}}>
-            {overlayBack(()=>{if(rpInterval.current)clearInterval(rpInterval.current);setGameActive(null);setRpPhase(null);})}
-            {screenFlash && <div style={{position:"absolute",inset:0,zIndex:200,pointerEvents:"none",opacity:0,background:"rgba(255,165,0,0.2)",animation:"flashOverlay 0.4s ease forwards"}}/>}
-            <div style={{display:"flex",flexDirection:"column",alignItems:"center",maxWidth:380,width:"100%",padding:"50px 16px 10px",gap:6,zIndex:10,flex:1}}>
-              <div style={{fontSize:16,fontWeight:900,letterSpacing:3,color:C.purple,textShadow:`0 0 20px ${C.purple}40`}}>🎵 RHYTHM PUFF</div>
-              <div style={{display:"flex",gap:16,alignItems:"center",marginBottom:2}}>
-                <span style={{fontSize:10,color:C.gold,fontWeight:800}}>Score: {rpScore}</span>
-                <span style={{fontSize:10,color:rpCombo>=5?C.orange:C.text3,fontWeight:800}}>Combo: {rpCombo}x</span>
-                <span style={{fontSize:10,color:C.red,fontWeight:800}}>Miss: {rpMisses}/10</span>
-              </div>
-              {/* Note lanes */}
-              <div style={{position:"relative",width:"100%",maxWidth:320,height:360,display:"flex",gap:2,overflow:"hidden",borderRadius:12,border:`1px solid rgba(255,255,255,0.08)`}}>
-                {RP_LANES.map((lane,li)=>(
-                  <div key={li} style={{flex:1,position:"relative",background:`${laneColors[li]}04`,borderRight:li<3?`1px solid rgba(255,255,255,0.05)`:"none"}}>
-                    {/* Hit zone */}
-                    <div style={{position:"absolute",bottom:"5%",left:0,right:0,height:"10%",background:`${laneColors[li]}12`,border:`1px solid ${laneColors[li]}30`,borderRadius:4}}/>
-                    {/* Lane label */}
-                    <div style={{position:"absolute",bottom:2,left:0,right:0,textAlign:"center",fontSize:16}}>{lane}</div>
-                  </div>
-                ))}
-                {/* Notes falling */}
-                {rpNotes.filter(n=>!n.hit).map(n=>(
-                  <div key={n.id} style={{position:"absolute",left:`${n.lane*25+5}%`,top:`${n.y}%`,width:"15%",height:20,borderRadius:6,
-                    background:`linear-gradient(135deg,${laneColors[n.lane]},${laneColors[n.lane]}80)`,
-                    boxShadow:`0 0 10px ${laneColors[n.lane]}40`,
-                    display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,
-                    transition:"top 0.06s linear",zIndex:5}}>🎵</div>
-                ))}
-                {/* Hit notes (flash) */}
-                {rpNotes.filter(n=>n.hit).map(n=>(
-                  <div key={n.id+"h"} style={{position:"absolute",left:`${n.lane*25+5}%`,top:`${n.y}%`,width:"15%",height:20,borderRadius:6,
-                    background:`${laneColors[n.lane]}40`,animation:"flashOverlay 0.3s ease forwards",zIndex:4}}/>
-                ))}
-              </div>
-              {/* Hit buttons */}
-              <div style={{display:"flex",gap:6,marginTop:4,width:"100%",maxWidth:320}}>
-                {RP_LANES.map((lane,li)=>(
-                  <div key={li} onClick={()=>rpHitNote(li)} onTouchStart={(e)=>{e.preventDefault();rpHitNote(li);}}
-                    style={{flex:1,padding:"12px 0",borderRadius:12,cursor:"pointer",textAlign:"center",
-                      background:`${laneColors[li]}15`,border:`1px solid ${laneColors[li]}30`,
-                      fontSize:18,userSelect:"none",WebkitUserSelect:"none"}}>
-                    {lane}
-                  </div>
-                ))}
-              </div>
-              {rpComment&&(<div style={{padding:"4px 12px",borderRadius:8,...LG.pill}}><div style={{fontSize:10,fontWeight:600,color:rpCombo>=5?C.gold:C.text}}>{rpComment}</div></div>)}
-              {rpPhase==="result"&&(<div style={{display:"flex",gap:10,marginTop:8,animation:"fadeIn 0.5s ease"}}>
-                <div onClick={()=>{setRpPhase(null);startRhythmPuff();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.purple}15`,border:`1px solid ${C.purple}30`,fontSize:13,fontWeight:800,color:C.purple}}>🔄 Again</div>
-                <div onClick={rpEndGame} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.text3}10`,border:`1px solid ${C.text3}20`,fontSize:13,fontWeight:800,color:C.text3}}>Done ✓</div>
-              </div>)}
-            </div>
-          </div>
-        );
+        const rpMult=rpGetMultiplier(rpCombo);const rpComboFire=rpCombo>=20?"🔥🔥🔥":rpCombo>=10?"🔥🔥":rpCombo>=5?"🔥":"";const rpBeatPulse=rpBeat%8<4;
+        return (<div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden",background:"#050510",animation:screenShake?"shake 0.4s ease":"none"}}><div style={{position:"absolute",inset:0,background:`radial-gradient(ellipse at 50% 0%,rgba(160,50,220,.25) 0%,transparent 50%),radial-gradient(ellipse at 20% 20%,rgba(255,50,100,.15) 0%,transparent 40%),radial-gradient(ellipse at 80% 20%,rgba(0,150,255,.15) 0%,transparent 40%),linear-gradient(180deg,#0a0020 0%,#150030 30%,#0a0015 100%)`}}/>{[0,1,2,3].map(i=>(<div key={"spt"+i} style={{position:"absolute",top:-20,left:`${10+i*25}%`,width:60,height:"110%",background:`linear-gradient(180deg,${RP_LANE_COLORS[i]}${rpStageFlash>0?"30":"08"} 0%,transparent 70%)`,transform:`rotate(${(i-1.5)*8}deg)`,transformOrigin:"top center",pointerEvents:"none",zIndex:1}}/>))}<div style={{position:"absolute",top:0,left:`${30+Math.sin(rpBeat*.05)*25}%`,width:80,height:"100%",background:`linear-gradient(180deg,${C.pink}15,transparent 60%)`,transform:"rotate(-5deg)",pointerEvents:"none",zIndex:1}}/>{[...Array(12)].map((_,i)=>(<div key={"ap"+i} style={{position:"absolute",left:`${(i*8+rpBeat*.1)%100}%`,top:`${20+(i*13)%60}%`,width:2+i%3,height:2+i%3,borderRadius:"50%",background:RP_LANE_COLORS[i%4],opacity:.15,pointerEvents:"none",zIndex:2}}/>))}{screenFlash&&<div style={{position:"absolute",inset:0,zIndex:200,pointerEvents:"none",opacity:0,background:screenFlash==="blinker"?"rgba(255,0,200,.3)":"rgba(255,200,0,.2)",animation:"flashOverlay .4s ease forwards"}}/>}{rpBlinker&&<div style={{position:"absolute",inset:0,zIndex:195,pointerEvents:"none",background:"radial-gradient(circle,rgba(255,0,200,.15),rgba(200,50,255,.08))",animation:"pulse .5s infinite"}}/>}{confettiParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size*.6,background:p.color,borderRadius:1,transform:`rotate(${p.rot}deg)`,zIndex:210,pointerEvents:"none",animation:"confettiFall 1.5s ease-out forwards"}}/>))}{overlayBack(()=>{if(rpInterval.current)clearInterval(rpInterval.current);setGameActive(null);setRpPhase(null);})}{rpPhase==="intro"&&(<div style={{position:"absolute",inset:0,zIndex:50,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>{rpIntroStep>=1&&(<div style={{position:"absolute",inset:0}}>{[0,1,2,3].map(i=>(<div key={i} style={{position:"absolute",top:0,left:`${15+i*20}%`,width:40,height:"100%",background:`linear-gradient(180deg,${RP_LANE_COLORS[i]}30,transparent 60%)`,transform:`rotate(${(i-1.5)*12}deg)`,transformOrigin:"top center",animation:`fadeIn .5s ease ${i*.15}s both`}}/>))}</div>)}{rpIntroStep>=2&&(<div style={{animation:"goalBurst .8s ease both",textAlign:"center",zIndex:55}}><div style={{fontSize:32,fontWeight:900,letterSpacing:6,color:C.purple,textShadow:`0 0 20px ${C.purple},0 0 40px ${C.purple}80`,animation:"neonFlicker 2s infinite"}}>RHYTHM PUFF</div><div style={{fontSize:14,color:C.pink,fontWeight:700,marginTop:4,letterSpacing:2}}>🎵 Guitar Hero x Puff Session 🎵</div></div>)}{rpIntroStep>=3&&(<div style={{display:"flex",gap:16,marginTop:24,animation:"fadeIn .5s ease both"}}>{RP_LANES.map((lane,i)=>(<div key={i} style={{fontSize:28,animation:`fadeIn .3s ease ${i*.1}s both`,filter:`drop-shadow(0 0 8px ${RP_LANE_COLORS[i]})`}}>{lane}</div>))}</div>)}{rpIntroStep>=4&&(<div style={{marginTop:20,animation:"duelCountdownPop .6s ease both"}}><div style={{fontSize:28,fontWeight:900,color:C.gold,letterSpacing:4,textShadow:`0 0 20px ${C.gold}80`}}>3, 2, 1, DROP!</div></div>)}</div>)}{(rpPhase==="playing"||rpPhase==="result")&&(<div style={{display:"flex",flexDirection:"column",alignItems:"center",width:"100%",height:"100%",padding:"40px 8px 8px",zIndex:10,position:"relative"}}><div style={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",maxWidth:360,marginBottom:4,zIndex:20}}><div style={{display:"flex",flexDirection:"column",alignItems:"flex-start"}}><div style={{fontSize:9,color:C.text3,fontWeight:700,letterSpacing:1}}>SCORE</div><div style={{fontSize:18,fontWeight:900,color:C.gold,textShadow:`0 0 10px ${C.gold}40`}}>{rpScore.toLocaleString()}</div></div><div style={{display:"flex",flexDirection:"column",alignItems:"center"}}><div style={{fontSize:9,color:C.text3,fontWeight:700,letterSpacing:1}}>COMBO</div><div style={{fontSize:16,fontWeight:900,color:rpCombo>=10?C.orange:rpCombo>=5?C.gold:C.text,textShadow:rpCombo>=5?`0 0 15px ${C.orange}60`:"none",animation:rpCombo>=10?"countPulse .5s infinite":"none"}}>{rpCombo}x {rpComboFire}</div>{rpMult>1&&<div style={{fontSize:8,color:C.cyan,fontWeight:800}}>x{rpMult} MULT</div>}</div><div style={{display:"flex",flexDirection:"column",alignItems:"flex-end"}}><div style={{fontSize:9,color:C.text3,fontWeight:700,letterSpacing:1}}>MISS</div><div style={{display:"flex",gap:2}}>{[...Array(10)].map((_,i)=>(<div key={i} style={{width:6,height:6,borderRadius:"50%",background:i<rpMisses?C.red:`${C.text3}30`,boxShadow:i<rpMisses?`0 0 4px ${C.red}`:""}}/>))}</div></div></div><div style={{position:"relative",width:"100%",maxWidth:340,flex:1,maxHeight:420,overflow:"hidden",borderRadius:16,border:`1px solid rgba(255,255,255,0.06)`,background:"rgba(0,0,0,.3)",backdropFilter:"blur(8px)"}}>{RP_LANES.map((lane,li)=>(<div key={li} style={{position:"absolute",left:`${li*25}%`,top:0,width:"25%",height:"100%",background:`linear-gradient(180deg,${RP_LANE_COLORS[li]}03,${RP_LANE_COLORS[li]}06 80%,${RP_LANE_COLORS[li]}15)`,borderRight:li<3?`1px solid rgba(255,255,255,.04)`:"none"}}><div style={{position:"absolute",left:"50%",top:0,width:1,height:"100%",background:`linear-gradient(180deg,transparent,${RP_LANE_COLORS[li]}15 50%,${RP_LANE_COLORS[li]}25)`,transform:"translateX(-50%)"}}/></div>))}<div style={{position:"absolute",left:0,right:0,top:`${RP_HIT_ZONE-2}%`,height:"4%",zIndex:8,display:"flex"}}>{RP_LANES.map((lane,li)=>(<div key={li} style={{flex:1,position:"relative"}}><div style={{position:"absolute",inset:0,background:`linear-gradient(90deg,transparent,${RP_LANE_COLORS[li]}${rpBeatPulse?"40":"20"},transparent)`,boxShadow:`0 0 ${rpBeatPulse?15:8}px ${RP_LANE_COLORS[li]}30`,transition:"all .15s ease"}}/><div style={{position:"absolute",left:"50%",top:"50%",transform:"translate(-50%,-50%) rotate(45deg)",width:10,height:10,border:`2px solid ${RP_LANE_COLORS[li]}60`,borderRadius:2}}/></div>))}</div>{rpNotes.filter(n=>!n.hit).map(n=>{const nc=RP_LANE_COLORS[n.lane];const nh=n.y>RP_HIT_ZONE-15;return(<div key={n.id} style={{position:"absolute",left:`${n.lane*25+7}%`,top:`${n.y}%`,width:"11%",height:14,borderRadius:7,zIndex:6,background:`linear-gradient(135deg,${nc},${nc}CC)`,boxShadow:`0 0 ${nh?16:8}px ${nc}${nh?"80":"40"},0 2px 8px rgba(0,0,0,.3)`,transition:"top .06s linear",transform:nh?"scale(1.1)":"scale(1)"}}><div style={{position:"absolute",left:"20%",right:"20%",bottom:"100%",height:n.y>10?20:0,background:`linear-gradient(to top,${nc}30,transparent)`,borderRadius:"4px 4px 0 0"}}/><div style={{position:"absolute",inset:2,borderRadius:5,background:"radial-gradient(circle,rgba(255,255,255,.4),transparent)"}}/></div>);})}{rpNotes.filter(n=>n.hit&&n.y<95).map(n=>(<div key={n.id+"h"} style={{position:"absolute",left:`${n.lane*25+4}%`,top:`${n.y-2}%`,width:"17%",height:18,borderRadius:9,background:`radial-gradient(circle,${RP_LANE_COLORS[n.lane]}60,transparent)`,animation:"flashOverlay .3s ease forwards",zIndex:5}}/>))}{rpParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:`${p.x}%`,top:`${p.y}%`,width:p.size,height:p.size,borderRadius:"50%",background:p.color,boxShadow:`0 0 6px ${p.color}`,zIndex:12,pointerEvents:"none",animation:"rpParticleBurst .6s ease-out forwards"}}/>))}{rpRating&&(<div style={{position:"absolute",left:`${(rpRating.lane||0)*25+12.5}%`,top:`${RP_HIT_ZONE-12}%`,transform:"translateX(-50%)",zIndex:15,animation:"rpRatingPop .6s ease forwards",textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:rpRating.color,letterSpacing:2,textShadow:`0 0 10px ${rpRating.color},0 0 20px ${rpRating.color}60`}}>{rpRating.text}</div></div>)}{RP_LANES.map((lane,li)=>(<div key={"ll"+li} style={{position:"absolute",left:`${li*25}%`,bottom:2,width:"25%",textAlign:"center",fontSize:14,opacity:.4,zIndex:7}}>{lane}</div>))}</div><div style={{display:"flex",gap:4,marginTop:4,width:"100%",maxWidth:340,zIndex:20}}>{RP_LANES.map((lane,li)=>(<div key={li} onClick={()=>{if(rpPhase==="playing")rpHitNote(li);}} onTouchStart={(e)=>{e.preventDefault();if(rpPhase==="playing")rpHitNote(li);}} style={{flex:1,padding:"10px 0",borderRadius:12,cursor:"pointer",textAlign:"center",background:`${RP_LANE_COLORS[li]}12`,border:`2px solid ${RP_LANE_COLORS[li]}35`,fontSize:20,userSelect:"none",WebkitUserSelect:"none",boxShadow:`0 0 12px ${RP_LANE_COLORS[li]}15`}}>{lane}</div>))}</div>{rpPhase==="playing"&&(<div style={{display:"flex",gap:6,marginTop:4,width:"100%",maxWidth:340,zIndex:20}}><div onClick={rpPuffHit} onTouchStart={(e)=>{e.preventDefault();rpPuffHit();}} style={{flex:1,padding:"10px 0",borderRadius:12,cursor:"pointer",textAlign:"center",background:`${C.cyan}12`,border:`2px solid ${C.cyan}35`,fontSize:13,fontWeight:800,color:C.cyan,userSelect:"none",WebkitUserSelect:"none"}}>💨 PUFF</div><div onClick={rpBlinkerPuff} onTouchStart={(e)=>{e.preventDefault();rpBlinkerPuff();}} style={{flex:1,padding:"10px 0",borderRadius:12,cursor:"pointer",textAlign:"center",background:rpBlinker?`${C.pink}25`:`${C.pink}10`,border:`2px solid ${rpBlinker?C.pink:C.pink+"35"}`,fontSize:13,fontWeight:800,color:C.pink,userSelect:"none",WebkitUserSelect:"none",opacity:rpBlinker?.5:1}}>🫁 BLINKER</div></div>)}{rpComment&&(<div style={{marginTop:4,padding:"4px 14px",borderRadius:10,maxWidth:340,textAlign:"center",...LG.pill}}><div style={{fontSize:10,fontWeight:700,color:rpCombo>=10?C.gold:rpCombo>=5?C.orange:C.text,lineHeight:1.3}}>{rpComment}</div></div>)}<div style={{position:"absolute",bottom:0,left:0,right:0,height:45,zIndex:5,overflow:"hidden",pointerEvents:"none"}}>{[...Array(20)].map((_,i)=>(<div key={"cr"+i} style={{position:"absolute",bottom:rpCrowdJump&&i%3===0?6:0,left:`${i*5+Math.sin(i)*2}%`,width:14+i%5,height:20+i%8,borderRadius:"8px 8px 0 0",background:`rgba(${30+i*3},${10+i*2},${40+i*4},.8)`,transition:"bottom .15s ease"}}/>))}</div>{rpCombo>=5&&(<div style={{position:"absolute",bottom:45,left:"50%",transform:"translateX(-50%)",width:Math.min(200,rpCombo*4),height:3,borderRadius:2,zIndex:6,background:`linear-gradient(90deg,transparent,${rpCombo>=20?C.orange:C.gold},transparent)`,boxShadow:`0 0 ${rpCombo>=20?20:10}px ${rpCombo>=20?C.orange:C.gold}60`,animation:"pulse .5s infinite"}}/>)}{rpPhase==="result"&&(<div style={{position:"absolute",inset:0,zIndex:30,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",background:"rgba(5,5,16,.85)",backdropFilter:"blur(10px)",animation:"fadeIn .5s ease"}}><div style={{fontSize:28,fontWeight:900,letterSpacing:4,color:rpScore>500?C.gold:C.purple,marginBottom:8,textShadow:`0 0 20px ${rpScore>500?C.gold:C.purple}80`,animation:rpScore>500?"countPulse 1s infinite":"none"}}>{rpScore>500?"ENCORE!":"SHOW OVER"}</div><div style={{fontSize:36,fontWeight:900,color:C.gold,textShadow:`0 0 20px ${C.gold}60`}}>{rpScore.toLocaleString()}</div><div style={{fontSize:11,color:C.text2,marginTop:4}}>points</div><div style={{display:"flex",gap:20,marginTop:12}}><div style={{textAlign:"center"}}><div style={{fontSize:18,fontWeight:900,color:C.orange}}>{rpMaxCombo}x</div><div style={{fontSize:9,color:C.text3}}>MAX COMBO</div></div><div style={{textAlign:"center"}}><div style={{fontSize:18,fontWeight:900,color:C.red}}>{rpMisses}</div><div style={{fontSize:9,color:C.text3}}>MISSES</div></div><div style={{textAlign:"center"}}><div style={{fontSize:18,fontWeight:900,color:C.green}}>+{Math.min(300,Math.floor(rpScore/10))}</div><div style={{fontSize:9,color:C.text3}}>COINS</div></div></div><div style={{display:"flex",gap:10,marginTop:16}}><div onClick={()=>{setRpPhase(null);startRhythmPuff();}} style={{padding:"12px 28px",borderRadius:14,cursor:"pointer",background:`${C.purple}18`,border:`2px solid ${C.purple}40`,fontSize:14,fontWeight:800,color:C.purple}}>🔄 Again</div><div onClick={rpEndGame} style={{padding:"12px 28px",borderRadius:14,cursor:"pointer",background:`${C.text3}10`,border:`1px solid ${C.text3}25`,fontSize:14,fontWeight:800,color:C.text3}}>Done ✓</div></div></div>)}</div>)}</div>);
       }
 
       // ═══════════════════════════════════════════════════════════════
-      // TUG OF WAR 💪 — Render
+      // TUG OF WAR 💪 — Immersive Colosseum Render
       // ═══════════════════════════════════════════════════════════════
       if(gameActive.id==="tugofwar" && towPhase) {
         const youWinning = towPosition > 50;
         const barColor = youWinning ? C.cyan : C.red;
+        const ropeOffsetX = (towPosition - 50) * 1.8;
+        const isPlaying = towPhase==="playing"||towPhase==="suddendeath";
+        const isSuddenDeath = towPhase==="suddendeath";
+        const timerDanger = towTimer<=5;
+        const cameraShift = (towPosition-50)*0.3;
         return (
           <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden",display:"flex",flexDirection:"column",alignItems:"center",
             background:`radial-gradient(ellipse at 50% 50%, ${C.blue}06, transparent 50%), rgba(5,5,16,0.97)`,
@@ -8890,6 +9383,7 @@ export default function MoodLabArena() {
         @keyframes arenaFadeIn{from{opacity:0;transform:translateY(15px) scale(0.97)}to{opacity:1;transform:translateY(0) scale(1)}}
         @keyframes glowShift{0%,100%{box-shadow:0 0 40px rgba(0,229,255,0.06),0 0 80px rgba(255,217,61,0.03)}50%{box-shadow:0 0 60px rgba(192,132,252,0.06),0 0 100px rgba(255,77,141,0.03)}}
         @keyframes neonFlicker{0%,18%,22%,25%,53%,57%,100%{opacity:1}20%{opacity:0.6}24%{opacity:0.8}55%{opacity:0.7}}
+        @keyframes ppNeonGlow{0%,100%{text-shadow:0 0 10px currentColor,0 0 30px currentColor,0 0 60px rgba(0,229,255,0.3)}50%{text-shadow:0 0 6px currentColor,0 0 20px currentColor,0 0 40px rgba(0,229,255,0.2)}}
         @keyframes kioskRevealL{from{opacity:0;transform:perspective(1000px) rotateY(6deg) translateX(-20px)}to{opacity:1;transform:perspective(1000px) rotateY(1.5deg) translateX(0)}}
         @keyframes kioskRevealR{from{opacity:0;transform:perspective(1000px) rotateY(-6deg) translateX(20px)}to{opacity:1;transform:perspective(1000px) rotateY(-1.5deg) translateX(0)}}
         @keyframes neonSign{0%,100%{text-shadow:0 0 7px var(--nc),0 0 15px var(--nc),0 0 30px var(--nc)}50%{text-shadow:0 0 4px var(--nc),0 0 10px var(--nc),0 0 20px var(--nc)}}
@@ -8920,11 +9414,17 @@ export default function MoodLabArena() {
         @keyframes duelEyeGlow{0%,100%{opacity:0.5;box-shadow:0 0 4px currentColor}50%{opacity:1;box-shadow:0 0 12px currentColor,0 0 24px currentColor}}
         @keyframes duelMuzzle{0%{transform:scale(0.3);opacity:1}50%{transform:scale(1.5);opacity:0.8}100%{transform:scale(2);opacity:0}}
         @keyframes duelStar{0%,100%{opacity:0.2}50%{opacity:0.8}}
+        @keyframes wwVulture{0%{transform:translateX(0) translateY(0)}25%{transform:translateX(30px) translateY(-10px)}50%{transform:translateX(60px) translateY(5px)}75%{transform:translateX(30px) translateY(-15px)}100%{transform:translateX(0) translateY(0)}}
+        @keyframes wwShootingStar{0%{transform:rotate(35deg) translateX(0);opacity:1}100%{transform:rotate(35deg) translateX(120px);opacity:0}}
         @keyframes goalBurst{0%{transform:scale(0.3);opacity:0}40%{transform:scale(1.15);opacity:1}70%{transform:scale(0.95)}100%{transform:scale(1);opacity:1}}
         @keyframes bpWobble{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2deg)}}
         @keyframes bpWobbleFast{0%,100%{transform:rotate(-4deg) scale(1.02)}25%{transform:rotate(3deg) scale(0.98)}50%{transform:rotate(-3deg) scale(1.01)}75%{transform:rotate(4deg) scale(0.99)}}
         @keyframes bpInflate{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
         @keyframes bpExplode{0%{transform:scale(1);opacity:1}50%{transform:scale(2.5);opacity:0.8}100%{transform:scale(4);opacity:0}}
+        @keyframes rpParticleBurst{0%{transform:scale(1);opacity:1}50%{transform:scale(1.5) translateY(-15px);opacity:.6}100%{transform:scale(.3) translateY(-30px);opacity:0}}
+        @keyframes rpRatingPop{0%{transform:translateX(-50%) scale(0);opacity:0}30%{transform:translateX(-50%) scale(1.3);opacity:1}60%{transform:translateX(-50%) scale(.95);opacity:1}100%{transform:translateX(-50%) translateY(-20px) scale(.8);opacity:0}}
+        @keyframes rpNoteGlow{0%,100%{box-shadow:0 0 8px currentColor}50%{box-shadow:0 0 20px currentColor,0 0 30px currentColor}}
+        @keyframes rpLanePulse{0%,100%{opacity:.15}50%{opacity:.35}}
         *{-webkit-tap-highlight-color:transparent;user-select:none;box-sizing:border-box}
         input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
         input[type=number]{-moz-appearance:textfield}
