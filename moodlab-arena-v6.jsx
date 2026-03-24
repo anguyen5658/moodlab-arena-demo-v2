@@ -481,12 +481,11 @@ export default function MoodLabArena() {
   useEffect(() => { const t=setInterval(()=>setTickerOffset(p=>p-0.5),30); return()=>clearInterval(t); }, []);
 
   // ── 3s Action Timer ──
-  // Timer runs for: shoot (FK1 zone pick), save_dive (pick zone)
-  // FK2 shoot_x/shoot_y: NO timer — user puffs at their own pace
+  // Timer runs for: shoot (FK1 zone pick), save_dive, shoot_x/shoot_y (FK2 aim)
   // Timer STOPS once user starts charging (kickCharging=true)
   // Timer does NOT start during match intro (matchIntro !== null)
   useEffect(() => {
-    const timerStates = ["shoot","save_dive"]; // FK2 excluded — no timer for puff aiming
+    const timerStates = ["shoot","save_dive","shoot_x","shoot_y"];
     if(timerStates.includes(kickState) && !kickCharging && !matchIntro) {
       setActionTimer(3);
       if(actionTimerRef.current) clearInterval(actionTimerRef.current);
@@ -496,6 +495,8 @@ export default function MoodLabArena() {
             clearInterval(actionTimerRef.current); actionTimerRef.current=null;
             if(kickState==="shoot") { const rz=Math.floor(Math.random()*6); kickSelectZone(rz); playFx("error"); setCommentary("Too slow! Auto-kick! 🐌"); }
             else if(kickState==="save_dive") { const rz=Math.floor(Math.random()*6); kickDive(rz); playFx("error"); setCommentary("Too slow! Random dive! 🐌"); }
+            else if(kickState==="shoot_x") { fk2LockX(20+Math.floor(Math.random()*60)); playFx("error"); setCommentary("Too slow! Random X aim! 🐌"); }
+            else if(kickState==="shoot_y") { fk2LockY(20+Math.floor(Math.random()*60)); playFx("error"); setCommentary("Too slow! Random Y aim! 🐌"); }
             return 0;
           }
           return p-1;
@@ -3173,17 +3174,22 @@ export default function MoodLabArena() {
                       userSelect:"none",WebkitUserSelect:"none",
                     }}
                   >
-                    {kickCharging
-                      ? (kickState==="shoot_x"
-                        ? `← PUFFING... ${Math.round(kickPower)}% →`
-                        : `↕ PUFFING... ${Math.round(kickPower)}%`)
-                      : (kickState==="shoot_x"
-                        ? "💨 HOLD TO PUFF — AIM LEFT/RIGHT ← →"
-                        : "💨 HOLD TO PUFF — AIM HEIGHT ↕")}
+                    <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+                      <span>
+                        {kickCharging
+                          ? (kickState==="shoot_x"
+                            ? `← PUFFING... ${Math.round(kickPower)}% →`
+                            : `↕ PUFFING... ${Math.round(kickPower)}%`)
+                          : (kickState==="shoot_x"
+                            ? "💨 HOLD TO PUFF ← →"
+                            : "💨 HOLD TO PUFF ↕")}
+                      </span>
+                      {!kickCharging && <span style={{fontSize:12,fontWeight:900,color:actionTimer<=1?C.red:C.gold,minWidth:20,animation:actionTimer<=1?"pulse 0.5s infinite":"none"}}>{actionTimer}s</span>}
+                    </div>
                     <div style={{fontSize:7,color:`${kickState==="shoot_x"?C.cyan:C.orange}70`,marginTop:2}}>
                       {kickCharging
                         ? (kickState==="shoot_x"?"Longer puff = further RIGHT":"Longer puff = HIGHER")
-                        : (kickState==="shoot_x"?"Hold & release to set horizontal position":"Hold & release to set vertical position")}
+                        : (kickState==="shoot_x"?"Aim LEFT/RIGHT · Hold & release":"Aim HEIGHT · Hold & release")}
                     </div>
                   </div>
                 </div>
