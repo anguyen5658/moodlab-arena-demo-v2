@@ -4260,28 +4260,23 @@ export default function MoodLabArena() {
   // ═════════════════════════════════════════
   const overlayStyle = {position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,background:"rgba(5,5,16,0.97)",backdropFilter:"blur(16px)",display:"flex",flexDirection:"column",overflowY:"auto"};
   // ── Universal game cleanup — stops ALL intervals, animations, resets state ──
-  // ── Global nav: show/hide HTML buttons outside React + wire window functions ──
-  const goHome = useCallback(() => {
-    cleanupAllGames();
-    setGameActive(null);setKickState(null);setIsFK2Mode(false);isFK2Ref.current=false;setIsFK3Mode(false);isFK3Ref.current=false;
-    setBpPhase(null);setRrPhase(null);setPpPhase(null);setRpPhase(null);setTowPhase(null);
-    setMatchmaking(null);setSelectedGame(null);setFanMode(null);setFanTeam(null);setFanDevice(null);
-    try{wcExitTournament();}catch(e){}
-  }, []);
-  const goBack = useCallback(() => {
-    cleanupAllGames();
-    if(gameActive){setGameActive(null);setKickState(null);setIsFK2Mode(false);isFK2Ref.current=false;setIsFK3Mode(false);isFK3Ref.current=false;setBpPhase(null);setRrPhase(null);setPpPhase(null);setRpPhase(null);setTowPhase(null);}
-    else if(matchmaking){setMatchmaking(null);}
-    else if(fanMode){setFanMode(null);setFanTeam(null);setFanDevice(null);}
-    else if(wcPhase){try{wcExitTournament();}catch(e){}}
-    else if(selectedGame){setSelectedGame(null);}
-  }, [gameActive,matchmaking,fanMode,wcPhase,selectedGame]);
+  // ── Global back button: wire window function + show/hide HTML button ──
+  // MUST run on every render to keep fresh closure (no useCallback, no stale state)
   useEffect(()=>{
-    window.__moodlabGoHome = goHome;
-    window.__moodlabGoBack = goBack;
-    // Show/hide the HTML nav buttons
-    const nav = document.getElementById('global-nav');
-    if(nav) nav.style.display = (gameActive||matchmaking||selectedGame||wcPhase||fanMode) ? 'flex' : 'none';
+    window.__moodlabGoBack = () => {
+      cleanupAllGames();
+      // Reset EVERYTHING — nuclear clear all state
+      setGameActive(null);setKickState(null);setIsFK2Mode(false);isFK2Ref.current=false;setIsFK3Mode(false);isFK3Ref.current=false;
+      setBpPhase(null);setRrPhase(null);setPpPhase(null);setRpPhase(null);setTowPhase(null);
+      setMatchmaking(null);setSelectedGame(null);setFanMode(null);setFanTeam(null);setFanDevice(null);
+      setShowVibeCheck(false);setDimLights(false);setScreenShake(false);setScreenFlash(null);
+      setMatchIntro(null);setCommentatorText("");setPuffBubbles([]);setAudienceBubbles([]);
+      setConfettiParticles([]);setSmokeParticles([]);
+      try{setWcPhase(null);setWcTeam(null);setWcTournament(null);setWcBracket(null);setWcFinalResult(null);}catch(e){}
+    };
+    // Show/hide the HTML back button
+    const btn = document.getElementById('back-btn');
+    if(btn) btn.style.display = (gameActive||matchmaking||selectedGame||wcPhase||fanMode||showVibeCheck) ? 'block' : 'none';
   });
 
   const cleanupAllGames = () => {

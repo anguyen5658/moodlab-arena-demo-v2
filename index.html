@@ -19,44 +19,53 @@
     @media(min-width:431px){
       #root{border-radius:40px;box-shadow:0 0 80px rgba(0,0,0,0.8),0 0 0 8px #1a1a2e,0 0 0 10px #333;}
     }
-    /* NAV BUTTONS — OUTSIDE React, above everything */
-    #global-nav{
+    #back-btn{
       display:none;
-      position:fixed;top:10px;left:50%;transform:translateX(-50%);
-      z-index:999999;
-      gap:6px;
-    }
-    #global-nav button{
-      padding:6px 14px;border-radius:10px;
-      background:rgba(10,14,30,0.92);
+      position:fixed;top:10px;left:10px;
+      z-index:2147483647;
+      width:36px;height:36px;border-radius:18px;
+      background:rgba(10,14,30,0.9);
       border:1px solid rgba(255,255,255,0.2);
-      color:#E8EBF6;font-size:12px;font-weight:700;
-      cursor:pointer;outline:none;
+      color:#E8EBF6;font-size:18px;line-height:36px;text-align:center;
+      cursor:pointer;
       -webkit-appearance:none;
       -webkit-tap-highlight-color:transparent;
       backdrop-filter:blur(10px);
       box-shadow:0 3px 12px rgba(0,0,0,0.6);
       font-family:-apple-system,sans-serif;
       touch-action:manipulation;
+      padding:0;margin:0;outline:none;
     }
-    #global-nav button:active{
-      background:rgba(0,229,255,0.15);
-      border-color:rgba(0,229,255,0.4);
-    }
+    #back-btn:active{background:rgba(0,229,255,0.2);border-color:rgba(0,229,255,0.5);}
     @media(min-width:431px){
-      #global-nav{top:calc(50% - 466px + 10px);}
+      #back-btn{top:calc(50% - 466px + 10px);left:calc(50% - 215px + 10px);}
     }
   </style>
 </head>
 <body>
   <div id="root"></div>
-
-  <!-- NAV BUTTONS — completely outside React DOM tree -->
-  <div id="global-nav">
-    <button onclick="window.__moodlabGoHome && window.__moodlabGoHome()">🏠 Home</button>
-    <button onclick="window.__moodlabGoBack && window.__moodlabGoBack()">◀ Back</button>
-  </div>
-
+  <button id="back-btn">←</button>
+  <script>
+    // Back button — outside React, uses highest possible z-index
+    document.getElementById('back-btn').addEventListener('click', function(e) {
+      e.stopPropagation();
+      // Try React goBack first, fallback to page reload
+      if (window.__moodlabGoBack) {
+        window.__moodlabGoBack();
+      } else {
+        window.location.reload();
+      }
+    });
+    document.getElementById('back-btn').addEventListener('touchend', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (window.__moodlabGoBack) {
+        window.__moodlabGoBack();
+      } else {
+        window.location.reload();
+      }
+    });
+  </script>
   <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
