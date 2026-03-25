@@ -5594,7 +5594,7 @@ export default function MoodLabArena() {
 
 
         {/* ═══ LIVE EVENTS — Synchronized Puff Events card ═══ */}
-        <div style={{position:"absolute",bottom:125,left:14,right:14,zIndex:12,animation:"arenaFadeIn 0.7s ease 0.4s both"}}>
+        <div style={{position:"absolute",bottom:260,left:14,right:14,zIndex:12,animation:"arenaFadeIn 0.7s ease 0.4s both"}}>
           <div style={{borderRadius:16,overflow:"hidden",cursor:"pointer",...GLASS_CARD}} onClick={() => {
             if (peNextCountdown === "NOW!" || (puffEventSchedule && puffEventSchedule.nextAt <= Date.now())) {
               startPuffEvent(puffEventSchedule.nextType);
@@ -5642,7 +5642,7 @@ export default function MoodLabArena() {
         </div>
 
         {/* ═══ HALFTIME MINI-GAMES — floating card ═══ */}
-        <div style={{position:"absolute",bottom:70,left:14,right:14,zIndex:12,animation:"arenaFadeIn 0.8s ease 0.5s both"}}>
+        <div style={{position:"absolute",bottom:120,left:14,right:14,zIndex:12,animation:"arenaFadeIn 0.8s ease 0.5s both"}}>
           <div style={{borderRadius:18,overflow:"hidden",...GLASS_CARD,padding:"14px 16px"}}>
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
               <div style={{display:"flex",alignItems:"center",gap:6}}>
