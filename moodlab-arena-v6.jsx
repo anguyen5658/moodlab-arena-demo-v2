@@ -4899,7 +4899,7 @@ export default function MoodLabArena() {
     if(playerPwrInfo.tier==="ultra") setCommentary(RPS_BLINKER_COMMENTS[Math.floor(Math.random()*RPS_BLINKER_COMMENTS.length)]);
     else setCommentary("CLASH! 💥");
     setTimeout(()=>{
-      if(!guard||!guard.v) return;
+      if(!window._rpsActive) return; // only bail if game was fully ended
       setRpsClashAnim(false);
       const pc = rpsPlayerChoiceRef.current || rpsPlayerChoice;
       let result, pts = 0;
@@ -4945,7 +4945,8 @@ export default function MoodLabArena() {
       setRpsRoundResults(prev => [...prev, {round:rpsRoundRef.current, playerChoice:pc, aiChoice, result, pts, playerPower:finalPower, aiPower:aiPwr}]);
       setRpsPhase("round_result");
       setTimeout(()=>{
-        if(!guard||!guard.v) return;
+        // Don't check guard here — it causes black screen if invalidated
+        if(!window._rpsActive) return; // only bail if game was fully ended
         const nextRound = rpsRoundRef.current + 1;
         if(nextRound >= 5) {
           setRpsPhase("final");
