@@ -397,6 +397,26 @@ const VC_QUESTIONS = [
   { q:"Tổng số trận WC 2026?", opts:["64","80","96","104"], correct:3 },
 ];
 
+// ── UNIVERSAL PUFF ACTION BAR CONFIG ──
+const UNIVERSAL_PUFF_CONFIG = {
+  // Sweet spot shifts randomly each round
+  randomizeSweetSpot: () => {
+    const min = 40 + Math.random() * 25; // 40-65%
+    const max = min + 15 + Math.random() * 15; // +15-30% window
+    return { min: Math.round(min), max: Math.min(95, Math.round(max)) };
+  },
+  // Blinker threshold
+  blinkerThreshold: 95, // 95%+ = blinker territory
+  // Power zones
+  zones: [
+    { name: "TAP", max: 15, color: "#555F85" },
+    { name: "SHORT", max: 40, color: "#8892B8" },
+    { name: "GOOD", max: 65, color: "#00E5FF" },
+    { name: "PERFECT", max: 90, color: "#7FFF00" }, // sweet spot (randomized)
+    { name: "BLINKER", max: 100, color: "#FF4444" },
+  ],
+};
+
 const HOOK_FISH = [
   {name:"Blue Snap",emoji:"🐟",rarity:"common",pts:10,zoneWidth:35,resistance:0.8,instability:0.3,tensionRate:1.0,escapeRate:0.8,color:C.cyan},
   {name:"Lunar Carp",emoji:"🐠",rarity:"common",pts:10,zoneWidth:33,resistance:0.9,instability:0.35,tensionRate:1.0,escapeRate:0.9,color:C.cyan},
@@ -808,6 +828,15 @@ export default function MoodLabArena() {
   const [showBlePopup, setShowBlePopup] = useState(false);
   const [bleConnected, setBleConnected] = useState(false);
   const [bleScanning, setBleScanning] = useState(false);
+
+  // ── Universal Puff Action Bar ──
+  const [universalSweetSpot, setUniversalSweetSpot] = useState({min:55, max:80});
+  const [blinkerUsed, setBlinkerUsed] = useState(false); // 1 blinker per round
+
+  // ── Device Optimization Screen ──
+  const [showDeviceOptimize, setShowDeviceOptimize] = useState(false);
+  const [optimizeProgress, setOptimizeProgress] = useState(0);
+  const [optimizeStage, setOptimizeStage] = useState(0); // 0-4 stages
   const [showAskPrompt, setShowAskPrompt] = useState(null);
   const [sessionInput, setSessionInput] = useState(null);
   const [inputPulse, setInputPulse] = useState(false);
@@ -1962,6 +1991,7 @@ export default function MoodLabArena() {
   };
 
   const startDuelRound = (roundNum) => {
+    randomizeUniversalSweetSpot(); // Universal puff bar: new sweet spot each round
     setDuelFiredShot(false);
     setDuelResult(null);
     setDuelPuffing(false);
@@ -2434,6 +2464,7 @@ export default function MoodLabArena() {
   const BP_COMMENTS = {small:["Baby puff 🍼","My grandma hits harder 👵","Ant-sized 🐜","Whisper puff 🤫","Barely a breeze 🌬️","That was a baby puff... are you scared?? 👶","Coward level: MAX 🐔","Mosquito breath 🦟","Did you even puff?? 💀"],big:["MADMAN! 💀","FULL SEND! 🫁","Balloon said YIKES 😳","LUNGS OF STEEL 💪","Risky business! 🔥","That was AGGRESSIVE 😤","Brave AND stupid 🤪","That balloon is looking at you funny 🎈👀"],blinker:["BLINKER PUFF! Trying to end this game in one shot 💀","ABSOLUTE PSYCHOPATH 🫁💥","BLINKER MODE ACTIVATED!! 🔥🔥🔥","Your lungs are too powerful! 🫁💀","INSANE RISK!! ARE YOU OKAY?? 😱"],pop:["BOOOOM! 💥🎈💀","THE BALLOON HAS LEFT THE CHAT 💀","R.I.P. BALLOON 🪦","POP! Your lungs are too powerful! 🫁💥","BANG! GAME OVER! 💥🎈","Balloon said 'I can't breathe' 🎈😤"],shaking:["IT COULD GO ANY MOMENT! 😱","DANGER ZONE! 🚨","Everyone holding their breath! 😶","The balloon is SWEATING 🎈💦","One more puff and it's OVER 😰","The balloon is begging for mercy 🎈🙏"]};
   const getBalloonColor = (pct) => pct<30?"#4CAF50":pct<50?"#8BC34A":pct<65?"#FFEB3B":pct<75?"#FF9800":pct<85?"#FF5722":"#F44336";
   const startBalloonPop = () => {
+    randomizeUniversalSweetSpot();
     const aiCount = 3+Math.floor(Math.random()*3);
     const shuffled = [...BP_AI_PLAYERS].sort(()=>Math.random()-0.5);
     const aiP = shuffled.slice(0,aiCount).map(a=>({...a,isYou:false,isAI:true,alive:true,puffs:0,totalAir:0}));
@@ -2512,6 +2543,7 @@ export default function MoodLabArena() {
     return {name:"BLINKER",color:C.red,emoji:"🫁🔥"};
   };
   const startRussianRoulette = () => {
+    randomizeUniversalSweetSpot();
     const aiCount=3+Math.floor(Math.random()*3);const shuffled=[...RR_AI].sort(()=>Math.random()-0.5).slice(0,aiCount);
     const players=shuffled.map(a=>({...a,isYou:false,isAI:true,alive:true,dodges:0,survived:0}));
     const youIdx=Math.floor(Math.random()*(players.length+1));
@@ -2596,6 +2628,7 @@ export default function MoodLabArena() {
   const PP_SY=["YOU SCORE! 🎉","GOOOAL! 🥅💨","AI needs firmware update 🤖","POINT! Puff powered 💨🏆","Ball faster than your delivery 📦"];
   const PP_SA=["AI scores! 😤","Missed it! 💨","AI sneaks past! 🤖","Better positioning! 🎯","Machine strikes back! 🤖⚡"];
   const startPuffPong=()=>{
+    randomizeUniversalSweetSpot();
     if(ppRaf.current)cancelAnimationFrame(ppRaf.current);
     if(ppInterval.current){clearInterval(ppInterval.current);ppInterval.current=null;}
     const g=ppG.current;g.bx=50;g.by=50;g.dx=2.2;g.dy=1.2;g.py=50;g.ay=50;g.rally=0;g.trail=[];g.scoreY=0;g.scoreA=0;g.paused=false;g.smash=false;g.lastT=0;
@@ -2681,6 +2714,7 @@ export default function MoodLabArena() {
     win:["ENCORE! ENCORE! What a performance! 🎤🔥","Standing ovation! The crowd wants MORE! 👏💨","YOU CRUSHED IT! Puff game STRONG! 🫁🏆"]
   };
   const startRhythmPuff = () => {
+    randomizeUniversalSweetSpot();
     setRpNotes([]);setRpScore(0);setRpCombo(0);setRpMaxCombo(0);setRpMisses(0);setRpSpeed(3);
     setRpComment("");setRpRating(null);setRpParticles([]);setRpStageFlash(0);setRpBlinker(false);setRpPuffHeld(false);
     setRpBeat(0);setRpCrowdJump(false);setRpIntroStep(0);setRpPhase("intro");
@@ -2843,6 +2877,7 @@ export default function MoodLabArena() {
   };
 
   const startTugOfWar = () => {
+    randomizeUniversalSweetSpot();
     towCleanup();
     setTowPosition(50);setTowTimer(30);setTowPuffs(0);setTowAiPuffs(0);
     setTowComment("");setTowIntroStep(0);setTowSurge(false);setTowSurgeAvail(false);
@@ -2992,6 +3027,7 @@ export default function MoodLabArena() {
     {name:"PuffQuick",emoji:"💨",img:"https://api.dicebear.com/9.x/adventurer/svg?seed=PuffQuick&backgroundColor=transparent"},
   ];
   const startHotPotato = () => {
+    randomizeUniversalSweetSpot();
     const aiCount = 3 + Math.floor(Math.random()*4); // 3-6 AI = 4-7 total
     const shuffled = [...HP_AI].sort(()=>Math.random()-0.5).slice(0, aiCount);
     const players = shuffled.map(a=>({...a,isYou:false,isAI:true,alive:true}));
@@ -3151,6 +3187,7 @@ export default function MoodLabArena() {
     return pool[Math.floor(Math.random()*pool.length)];
   };
   const startHooked = () => {
+    randomizeUniversalSweetSpot();
     setHookPhase("idle");setHookScore(0);setHookFish(null);setHookSuction(0);setHookCatchProgress(0);
     setHookLineTension(0);setHookEscapeTimer(0);setHookZoneCenter(50);setHookZoneWidth(30);
     setHookHolding(false);setHookRecentCatches([]);setHookComment("Cast your line into the deep...");
@@ -3388,6 +3425,72 @@ export default function MoodLabArena() {
 
   // Check if blinker territory (held 4.5s+, power is dropping fast)
   const isPuffBlinker = useRef(false);
+
+  // ── UNIVERSAL PUFF ZONE (for all games) ──
+  const getUniversalPuffZone = (power) => {
+    if(power >= universalSweetSpot.min && power <= universalSweetSpot.max) return "perfect";
+    if(power >= UNIVERSAL_PUFF_CONFIG.blinkerThreshold) return "blinker";
+    if(power >= 65) return "good";
+    if(power >= 40) return "good";
+    if(power >= 15) return "short";
+    return "tap";
+  };
+
+  const getUniversalPuffResult = (power) => {
+    const zone = getUniversalPuffZone(power);
+    if(zone === "perfect") return { zone, multiplier: 1.5, label: "PERFECT PUFF!", color: C.lime, emoji: "👑" };
+    if(zone === "blinker" && !blinkerUsed) return { zone, multiplier: 2.0, label: "BLINKER BONUS!", color: C.red, emoji: "💀", blinkerBonus: true };
+    if(zone === "blinker" && blinkerUsed) return { zone, multiplier: 0.5, label: "BLINKER (used)", color: C.red, emoji: "💀" };
+    if(zone === "good") return { zone, multiplier: 1.0, label: "Good puff", color: C.cyan, emoji: "👌" };
+    if(zone === "short") return { zone, multiplier: 0.7, label: "Short puff", color: C.gold, emoji: "😐" };
+    return { zone, multiplier: 0.3, label: "Barely a tap", color: C.text3, emoji: "👎" };
+  };
+
+  const randomizeUniversalSweetSpot = () => {
+    const ss = UNIVERSAL_PUFF_CONFIG.randomizeSweetSpot();
+    setUniversalSweetSpot(ss);
+    setBlinkerUsed(false);
+    return ss;
+  };
+
+  // Render universal puff bar overlay for any game
+  const renderUniversalPuffBar = (power, charging, opts = {}) => {
+    const { width = "100%", showButton = false } = opts;
+    const zone = getUniversalPuffZone(power);
+    const zoneColor = zone==="perfect"?C.lime:zone==="blinker"?C.red:zone==="good"?C.cyan:zone==="short"?C.gold:C.text3;
+    const zoneLabel = zone==="perfect"?"PERFECT 👑":zone==="blinker"?(blinkerUsed?"BLINKER (used) 💀":"BLINKER BONUS! 💀"):zone==="good"?"Good 👌":zone==="short"?"Short":"Tap";
+    return (
+      <div style={{width, animation:"fadeIn 0.3s ease"}}>
+        {/* Zone label + power */}
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:3,padding:"0 2px"}}>
+          <span style={{fontSize:9,fontWeight:800,color:zoneColor}}>{charging?zoneLabel:"PUFF POWER"}</span>
+          <span style={{fontSize:10,fontWeight:900,color:zoneColor,fontFamily:"monospace"}}>{Math.round(power)}%</span>
+        </div>
+        {/* Power bar with universal sweet spot */}
+        <div style={{height:22,borderRadius:11,background:"rgba(255,255,255,0.04)",overflow:"hidden",border:`2px solid ${charging?zoneColor+"60":"rgba(255,255,255,0.1)"}`,position:"relative",transition:"border-color 0.2s",boxShadow:charging?`0 0 12px ${zoneColor}25`:"none"}}>
+          {/* Sweet spot highlight */}
+          <div style={{position:"absolute",left:`${universalSweetSpot.min}%`,width:`${universalSweetSpot.max-universalSweetSpot.min}%`,height:"100%",background:`${C.lime}12`,borderLeft:`1px solid ${C.lime}35`,borderRight:`1px solid ${C.lime}35`}}/>
+          <div style={{position:"absolute",left:`${universalSweetSpot.min+1}%`,top:2,fontSize:6,color:`${C.lime}60`,fontWeight:800,zIndex:2}}>SWEET</div>
+          {/* Blinker zone */}
+          <div style={{position:"absolute",left:"95%",width:"5%",height:"100%",background:`${C.red}15`,borderLeft:`1px solid ${C.red}30`}}/>
+          {/* Fill bar */}
+          <div style={{position:"absolute",left:0,top:0,bottom:0,width:`${power}%`,background:zone==="perfect"?`linear-gradient(90deg, ${C.cyan}, ${C.lime})`:zone==="blinker"?`linear-gradient(90deg, ${C.cyan}, ${C.lime}, ${C.red})`:`linear-gradient(90deg, ${C.cyan}, ${C.green})`,borderRadius:10,transition:"width 0.05s linear",boxShadow:charging?`0 0 15px ${zoneColor}40`:"none",zIndex:1}}/>
+          {/* Power % */}
+          {power>8 && <div style={{position:"absolute",right:6,top:"50%",transform:"translateY(-50%)",fontSize:10,fontWeight:900,color:"#fff",textShadow:"0 0 6px rgba(0,0,0,1)",zIndex:3}}>{Math.round(power)}%</div>}
+          {/* Zone markers */}
+          {UNIVERSAL_PUFF_CONFIG.zones.slice(0,-1).map((z,i)=>(
+            <div key={i} style={{position:"absolute",top:0,left:`${z.max}%`,width:1,height:"100%",background:"rgba(255,255,255,0.1)",zIndex:2}}/>
+          ))}
+        </div>
+        {/* Zone labels */}
+        <div style={{display:"flex",justifyContent:"space-between",marginTop:2,padding:"0 2px"}}>
+          {UNIVERSAL_PUFF_CONFIG.zones.map((z,i)=>(
+            <span key={i} style={{fontSize:6,color:z.name==="PERFECT"?C.lime:z.name==="BLINKER"?C.red:C.text3,fontWeight:z.name==="PERFECT"?700:400}}>{z.name}{z.name==="PERFECT"?" 💨":z.name==="BLINKER"?" 💀":""}</span>
+          ))}
+        </div>
+      </div>
+    );
+  };
 
   // ── FK2: Hold-to-puff for X and Y axes ──
   // X: hold longer = further RIGHT. Y: hold longer = HIGHER.
@@ -6255,6 +6358,7 @@ export default function MoodLabArena() {
   };
 
   const startRps = () => {
+    randomizeUniversalSweetSpot();
     const opp = RPS_OPPONENTS[Math.floor(Math.random()*RPS_OPPONENTS.length)];
     setRpsOpponent(opp);
     setRpsRound(0); rpsRoundRef.current=0;
@@ -6985,16 +7089,11 @@ export default function MoodLabArena() {
                         <div style={{fontSize:14,fontWeight:900,color:puffMeterColor,textShadow:`0 0 15px ${puffMeterColor}60`,letterSpacing:2,textTransform:"uppercase",marginBottom:10}}>
                           {duelPuffMeter<20?"PUFFING...":duelPuffMeter<45?"QUICK DRAW":duelPuffMeter<70?"POWER SHOT":duelPuffMeter<90?"MEGA PUFF":"LEGENDARY!"}
                         </div>
-                        <div style={{width:"80%",maxWidth:200,height:14,borderRadius:7,background:"rgba(0,0,0,0.5)",border:"1px solid rgba(255,255,255,0.15)",margin:"0 auto",overflow:"hidden",position:"relative"}}>
-                          <div style={{width:duelPuffMeter+"%",height:"100%",borderRadius:6,background:`linear-gradient(90deg, ${C.cyan}, ${C.gold}, ${C.orange}, ${C.red})`,backgroundSize:"300% 100%",backgroundPosition:(duelPuffMeter)+"%",transition:"width 0.05s linear",boxShadow:`0 0 10px ${puffMeterColor}60`}}/>
-                          {[20,45,70,90].map((mark,mi)=>(
-                            <div key={mi} style={{position:"absolute",left:mark+"%",top:0,bottom:0,width:1,background:"rgba(255,255,255,0.3)"}}/>
-                          ))}
+                        {/* Universal Puff Action Bar */}
+                        <div style={{width:"80%",maxWidth:200,margin:"0 auto 6px"}}>
+                          {renderUniversalPuffBar(duelPuffMeter, true)}
                         </div>
-                        <div style={{display:"flex",justifyContent:"space-between",width:"80%",maxWidth:200,margin:"4px auto 0",fontSize:6,color:C.text3,letterSpacing:0.5}}>
-                          <span>TAP</span><span>QUICK</span><span>POWER</span><span>LEGEND</span>
-                        </div>
-                        <div style={{fontSize:9,color:"#fff",marginTop:6,opacity:0.7}}>Release to fire!</div>
+                        <div style={{fontSize:9,color:"#fff",marginTop:6,opacity:0.7}}>Release to fire! {getUniversalPuffZone(duelPuffMeter)==="perfect"?"🎯 SWEET SPOT!":""}</div>
                       </div>
                     )}
                     {(wwPhase==="result" || wwPhase==="round_result") && duelResult && (
@@ -9041,7 +9140,9 @@ export default function MoodLabArena() {
               {bpPhase!=="intro"&&bpPhase!=="result"&&(<div style={{display:"flex",gap:3,marginTop:6,opacity:0.7}}>{["😮","😬","🫣","🤭","😱"].map((e,i)=>(<div key={i} style={{fontSize:nearPop?(dangerZone?14:12):10,animation:dangerZone&&i>2?`bpWobble ${0.3+i*0.1}s infinite`:"none",transition:"font-size 0.3s",opacity:airPct>i*20?1:0.3}}>{e}</div>))}<div style={{fontSize:8,color:C.text3,alignSelf:"center",marginLeft:4}}>{dangerZone?"CROWD PANICKING!":nearPop?"Crowd nervous...":"Crowd watching..."}</div></div>)}
               {/* Puff button */}
               {isYourTurn&&(<div style={{width:"100%",marginTop:8}}>
-                <div style={{width:"100%",height:8,borderRadius:6,background:"rgba(255,255,255,0.05)",overflow:"hidden",marginBottom:8}}><div style={{width:bpPuffAmount+"%",height:"100%",borderRadius:6,background:bpPuffAmount>75?`linear-gradient(90deg,${C.orange},${C.red})`:`linear-gradient(90deg,${C.green},${C.cyan})`,transition:"width 0.05s linear"}}/></div>
+                {/* Universal Puff Action Bar */}
+                {renderUniversalPuffBar(bpPuffAmount, bpCharging)}
+                <div style={{height:6}}/>
                 <div onMouseDown={bpStartCharge} onMouseUp={bpStopCharge} onMouseLeave={()=>{if(bpCharging)bpStopCharge();}} onTouchStart={(e)=>{e.preventDefault();bpStartCharge();}} onTouchEnd={bpStopCharge}
                   style={{padding:"14px 0",borderRadius:16,cursor:"pointer",textAlign:"center",userSelect:"none",background:bpCharging?`linear-gradient(135deg,${C.orange}30,${C.red}20)`:`linear-gradient(135deg,${C.cyan}15,${C.pink}10)`,border:`2px solid ${bpCharging?C.orange:C.cyan}30`,transform:bpCharging?"scale(0.97)":"scale(1)",transition:"all 0.2s"}}>
                   <div style={{fontSize:18,fontWeight:900,letterSpacing:2,color:bpCharging?C.orange:C.cyan}}>{bpCharging?"💨 PUFFING...":"HOLD TO PUFF 💨"}</div>
@@ -9098,12 +9199,14 @@ export default function MoodLabArena() {
               </div>
               {/* Commentary */}
               {rrComment&&(<div style={{textAlign:"center",padding:"8px 20px",borderRadius:12,...LG.pill,animation:"fadeIn 0.3s ease"}}><div style={{fontSize:12,fontWeight:700,color:rrPhase==="bang"?C.red:rrPhase==="click"?C.green:C.text}}>{rrComment}</div></div>)}
-              {/* Puff to pull trigger */}
-              {isYourTurn&&(<div onClick={rrPuff} onTouchStart={(e)=>{e.preventDefault();rrPuff();}}
-                style={{padding:"16px 40px",borderRadius:16,cursor:"pointer",textAlign:"center",background:`${C.red}15`,border:`2px solid ${C.red}30`,animation:"countPulse 1s infinite",userSelect:"none"}}>
+              {/* Puff to pull trigger — with Universal Puff Bar */}
+              {isYourTurn&&(<div style={{width:"100%",maxWidth:320}}>
+                {renderUniversalPuffBar(rrPuffCharge||0, isPuffing)}
+                <div onClick={rrPuff} onTouchStart={(e)=>{e.preventDefault();rrPuff();}}
+                style={{padding:"16px 40px",borderRadius:16,cursor:"pointer",textAlign:"center",background:`${C.red}15`,border:`2px solid ${C.red}30`,animation:"countPulse 1s infinite",userSelect:"none",marginTop:6}}>
                 <div style={{fontSize:18,fontWeight:900,color:C.red,letterSpacing:2}}>💨 PUFF TO PULL TRIGGER</div>
                 <div style={{fontSize:9,color:C.text3,marginTop:3}}>One chamber... six slots...</div>
-              </div>)}
+              </div></div>)}
               {rrPhase==="click"&&(<div style={{textAlign:"center",animation:"fadeIn 0.3s ease"}}><div style={{fontSize:50,animation:"goalBurst 0.5s ease"}}>😮‍💨</div><div style={{fontSize:14,fontWeight:800,color:C.green}}>SAFE!</div></div>)}
               {rrPhase==="bang"&&(<div style={{textAlign:"center",animation:"shake 0.5s ease"}}><div style={{fontSize:60,animation:"goalBurst 0.5s ease"}}>💥</div><div style={{fontSize:18,fontWeight:900,color:C.red,textShadow:`0 0 30px ${C.red}`}}>BANG!</div></div>)}
               {rrPhase==="result"&&(<div style={{display:"flex",gap:10,marginTop:12,animation:"fadeIn 0.5s ease"}}>
@@ -9151,11 +9254,14 @@ export default function MoodLabArena() {
                 <div onMouseDown={()=>ppMovePaddle(1)} onTouchStart={(e)=>{e.preventDefault();ppMovePaddle(1);}} style={{position:"absolute",left:0,top:"50%",width:"50%",height:"50%",cursor:"pointer",zIndex:3}}/>
                 {ppIntro===5&&<div style={{position:"absolute",left:"50%",top:"50%",transform:"translate(-50%,-50%)",fontSize:32,fontWeight:900,color:C.gold,letterSpacing:6,textShadow:`0 0 20px ${C.gold}`,animation:"goalBurst 0.5s ease",zIndex:5}}>SERVE!</div>}
               </div>
-              {ppPhase==="playing"&&<div style={{display:"flex",gap:8,marginTop:4,alignItems:"center"}}>
+              {ppPhase==="playing"&&<div style={{width:"100%",maxWidth:320}}>
+                {/* Universal Puff Action Bar for Puff Pong */}
+                {ppPuffHeld && <div style={{marginBottom:4}}>{renderUniversalPuffBar(Math.min(100,(ppPaddleY/80)*100), true)}</div>}
+                <div style={{display:"flex",gap:8,marginTop:4,alignItems:"center",justifyContent:"center"}}>
                 <div onMouseDown={()=>ppMovePaddle(-1)} onTouchStart={(e)=>{e.preventDefault();ppMovePaddle(-1);}} style={{padding:"8px 16px",borderRadius:10,cursor:"pointer",background:`${C.cyan}12`,border:`1px solid ${C.cyan}25`,fontSize:11,fontWeight:800,color:C.cyan}}>UP</div>
                 <div onMouseDown={ppPuffUp} onMouseUp={ppPuffRelease} onMouseLeave={ppPuffRelease} onTouchStart={(e)=>{e.preventDefault();ppPuffUp();}} onTouchEnd={ppPuffRelease} style={{padding:"10px 20px",borderRadius:12,cursor:"pointer",background:ppPuffHeld?`${C.cyan}30`:`${C.cyan}10`,border:`2px solid ${ppPuffHeld?C.cyan:C.cyan+"40"}`,fontSize:12,fontWeight:900,color:C.cyan,transition:"all 0.15s",transform:ppPuffHeld?"scale(0.95)":"scale(1)"}}>{ppPuffHeld?"PUFFING... 💨":"HOLD TO PUFF"}</div>
                 <div onMouseDown={()=>ppMovePaddle(1)} onTouchStart={(e)=>{e.preventDefault();ppMovePaddle(1);}} style={{padding:"8px 16px",borderRadius:10,cursor:"pointer",background:`${C.cyan}12`,border:`1px solid ${C.cyan}25`,fontSize:11,fontWeight:800,color:C.cyan}}>DOWN</div>
-              </div>}
+              </div></div>}
               <div style={{fontSize:7,color:C.text3,marginTop:2,opacity:0.5}}>PUFF = paddle UP | Release = drift DOWN | Tap UP/DOWN</div>
               {ppComment&&<div style={{padding:"5px 14px",borderRadius:10,marginTop:2,background:"rgba(0,229,255,0.06)",border:"1px solid rgba(0,229,255,0.12)"}}><div style={{fontSize:10,fontWeight:700,color:C.text,textAlign:"center"}}>{ppComment}</div></div>}
               {ppPhase==="result"&&<div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:8,marginTop:8,animation:"fadeIn 0.5s ease"}}>
@@ -9226,14 +9332,16 @@ export default function MoodLabArena() {
               </div>
               {/* Commentary */}
               {towComment&&(<div style={{padding:"4px 12px",borderRadius:8,...LG.pill}}><div style={{fontSize:11,fontWeight:700,color:C.text}}>{towComment}</div></div>)}
-              {/* PUFF button */}
-              {towPhase==="playing"&&(<div onClick={towPuff} onTouchStart={(e)=>{e.preventDefault();towPuff();}}
-                style={{padding:"20px 0",borderRadius:16,cursor:"pointer",textAlign:"center",width:"100%",maxWidth:300,
+              {/* PUFF button with Universal Puff Bar */}
+              {towPhase==="playing"&&(<div style={{width:"100%",maxWidth:300,marginTop:8}}>
+                {renderUniversalPuffBar(towPuffIntensity, towHolding)}
+                <div onClick={towPuff} onTouchStart={(e)=>{e.preventDefault();towPuff();}}
+                style={{padding:"20px 0",borderRadius:16,cursor:"pointer",textAlign:"center",marginTop:6,
                   background:`linear-gradient(135deg,${C.cyan}20,${C.blue}10)`,border:`2px solid ${C.cyan}30`,
-                  animation:"countPulse 0.5s infinite",userSelect:"none",WebkitUserSelect:"none",marginTop:8}}>
+                  animation:"countPulse 0.5s infinite",userSelect:"none",WebkitUserSelect:"none"}}>
                 <div style={{fontSize:22,fontWeight:900,color:C.cyan,letterSpacing:2}}>💨 PUFF TO PULL!</div>
                 <div style={{fontSize:9,color:C.text3,marginTop:3}}>Spam puff to win!</div>
-              </div>)}
+              </div></div>)}
               {towPhase==="result"&&(<div style={{textAlign:"center",animation:"fadeIn 0.5s ease"}}>
                 <div style={{fontSize:50,marginBottom:8}}>{towPosition>50?"🏆":"😤"}</div>
                 <div style={{fontSize:22,fontWeight:900,color:towPosition>50?C.green:C.red}}>{towPosition>50?"YOU WIN!":"AI WINS!"}</div>
@@ -9355,14 +9463,10 @@ export default function MoodLabArena() {
                   <div style={{fontSize:11,fontWeight:700,color:C.text}}>{hpComment}</div>
                 </div>
               )}
-              {/* Puff power meter when holding */}
+              {/* Puff power meter when holding — with Universal Puff Bar */}
               {hpPuffHeld&&(
                 <div style={{width:"80%",maxWidth:260,marginTop:4}}>
-                  <div style={{width:"100%",height:10,borderRadius:5,background:"rgba(255,255,255,0.05)",overflow:"hidden",border:`1px solid ${C.border}`}}>
-                    <div style={{width:hpPuffPower+"%",height:"100%",borderRadius:5,
-                      background:hpPuffPower<33?`linear-gradient(90deg,${C.cyan},${C.green})`:hpPuffPower<66?`linear-gradient(90deg,${C.green},${C.gold})`:
-                        `linear-gradient(90deg,${C.gold},${C.orange})`,transition:"width 0.05s"}}/>
-                  </div>
+                  {renderUniversalPuffBar(hpPuffPower, true)}
                   <div style={{display:"flex",justifyContent:"space-between",marginTop:2}}>
                     <span style={{fontSize:7,color:C.cyan}}>Quick pass</span>
                     <span style={{fontSize:7,color:C.gold}}>Skip 1</span>
@@ -9595,14 +9699,17 @@ export default function MoodLabArena() {
                   </div>
                 </div>
               )}
-              {/* Hold to puff instruction during bite */}
+              {/* Hold to puff instruction during bite — with Universal Puff Bar */}
               {inBite && (
-                <div style={{padding:"10px 0",width:"100%",maxWidth:320,borderRadius:14,textAlign:"center",
-                  background:hookHolding?`linear-gradient(135deg,${C.cyan}20,${C.blue}10)`:"rgba(255,255,255,0.03)",
-                  border:`2px solid ${hookHolding?C.cyan:C.border}30`,
-                  transform:hookHolding?"scale(0.97)":"scale(1)",transition:"all 0.15s",userSelect:"none"}}>
-                  <div style={{fontSize:14,fontWeight:900,color:hookHolding?C.cyan:C.text2,letterSpacing:2}}>{hookHolding?"💨 REELING...":"HOLD TO PUFF 💨"}</div>
-                  <div style={{fontSize:8,color:C.text3,marginTop:2}}>{hookHolding?"Release to lower suction":"Hold anywhere to reel in!"}</div>
+                <div style={{width:"100%",maxWidth:320}}>
+                  {hookHolding && <div style={{marginBottom:4}}>{renderUniversalPuffBar(Math.min(100,hookSuction), true)}</div>}
+                  <div style={{padding:"10px 0",borderRadius:14,textAlign:"center",
+                    background:hookHolding?`linear-gradient(135deg,${C.cyan}20,${C.blue}10)`:"rgba(255,255,255,0.03)",
+                    border:`2px solid ${hookHolding?C.cyan:C.border}30`,
+                    transform:hookHolding?"scale(0.97)":"scale(1)",transition:"all 0.15s",userSelect:"none"}}>
+                    <div style={{fontSize:14,fontWeight:900,color:hookHolding?C.cyan:C.text2,letterSpacing:2}}>{hookHolding?"💨 REELING...":"HOLD TO PUFF 💨"}</div>
+                    <div style={{fontSize:8,color:C.text3,marginTop:2}}>{hookHolding?"Release to lower suction":"Hold anywhere to reel in!"}</div>
+                  </div>
                 </div>
               )}
               {/* Recent catches */}
@@ -9753,20 +9860,9 @@ export default function MoodLabArena() {
                   <div style={{fontSize:36,marginBottom:6}}>{RPS_EMOJI[rpsPlayerChoice]}</div>
                   <div style={{fontSize:12,fontWeight:800,color:C.text2,marginBottom:4}}>You chose {rpsPlayerChoice?.toUpperCase()}</div>
                   <div style={{fontSize:11,color:C.text3,marginBottom:12}}>Now HOLD to charge puff power!</div>
-                  {/* Power meter */}
-                  <div style={{width:"80%",maxWidth:260,height:20,borderRadius:10,background:"rgba(255,255,255,0.06)",margin:"0 auto 8px",overflow:"hidden",position:"relative",border:`1px solid ${pwrInfo.color}30`}}>
-                    <div style={{width:rpsPuffPower+"%",height:"100%",borderRadius:10,
-                      background:`linear-gradient(90deg, ${C.cyan}, ${rpsPuffPower>70?C.orange:rpsPuffPower>40?C.green:C.cyan}, ${rpsPuffPower>90?C.red:rpsPuffPower>70?C.orange:C.green})`,
-                      transition:"width 0.05s linear",boxShadow:`0 0 12px ${pwrInfo.color}40`}}/>
-                    {/* Zone markers */}
-                    <div style={{position:"absolute",left:"10%",top:0,bottom:0,width:1,background:"rgba(255,255,255,0.15)"}}/>
-                    <div style={{position:"absolute",left:"40%",top:0,bottom:0,width:1,background:"rgba(255,255,255,0.15)"}}/>
-                    <div style={{position:"absolute",left:"70%",top:0,bottom:0,width:1,background:"rgba(255,255,255,0.15)"}}/>
-                    <div style={{position:"absolute",left:"90%",top:0,bottom:0,width:1,background:`${C.red}40`}}/>
-                  </div>
-                  {/* Power labels */}
-                  <div style={{display:"flex",justifyContent:"space-between",width:"80%",maxWidth:260,margin:"0 auto 6px",fontSize:7,color:C.text3}}>
-                    <span>Tap +1</span><span>Short +2</span><span>Perfect +3</span><span style={{color:C.red}}>Blinker +5!</span>
+                  {/* Universal Puff Action Bar */}
+                  <div style={{width:"80%",maxWidth:260,margin:"0 auto 8px"}}>
+                    {renderUniversalPuffBar(rpsPuffPower, rpsPuffHeld)}
                   </div>
                   <div style={{fontSize:16,fontWeight:900,color:pwrInfo.color,marginBottom:4}}>{pwrInfo.label} {rpsPuffPower>=90&&"💀"}</div>
                   <div style={{fontSize:24,fontWeight:900,color:pwrInfo.color}}>+{pwrInfo.points}</div>
@@ -12360,7 +12456,25 @@ export default function MoodLabArena() {
             <div key={i} onClick={()=>{
               if(!d.connected){
                 playFx("select");setBleScanning(true);
-                setTimeout(()=>{setBleScanning(false);setBleConnected(true);playFx("success");notify(`✅ ${d.name} connected!`,C.green);},2000);
+                setTimeout(()=>{
+                  setBleScanning(false);setBleConnected(true);playFx("success");
+                  setShowBlePopup(false);
+                  // Launch Device Optimization screen
+                  setShowDeviceOptimize(true);setOptimizeProgress(0);setOptimizeStage(0);
+                  let prog = 0;
+                  const optInterval = setInterval(()=>{
+                    prog += 2.5; // 40 steps over 4s (100ms interval)
+                    if(prog >= 100){
+                      clearInterval(optInterval);
+                      prog = 100;
+                    }
+                    setOptimizeProgress(prog);
+                    if(prog >= 20 && prog < 22) setOptimizeStage(1);
+                    else if(prog >= 40 && prog < 42) setOptimizeStage(2);
+                    else if(prog >= 60 && prog < 62) setOptimizeStage(3);
+                    else if(prog >= 80 && prog < 82) setOptimizeStage(4);
+                  }, 100);
+                },2000);
               }
             }} style={{
               display:"flex",alignItems:"center",gap:10,padding:"10px 12px",borderRadius:12,marginBottom:6,cursor:"pointer",
@@ -12392,6 +12506,124 @@ export default function MoodLabArena() {
             </div>
           </div>
         </div>
+      </div>
+    );
+  };
+
+  // ═══ DEVICE OPTIMIZATION SCREEN ═══
+  const renderDeviceOptimize = () => {
+    if(!showDeviceOptimize) return null;
+    const stages = [
+      { label: "Scanning Device...", sub: "Detecting extract consumption rate...", icon: "📡", color: C.cyan },
+      { label: "Analyzing Temperature Ratio...", sub: "Calibrating heating element...", icon: "🌡️", color: C.orange },
+      { label: "AI Engine Processing...", sub: "Optimizing puff response curve...", icon: "🧠", color: C.purple },
+      { label: "Normalizing for Arena...", sub: "Setting medium heating for fair play...", icon: "📊", color: C.lime },
+      { label: "Ready for Arena!", sub: "Device optimized for Arena Games", icon: "✅", color: C.green },
+    ];
+    const stage = stages[Math.min(optimizeStage, 4)];
+    const checkItems = [
+      { label: "Extract Consumption Rate", done: optimizeStage >= 1 },
+      { label: "Temperature Ratio", done: optimizeStage >= 2 },
+      { label: "AI Engine", done: optimizeStage >= 3 },
+      { label: "Arena Normalization", done: optimizeStage >= 4 },
+    ];
+    return (
+      <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:270,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
+        background:"radial-gradient(ellipse at 50% 30%, rgba(0,229,255,0.08) 0%, transparent 50%), linear-gradient(180deg, #030812 0%, #0a1628 40%, #0c1a38 100%)",
+      }}>
+        {/* Circuit board lines decoration */}
+        {[...Array(8)].map((_,i)=>(
+          <div key={"cb"+i} style={{position:"absolute",left:`${10+i*12}%`,top:0,width:1,height:"100%",background:`linear-gradient(180deg, transparent, ${C.cyan}06, transparent)`,pointerEvents:"none"}}/>
+        ))}
+        {[...Array(6)].map((_,i)=>(
+          <div key={"ch"+i} style={{position:"absolute",top:`${15+i*15}%`,left:0,width:"100%",height:1,background:`linear-gradient(90deg, transparent, ${C.cyan}04, transparent)`,pointerEvents:"none"}}/>
+        ))}
+
+        {/* Title */}
+        <div style={{fontSize:10,fontWeight:700,color:C.cyan,letterSpacing:4,marginBottom:20,textTransform:"uppercase",opacity:0.7}}>DEVICE OPTIMIZATION</div>
+
+        {/* Stage icon animation */}
+        <div style={{width:100,height:100,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",
+          background:`radial-gradient(circle, ${stage.color}15, transparent 70%)`,
+          border:`2px solid ${stage.color}30`,
+          boxShadow:`0 0 40px ${stage.color}20, inset 0 0 20px ${stage.color}08`,
+          animation:optimizeStage<4?"pulse 1.5s infinite":"goalBurst 0.5s ease",
+          marginBottom:20,
+        }}>
+          <span style={{fontSize:40,filter:`drop-shadow(0 0 10px ${stage.color})`}}>{stage.icon}</span>
+        </div>
+
+        {/* Stage label */}
+        <div style={{fontSize:18,fontWeight:900,color:stage.color,letterSpacing:1,marginBottom:6,textShadow:`0 0 15px ${stage.color}40`,textAlign:"center"}}>
+          {stage.label}
+        </div>
+        <div style={{fontSize:11,color:C.text2,marginBottom:24,textAlign:"center",maxWidth:280}}>
+          {stage.sub}
+        </div>
+
+        {/* Glass info card — checklist */}
+        <div style={{width:"85%",maxWidth:320,padding:"16px 18px",borderRadius:16,...GLASS_CARD,marginBottom:20}}>
+          {checkItems.map((item,i) => (
+            <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"6px 0",opacity:item.done?1:0.4,transition:"opacity 0.5s"}}>
+              <div style={{width:20,height:20,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",
+                background:item.done?`${C.green}20`:"rgba(255,255,255,0.04)",
+                border:`1px solid ${item.done?C.green+"40":C.border}`,fontSize:10,
+              }}>
+                {item.done ? "✓" : ""}
+              </div>
+              <div style={{flex:1}}>
+                <div style={{fontSize:11,fontWeight:700,color:item.done?C.green:C.text3}}>{item.label}</div>
+              </div>
+              <div style={{fontSize:9,fontWeight:700,color:item.done?C.green:C.text3}}>
+                {item.done ? "Calibrated" : "Pending..."}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Fair play message */}
+        {optimizeStage >= 3 && (
+          <div style={{padding:"8px 16px",borderRadius:10,background:`${C.lime}08`,border:`1px solid ${C.lime}15`,marginBottom:16,textAlign:"center",maxWidth:300,animation:"fadeIn 0.5s ease"}}>
+            <div style={{fontSize:10,fontWeight:700,color:C.lime}}>All devices normalized to MEDIUM heating</div>
+            <div style={{fontSize:8,color:C.text3,marginTop:2}}>Fair play guaranteed -- equal performance for all players</div>
+          </div>
+        )}
+
+        {/* Settings restore notice */}
+        {optimizeStage >= 4 && (
+          <div style={{fontSize:9,color:C.text3,textAlign:"center",maxWidth:280,marginBottom:16,animation:"fadeIn 0.5s ease",fontStyle:"italic"}}>
+            Your original device settings will automatically restore when you exit Arena
+          </div>
+        )}
+
+        {/* Progress bar */}
+        <div style={{width:"80%",maxWidth:300,marginBottom:16}}>
+          <div style={{height:6,borderRadius:3,background:"rgba(255,255,255,0.04)",overflow:"hidden",border:`1px solid ${C.border}`}}>
+            <div style={{width:optimizeProgress+"%",height:"100%",borderRadius:3,
+              background:`linear-gradient(90deg, ${C.cyan}, ${C.lime})`,
+              transition:"width 0.3s ease",
+              boxShadow:`0 0 10px ${C.cyan}40`,
+            }}/>
+          </div>
+          <div style={{display:"flex",justifyContent:"space-between",marginTop:4}}>
+            <span style={{fontSize:8,color:C.text3}}>Optimizing...</span>
+            <span style={{fontSize:8,color:C.cyan,fontWeight:700}}>{Math.round(optimizeProgress)}%</span>
+          </div>
+        </div>
+
+        {/* Enter Arena button (shown at end) */}
+        {optimizeStage >= 4 && (
+          <div onClick={()=>{setShowDeviceOptimize(false);playFx("success");notify("Device optimized! Arena ready!",C.green);}}
+            style={{padding:"14px 40px",borderRadius:16,cursor:"pointer",textAlign:"center",
+              background:`linear-gradient(135deg, ${C.green}25, ${C.lime}10)`,
+              border:`2px solid ${C.green}40`,
+              boxShadow:`0 0 25px ${C.green}20`,
+              animation:"countPulse 1.2s infinite",
+            }}>
+            <div style={{fontSize:16,fontWeight:900,color:C.green,letterSpacing:2}}>ENTER ARENA</div>
+            <div style={{fontSize:9,color:C.text2,marginTop:3}}>AI Engine: Arena Mode Active</div>
+          </div>
+        )}
       </div>
     );
   };
@@ -12934,6 +13166,7 @@ export default function MoodLabArena() {
       {renderSpin()}
       {renderPuffLock()}
       {renderBlePopup()}
+      {renderDeviceOptimize()}
       {renderInputPanel()}
       {renderAskPrompt()}
       {renderPuffEvent()}
