@@ -6458,33 +6458,19 @@ export default function MoodLabArena() {
         <div onClick={()=>setAudioOn(!audioOn)} style={{width:28,height:28,borderRadius:7,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:11,marginLeft:2,background:audioOn?`${C.green}10`:`${C.red}10`,border:`1px solid ${audioOn?C.green+"20":C.red+"20"}`}}>
           {audioOn?"🔊":"🔇"}
         </div>
-        {/* Puff Reaction Mode Toggle */}
-        <div onClick={()=>{playFx("tap");setPuffReactionMode(p=>!p);}} style={{width:28,height:28,borderRadius:7,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:9,marginLeft:2,background:puffReactionMode?"rgba(0,229,255,0.15)":"rgba(255,255,255,0.04)",border:`1px solid ${puffReactionMode?"rgba(0,229,255,0.3)":"rgba(255,255,255,0.06)"}`,transition:"all 0.2s",position:"relative"}}>
-          {puffReactionMode?"💨":"💬"}
-          {puffReactionMode&&<div style={{position:"absolute",top:-2,right:-2,width:5,height:5,borderRadius:"50%",background:C.cyan,animation:"pulse 1s infinite"}}/>}
-        </div>
+        {/* Audio toggle */}
       </div>
-      {/* Tab bar: Chat / Puff React */}
-      <div style={{display:"flex",gap:0,...GLASS_CARD,borderRadius:0,padding:0,borderBottom:`1px solid ${C.border}`}}>
-        {[{key:"chat",label:"💬 Chat"},{key:"puffReact",label:"💨 Puff React"}].map(t=>(
-          <div key={t.key} onClick={()=>{playFx("tap");setPuffChatTab(t.key);}} style={{flex:1,padding:"4px 0",textAlign:"center",fontSize:8,fontWeight:700,cursor:"pointer",color:puffChatTab===t.key?C.cyan:C.text3,borderBottom:puffChatTab===t.key?`2px solid ${C.cyan}`:"2px solid transparent",background:puffChatTab===t.key?"rgba(0,229,255,0.05)":"transparent",transition:"all 0.2s"}}>
-            {t.label}
+      {/* Chat content */}
+      <div style={{...GLASS_CARD,padding:"6px 8px",flex:1,overflowY:"auto",maxHeight:120,borderRadius:0}}>
+        <div style={{fontSize:7,color:C.text3,marginBottom:4,letterSpacing:1}}>💬 {gameName} CHAT</div>
+        {sideChat.you.slice(-6).map((m,i)=>(
+          <div key={i} style={{display:"flex",gap:4,alignItems:"flex-start",marginBottom:3}}>
+            <span style={{fontSize:7,fontWeight:700,color:m.c,flexShrink:0}}>{m.u}:</span>
+            <span style={{fontSize:8,color:C.text2}}>{m.m}</span>
           </div>
         ))}
+        {sideChat.you.length===0 && <div style={{fontSize:8,color:C.text3,fontStyle:"italic"}}>Tap an emoji to react! 💨</div>}
       </div>
-      {/* Tab content */}
-      {puffChatTab==="chat" ? (
-        <div style={{...GLASS_CARD,padding:"6px 8px",flex:1,overflowY:"auto",maxHeight:120,borderRadius:0}}>
-          <div style={{fontSize:7,color:C.text3,marginBottom:4,letterSpacing:1}}>💬 {gameName} CHAT</div>
-          {sideChat.you.slice(-6).map((m,i)=>(
-            <div key={i} style={{display:"flex",gap:4,alignItems:"flex-start",marginBottom:3}}>
-              <span style={{fontSize:7,fontWeight:700,color:m.c,flexShrink:0}}>{m.u}:</span>
-              <span style={{fontSize:8,color:C.text2}}>{m.m}</span>
-            </div>
-          ))}
-          {sideChat.you.length===0 && <div style={{fontSize:8,color:C.text3,fontStyle:"italic"}}>Tap an emoji to react! 💨</div>}
-        </div>
-      ) : renderPuffReactionFeedTab()}
     </div>
   );
 
