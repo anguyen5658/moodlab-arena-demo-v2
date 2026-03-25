@@ -106,6 +106,8 @@ const PLAY_GAMES = [
   { id:"puffpong", name:"Puff Pong", emoji:"🏓", players:"2", time:"1-2m", type:"Skill", color:C.green, desc:"Bóng bàn ảo. Puff = đánh bóng. Timing là tất cả.", inputs:["puff","tap"] },
   { id:"rhythm", name:"Rhythm Puff", emoji:"🎵", players:"1-4", time:"1-3m", type:"Rhythm", color:C.purple, desc:"Nốt nhạc rơi, puff đúng nhịp. Guitar Hero style.", inputs:["puff","button"] },
   { id:"tugofwar", name:"Tug of War", emoji:"💪", players:"2-8", time:"30s-1m", type:"Team", color:C.blue, desc:"2 team puff liên tục. Bên mạnh hơn thắng.", hot:true, inputs:["puff","button"] },
+  { id:"hooked", name:"Hooked", emoji:"🎣", players:"1", time:"2-5m", type:"Skill", color:C.blue, desc:"Stack fishing! Puff to reel in fish. Control your suction!", inputs:["puff","button"] },
+  { id:"rps", name:"Puff RPS", emoji:"✊", players:"2", time:"1-2m", type:"Strategy", color:C.purple, desc:"Rock Paper Scissors with Puff Power!", hot:true, inputs:["puff","button"] },
 ];
 
 const SHOW_GAMES = [
@@ -246,6 +248,17 @@ const VC_QUESTIONS = [
   { q:"World Cup 2026 có bao nhiêu đội?", opts:["32","40","48","64"], correct:2 },
   { q:"Chung kết WC 2026 ở đâu?", opts:["Dallas","Miami","LA","New Jersey"], correct:3 },
   { q:"Tổng số trận WC 2026?", opts:["64","80","96","104"], correct:3 },
+];
+
+const HOOK_FISH = [
+  {name:"Blue Snap",emoji:"🐟",rarity:"common",pts:10,zoneWidth:35,resistance:0.8,instability:0.3,tensionRate:1.0,escapeRate:0.8,color:C.cyan},
+  {name:"Lunar Carp",emoji:"🐠",rarity:"common",pts:10,zoneWidth:33,resistance:0.9,instability:0.35,tensionRate:1.0,escapeRate:0.9,color:C.cyan},
+  {name:"Pond Darter",emoji:"🐡",rarity:"common",pts:10,zoneWidth:38,resistance:0.7,instability:0.25,tensionRate:0.9,escapeRate:0.7,color:C.cyan},
+  {name:"Neon Koi",emoji:"🎏",rarity:"rare",pts:25,zoneWidth:22,resistance:1.2,instability:0.5,tensionRate:1.3,escapeRate:1.1,color:C.purple},
+  {name:"Glitch Fin",emoji:"🦈",rarity:"rare",pts:25,zoneWidth:20,resistance:1.4,instability:0.55,tensionRate:1.4,escapeRate:1.2,color:C.purple},
+  {name:"Gold Pike",emoji:"🐊",rarity:"rare",pts:25,zoneWidth:24,resistance:1.1,instability:0.45,tensionRate:1.2,escapeRate:1.0,color:C.purple},
+  {name:"Void Eel",emoji:"🐉",rarity:"legendary",pts:60,zoneWidth:13,resistance:1.8,instability:0.75,tensionRate:1.8,escapeRate:1.5,color:C.gold},
+  {name:"Abyssal Ray",emoji:"🦑",rarity:"legendary",pts:60,zoneWidth:12,resistance:2.0,instability:0.8,tensionRate:2.0,escapeRate:1.6,color:C.gold},
 ];
 
 const CHAT_BOTS = ["VibeKing","ChillMaster","NeonQueen","BlazedPanda","CloudNine99","PuffDaddy","MoodMaster"];
@@ -543,6 +556,55 @@ export default function MoodLabArena() {
   const hpTimerRef = useRef(null);
   const hpPuffRef = useRef(null);
   const hpPuffStart = useRef(0);
+
+  // ── Hooked (Stack Fishing) ──
+  const [hookPhase, setHookPhase] = useState(null);
+  const [hookFish, setHookFish] = useState(null);
+  const [hookScore, setHookScore] = useState(0);
+  const [hookBestScore, setHookBestScore] = useState(0);
+  const [hookSuction, setHookSuction] = useState(0);
+  const [hookCatchProgress, setHookCatchProgress] = useState(0);
+  const [hookLineTension, setHookLineTension] = useState(0);
+  const [hookEscapeTimer, setHookEscapeTimer] = useState(0);
+  const [hookZoneCenter, setHookZoneCenter] = useState(50);
+  const [hookZoneWidth, setHookZoneWidth] = useState(30);
+  const [hookHolding, setHookHolding] = useState(false);
+  const [hookRecentCatches, setHookRecentCatches] = useState([]);
+  const [hookComment, setHookComment] = useState("");
+  const [hookInZoneTime, setHookInZoneTime] = useState(0);
+  const [hookTotalBiteTime, setHookTotalBiteTime] = useState(0);
+  const hookGameLoop = useRef(null);
+  const hookSuctionRef = useRef(0);
+  const hookHoldingRef = useRef(false);
+
+  // ── Rock Paper Scissors ──
+  const [rpsPhase, setRpsPhase] = useState(null); // null|"intro"|"choose"|"puff"|"clash"|"result"|"round_result"|"final"
+  const [rpsRound, setRpsRound] = useState(0);
+  const [rpsScore, setRpsScore] = useState({you:0, ai:0});
+  const [rpsPlayerChoice, setRpsPlayerChoice] = useState(null); // "rock"|"paper"|"scissors"
+  const [rpsAiChoice, setRpsAiChoice] = useState(null);
+  const [rpsPuffPower, setRpsPuffPower] = useState(0); // 0-100
+  const [rpsAiPuffPower, setRpsAiPuffPower] = useState(0);
+  const [rpsResult, setRpsResult] = useState(null); // "win"|"lose"|"tie"
+  const [rpsStreak, setRpsStreak] = useState(0);
+  const [rpsComment, setRpsComment] = useState("");
+  const [rpsIntro, setRpsIntro] = useState(0);
+  const [rpsPuffHeld, setRpsPuffHeld] = useState(false);
+  const [rpsClashAnim, setRpsClashAnim] = useState(false);
+  const [rpsPointsAwarded, setRpsPointsAwarded] = useState(0);
+  const [rpsRoundResults, setRpsRoundResults] = useState([]);
+  const [rpsOpponent, setRpsOpponent] = useState(null);
+  const rpsPuffStart = useRef(0);
+  const rpsPuffInterval = useRef(null);
+
+  const RPS_OPPONENTS = [
+    {name:"Sensei Stoner",emoji:"🧘",taunt:"My third eye sees your throw",style:"balanced"},
+    {name:"Rocky Blaze",emoji:"🪨",taunt:"Rock solid every time",style:"rock_heavy"},
+    {name:"Scissor Hands",emoji:"✂️",taunt:"Snip snip, smokey",style:"scissors_heavy"},
+    {name:"Paper Trail",emoji:"📄",taunt:"Roll it up and smoke it",style:"paper_heavy"},
+    {name:"The Blinker",emoji:"💨",taunt:"MAXIMUM POWER always",style:"blinker"},
+    {name:"Puff Master",emoji:"👑",taunt:"I read you like a rolling paper",style:"adaptive"},
+  ];
 
   // ── Visual Effects Engine ──
   const [screenShake, setScreenShake] = useState(false);
@@ -1538,7 +1600,7 @@ export default function MoodLabArena() {
       setMatchmaking({game,mode,stage:"searching",input});
       setTimeout(()=>{
         setMatchmaking(p=>p?{...p,stage:"found",opp:mode==="ai"?"🤖 AI Bot":mode==="random"?"🎲 Player_847":"👫 Minh"}:null);
-        setTimeout(()=>{setMatchmaking(null);setGameActive({...game,activeInput:input});if(game.id==="wildwest")startDuel();if(game.id==="finalkick"||game.id==="finalkick2"||game.id==="finalkick3"){startKick(game.id);startMatchIntro(kickOpponent.current);}if(game.id==="balloon")startBalloonPop();if(game.id==="russian")startRussianRoulette();if(game.id==="puffpong")startPuffPong();if(game.id==="rhythm")startRhythmPuff();if(game.id==="tugofwar")startTugOfWar();if(game.id==="hotpotato")startHotPotato();},800);
+        setTimeout(()=>{setMatchmaking(null);setGameActive({...game,activeInput:input});if(game.id==="wildwest")startDuel();if(game.id==="finalkick"||game.id==="finalkick2"||game.id==="finalkick3"){startKick(game.id);startMatchIntro(kickOpponent.current);}if(game.id==="balloon")startBalloonPop();if(game.id==="russian")startRussianRoulette();if(game.id==="puffpong")startPuffPong();if(game.id==="rhythm")startRhythmPuff();if(game.id==="tugofwar")startTugOfWar();if(game.id==="hotpotato")startHotPotato();if(game.id==="hooked")startHooked();if(game.id==="rps")startRps();},800);
       },mode==="ai"?400:1200);
     });
   };
@@ -2668,6 +2730,122 @@ export default function MoodLabArena() {
     setGameActive(null);setHpPhase(null);setDimLights(false);
   };
 
+  // ── Hooked — Stack Fishing Engine ──
+  const hookSpawnFish = () => {
+    const roll = Math.random();
+    const pool = roll < 0.65 ? HOOK_FISH.filter(f=>f.rarity==="common") : roll < 0.90 ? HOOK_FISH.filter(f=>f.rarity==="rare") : HOOK_FISH.filter(f=>f.rarity==="legendary");
+    return pool[Math.floor(Math.random()*pool.length)];
+  };
+  const startHooked = () => {
+    setHookPhase("idle");setHookScore(0);setHookFish(null);setHookSuction(0);setHookCatchProgress(0);
+    setHookLineTension(0);setHookEscapeTimer(0);setHookZoneCenter(50);setHookZoneWidth(30);
+    setHookHolding(false);setHookRecentCatches([]);setHookComment("Cast your line into the deep...");
+    setHookInZoneTime(0);setHookTotalBiteTime(0);hookSuctionRef.current=0;hookHoldingRef.current=false;
+    if(hookGameLoop.current){clearInterval(hookGameLoop.current);hookGameLoop.current=null;}
+  };
+  const hookCastLine = () => {
+    setHookPhase("waiting");setHookComment("Line in the water... wait for a bite! 🎣");setHookFish(null);
+    setHookCatchProgress(0);setHookLineTension(0);setHookEscapeTimer(0);setHookSuction(0);
+    hookSuctionRef.current=0;setHookInZoneTime(0);setHookTotalBiteTime(0);
+    const waitTime = 2000+Math.random()*3000;
+    const hasFakeBite = Math.random()<0.25;
+    if(hasFakeBite){
+      setTimeout(()=>{setHookComment("...nibble? 👀");triggerShake();setTimeout(()=>setHookComment("False alarm! Keep waiting..."),800);},waitTime*0.4);
+    }
+    setTimeout(()=>{
+      const fish = hookSpawnFish();
+      setHookFish(fish);setHookPhase("bite");setHookZoneWidth(fish.zoneWidth);setHookZoneCenter(30+Math.random()*40);
+      setHookComment(fish.emoji+" "+fish.name+" is on the line!");
+      triggerShake();playFx("crowd");
+      hookStartGameLoop(fish);
+    },waitTime);
+  };
+  const hookStartGameLoop = (fish) => {
+    if(hookGameLoop.current) clearInterval(hookGameLoop.current);
+    let zoneC = 30+Math.random()*40;
+    let catchP = 0, lineT = 0, escT = 0, totalT = 0;
+    const dt = 1/30; // 30fps
+    hookGameLoop.current = setInterval(()=>{
+      const s = hookSuctionRef.current;
+      const zLo = zoneC - fish.zoneWidth/2;
+      const zHi = zoneC + fish.zoneWidth/2;
+      const inZone = s >= zLo && s <= zHi;
+      const aboveZone = s > zHi;
+      const belowZone = s < zLo;
+      // zone drift
+      zoneC += (Math.random()-0.5)*fish.instability*60*dt;
+      zoneC = Math.max(fish.zoneWidth/2+5, Math.min(100-fish.zoneWidth/2-5, zoneC));
+      setHookZoneCenter(zoneC);
+      // catch progress
+      if(inZone) catchP = Math.min(100, catchP + 28*dt);
+      else if(belowZone) catchP = Math.max(0, catchP - 12*dt);
+      else catchP = Math.max(0, catchP - 5*dt);
+      setHookCatchProgress(catchP);
+      // line tension
+      if(aboveZone) lineT = Math.min(100, lineT + 35*fish.tensionRate*dt);
+      else lineT = Math.max(0, lineT - 25*dt);
+      setHookLineTension(lineT);
+      // escape timer
+      if(belowZone && (zLo - s > 15)) escT = Math.min(100, escT + 18*fish.escapeRate*dt);
+      else if(inZone) escT = Math.max(0, escT - 10*dt);
+      setHookEscapeTimer(escT);
+      totalT += dt;
+      setHookTotalBiteTime(totalT);
+      if(inZone) setHookInZoneTime(prev=>prev+dt);
+      // check end conditions
+      if(catchP >= 100) {
+        clearInterval(hookGameLoop.current);hookGameLoop.current=null;
+        const bonus = Math.max(0, Math.round((1-totalT/20)*fish.pts*0.5));
+        const total = fish.pts+bonus;
+        setHookScore(prev=>{const ns=prev+total;setHookBestScore(b=>Math.max(b,ns));return ns;});
+        setHookRecentCatches(prev=>[{...fish,bonus,total,time:totalT},...prev].slice(0,5));
+        setHookPhase("caught");setHookComment("CAUGHT! "+fish.emoji+" "+fish.name+" +"+total+"pts!");
+        triggerFlash("goal");spawnConfetti(20,[fish.color,C.green,C.gold]);playFx("win");
+      } else if(lineT >= 100) {
+        clearInterval(hookGameLoop.current);hookGameLoop.current=null;
+        setHookScore(prev=>Math.max(0,prev-5));
+        setHookPhase("line_break");setHookComment("LINE SNAPPED! 💥 Too much tension!");
+        triggerFlash("miss");triggerShake();playFx("error");
+      } else if(escT >= 100) {
+        clearInterval(hookGameLoop.current);hookGameLoop.current=null;
+        setHookPhase("escaped");setHookComment(fish.emoji+" "+fish.name+" escaped! Not enough suction!");
+        playFx("error");
+      }
+    },1000/30);
+  };
+  const hookStartPuff = () => {
+    if(hookPhase==="waiting"){
+      setHookScore(prev=>Math.max(0,prev-5));setHookComment("False start! -5pts! Wait for the bite! ⚠️");
+      triggerFlash("miss");playFx("error");return;
+    }
+    if(hookPhase!=="bite") return;
+    hookHoldingRef.current=true;setHookHolding(true);
+  };
+  const hookStopPuff = () => {
+    hookHoldingRef.current=false;setHookHolding(false);
+  };
+  // suction ramp effect
+  useEffect(()=>{
+    if(hookPhase!=="bite") return;
+    const id = setInterval(()=>{
+      if(hookHoldingRef.current){
+        hookSuctionRef.current = Math.min(100, hookSuctionRef.current + 120/30);
+      } else {
+        hookSuctionRef.current = Math.max(0, hookSuctionRef.current - 200/30);
+      }
+      setHookSuction(hookSuctionRef.current);
+    },1000/30);
+    return ()=>clearInterval(id);
+  },[hookPhase]);
+  const hookEndGame = () => {
+    if(hookGameLoop.current){clearInterval(hookGameLoop.current);hookGameLoop.current=null;}
+    hookHoldingRef.current=false;
+    const r=hookScore>0?Math.min(200,hookScore):5;
+    setCoins(c=>c+r);notify("🎣 Fishing done! +"+r+" coins!",hookScore>0?C.green:C.red);
+    setGameActive(null);setHookPhase(null);
+  };
+  const triggerShake = () => { setScreenShake(true); setTimeout(()=>setScreenShake(false),400); };
+
   // ── Match Intro Sequence ──
   const startMatchIntro = (opponent) => {
     setMatchIntro({stage:"enter",count:3});
@@ -3337,6 +3515,7 @@ export default function MoodLabArena() {
     else if(fkGame.id === "balloon") { startBalloonPop(); }
     else if(fkGame.id === "russian") { startRussianRoulette(); }
     else if(fkGame.id === "hotpotato") { startHotPotato(); }
+    else if(fkGame.id === "hooked") { startHooked(); }
     else { startKick(fkGame.id); startMatchIntro(kickOpponent.current); }
   };
 
@@ -3438,6 +3617,7 @@ export default function MoodLabArena() {
     else if(fkGame.id === "balloon") { startBalloonPop(); }
     else if(fkGame.id === "russian") { startRussianRoulette(); }
     else if(fkGame.id === "hotpotato") { startHotPotato(); }
+    else if(fkGame.id === "hooked") { startHooked(); }
     else { startKick(fkGame.id); startMatchIntro(kickOpponent.current); }
   };
 
@@ -4510,6 +4690,9 @@ export default function MoodLabArena() {
     // Hot Potato
     if(hpTimerRef.current){clearInterval(hpTimerRef.current);hpTimerRef.current=null;}
     if(hpPuffRef.current){clearInterval(hpPuffRef.current);hpPuffRef.current=null;}
+    // Rock Paper Scissors
+    if(rpsPuffInterval.current){clearInterval(rpsPuffInterval.current);rpsPuffInterval.current=null;}
+    if(window._rpsActive) { window._rpsActive.v = false; window._rpsActive = null; }
     // Three.js cleanup
     if(threeSceneRef.current){
       const r=threeSceneRef.current.renderer;if(r){r.dispose();r.forceContextLoss();}
@@ -4522,6 +4705,207 @@ export default function MoodLabArena() {
     setMatchIntro(null);
     setCommentatorText(""); setPuffBubbles([]); setAudienceBubbles([]);
     setConfettiParticles([]); setSmokeParticles([]);
+  };
+
+  // ═══════════════════════════════════════════════════════════════
+  // ROCK PAPER SCISSORS — Full Game Engine
+  // ═══════════════════════════════════════════════════════════════
+  const RPS_CHOICES = ["rock","paper","scissors"];
+  const RPS_EMOJI = {rock:"\u{1FAA8}",paper:"\u{1F4C4}",scissors:"\u{2702}\u{FE0F}"};
+  const RPS_BEATS = {rock:"scissors",paper:"rock",scissors:"paper"};
+
+  const RPS_WIN_COMMENTS = [
+    ["Paper wraps rock like a rolling paper! \u{1F4C4}\u{1FAA8}","Rock crushes scissors through the smoke! \u{1FAA8}\u{2702}\u{FE0F}","Scissors cut through the haze! \u{2702}\u{FE0F}\u{1F4A8}"],
+    ["CLEAN WIN! That throw was precise \u{1F3AF}","The puff powered that throw HARD \u{1F4AA}\u{1F4A8}","AI didn't see that coming! \u{1F440}"],
+    ["POWER THROW! The dojo is shaking! \u{1F525}\u{1F3EF}","That rock is ON FIRE! \u{1F525}\u{1FAA8}","Blinker energy on that throw! \u{1F4A8}\u{1F4A8}\u{1F4A8}"],
+  ];
+  const RPS_LOSE_COMMENTS = [
+    "AI read you like a menu at the dispensary \u{1F624}","Outplayed! Time to take another hit \u{1F4A8}","The bot's got smoke-vision \u{1F916}\u{1F4A8}",
+    "That throw was weaker than mids \u{1F62C}","AI flexed HARD on that one \u{1F480}","Counter-puffed! Better luck next round \u{1F32C}\u{FE0F}",
+  ];
+  const RPS_TIE_COMMENTS = [
+    "SAME THROW! Puff power decides it! \u{1F4A8}\u{26A1}","Mirror match! Who puffed harder?! \u{1FA9E}","Identical minds... comparing puff power! \u{1F9E0}\u{1F4A8}",
+  ];
+  const RPS_BLINKER_COMMENTS = [
+    "BLINKER THROW! That rock is on FIRE! \u{1F525}\u{1FAA8}","ULTRA POWER! Maximum puff energy! \u{1F4A8}\u{1F4A8}\u{1F4A8}","BLINKER RISK! High reward or high regret! \u{26A1}\u{1F480}",
+  ];
+
+  const rpsGetAiChoice = (opp) => {
+    if(!opp) return RPS_CHOICES[Math.floor(Math.random()*3)];
+    const r = Math.random();
+    if(opp.style==="rock_heavy") return r<0.5?"rock":r<0.75?"paper":"scissors";
+    if(opp.style==="scissors_heavy") return r<0.5?"scissors":r<0.75?"rock":"paper";
+    if(opp.style==="paper_heavy") return r<0.5?"paper":r<0.75?"scissors":"rock";
+    return RPS_CHOICES[Math.floor(Math.random()*3)];
+  };
+
+  const rpsGetPowerLabel = (power) => {
+    if(power<10) return {label:"Tap",tier:"weak",points:1,color:C.text3};
+    if(power<40) return {label:"Short",tier:"normal",points:2,color:C.cyan};
+    if(power<70) return {label:"Perfect",tier:"power",points:3,color:C.green};
+    if(power<90) return {label:"Long",tier:"strong",points:4,color:C.orange};
+    return {label:"BLINKER",tier:"ultra",points:5,color:C.red};
+  };
+
+  const startRps = () => {
+    const opp = RPS_OPPONENTS[Math.floor(Math.random()*RPS_OPPONENTS.length)];
+    setRpsOpponent(opp);
+    setRpsRound(0);
+    setRpsScore({you:0,ai:0});
+    setRpsPlayerChoice(null);
+    setRpsAiChoice(null);
+    setRpsPuffPower(0);
+    setRpsAiPuffPower(0);
+    setRpsResult(null);
+    setRpsStreak(0);
+    setRpsComment("");
+    setRpsClashAnim(false);
+    setRpsPointsAwarded(0);
+    setRpsRoundResults([]);
+    setRpsPuffHeld(false);
+    const guard = {v:true};
+    window._rpsActive = guard;
+    setRpsPhase("intro");
+    setRpsIntro(1);
+    playFx("crowd");
+    setCommentary("Welcome to the Puff Dojo! " + opp.emoji);
+    setTimeout(()=>{if(!guard.v)return;setRpsIntro(2);setCommentary(opp.name + ": \"" + opp.taunt + "\"");},1000);
+    setTimeout(()=>{if(!guard.v)return;setRpsIntro(3);playFx("whistle");setCommentary("Best of 5 rounds... FIGHT!");},2000);
+    setTimeout(()=>{if(!guard.v)return;setRpsIntro(4);triggerFlash("goal");playFx("crowd");},2800);
+    setTimeout(()=>{if(!guard.v)return;setRpsPhase("choose");setRpsIntro(0);setRpsRound(0);setCommentary("Round 1 \u2014 Choose your throw!");},3500);
+  };
+
+  const rpsPickChoice = (choice) => {
+    if(rpsPhase!=="choose") return;
+    setRpsPlayerChoice(choice);
+    playFx("select");
+    setCommentary("Now HOLD TO PUFF for power! \u{1F4A8}");
+    setRpsPhase("puff");
+    setRpsPuffPower(0);
+    setRpsAiPuffPower(0);
+  };
+
+  const rpsStartPuff = () => {
+    if(rpsPhase!=="puff"||rpsPuffHeld) return;
+    setRpsPuffHeld(true);
+    rpsPuffStart.current = Date.now();
+    setDimLights(true);
+    rpsPuffInterval.current = setInterval(()=>{
+      const elapsed = (Date.now() - rpsPuffStart.current)/1000;
+      const pwr = Math.min(100, elapsed * 20);
+      setRpsPuffPower(pwr);
+    },30);
+  };
+
+  const rpsStopPuff = () => {
+    if(!rpsPuffHeld) return;
+    setRpsPuffHeld(false);
+    setDimLights(false);
+    if(rpsPuffInterval.current){clearInterval(rpsPuffInterval.current);rpsPuffInterval.current=null;}
+    const elapsed = (Date.now() - rpsPuffStart.current)/1000;
+    const finalPower = Math.min(100, elapsed * 20);
+    setRpsPuffPower(finalPower);
+    const guard = window._rpsActive;
+    if(!guard||!guard.v) return;
+    const opp = rpsOpponent || RPS_OPPONENTS[0];
+    const aiChoice = rpsGetAiChoice(opp);
+    setRpsAiChoice(aiChoice);
+    let aiPwr = 30 + Math.random()*40;
+    if(opp.style==="blinker") aiPwr = 80 + Math.random()*20;
+    setRpsAiPuffPower(aiPwr);
+    const playerPwrInfo = rpsGetPowerLabel(finalPower);
+    const aiPwrInfo = rpsGetPowerLabel(aiPwr);
+    setRpsPhase("clash");
+    setRpsClashAnim(true);
+    triggerShake();
+    playFx("kick");
+    if(playerPwrInfo.tier==="ultra") setCommentary(RPS_BLINKER_COMMENTS[Math.floor(Math.random()*RPS_BLINKER_COMMENTS.length)]);
+    else setCommentary("CLASH! \u{1F4A5}");
+    setTimeout(()=>{
+      if(!guard||!guard.v) return;
+      setRpsClashAnim(false);
+      const pc = rpsPlayerChoice;
+      let result, pts = 0;
+      if(pc===aiChoice) {
+        if(finalPower > aiPwr + 5) {
+          result = "win"; pts = playerPwrInfo.points;
+          setCommentary("TIE BROKEN by puff power! You puffed harder! " + (finalPower>aiPwr+30?"DOMINANT! \u{1F4A8}\u{1F4A8}":"Barely! \u{1F62E}"));
+        } else if(aiPwr > finalPower + 5) {
+          result = "lose"; pts = 0;
+          setCommentary("TIE BROKEN by puff power! AI puffed harder! \u{1F624}\u{1F4A8}");
+        } else {
+          result = "tie"; pts = 1;
+          setCommentary(RPS_TIE_COMMENTS[Math.floor(Math.random()*RPS_TIE_COMMENTS.length)]);
+        }
+      } else if(RPS_BEATS[pc]===aiChoice) {
+        result = "win"; pts = playerPwrInfo.points;
+        if(playerPwrInfo.tier==="ultra") { pts = 5; triggerFlash("goal"); spawnConfetti(40); }
+        else if(playerPwrInfo.tier==="power") { triggerFlash("goal"); spawnConfetti(20); }
+        const ci = playerPwrInfo.tier==="power"||playerPwrInfo.tier==="ultra"?2:playerPwrInfo.tier==="normal"?1:0;
+        setCommentary(RPS_WIN_COMMENTS[ci][Math.floor(Math.random()*RPS_WIN_COMMENTS[ci].length)]);
+        playFx("goal");
+      } else {
+        result = "lose";
+        if(playerPwrInfo.tier==="ultra") {
+          pts = -3; setCommentary("BLINKER BACKFIRE! AI gets +3 bonus! \u{1F480}\u{1F525}"); triggerFlash("miss");
+        } else {
+          pts = 0; setCommentary(RPS_LOSE_COMMENTS[Math.floor(Math.random()*RPS_LOSE_COMMENTS.length)]);
+        }
+        playFx("miss"); triggerShake();
+      }
+      setRpsResult(result);
+      setRpsPointsAwarded(pts);
+      const newStreak = result==="win" ? rpsStreak+1 : 0;
+      setRpsStreak(newStreak);
+      setRpsScore(prev => {
+        const ns = {...prev};
+        if(result==="win") ns.you += pts;
+        else if(result==="lose" && pts<0) ns.ai += Math.abs(pts);
+        else if(result==="lose") ns.ai += (aiPwrInfo.tier==="ultra"?5:aiPwrInfo.tier==="power"?3:2);
+        else if(result==="tie") { ns.you += 1; ns.ai += 1; }
+        return ns;
+      });
+      setRpsRoundResults(prev => [...prev, {round:rpsRound, playerChoice:pc, aiChoice, result, pts, playerPower:finalPower, aiPower:aiPwr}]);
+      setRpsPhase("round_result");
+      setTimeout(()=>{
+        if(!guard||!guard.v) return;
+        const nextRound = rpsRound + 1;
+        if(nextRound >= 5) {
+          setRpsPhase("final");
+          setRpsScore(prev => {
+            if(prev.you > prev.ai) {
+              playFx("win"); spawnConfetti(50); triggerFlash("goal");
+              setCommentary("CHAMPION! You dominated the Puff Dojo! \u{1F3C6}\u{1F4A8}");
+              setCoins(c=>c+500); setXp(x=>x+200);
+            } else if(prev.ai > prev.you) {
+              playFx("lose"); triggerFlash("miss");
+              setCommentary("Defeated... " + (rpsOpponent?.name||"AI") + " was too strong! \u{1F480}");
+              setCoins(c=>c+50); setXp(x=>x+50);
+            } else {
+              playFx("crowd");
+              setCommentary("DRAW! Equal warriors in the dojo! \u{1F91D}");
+              setCoins(c=>c+200); setXp(x=>x+100);
+            }
+            return prev;
+          });
+        } else {
+          setRpsRound(nextRound);
+          setRpsPlayerChoice(null);
+          setRpsAiChoice(null);
+          setRpsPuffPower(0);
+          setRpsResult(null);
+          setRpsPhase("choose");
+          setCommentary("Round " + (nextRound+1) + " \u2014 Choose your throw!");
+        }
+      },2500);
+    },1200);
+  };
+
+  const rpsEndGame = () => {
+    if(rpsPuffInterval.current){clearInterval(rpsPuffInterval.current);rpsPuffInterval.current=null;}
+    if(window._rpsActive) { window._rpsActive.v=false; window._rpsActive=null; }
+    setRpsPhase(null);
+    setGameActive(null);
   };
 
   const overlayBack = (onClose) => (
@@ -7477,6 +7861,198 @@ export default function MoodLabArena() {
         );
       }
 
+      // ═══════════════════════════════════════════════════════════════
+      // HOOKED 🎣 — Stack Fishing Render
+      // ═══════════════════════════════════════════════════════════════
+      if(gameActive.id==="hooked" && hookPhase) {
+        const fish = hookFish;
+        const inBite = hookPhase==="bite";
+        const zLo = hookZoneCenter - hookZoneWidth/2;
+        const zHi = hookZoneCenter + hookZoneWidth/2;
+        const inZone = hookSuction >= zLo && hookSuction <= zHi;
+        const aboveZone = hookSuction > zHi;
+        const highTension = hookLineTension > 60;
+        const critTension = hookLineTension > 85;
+        const rarityGlow = fish ? (fish.rarity==="legendary"?`0 0 30px ${C.gold}60, 0 0 60px ${C.gold}30`:fish.rarity==="rare"?`0 0 20px ${C.purple}50`:`0 0 12px ${C.cyan}30`) : "none";
+        return (
+          <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden",
+            animation:screenShake?"shake 0.4s ease":"none"}}
+            onMouseDown={(e)=>{if(e.target.closest('[data-back]'))return;hookStartPuff();}}
+            onMouseUp={(e)=>{if(e.target.closest('[data-back]'))return;hookStopPuff();}}
+            onTouchStart={(e)=>{if(e.target.closest('[data-back]'))return;e.preventDefault();hookStartPuff();}}
+            onTouchEnd={(e)=>{if(e.target.closest('[data-back]'))return;e.preventDefault();hookStopPuff();}}>
+            {/* Deep ocean background */}
+            <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg, #020818 0%, #051228 15%, #071a3a 30%, #0a1e44 45%, #08162e 65%, #040e1a 85%, #020810 100%)",zIndex:0}}/>
+            {/* Wave overlay */}
+            <div style={{position:"absolute",top:0,left:0,right:0,height:"30%",background:"linear-gradient(180deg, rgba(0,100,200,0.04) 0%, transparent 100%)",pointerEvents:"none",zIndex:1}}/>
+            {/* Underwater particles */}
+            {[...Array(12)].map((_,i)=>(<div key={"hookp"+i} style={{position:"absolute",left:(5+i*8)+"%",top:(20+Math.sin(i*1.7)*30)+"%",width:3+i%3,height:3+i%3,borderRadius:"50%",background:["#00E5FF","#60A5FA","#34D399","#C084FC"][i%4],opacity:0.08+Math.sin(i*0.8)*0.05,animation:`gentleFloat ${4+i%3*2}s ease-in-out infinite`,animationDelay:i*0.5+"s",pointerEvents:"none",zIndex:1}}/>))}
+            {/* Vignette */}
+            <div style={{position:"absolute",inset:0,background:`radial-gradient(ellipse at 50% 40%, transparent 25%, rgba(0,0,0,${inBite?0.5:0.35}) 100%)`,pointerEvents:"none",zIndex:2}}/>
+            {/* Catch flash */}
+            {screenFlash && <div style={{position:"absolute",inset:0,zIndex:200,pointerEvents:"none",opacity:0,background:screenFlash==="goal"?"rgba(0,255,100,0.25)":"rgba(255,50,50,0.25)",animation:"flashOverlay 0.4s ease forwards"}}/>}
+            {/* Confetti */}
+            {confettiParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size*0.6,background:p.color,borderRadius:1,transform:`rotate(${p.rot}deg)`,zIndex:210,pointerEvents:"none",animation:`confettiFall ${1.5+Math.random()}s ease-out forwards`}}/>))}
+            {/* Line tension visual — fishing line */}
+            {inBite && (
+              <div style={{position:"absolute",top:"15%",left:"50%",width:2,height:"35%",
+                background:critTension?`linear-gradient(180deg, ${C.red}, ${C.orange})`:highTension?`linear-gradient(180deg, ${C.orange}, ${C.cyan})`:`linear-gradient(180deg, ${C.cyan}60, ${C.cyan}20)`,
+                transform:`translateX(-50%)${critTension?" scaleX(1.5)":""}`,
+                animation:critTension?"hookLineShake 0.1s infinite":highTension?"hookLineShake 0.3s infinite":"none",
+                transition:"background 0.3s",zIndex:5,pointerEvents:"none"}}/>
+            )}
+            {overlayBack(()=>setGameActive(null))}
+            {renderGameChatPanel("HOOKED")}
+            <div style={{display:"flex",flexDirection:"column",alignItems:"center",width:"100%",height:"100%",padding:"50px 16px 16px",zIndex:10,position:"relative"}}>
+              {/* Header */}
+              <div style={{textAlign:"center",marginBottom:6}}>
+                <div style={{fontSize:16,fontWeight:900,letterSpacing:4,background:`linear-gradient(135deg, ${C.cyan}, ${C.blue})`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>🎣 HOOKED</div>
+                <div style={{fontSize:9,color:C.text3}}>Score: {hookScore} · Best: {hookBestScore}</div>
+              </div>
+              {/* Fish display area */}
+              <div style={{position:"relative",width:"100%",maxWidth:300,height:120,display:"flex",alignItems:"center",justifyContent:"center",marginBottom:8}}>
+                {hookPhase==="idle" && (
+                  <div onClick={(e)=>{e.stopPropagation();hookCastLine();}} style={{padding:"18px 40px",borderRadius:16,cursor:"pointer",textAlign:"center",
+                    background:`linear-gradient(135deg,${C.cyan}20,${C.blue}10)`,border:`2px solid ${C.cyan}30`,
+                    animation:"pulse 2s infinite",userSelect:"none"}}>
+                    <div style={{fontSize:24,fontWeight:900,color:C.cyan,letterSpacing:2}}>🎣 CAST LINE</div>
+                    <div style={{fontSize:9,color:C.text3,marginTop:4}}>Tap to drop your line</div>
+                  </div>
+                )}
+                {hookPhase==="waiting" && (
+                  <div style={{textAlign:"center",animation:"gentleFloat 3s infinite"}}>
+                    <div style={{fontSize:36}}>🎣</div>
+                    <div style={{fontSize:10,color:C.cyan,fontWeight:700,marginTop:4,animation:"pulse 1.5s infinite"}}>Waiting for bite...</div>
+                    <div style={{fontSize:8,color:C.text3,marginTop:2}}>Don't puff yet!</div>
+                  </div>
+                )}
+                {inBite && fish && (
+                  <div style={{textAlign:"center"}}>
+                    <div style={{fontSize:50,filter:`drop-shadow(${rarityGlow.replace(/,/g,' ')})`.replace(/0 0/g,'0 0'),
+                      animation:inZone?"hookFishPull 0.5s ease infinite":"hookFishFight 0.8s ease infinite"}}>{fish.emoji}</div>
+                    <div style={{fontSize:10,fontWeight:900,color:fish.color,marginTop:2,textShadow:`0 0 10px ${fish.color}40`}}>{fish.name}</div>
+                    <div style={{fontSize:7,color:C.text3,textTransform:"uppercase",letterSpacing:1}}>{fish.rarity} · {fish.pts}pts</div>
+                  </div>
+                )}
+                {hookPhase==="caught" && fish && (
+                  <div style={{textAlign:"center",animation:"goalBurst 0.6s ease"}}>
+                    <div style={{fontSize:56}}>{fish.emoji}</div>
+                    <div style={{fontSize:20,fontWeight:900,color:C.green,marginTop:4}}>CAUGHT!</div>
+                    <div style={{fontSize:12,color:C.gold,fontWeight:700}}>+{fish.pts + (hookRecentCatches[0]?.bonus||0)} pts</div>
+                  </div>
+                )}
+                {hookPhase==="line_break" && (
+                  <div style={{textAlign:"center",animation:"fadeIn 0.3s ease"}}>
+                    <div style={{fontSize:48}}>💥</div>
+                    <div style={{fontSize:18,fontWeight:900,color:C.red}}>LINE SNAPPED!</div>
+                    <div style={{fontSize:10,color:C.text3}}>Too much tension!</div>
+                  </div>
+                )}
+                {hookPhase==="escaped" && fish && (
+                  <div style={{textAlign:"center",animation:"fadeIn 0.3s ease"}}>
+                    <div style={{fontSize:48,opacity:0.5}}>{fish.emoji}</div>
+                    <div style={{fontSize:18,fontWeight:900,color:C.orange}}>ESCAPED!</div>
+                    <div style={{fontSize:10,color:C.text3}}>Not enough suction!</div>
+                  </div>
+                )}
+              </div>
+              {/* Commentary */}
+              {hookComment && (
+                <div style={{padding:"5px 14px",borderRadius:10,...LG.pill,maxWidth:320,textAlign:"center",marginBottom:6}}>
+                  <div style={{fontSize:10,fontWeight:600,color:C.text,fontStyle:"italic"}}>{hookComment}</div>
+                </div>
+              )}
+              {/* 3 METER BARS — only during bite */}
+              {inBite && (
+                <div style={{width:"100%",maxWidth:320,display:"flex",flexDirection:"column",gap:6,marginBottom:8}}>
+                  {/* Catch Progress */}
+                  <div>
+                    <div style={{display:"flex",justifyContent:"space-between",marginBottom:2}}>
+                      <span style={{fontSize:7,fontWeight:800,color:C.green}}>✅ CATCH</span>
+                      <span style={{fontSize:7,fontWeight:700,color:C.green}}>{Math.round(hookCatchProgress)}%</span>
+                    </div>
+                    <div style={{height:10,borderRadius:5,background:"rgba(255,255,255,0.06)",overflow:"hidden",border:`1px solid ${C.green}20`}}>
+                      <div style={{width:hookCatchProgress+"%",height:"100%",borderRadius:5,background:`linear-gradient(90deg,${C.green}80,${C.green})`,transition:"width 0.05s",boxShadow:hookCatchProgress>80?`0 0 10px ${C.green}40`:"none"}}/>
+                    </div>
+                  </div>
+                  {/* Line Tension */}
+                  <div>
+                    <div style={{display:"flex",justifyContent:"space-between",marginBottom:2}}>
+                      <span style={{fontSize:7,fontWeight:800,color:hookLineTension>70?C.red:C.orange}}>⚠️ TENSION</span>
+                      <span style={{fontSize:7,fontWeight:700,color:hookLineTension>70?C.red:C.orange}}>{Math.round(hookLineTension)}%</span>
+                    </div>
+                    <div style={{height:10,borderRadius:5,background:"rgba(255,255,255,0.06)",overflow:"hidden",border:`1px solid ${hookLineTension>70?C.red:C.orange}20`}}>
+                      <div style={{width:hookLineTension+"%",height:"100%",borderRadius:5,background:hookLineTension>70?`linear-gradient(90deg,${C.orange},${C.red})`:`linear-gradient(90deg,${C.gold}80,${C.orange})`,transition:"width 0.05s",boxShadow:hookLineTension>80?`0 0 10px ${C.red}50`:"none"}}/>
+                    </div>
+                  </div>
+                  {/* Escape Timer */}
+                  <div>
+                    <div style={{display:"flex",justifyContent:"space-between",marginBottom:2}}>
+                      <span style={{fontSize:7,fontWeight:800,color:hookEscapeTimer>60?C.red:C.text3}}>🐟 ESCAPE</span>
+                      <span style={{fontSize:7,fontWeight:700,color:hookEscapeTimer>60?C.red:C.text3}}>{Math.round(hookEscapeTimer)}%</span>
+                    </div>
+                    <div style={{height:8,borderRadius:4,background:"rgba(255,255,255,0.06)",overflow:"hidden",border:`1px solid ${hookEscapeTimer>60?C.red:C.text3}15`}}>
+                      <div style={{width:hookEscapeTimer+"%",height:"100%",borderRadius:4,background:hookEscapeTimer>60?`linear-gradient(90deg,${C.orange},${C.red})`:`linear-gradient(90deg,${C.text3}60,${C.text3})`,transition:"width 0.05s"}}/>
+                    </div>
+                  </div>
+                </div>
+              )}
+              {/* SUCTION METER with target zone */}
+              {inBite && (
+                <div style={{width:"100%",maxWidth:320,marginBottom:8}}>
+                  <div style={{display:"flex",justifyContent:"space-between",marginBottom:2}}>
+                    <span style={{fontSize:7,fontWeight:800,color:C.cyan}}>💨 SUCTION</span>
+                    <span style={{fontSize:7,fontWeight:700,color:inZone?C.green:aboveZone?C.orange:C.red}}>{inZone?"IN ZONE ✅":aboveZone?"TOO HIGH ⚠️":"TOO LOW ⬇️"}</span>
+                  </div>
+                  <div style={{height:20,borderRadius:10,background:"rgba(255,255,255,0.04)",overflow:"hidden",position:"relative",border:`1px solid ${C.border}`}}>
+                    {/* Target zone */}
+                    <div style={{position:"absolute",left:zLo+"%",width:hookZoneWidth+"%",height:"100%",background:`${C.green}20`,border:`1px solid ${C.green}30`,borderRadius:2,transition:"left 0.1s, width 0.1s"}}/>
+                    {/* Suction indicator */}
+                    <div style={{position:"absolute",left:`calc(${Math.min(100,hookSuction)}% - 3px)`,top:0,width:6,height:"100%",background:inZone?C.green:aboveZone?C.orange:C.cyan,borderRadius:3,transition:"left 0.03s",boxShadow:`0 0 8px ${inZone?C.green:aboveZone?C.orange:C.cyan}60`}}/>
+                  </div>
+                  <div style={{display:"flex",justifyContent:"space-between",marginTop:2}}>
+                    <span style={{fontSize:6,color:C.text3}}>0</span>
+                    <span style={{fontSize:6,color:C.green,fontWeight:700}}>TARGET ZONE</span>
+                    <span style={{fontSize:6,color:C.text3}}>100</span>
+                  </div>
+                </div>
+              )}
+              {/* Hold to puff instruction during bite */}
+              {inBite && (
+                <div style={{padding:"10px 0",width:"100%",maxWidth:320,borderRadius:14,textAlign:"center",
+                  background:hookHolding?`linear-gradient(135deg,${C.cyan}20,${C.blue}10)`:"rgba(255,255,255,0.03)",
+                  border:`2px solid ${hookHolding?C.cyan:C.border}30`,
+                  transform:hookHolding?"scale(0.97)":"scale(1)",transition:"all 0.15s",userSelect:"none"}}>
+                  <div style={{fontSize:14,fontWeight:900,color:hookHolding?C.cyan:C.text2,letterSpacing:2}}>{hookHolding?"💨 REELING...":"HOLD TO PUFF 💨"}</div>
+                  <div style={{fontSize:8,color:C.text3,marginTop:2}}>{hookHolding?"Release to lower suction":"Hold anywhere to reel in!"}</div>
+                </div>
+              )}
+              {/* Recent catches */}
+              {hookRecentCatches.length>0 && (
+                <div style={{width:"100%",maxWidth:320,marginTop:8}}>
+                  <div style={{fontSize:7,fontWeight:800,color:C.text3,letterSpacing:1,marginBottom:4}}>RECENT CATCHES</div>
+                  {hookRecentCatches.map((c,i)=>(
+                    <div key={i} style={{display:"flex",alignItems:"center",gap:6,padding:"3px 0",opacity:1-i*0.15}}>
+                      <span style={{fontSize:14}}>{c.emoji}</span>
+                      <span style={{fontSize:9,color:c.color,fontWeight:700}}>{c.name}</span>
+                      <span style={{fontSize:8,color:C.gold,fontWeight:700,marginLeft:"auto"}}>+{c.total}</span>
+                      {c.bonus>0&&<span style={{fontSize:7,color:C.green}}>({c.bonus} bonus)</span>}
+                    </div>
+                  ))}
+                </div>
+              )}
+              {/* Cast again / Done buttons after catch/escape/break */}
+              {(hookPhase==="caught"||hookPhase==="escaped"||hookPhase==="line_break") && (
+                <div style={{display:"flex",gap:10,marginTop:12}}>
+                  <div onClick={(e)=>{e.stopPropagation();hookCastLine();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.cyan}15`,border:`1px solid ${C.cyan}30`,fontSize:13,fontWeight:800,color:C.cyan}}>🎣 Cast Again</div>
+                  <div onClick={(e)=>{e.stopPropagation();hookEndGame();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.text3}10`,border:`1px solid ${C.text3}20`,fontSize:13,fontWeight:800,color:C.text3}}>Done ✓</div>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      }
+
       // Generic game
       return (
         <div style={overlayStyle}>
@@ -7495,7 +8071,7 @@ export default function MoodLabArena() {
       const pool = getDevicePool();
       const canEnterWC = wcCanEnter();
       const cooldownMs = wcCooldownRemaining();
-      const isFinalkick = ["finalkick","finalkick2","finalkick3","russian","puffpong","balloon","rhythm","tugofwar","wildwest"].includes(selectedGame.id);
+      const isFinalkick = ["finalkick","finalkick2","finalkick3","russian","puffpong","balloon","rhythm","tugofwar","wildwest","hooked"].includes(selectedGame.id);
       return (
         <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden"}}>
           {/* Background — matching other pages */}
@@ -7585,7 +8161,7 @@ export default function MoodLabArena() {
 
                   <div style={{position:"relative",zIndex:1}}>
                     <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
-                      <span style={{fontSize:24}}>{selectedGame.id==="wildwest"?"🤠":selectedGame.id==="russian"?"🔫":selectedGame.id==="hotpotato"?"💣":"⚽"}</span>
+                      <span style={{fontSize:24}}>{selectedGame.id==="wildwest"?"🤠":selectedGame.id==="russian"?"🔫":selectedGame.id==="hotpotato"?"💣":selectedGame.id==="hooked"?"🎣":"⚽"}</span>
                       <div>
                         <div style={{fontSize:14,fontWeight:900,color:C.gold,textShadow:`0 0 10px ${C.gold}30`}}>{
                           selectedGame.id==="finalkick"?"FK1 World Cup 2026":
@@ -7598,6 +8174,7 @@ export default function MoodLabArena() {
                           selectedGame.id==="rhythm"?"Rhythm Puff Festival 2026":
                           selectedGame.id==="tugofwar"?"Tug of War Arena 2026":
                           selectedGame.id==="hotpotato"?"Hot Potato Championship 2026":
+                          selectedGame.id==="hooked"?"Hooked Fishing Cup 2026":
                           "Championship 2026"
                         }</div>
                         <div style={{fontSize:8,color:C.text2}}>{
@@ -7608,6 +8185,7 @@ export default function MoodLabArena() {
                           selectedGame.id==="rhythm"?"48 DJs · Concert Stage":
                           selectedGame.id==="tugofwar"?"48 Teams · Colosseum":
                           selectedGame.id==="hotpotato"?"48 Players · Bomb Circle":
+                          selectedGame.id==="hooked"?"48 Anglers · Deep Sea":
                           "48 Teams · Group Stage + Knockout"
                         }</div>
                       </div>
@@ -7682,6 +8260,7 @@ export default function MoodLabArena() {
                     selectedGame.id==="rhythm"?"🎵🎸":
                     selectedGame.id==="tugofwar"?"💪🪢":
                     selectedGame.id==="hotpotato"?"💣🔥":
+                    selectedGame.id==="hooked"?"🎣🐟":
                     selectedGame.emoji
                   }</div>
                   <div style={{fontSize:18,fontWeight:900,color:C.text}}>{
@@ -7695,6 +8274,7 @@ export default function MoodLabArena() {
                     selectedGame.id==="rhythm"?"Rhythm Puff":
                     selectedGame.id==="tugofwar"?"Tug of War":
                     selectedGame.id==="hotpotato"?"Hot Potato":
+                    selectedGame.id==="hooked"?"Hooked":
                     selectedGame.name
                   }</div>
                   <div style={{fontSize:10,color:C.text2}}>{
@@ -7708,6 +8288,7 @@ export default function MoodLabArena() {
                     selectedGame.id==="rhythm"?"Tap the Beat — Guitar Hero Style!":
                     selectedGame.id==="tugofwar"?"Puff Power vs AI — Pull the Rope!":
                     selectedGame.id==="hotpotato"?"Pass the Bomb — Last One Standing Wins!":
+                    selectedGame.id==="hooked"?"Stack Fishing — Puff to Reel In!":
                     selectedGame.desc
                   }</div>
                 </div>
@@ -8828,6 +9409,126 @@ export default function MoodLabArena() {
                     ].map((tip,i)=>(
                       <div key={i} style={{display:"flex",gap:6,alignItems:"flex-start"}}>
                         <span style={{fontSize:8,color:C.orange,fontWeight:900,flexShrink:0}}>💡</span>
+                        <span style={{fontSize:8,color:C.text2,lineHeight:1.3}}>{tip}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                </>) : (selectedGame.id==="hooked") ? (<>
+
+                {/* ═══ HOOKED — SECTION 1: GAME FLOW ═══ */}
+                <div style={{padding:"14px 12px",borderRadius:16,marginBottom:12,position:"relative",overflow:"hidden",
+                  background:"linear-gradient(135deg, rgba(0,100,200,0.1) 0%, rgba(0,50,100,0.04) 50%, rgba(0,80,160,0.06) 100%)",
+                  border:`1px solid ${C.blue}20`,boxShadow:`0 0 20px ${C.blue}06, inset 0 1px 0 ${C.blue}10`}}>
+                  <div style={{position:"relative",zIndex:1}}>
+                  <div style={{fontSize:10,fontWeight:900,color:C.blue,letterSpacing:3,marginBottom:10,textAlign:"center",textShadow:`0 0 12px ${C.blue}30`}}>🎣 GAME FLOW</div>
+                  <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:3}}>
+                    {[
+                      {step:"1",icon:"🎣",label:"Cast Line",sub:"Tap to drop your line in the water",color:C.cyan,arrow:true},
+                      {step:"2",icon:"⏳",label:"Wait for Bite",sub:"2-5s wait. Don't puff early! (-5pts)",color:C.gold,arrow:true},
+                      {step:"3",icon:"🐟",label:"FISH ON!",sub:"Screen shakes! Start puffing!",color:C.green,arrow:true,glow:true},
+                      {step:"4",icon:"💨",label:"HOLD TO PUFF",sub:"Control suction — keep it in the zone!",color:C.lime,arrow:true},
+                      {step:"5",icon:"🏆",label:"Catch or Lose",sub:"Fill catch meter = CAUGHT!",color:C.gold,arrow:false},
+                    ].map((s,i)=>(
+                      <React.Fragment key={i}>
+                        <div style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"7px 10px",borderRadius:12,background:`${s.color}08`,border:`1px solid ${s.color}18`,boxShadow:s.glow?`0 0 12px ${s.color}10`:"none",position:"relative",overflow:"hidden"}}>
+                          {s.glow && <div style={{position:"absolute",inset:0,background:`linear-gradient(90deg, transparent, ${s.color}04, transparent)`,animation:"lightSweep 3s infinite",pointerEvents:"none"}}/>}
+                          <div style={{width:30,height:30,borderRadius:10,background:`linear-gradient(135deg, ${s.color}30, ${s.color}15)`,border:`1.5px solid ${s.color}40`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,flexShrink:0,position:"relative",zIndex:1}}>{s.icon}</div>
+                          <div style={{flex:1,position:"relative",zIndex:1}}>
+                            <div style={{fontSize:10,fontWeight:900,color:s.color}}>{s.label}</div>
+                            <div style={{fontSize:7,color:C.text2,lineHeight:1.3}}>{s.sub}</div>
+                          </div>
+                          <div style={{width:20,height:20,borderRadius:"50%",background:`linear-gradient(135deg, ${s.color}25, ${s.color}10)`,border:`1.5px solid ${s.color}35`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:900,color:s.color,position:"relative",zIndex:1}}>{s.step}</div>
+                        </div>
+                        {s.arrow && <div style={{fontSize:12,color:`${C.blue}40`,lineHeight:1}}>⬇</div>}
+                      </React.Fragment>
+                    ))}
+                  </div>
+                  </div>
+                </div>
+
+                {/* ═══ SECTION 2: THE 3-METER SYSTEM ═══ */}
+                <div style={{padding:"12px",borderRadius:16,...GLASS_CARD,marginBottom:12}}>
+                  <div style={{fontSize:9,fontWeight:800,color:C.cyan,letterSpacing:2,marginBottom:8,textAlign:"center"}}>📊 THE 3-METER SYSTEM</div>
+                  <div style={{fontSize:8,color:C.text2,textAlign:"center",marginBottom:10}}>Balance all 3 meters simultaneously to catch the fish!</div>
+                  {[
+                    {label:"CATCH PROGRESS",sub:"Fill to 100% = CAUGHT! +28/s in zone, -12/s below",color:C.green,icon:"✅",pct:72},
+                    {label:"LINE TENSION",sub:"Hits 100% = LINE BREAK! Rises when above zone",color:C.orange,icon:"⚠️",pct:45},
+                    {label:"ESCAPE TIMER",sub:"Hits 100% = FISH ESCAPES! Rises when too low",color:C.red,icon:"🐟",pct:30},
+                  ].map((m,i)=>(
+                    <div key={i} style={{marginBottom:8,padding:"8px 10px",borderRadius:10,background:`${m.color}06`,border:`1px solid ${m.color}15`}}>
+                      <div style={{display:"flex",alignItems:"center",gap:4,marginBottom:4}}>
+                        <span style={{fontSize:12}}>{m.icon}</span>
+                        <span style={{fontSize:8,fontWeight:900,color:m.color}}>{m.label}</span>
+                      </div>
+                      <div style={{height:8,borderRadius:4,background:"rgba(255,255,255,0.06)",overflow:"hidden",marginBottom:3}}>
+                        <div style={{width:m.pct+"%",height:"100%",borderRadius:4,background:`linear-gradient(90deg, ${m.color}80, ${m.color})`}}/>
+                      </div>
+                      <div style={{fontSize:7,color:C.text3}}>{m.sub}</div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* ═══ SECTION 3: SUCTION CONTROL ═══ */}
+                <div style={{padding:"12px",borderRadius:16,...GLASS_CARD,marginBottom:12}}>
+                  <div style={{fontSize:9,fontWeight:800,color:C.lime,letterSpacing:2,marginBottom:8,textAlign:"center"}}>💨 SUCTION CONTROL</div>
+                  <div style={{fontSize:8,color:C.text2,textAlign:"center",marginBottom:8}}>HOLD to increase suction. RELEASE to let it drop. Stay in the GREEN ZONE!</div>
+                  <div style={{height:40,borderRadius:12,overflow:"hidden",border:`2px solid ${C.border}`,position:"relative",marginBottom:6}}>
+                    <div style={{position:"absolute",left:"25%",width:"30%",height:"100%",background:`${C.green}20`,border:`1px solid ${C.green}30`}}/>
+                    <div style={{position:"absolute",left:"55%",width:"45%",height:"100%",background:`${C.orange}10`}}/>
+                    <div style={{position:"absolute",left:"25%",top:"50%",transform:"translateY(-50%)",fontSize:7,fontWeight:800,color:C.green,padding:"0 4px"}}>TARGET</div>
+                    <div style={{position:"absolute",right:4,top:"50%",transform:"translateY(-50%)",fontSize:7,fontWeight:800,color:C.orange}}>DANGER</div>
+                    <div style={{position:"absolute",left:2,top:"50%",transform:"translateY(-50%)",fontSize:7,fontWeight:800,color:C.red}}>LOW</div>
+                  </div>
+                  <div style={{display:"flex",gap:6,justifyContent:"center"}}>
+                    {[
+                      {label:"Below Zone",sub:"Fish escapes!",color:C.red},
+                      {label:"IN ZONE",sub:"Catch progress!",color:C.green},
+                      {label:"Above Zone",sub:"Line breaks!",color:C.orange},
+                    ].map((z,i)=>(
+                      <div key={i} style={{textAlign:"center",flex:1,padding:"4px",borderRadius:6,background:`${z.color}08`,border:i===1?`1px solid ${z.color}15`:"none"}}>
+                        <div style={{fontSize:7,fontWeight:800,color:z.color}}>{z.label}</div>
+                        <div style={{fontSize:6,color:C.text3}}>{z.sub}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* ═══ SECTION 4: FISH RARITIES ═══ */}
+                <div style={{padding:"12px",borderRadius:16,...GLASS_CARD,marginBottom:12}}>
+                  <div style={{fontSize:9,fontWeight:800,color:C.gold,letterSpacing:2,marginBottom:8,textAlign:"center"}}>🐟 FISH RARITIES</div>
+                  <div style={{display:"flex",gap:6,justifyContent:"center",marginBottom:6}}>
+                    {[
+                      {label:"COMMON",pct:"65%",pts:"10pts",color:C.cyan,emoji:"🐟"},
+                      {label:"RARE",pct:"25%",pts:"25pts",color:C.purple,emoji:"🎏"},
+                      {label:"LEGENDARY",pct:"10%",pts:"60pts",color:C.gold,emoji:"🐉"},
+                    ].map((r,i)=>(
+                      <div key={i} style={{flex:1,textAlign:"center",padding:"8px 4px",borderRadius:10,background:`${r.color}08`,border:`1px solid ${r.color}18`}}>
+                        <div style={{fontSize:22,marginBottom:2}}>{r.emoji}</div>
+                        <div style={{fontSize:8,fontWeight:900,color:r.color}}>{r.label}</div>
+                        <div style={{fontSize:7,color:C.text3}}>{r.pct} chance</div>
+                        <div style={{fontSize:7,color:r.color,fontWeight:700}}>{r.pts}</div>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{textAlign:"center",fontSize:7,color:C.text3}}>Rarer fish = smaller zones + more fight! But HUGE points!</div>
+                </div>
+
+                {/* ═══ SECTION 5: PRO TIPS ═══ */}
+                <div style={{padding:"12px",borderRadius:16,...GLASS_CARD,marginBottom:12}}>
+                  <div style={{fontSize:9,fontWeight:800,color:C.green,letterSpacing:2,marginBottom:8,textAlign:"center"}}>🎯 PRO TIPS</div>
+                  <div style={{display:"flex",flexDirection:"column",gap:5}}>
+                    {[
+                      "Feather your puffs! Short holds keep suction in the sweet spot.",
+                      "Watch for FAKE BITES — puffing too early costs 5 points! ⚠️",
+                      "The target zone DRIFTS! Legendary fish zones move FAST. 🌊",
+                      "Line tension drops fast when you release — use quick bursts.",
+                      "Faster catches earn BONUS POINTS — speed matters! ⚡",
+                      "Stack catches for high scores — every fish adds up! 📈",
+                    ].map((tip,i)=>(
+                      <div key={i} style={{display:"flex",gap:6,alignItems:"flex-start"}}>
+                        <span style={{fontSize:8,color:C.blue,fontWeight:900,flexShrink:0}}>💡</span>
                         <span style={{fontSize:8,color:C.text2,lineHeight:1.3}}>{tip}</span>
                       </div>
                     ))}
@@ -10149,6 +10850,9 @@ export default function MoodLabArena() {
         @keyframes hpFuseBurn{0%{width:100%}100%{width:0%}}
         @keyframes hpExplosion{0%{transform:scale(1);opacity:1}30%{transform:scale(2.5);opacity:1;filter:brightness(2)}60%{transform:scale(3);opacity:0.7}100%{transform:scale(4);opacity:0}}
         @keyframes hpPassAnim{0%{transform:translateX(0)}50%{transform:translateX(10px) scale(1.2)}100%{transform:translateX(0)}}
+        @keyframes hookLineShake{0%,100%{transform:translateX(-50%) rotate(-1deg)}50%{transform:translateX(-50%) rotate(1deg)}}
+        @keyframes hookFishFight{0%,100%{transform:translateX(0) rotate(-3deg)}25%{transform:translateX(-8px) rotate(2deg)}50%{transform:translateX(5px) rotate(-2deg)}75%{transform:translateX(-3px) rotate(3deg)}}
+        @keyframes hookFishPull{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-4px) scale(1.05)}}
         *{-webkit-tap-highlight-color:transparent;user-select:none;box-sizing:border-box}
         input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
         input[type=number]{-moz-appearance:textfield}
