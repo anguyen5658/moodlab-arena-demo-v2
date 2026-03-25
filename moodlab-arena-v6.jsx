@@ -220,7 +220,7 @@ const WC_TEAMS = [
 const GAME_TEAMS = {
   wildwest: [
     {id:"puffbandits",name:"Puff Bandits",emoji:"\u{1F920}\u{1F4A8}",color:C.orange},
-    {id:"blinkerboys",name:"Blinker Boys",emoji:"\u{1F480}\u{1F920}",color:C.red},
+    {id:"blinkerboys",name:"Blinker Boys",emoji:"💀\u{1F920}",color:C.red},
     {id:"smokesignal",name:"Smoke Signal Posse",emoji:"\u{1F32B}\u{FE0F}\u{1F3DC}\u{FE0F}",color:C.purple},
     {id:"cactuscartel",name:"Cactus Cartel",emoji:"\u{1F335}\u{1F60E}",color:C.green},
     {id:"goldrush",name:"Gold Rush Gang",emoji:"\u{1F4B0}\u{1F920}",color:C.gold},
@@ -228,14 +228,14 @@ const GAME_TEAMS = {
   ],
   russian: [
     {id:"luckylungs",name:"Lucky Lungs",emoji:"\u{1FAC1}\u{1F340}",color:C.green},
-    {id:"deadmanpuff",name:"Dead Man's Puff",emoji:"\u{1F480}\u{1F4A8}",color:C.red},
+    {id:"deadmanpuff",name:"Dead Man's Puff",emoji:"💀\u{1F4A8}",color:C.red},
     {id:"chambersmoke",name:"Chamber of Smoke",emoji:"\u{1F52B}\u{1F32B}\u{FE0F}",color:C.purple},
     {id:"triggerhappy",name:"Trigger Happy Club",emoji:"\u{1F3AF}\u{1F608}",color:C.orange},
     {id:"sixshooters",name:"Six Shooters",emoji:"6\u{FE0F}\u{20E3}\u{1F52B}",color:C.cyan},
     {id:"lastpuff",name:"The Last Puff",emoji:"\u{1F4A8}\u{2620}\u{FE0F}",color:C.gold},
   ],
   balloon: [
-    {id:"birthdayblink",name:"Birthday Blinkers",emoji:"\u{1F382}\u{1F480}",color:C.pink},
+    {id:"birthdayblink",name:"Birthday Blinkers",emoji:"\u{1F382}💀",color:C.pink},
     {id:"popsquad",name:"Pop Squad",emoji:"\u{1F4A5}\u{1F388}",color:C.red},
     {id:"inflatenation",name:"Inflate Nation",emoji:"\u{1F388}\u{1F4A8}",color:C.orange},
     {id:"heliumhomies",name:"Helium Homies",emoji:"\u{1F388}\u{1F602}",color:C.cyan},
@@ -253,7 +253,7 @@ const GAME_TEAMS = {
   rhythm: [
     {id:"rollingclouds",name:"Rolling Clouds",emoji:"\u{2601}\u{FE0F}\u{1F3B8}",color:C.purple},
     {id:"puffdaddy",name:"Puff Daddy & Fam",emoji:"\u{1F4A8}\u{1F468}\u{200D}\u{1F469}\u{200D}\u{1F467}\u{200D}\u{1F466}",color:C.gold},
-    {id:"blinkerbeats",name:"Blinker Beats",emoji:"\u{1F480}\u{1F941}",color:C.red},
+    {id:"blinkerbeats",name:"Blinker Beats",emoji:"💀\u{1F941}",color:C.red},
     {id:"420hz",name:"420 Hz",emoji:"\u{1F3B5}\u{1F33F}",color:C.green},
     {id:"bassdrops",name:"Bass Drops",emoji:"\u{1F50A}\u{1F4A5}",color:C.cyan},
     {id:"smokemachine",name:"Smoke Machine",emoji:"\u{1F32B}\u{FE0F}\u{1F3B9}",color:C.pink},
@@ -261,14 +261,14 @@ const GAME_TEAMS = {
   tugofwar: [
     {id:"ironlungs",name:"Iron Lungs",emoji:"\u{1FAC1}\u{1F4AA}",color:C.cyan},
     {id:"puffpushers",name:"Puff Pushers",emoji:"\u{1F4A8}\u{1F3CB}\u{FE0F}",color:C.green},
-    {id:"blinkerbeasts",name:"Blinker Beasts",emoji:"\u{1F480}\u{1F4AA}",color:C.red},
+    {id:"blinkerbeasts",name:"Blinker Beasts",emoji:"💀\u{1F4AA}",color:C.red},
     {id:"smokestrongmen",name:"Smoke Strongmen",emoji:"\u{1F32B}\u{FE0F}\u{1F98D}",color:C.purple},
     {id:"lunglegion",name:"Lung Legion",emoji:"\u{1FAC1}\u{2694}\u{FE0F}",color:C.gold},
     {id:"exhaleempire",name:"Exhale Empire",emoji:"\u{1F4A8}\u{1F451}",color:C.orange},
   ],
   hotpotato: [
     {id:"bakedbunch",name:"The Baked Bunch",emoji:"\u{1F36A}\u{1F635}",color:C.orange},
-    {id:"friedsquad",name:"Fried Squad",emoji:"\u{1F373}\u{1F480}",color:C.red},
+    {id:"friedsquad",name:"Fried Squad",emoji:"\u{1F373}💀",color:C.red},
     {id:"slowcookers",name:"Slow Cookers",emoji:"\u{1F372}\u{1F634}",color:C.green},
     {id:"burntofferings",name:"Burnt Offerings",emoji:"\u{1F525}\u{1F35E}",color:C.gold},
     {id:"hothandlers",name:"Hot Handlers",emoji:"\u{1F525}\u{1F932}",color:C.pink},
@@ -278,13 +278,13 @@ const GAME_TEAMS = {
     {id:"stonepuffers",name:"Stone Temple Puffers",emoji:"\u{1FAA8}\u{1F4A8}",color:C.orange},
     {id:"papertrail",name:"Paper Trail Gang",emoji:"\u{1F4C4}\u{1F60E}",color:C.cyan},
     {id:"scissorsensei",name:"Scissor Sensei",emoji:"\u{2702}\u{FE0F}\u{1F977}",color:C.red},
-    {id:"blinkerdojo",name:"Blinker Dojo",emoji:"\u{1F480}\u{1F94B}",color:C.purple},
+    {id:"blinkerdojo",name:"Blinker Dojo",emoji:"💀\u{1F94B}",color:C.purple},
     {id:"rocksolid",name:"Rock Solid Crew",emoji:"\u{1FAA8}\u{1F4AA}",color:C.green},
     {id:"paperchasers",name:"Paper Chasers",emoji:"\u{1F4C4}\u{1F4B0}",color:C.gold},
   ],
   hooked: [
     {id:"deeppuffers",name:"Deep Puffers",emoji:"\u{1F41F}\u{1F4A8}",color:C.blue},
-    {id:"blinkerbait",name:"Blinker Bait Co",emoji:"\u{1F3A3}\u{1F480}",color:C.red},
+    {id:"blinkerbait",name:"Blinker Bait Co",emoji:"\u{1F3A3}💀",color:C.red},
     {id:"cloudanglers",name:"Cloud Anglers",emoji:"\u{2601}\u{FE0F}\u{1F3A3}",color:C.cyan},
     {id:"reeldeal",name:"The Reel Deal",emoji:"\u{1F3A3}\u{1F60E}",color:C.green},
     {id:"krakenpuffs",name:"Kraken Puffs",emoji:"\u{1F991}\u{1F4A8}",color:C.purple},
@@ -4795,13 +4795,13 @@ export default function MoodLabArena() {
   ];
   const RPS_LOSE_COMMENTS = [
     "AI read you like a menu at the dispensary \u{1F624}","Outplayed! Time to take another hit \u{1F4A8}","The bot's got smoke-vision \u{1F916}\u{1F4A8}",
-    "That throw was weaker than mids \u{1F62C}","AI flexed HARD on that one \u{1F480}","Counter-puffed! Better luck next round \u{1F32C}\u{FE0F}",
+    "That throw was weaker than mids \u{1F62C}","AI flexed HARD on that one 💀","Counter-puffed! Better luck next round \u{1F32C}\u{FE0F}",
   ];
   const RPS_TIE_COMMENTS = [
     "SAME THROW! Puff power decides it! \u{1F4A8}\u{26A1}","Mirror match! Who puffed harder?! \u{1FA9E}","Identical minds... comparing puff power! \u{1F9E0}\u{1F4A8}",
   ];
   const RPS_BLINKER_COMMENTS = [
-    "BLINKER THROW! That rock is on FIRE! \u{1F525}\u{1FAA8}","ULTRA POWER! Maximum puff energy! \u{1F4A8}\u{1F4A8}\u{1F4A8}","BLINKER RISK! High reward or high regret! \u{26A1}\u{1F480}",
+    "BLINKER THROW! That rock is on FIRE! \u{1F525}\u{1FAA8}","ULTRA POWER! Maximum puff energy! \u{1F4A8}\u{1F4A8}\u{1F4A8}","BLINKER RISK! High reward or high regret! \u{26A1}💀",
   ];
 
   const rpsGetAiChoice = (opp) => {
@@ -4921,7 +4921,7 @@ export default function MoodLabArena() {
       } else {
         result = "lose";
         if(playerPwrInfo.tier==="ultra") {
-          pts = -3; setCommentary("BLINKER BACKFIRE! AI gets +3 bonus! \u{1F480}\u{1F525}"); triggerFlash("miss");
+          pts = -3; setCommentary("BLINKER BACKFIRE! AI gets +3 bonus! 💀\u{1F525}"); triggerFlash("miss");
         } else {
           pts = 0; setCommentary(RPS_LOSE_COMMENTS[Math.floor(Math.random()*RPS_LOSE_COMMENTS.length)]);
         }
@@ -4949,11 +4949,11 @@ export default function MoodLabArena() {
           setRpsScore(prev => {
             if(prev.you > prev.ai) {
               playFx("win"); spawnConfetti(50); triggerFlash("goal");
-              setCommentary("CHAMPION! You dominated the Puff Dojo! \u{1F3C6}\u{1F4A8}");
+              setCommentary("CHAMPION! You dominated the Puff Dojo! 🏆\u{1F4A8}");
               setCoins(c=>c+500); setXp(x=>x+200);
             } else if(prev.ai > prev.you) {
               playFx("lose"); triggerFlash("miss");
-              setCommentary("Defeated... " + (rpsOpponent?.name||"AI") + " was too strong! \u{1F480}");
+              setCommentary("Defeated... " + (rpsOpponent?.name||"AI") + " was too strong! 💀");
               setCoins(c=>c+50); setXp(x=>x+50);
             } else {
               playFx("crowd");
@@ -8255,7 +8255,7 @@ export default function MoodLabArena() {
                   <div style={{display:"flex",justifyContent:"space-between",width:"80%",maxWidth:260,margin:"0 auto 6px",fontSize:7,color:C.text3}}>
                     <span>Tap +1</span><span>Short +2</span><span>Perfect +3</span><span style={{color:C.red}}>Blinker +5!</span>
                   </div>
-                  <div style={{fontSize:16,fontWeight:900,color:pwrInfo.color,marginBottom:4}}>{pwrInfo.label} {rpsPuffPower>=90&&"\u{1F480}"}</div>
+                  <div style={{fontSize:16,fontWeight:900,color:pwrInfo.color,marginBottom:4}}>{pwrInfo.label} {rpsPuffPower>=90&&"💀"}</div>
                   <div style={{fontSize:24,fontWeight:900,color:pwrInfo.color}}>+{pwrInfo.points}</div>
                   {rpsPuffHeld && <div style={{fontSize:10,color:C.gold,marginTop:6,animation:"pulse 0.5s infinite"}}>Charging... release to throw!</div>}
                   {!rpsPuffHeld && rpsPuffPower===0 && <div style={{fontSize:10,color:C.text3,marginTop:6}}>Hold anywhere to charge</div>}
@@ -8300,13 +8300,13 @@ export default function MoodLabArena() {
                   {/* Result text */}
                   {rpsResult==="win" && (
                     <div style={{marginBottom:8}}>
-                      <div style={{fontSize:28,fontWeight:900,color:C.green,textShadow:`0 0 20px ${C.green}60`,animation:"countPulse 0.8s infinite"}}>YOU WIN! \u{1F3C6}</div>
+                      <div style={{fontSize:28,fontWeight:900,color:C.green,textShadow:`0 0 20px ${C.green}60`,animation:"countPulse 0.8s infinite"}}>YOU WIN! 🏆</div>
                       <div style={{fontSize:14,fontWeight:700,color:C.green}}>+{rpsPointsAwarded} pts</div>
                     </div>
                   )}
                   {rpsResult==="lose" && (
                     <div style={{marginBottom:8}}>
-                      <div style={{fontSize:28,fontWeight:900,color:C.red,textShadow:`0 0 20px ${C.red}60`,animation:"shake 0.4s ease"}}>DEFEATED \u{1F480}</div>
+                      <div style={{fontSize:28,fontWeight:900,color:C.red,textShadow:`0 0 20px ${C.red}60`,animation:"shake 0.4s ease"}}>DEFEATED 💀</div>
                       {rpsPointsAwarded<0 && <div style={{fontSize:12,fontWeight:700,color:C.red}}>Blinker backfire! -{Math.abs(rpsPointsAwarded)}</div>}
                     </div>
                   )}
