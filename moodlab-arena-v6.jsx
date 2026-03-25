@@ -216,6 +216,82 @@ const WC_TEAMS = [
   {id:"chn",name:"China",flag:"\u{1F1E8}\u{1F1F3}",group:"BONUS",rating:2,confederation:"AFC"},
 ];
 
+// ── THEMED TEAMS FOR NON-FK GAMES ──
+const GAME_TEAMS = {
+  wildwest: [
+    {id:"puffbandits",name:"Puff Bandits",emoji:"\u{1F920}\u{1F4A8}",color:C.orange},
+    {id:"blinkerboys",name:"Blinker Boys",emoji:"\u{1F480}\u{1F920}",color:C.red},
+    {id:"smokesignal",name:"Smoke Signal Posse",emoji:"\u{1F32B}\u{FE0F}\u{1F3DC}\u{FE0F}",color:C.purple},
+    {id:"cactuscartel",name:"Cactus Cartel",emoji:"\u{1F335}\u{1F60E}",color:C.green},
+    {id:"goldrush",name:"Gold Rush Gang",emoji:"\u{1F4B0}\u{1F920}",color:C.gold},
+    {id:"tumbleweeds",name:"The Tumbleweeds",emoji:"\u{1F33E}\u{1F4A8}",color:C.lime},
+  ],
+  russian: [
+    {id:"luckylungs",name:"Lucky Lungs",emoji:"\u{1FAC1}\u{1F340}",color:C.green},
+    {id:"deadmanpuff",name:"Dead Man's Puff",emoji:"\u{1F480}\u{1F4A8}",color:C.red},
+    {id:"chambersmoke",name:"Chamber of Smoke",emoji:"\u{1F52B}\u{1F32B}\u{FE0F}",color:C.purple},
+    {id:"triggerhappy",name:"Trigger Happy Club",emoji:"\u{1F3AF}\u{1F608}",color:C.orange},
+    {id:"sixshooters",name:"Six Shooters",emoji:"6\u{FE0F}\u{20E3}\u{1F52B}",color:C.cyan},
+    {id:"lastpuff",name:"The Last Puff",emoji:"\u{1F4A8}\u{2620}\u{FE0F}",color:C.gold},
+  ],
+  balloon: [
+    {id:"birthdayblink",name:"Birthday Blinkers",emoji:"\u{1F382}\u{1F480}",color:C.pink},
+    {id:"popsquad",name:"Pop Squad",emoji:"\u{1F4A5}\u{1F388}",color:C.red},
+    {id:"inflatenation",name:"Inflate Nation",emoji:"\u{1F388}\u{1F4A8}",color:C.orange},
+    {id:"heliumhomies",name:"Helium Homies",emoji:"\u{1F388}\u{1F602}",color:C.cyan},
+    {id:"partycrashers",name:"Party Crashers",emoji:"\u{1F389}\u{1F4A3}",color:C.purple},
+    {id:"bigbangs",name:"The Big Bangs",emoji:"\u{1F4A5}\u{1F92F}",color:C.gold},
+  ],
+  puffpong: [
+    {id:"neonninjas",name:"Neon Ninjas",emoji:"\u{1F977}\u{2728}",color:C.cyan},
+    {id:"pixelpuffers",name:"Pixel Puffers",emoji:"\u{1F579}\u{FE0F}\u{1F4A8}",color:C.green},
+    {id:"retrorippers",name:"Retro Rippers",emoji:"\u{1F3AE}\u{1F525}",color:C.orange},
+    {id:"glowgang",name:"Glow Gang",emoji:"\u{1F4A1}\u{1F60E}",color:C.lime},
+    {id:"arcadeapes",name:"Arcade Apes",emoji:"\u{1F98D}\u{1F579}\u{FE0F}",color:C.purple},
+    {id:"pongpros",name:"Pong Pros",emoji:"\u{1F3D3}\u{1F451}",color:C.gold},
+  ],
+  rhythm: [
+    {id:"rollingclouds",name:"Rolling Clouds",emoji:"\u{2601}\u{FE0F}\u{1F3B8}",color:C.purple},
+    {id:"puffdaddy",name:"Puff Daddy & Fam",emoji:"\u{1F4A8}\u{1F468}\u{200D}\u{1F469}\u{200D}\u{1F467}\u{200D}\u{1F466}",color:C.gold},
+    {id:"blinkerbeats",name:"Blinker Beats",emoji:"\u{1F480}\u{1F941}",color:C.red},
+    {id:"420hz",name:"420 Hz",emoji:"\u{1F3B5}\u{1F33F}",color:C.green},
+    {id:"bassdrops",name:"Bass Drops",emoji:"\u{1F50A}\u{1F4A5}",color:C.cyan},
+    {id:"smokemachine",name:"Smoke Machine",emoji:"\u{1F32B}\u{FE0F}\u{1F3B9}",color:C.pink},
+  ],
+  tugofwar: [
+    {id:"ironlungs",name:"Iron Lungs",emoji:"\u{1FAC1}\u{1F4AA}",color:C.cyan},
+    {id:"puffpushers",name:"Puff Pushers",emoji:"\u{1F4A8}\u{1F3CB}\u{FE0F}",color:C.green},
+    {id:"blinkerbeasts",name:"Blinker Beasts",emoji:"\u{1F480}\u{1F4AA}",color:C.red},
+    {id:"smokestrongmen",name:"Smoke Strongmen",emoji:"\u{1F32B}\u{FE0F}\u{1F98D}",color:C.purple},
+    {id:"lunglegion",name:"Lung Legion",emoji:"\u{1FAC1}\u{2694}\u{FE0F}",color:C.gold},
+    {id:"exhaleempire",name:"Exhale Empire",emoji:"\u{1F4A8}\u{1F451}",color:C.orange},
+  ],
+  hotpotato: [
+    {id:"bakedbunch",name:"The Baked Bunch",emoji:"\u{1F36A}\u{1F635}",color:C.orange},
+    {id:"friedsquad",name:"Fried Squad",emoji:"\u{1F373}\u{1F480}",color:C.red},
+    {id:"slowcookers",name:"Slow Cookers",emoji:"\u{1F372}\u{1F634}",color:C.green},
+    {id:"burntofferings",name:"Burnt Offerings",emoji:"\u{1F525}\u{1F35E}",color:C.gold},
+    {id:"hothandlers",name:"Hot Handlers",emoji:"\u{1F525}\u{1F932}",color:C.pink},
+    {id:"bombsquad",name:"Bomb Squad",emoji:"\u{1F4A3}\u{1F60E}",color:C.cyan},
+  ],
+  rps: [
+    {id:"stonepuffers",name:"Stone Temple Puffers",emoji:"\u{1FAA8}\u{1F4A8}",color:C.orange},
+    {id:"papertrail",name:"Paper Trail Gang",emoji:"\u{1F4C4}\u{1F60E}",color:C.cyan},
+    {id:"scissorsensei",name:"Scissor Sensei",emoji:"\u{2702}\u{FE0F}\u{1F977}",color:C.red},
+    {id:"blinkerdojo",name:"Blinker Dojo",emoji:"\u{1F480}\u{1F94B}",color:C.purple},
+    {id:"rocksolid",name:"Rock Solid Crew",emoji:"\u{1FAA8}\u{1F4AA}",color:C.green},
+    {id:"paperchasers",name:"Paper Chasers",emoji:"\u{1F4C4}\u{1F4B0}",color:C.gold},
+  ],
+  hooked: [
+    {id:"deeppuffers",name:"Deep Puffers",emoji:"\u{1F41F}\u{1F4A8}",color:C.blue},
+    {id:"blinkerbait",name:"Blinker Bait Co",emoji:"\u{1F3A3}\u{1F480}",color:C.red},
+    {id:"cloudanglers",name:"Cloud Anglers",emoji:"\u{2601}\u{FE0F}\u{1F3A3}",color:C.cyan},
+    {id:"reeldeal",name:"The Reel Deal",emoji:"\u{1F3A3}\u{1F60E}",color:C.green},
+    {id:"krakenpuffs",name:"Kraken Puffs",emoji:"\u{1F991}\u{1F4A8}",color:C.purple},
+    {id:"tidalpull",name:"Tidal Pull",emoji:"\u{1F30A}\u{1F4AA}",color:C.gold},
+  ],
+};
+
 const WC_GROUPS = {
   A:["usa","mex","can","civ"], B:["eng","ita","aus","nzl"], C:["arg","fra","irn","sen"],
   D:["ned","bel","jpn","nga"], E:["esp","por","idn","rsa"], F:["bra","ger","ksa","mar"],
@@ -8035,6 +8111,268 @@ export default function MoodLabArena() {
                 <div style={{display:"flex",gap:10,marginTop:12}}>
                   <div onClick={(e)=>{e.stopPropagation();hookCastLine();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.cyan}15`,border:`1px solid ${C.cyan}30`,fontSize:13,fontWeight:800,color:C.cyan}}>🎣 Cast Again</div>
                   <div onClick={(e)=>{e.stopPropagation();hookEndGame();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.text3}10`,border:`1px solid ${C.text3}20`,fontSize:13,fontWeight:800,color:C.text3}}>Done ✓</div>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      }
+
+      // ═══════════════════════════════════════════════════
+      // ██  RPS (ROCK PAPER SCISSORS) — PUFF DOJO  ██
+      // ═══════════════════════════════════════════════════
+      if(gameActive.id==="rps" && rpsPhase) {
+        const opp = rpsOpponent || RPS_OPPONENTS[0];
+        const pwrInfo = rpsGetPowerLabel(rpsPuffPower);
+        const aiPwrInfo = rpsGetPowerLabel(rpsAiPuffPower);
+        const isIntro = rpsPhase==="intro";
+        const isChoose = rpsPhase==="choose";
+        const isPuff = rpsPhase==="puff";
+        const isClash = rpsPhase==="clash";
+        const isRoundResult = rpsPhase==="round_result";
+        const isFinal = rpsPhase==="final";
+        const youWinFinal = rpsScore.you > rpsScore.ai;
+        const youLoseFinal = rpsScore.ai > rpsScore.you;
+        const clashFlash = isClash && rpsClashAnim;
+        const resultFlashColor = rpsResult==="win"?C.green:rpsResult==="lose"?C.red:C.gold;
+        return (
+          <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden",display:"flex",flexDirection:"column",alignItems:"center",
+            animation:screenShake?"shake 0.4s ease":"none"}}
+            onMouseDown={(e)=>{if(e.target.closest('[data-back]'))return;if(isPuff&&!rpsPuffHeld)rpsStartPuff();}}
+            onMouseUp={(e)=>{if(e.target.closest('[data-back]'))return;if(rpsPuffHeld)rpsStopPuff();}}
+            onTouchStart={(e)=>{if(e.target.closest('[data-back]'))return;e.preventDefault();if(isPuff&&!rpsPuffHeld)rpsStartPuff();}}
+            onTouchEnd={(e)=>{if(e.target.closest('[data-back]'))return;e.preventDefault();if(rpsPuffHeld)rpsStopPuff();}}>
+            {/* Dojo background — dark purple/blue with neon */}
+            <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg, #0a0520 0%, #12083a 20%, #1a0e4a 40%, #0f0830 65%, #080418 100%)",zIndex:0}}/>
+            {/* Neon glow accents */}
+            <div style={{position:"absolute",top:"10%",left:"20%",width:200,height:200,borderRadius:"50%",background:`radial-gradient(circle, ${C.purple}15 0%, transparent 70%)`,pointerEvents:"none",zIndex:1}}/>
+            <div style={{position:"absolute",bottom:"20%",right:"15%",width:150,height:150,borderRadius:"50%",background:`radial-gradient(circle, ${C.cyan}10 0%, transparent 70%)`,pointerEvents:"none",zIndex:1}}/>
+            {/* Vignette */}
+            <div style={{position:"absolute",inset:0,background:`radial-gradient(ellipse at 50% 40%, transparent 25%, rgba(0,0,0,${clashFlash?0.6:0.4}) 100%)`,pointerEvents:"none",zIndex:2}}/>
+            {/* Clash flash */}
+            {clashFlash && <div style={{position:"absolute",inset:0,zIndex:200,pointerEvents:"none",opacity:0,background:"rgba(255,200,50,0.3)",animation:"flashOverlay 0.4s ease forwards"}}/>}
+            {/* Result flash */}
+            {(isRoundResult||isFinal) && <div style={{position:"absolute",inset:0,zIndex:3,pointerEvents:"none",background:`${resultFlashColor}08`}}/>}
+            {/* Flash overlay */}
+            {screenFlash && <div style={{position:"absolute",inset:0,zIndex:200,pointerEvents:"none",opacity:0,background:screenFlash==="goal"?"rgba(0,255,100,0.25)":"rgba(255,50,50,0.25)",animation:"flashOverlay 0.4s ease forwards"}}/>}
+            {/* Confetti */}
+            {confettiParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size*0.6,background:p.color,borderRadius:1,transform:`rotate(${p.rot}deg)`,zIndex:210,pointerEvents:"none",animation:`confettiFall ${1.5+Math.random()}s ease-out forwards`}}/>))}
+            {/* Floating particles */}
+            {[...Array(8)].map((_,i)=>(<div key={"rpsp"+i} style={{position:"absolute",left:(10+i*11)+"%",top:(15+Math.sin(i*2)*25)+"%",width:2+i%3,height:2+i%3,borderRadius:"50%",background:[C.purple,C.cyan,C.pink,C.gold][i%4],opacity:0.06+Math.sin(i*0.9)*0.04,animation:`gentleFloat ${5+i%4*2}s ease-in-out infinite`,animationDelay:i*0.4+"s",pointerEvents:"none",zIndex:1}}/>))}
+            {overlayBack(()=>{rpsEndGame();})}
+            {renderGameChatPanel("PUFF DOJO")}
+            <div style={{display:"flex",flexDirection:"column",alignItems:"center",maxWidth:380,width:"100%",padding:"50px 16px 20px",gap:6,zIndex:10,overflowY:"auto",flex:1}}>
+              {/* Header */}
+              <div style={{textAlign:"center",marginBottom:4}}>
+                <div style={{fontSize:18,fontWeight:900,letterSpacing:4,background:`linear-gradient(135deg, ${C.purple}, ${C.cyan})`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>
+                  {isFinal?"FINAL RESULT":"PUFF DOJO"}
+                </div>
+                <div style={{fontSize:9,color:C.text3}}>
+                  Round {Math.min(rpsRound+1,5)}/5 {" "} You: {rpsScore.you} vs AI: {rpsScore.ai}
+                  {rpsStreak>1&&` | Streak: ${rpsStreak}`}
+                </div>
+              </div>
+              {/* Score bar */}
+              <div style={{display:"flex",alignItems:"center",gap:8,width:"90%",maxWidth:280,marginBottom:4}}>
+                <div style={{fontSize:10,fontWeight:800,color:C.cyan,minWidth:24,textAlign:"right"}}>{rpsScore.you}</div>
+                <div style={{flex:1,height:6,borderRadius:3,background:"rgba(255,255,255,0.06)",overflow:"hidden",position:"relative"}}>
+                  <div style={{position:"absolute",left:0,top:0,bottom:0,width:((rpsScore.you/(rpsScore.you+rpsScore.ai+1))*100)+"%",background:`linear-gradient(90deg,${C.cyan},${C.purple})`,borderRadius:3,transition:"width 0.5s"}}/>
+                  <div style={{position:"absolute",right:0,top:0,bottom:0,width:((rpsScore.ai/(rpsScore.you+rpsScore.ai+1))*100)+"%",background:`linear-gradient(90deg,${C.orange},${C.red})`,borderRadius:3,transition:"width 0.5s"}}/>
+                </div>
+                <div style={{fontSize:10,fontWeight:800,color:C.red,minWidth:24}}>{rpsScore.ai}</div>
+              </div>
+              {/* Round indicators */}
+              <div style={{display:"flex",gap:6,marginBottom:8}}>
+                {[0,1,2,3,4].map(i=>{
+                  const rr = rpsRoundResults[i];
+                  const bg = rr?(rr.result==="win"?C.green:rr.result==="lose"?C.red:C.gold):"rgba(255,255,255,0.08)";
+                  const label = rr?(rr.result==="win"?"W":rr.result==="lose"?"L":"T"):(i+1);
+                  return <div key={"rr"+i} style={{width:24,height:24,borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:800,color:rr?"#fff":C.text3,background:rr?bg+"30":bg,border:`1px solid ${rr?bg+"50":"rgba(255,255,255,0.1)"}`,transition:"all 0.3s"}}>{label}</div>;
+                })}
+              </div>
+
+              {/* ── INTRO PHASE ── */}
+              {isIntro && (
+                <div style={{textAlign:"center",padding:"20px 0",animation:"fadeIn 0.4s ease"}}>
+                  {rpsIntro>=1 && (
+                    <div style={{display:"flex",justifyContent:"center",alignItems:"center",gap:30,marginBottom:16}}>
+                      <div style={{textAlign:"center",animation:"slideInLeft 0.6s ease",opacity:rpsIntro>=1?1:0}}>
+                        <div style={{fontSize:40,marginBottom:4}}>😤</div>
+                        <div style={{fontSize:11,fontWeight:800,color:C.cyan}}>YOU</div>
+                      </div>
+                      <div style={{fontSize:20,fontWeight:900,color:C.gold,animation:"pulse 1s infinite"}}>VS</div>
+                      <div style={{textAlign:"center",animation:"slideInRight 0.6s ease",opacity:rpsIntro>=2?1:0}}>
+                        <div style={{fontSize:40,marginBottom:4}}>{opp.emoji}</div>
+                        <div style={{fontSize:11,fontWeight:800,color:C.red}}>{opp.name}</div>
+                      </div>
+                    </div>
+                  )}
+                  {rpsIntro>=2 && <div style={{fontSize:12,color:C.text2,fontStyle:"italic",marginBottom:8,animation:"fadeIn 0.5s ease"}}>"{opp.taunt}"</div>}
+                  {rpsIntro>=3 && <div style={{fontSize:22,fontWeight:900,color:C.gold,animation:"countPulse 0.5s infinite"}}>BEST OF 5!</div>}
+                  {rpsIntro>=4 && <div style={{fontSize:28,fontWeight:900,color:C.green,marginTop:8,animation:"countPulse 0.3s infinite"}}>FIGHT!</div>}
+                </div>
+              )}
+
+              {/* ── CHOOSE PHASE ── */}
+              {isChoose && (
+                <div style={{textAlign:"center",animation:"fadeIn 0.3s ease",width:"100%"}}>
+                  <div style={{fontSize:13,fontWeight:800,color:C.text2,marginBottom:12}}>Choose your throw!</div>
+                  <div style={{display:"flex",justifyContent:"center",gap:12,marginBottom:16}}>
+                    {RPS_CHOICES.map(ch=>(
+                      <div key={ch} onClick={(e)=>{e.stopPropagation();rpsPickChoice(ch);}}
+                        style={{width:90,height:100,borderRadius:16,cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:6,
+                          background:`linear-gradient(135deg, ${ch==="rock"?C.orange:ch==="paper"?C.cyan:C.red}12, ${ch==="rock"?C.orange:ch==="paper"?C.cyan:C.red}06)`,
+                          border:`2px solid ${ch==="rock"?C.orange:ch==="paper"?C.cyan:C.red}30`,
+                          boxShadow:`0 4px 20px ${ch==="rock"?C.orange:ch==="paper"?C.cyan:C.red}10`,
+                          transition:"transform 0.2s, box-shadow 0.2s",userSelect:"none"}}>
+                        <div style={{fontSize:36}}>{RPS_EMOJI[ch]}</div>
+                        <div style={{fontSize:11,fontWeight:800,color:ch==="rock"?C.orange:ch==="paper"?C.cyan:C.red,textTransform:"uppercase"}}>{ch}</div>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{fontSize:9,color:C.text3}}>vs {opp.emoji} {opp.name}</div>
+                </div>
+              )}
+
+              {/* ── PUFF PHASE (hold-to-charge) ── */}
+              {isPuff && (
+                <div style={{textAlign:"center",animation:"fadeIn 0.3s ease",width:"100%"}}>
+                  <div style={{fontSize:36,marginBottom:6}}>{RPS_EMOJI[rpsPlayerChoice]}</div>
+                  <div style={{fontSize:12,fontWeight:800,color:C.text2,marginBottom:4}}>You chose {rpsPlayerChoice?.toUpperCase()}</div>
+                  <div style={{fontSize:11,color:C.text3,marginBottom:12}}>Now HOLD to charge puff power!</div>
+                  {/* Power meter */}
+                  <div style={{width:"80%",maxWidth:260,height:20,borderRadius:10,background:"rgba(255,255,255,0.06)",margin:"0 auto 8px",overflow:"hidden",position:"relative",border:`1px solid ${pwrInfo.color}30`}}>
+                    <div style={{width:rpsPuffPower+"%",height:"100%",borderRadius:10,
+                      background:`linear-gradient(90deg, ${C.cyan}, ${rpsPuffPower>70?C.orange:rpsPuffPower>40?C.green:C.cyan}, ${rpsPuffPower>90?C.red:rpsPuffPower>70?C.orange:C.green})`,
+                      transition:"width 0.05s linear",boxShadow:`0 0 12px ${pwrInfo.color}40`}}/>
+                    {/* Zone markers */}
+                    <div style={{position:"absolute",left:"10%",top:0,bottom:0,width:1,background:"rgba(255,255,255,0.15)"}}/>
+                    <div style={{position:"absolute",left:"40%",top:0,bottom:0,width:1,background:"rgba(255,255,255,0.15)"}}/>
+                    <div style={{position:"absolute",left:"70%",top:0,bottom:0,width:1,background:"rgba(255,255,255,0.15)"}}/>
+                    <div style={{position:"absolute",left:"90%",top:0,bottom:0,width:1,background:`${C.red}40`}}/>
+                  </div>
+                  {/* Power labels */}
+                  <div style={{display:"flex",justifyContent:"space-between",width:"80%",maxWidth:260,margin:"0 auto 6px",fontSize:7,color:C.text3}}>
+                    <span>Tap +1</span><span>Short +2</span><span>Perfect +3</span><span style={{color:C.red}}>Blinker +5!</span>
+                  </div>
+                  <div style={{fontSize:16,fontWeight:900,color:pwrInfo.color,marginBottom:4}}>{pwrInfo.label} {rpsPuffPower>=90&&"\u{1F480}"}</div>
+                  <div style={{fontSize:24,fontWeight:900,color:pwrInfo.color}}>+{pwrInfo.points}</div>
+                  {rpsPuffHeld && <div style={{fontSize:10,color:C.gold,marginTop:6,animation:"pulse 0.5s infinite"}}>Charging... release to throw!</div>}
+                  {!rpsPuffHeld && rpsPuffPower===0 && <div style={{fontSize:10,color:C.text3,marginTop:6}}>Hold anywhere to charge</div>}
+                </div>
+              )}
+
+              {/* ── CLASH PHASE ── */}
+              {isClash && (
+                <div style={{textAlign:"center",animation:"fadeIn 0.2s ease"}}>
+                  <div style={{display:"flex",justifyContent:"center",alignItems:"center",gap:20,marginBottom:16}}>
+                    <div style={{textAlign:"center",animation:rpsClashAnim?"slideInLeft 0.4s ease":"none"}}>
+                      <div style={{fontSize:48,animation:rpsClashAnim?"countPulse 0.3s infinite":"none"}}>{RPS_EMOJI[rpsPlayerChoice]}</div>
+                      <div style={{fontSize:10,fontWeight:800,color:C.cyan,marginTop:4}}>YOU</div>
+                    </div>
+                    <div style={{fontSize:28,fontWeight:900,color:C.gold,animation:rpsClashAnim?"countPulse 0.2s infinite":"none"}}>
+                      {rpsClashAnim?"\u{1F4A5}":"VS"}
+                    </div>
+                    <div style={{textAlign:"center",animation:rpsClashAnim?"slideInRight 0.4s ease":"none"}}>
+                      <div style={{fontSize:48,animation:rpsClashAnim?"countPulse 0.3s infinite":"none"}}>{rpsAiChoice?RPS_EMOJI[rpsAiChoice]:"?"}</div>
+                      <div style={{fontSize:10,fontWeight:800,color:C.red,marginTop:4}}>AI</div>
+                    </div>
+                  </div>
+                  <div style={{fontSize:18,fontWeight:900,color:C.gold,animation:"pulse 0.5s infinite"}}>CLASH!</div>
+                </div>
+              )}
+
+              {/* ── ROUND RESULT ── */}
+              {isRoundResult && (
+                <div style={{textAlign:"center",animation:"fadeIn 0.3s ease"}}>
+                  {/* Choices revealed */}
+                  <div style={{display:"flex",justifyContent:"center",alignItems:"center",gap:24,marginBottom:12}}>
+                    <div style={{textAlign:"center"}}>
+                      <div style={{fontSize:42}}>{RPS_EMOJI[rpsPlayerChoice]}</div>
+                      <div style={{fontSize:9,color:C.cyan,fontWeight:700,marginTop:2}}>YOU ({pwrInfo.label})</div>
+                    </div>
+                    <div style={{fontSize:20,fontWeight:900,color:C.text3}}>vs</div>
+                    <div style={{textAlign:"center"}}>
+                      <div style={{fontSize:42}}>{rpsAiChoice?RPS_EMOJI[rpsAiChoice]:"?"}</div>
+                      <div style={{fontSize:9,color:C.red,fontWeight:700,marginTop:2}}>AI ({aiPwrInfo.label})</div>
+                    </div>
+                  </div>
+                  {/* Result text */}
+                  {rpsResult==="win" && (
+                    <div style={{marginBottom:8}}>
+                      <div style={{fontSize:28,fontWeight:900,color:C.green,textShadow:`0 0 20px ${C.green}60`,animation:"countPulse 0.8s infinite"}}>YOU WIN! \u{1F3C6}</div>
+                      <div style={{fontSize:14,fontWeight:700,color:C.green}}>+{rpsPointsAwarded} pts</div>
+                    </div>
+                  )}
+                  {rpsResult==="lose" && (
+                    <div style={{marginBottom:8}}>
+                      <div style={{fontSize:28,fontWeight:900,color:C.red,textShadow:`0 0 20px ${C.red}60`,animation:"shake 0.4s ease"}}>DEFEATED \u{1F480}</div>
+                      {rpsPointsAwarded<0 && <div style={{fontSize:12,fontWeight:700,color:C.red}}>Blinker backfire! -{Math.abs(rpsPointsAwarded)}</div>}
+                    </div>
+                  )}
+                  {rpsResult==="tie" && (
+                    <div style={{marginBottom:8}}>
+                      <div style={{fontSize:24,fontWeight:900,color:C.gold,textShadow:`0 0 20px ${C.gold}60`}}>TIE!</div>
+                      <div style={{fontSize:11,color:C.text2}}>Puff power decided it</div>
+                      <div style={{display:"flex",justifyContent:"center",gap:16,marginTop:4,fontSize:10}}>
+                        <span style={{color:C.cyan}}>You: {rpsPuffPower.toFixed(0)}%</span>
+                        <span style={{color:C.red}}>AI: {rpsAiPuffPower.toFixed(0)}%</span>
+                      </div>
+                      <div style={{fontSize:12,fontWeight:700,color:C.gold,marginTop:2}}>+{rpsPointsAwarded} pts</div>
+                    </div>
+                  )}
+                  {/* Commentary */}
+                  <div style={{fontSize:11,color:C.text2,fontStyle:"italic",marginTop:6,maxWidth:260,margin:"6px auto"}}>{commentary}</div>
+                </div>
+              )}
+
+              {/* ── FINAL PHASE ── */}
+              {isFinal && (
+                <div style={{textAlign:"center",animation:"fadeIn 0.4s ease"}}>
+                  {youWinFinal && (
+                    <div>
+                      <div style={{fontSize:56,marginBottom:8,animation:"countPulse 1s infinite"}}>🏆</div>
+                      <div style={{fontSize:26,fontWeight:900,color:C.green,textShadow:`0 0 30px ${C.green}60`,marginBottom:4}}>CHAMPION!</div>
+                      <div style={{fontSize:13,color:C.text2,marginBottom:2}}>You dominated the Puff Dojo!</div>
+                      <div style={{fontSize:14,fontWeight:700,color:C.gold,marginBottom:4}}>+500 coins \u{1F4B0}</div>
+                    </div>
+                  )}
+                  {youLoseFinal && (
+                    <div>
+                      <div style={{fontSize:56,marginBottom:8}}>💀</div>
+                      <div style={{fontSize:26,fontWeight:900,color:C.red,textShadow:`0 0 30px ${C.red}60`,marginBottom:4}}>DEFEATED</div>
+                      <div style={{fontSize:13,color:C.text2,marginBottom:2}}>{opp.name} was too strong!</div>
+                      <div style={{fontSize:14,fontWeight:700,color:C.text3,marginBottom:4}}>+50 coins</div>
+                    </div>
+                  )}
+                  {!youWinFinal && !youLoseFinal && (
+                    <div>
+                      <div style={{fontSize:56,marginBottom:8}}>🤝</div>
+                      <div style={{fontSize:26,fontWeight:900,color:C.gold,textShadow:`0 0 30px ${C.gold}60`,marginBottom:4}}>DRAW!</div>
+                      <div style={{fontSize:13,color:C.text2,marginBottom:2}}>Equal warriors in the dojo!</div>
+                      <div style={{fontSize:14,fontWeight:700,color:C.gold,marginBottom:4}}>+200 coins</div>
+                    </div>
+                  )}
+                  {/* Final score */}
+                  <div style={{fontSize:22,fontWeight:900,color:C.text,marginBottom:8}}>{rpsScore.you} - {rpsScore.ai}</div>
+                  {/* Round recap */}
+                  <div style={{display:"flex",justifyContent:"center",gap:4,marginBottom:12}}>
+                    {rpsRoundResults.map((rr,i)=>(
+                      <div key={"rrf"+i} style={{padding:"4px 8px",borderRadius:8,fontSize:9,fontWeight:700,
+                        background:`${rr.result==="win"?C.green:rr.result==="lose"?C.red:C.gold}15`,
+                        color:rr.result==="win"?C.green:rr.result==="lose"?C.red:C.gold,
+                        border:`1px solid ${rr.result==="win"?C.green:rr.result==="lose"?C.red:C.gold}30`}}>
+                        R{i+1}: {RPS_EMOJI[rr.playerChoice]} {rr.result==="win"?"W":rr.result==="lose"?"L":"T"}
+                      </div>
+                    ))}
+                  </div>
+                  {/* Commentary */}
+                  <div style={{fontSize:11,color:C.text2,fontStyle:"italic",marginBottom:12,maxWidth:260,margin:"0 auto 12px"}}>{commentary}</div>
+                  {/* Action buttons */}
+                  <div style={{display:"flex",gap:10,justifyContent:"center"}}>
+                    <div onClick={(e)=>{e.stopPropagation();rpsEndGame();startRps();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.purple}15`,border:`1px solid ${C.purple}30`,fontSize:13,fontWeight:800,color:C.purple}}>🥋 Rematch</div>
+                    <div onClick={(e)=>{e.stopPropagation();rpsEndGame();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.text3}10`,border:`1px solid ${C.text3}20`,fontSize:13,fontWeight:800,color:C.text3}}>Done ✓</div>
+                  </div>
                 </div>
               )}
             </div>
