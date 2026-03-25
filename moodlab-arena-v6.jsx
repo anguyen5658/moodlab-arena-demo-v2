@@ -829,7 +829,7 @@ export default function MoodLabArena() {
     id:i, x:Math.random()*100, y:Math.random()*100, s:Math.random()*3+1, d:Math.random()*20+10, o:Math.random()*0.4+0.1,
     color:[C.cyan,C.gold,C.purple,C.orange,C.pink][Math.floor(Math.random()*5)],
   })));
-  const [tickerOffset, setTickerOffset] = useState(0);
+  // tickerOffset removed — now CSS-animated (tickerScroll keyframe)
   const [mainStage, setMainStage] = useState(0);
   const [controlHeat, setControlHeat] = useState([2,1]);
   const [liveScore, setLiveScore] = useState({home:1,away:0,min:34});
