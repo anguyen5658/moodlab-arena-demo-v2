@@ -4863,7 +4863,8 @@ export default function MoodLabArena() {
   };
 
   const rpsStartPuff = () => {
-    if(rpsPhase!=="puff"||rpsPuffHeld) return;
+    if(rpsPuffActiveRef.current) return; // already puffing
+    rpsPuffActiveRef.current = true;
     setRpsPuffHeld(true);
     rpsPuffStart.current = Date.now();
     setDimLights(true);
@@ -4874,16 +4875,17 @@ export default function MoodLabArena() {
     },30);
   };
 
+  const rpsPuffActiveRef = useRef(false); // prevent double-fire
   const rpsStopPuff = () => {
-    if(!rpsPuffHeld) return;
+    if(!rpsPuffActiveRef.current) return; // use ref, not state
+    rpsPuffActiveRef.current = false;
     setRpsPuffHeld(false);
     setDimLights(false);
     if(rpsPuffInterval.current){clearInterval(rpsPuffInterval.current);rpsPuffInterval.current=null;}
     const elapsed = (Date.now() - rpsPuffStart.current)/1000;
     const finalPower = Math.min(100, elapsed * 20);
     setRpsPuffPower(finalPower);
-    const guard = window._rpsActive;
-    if(!guard||!guard.v) return;
+    if(!window._rpsActive) return;
     const opp = rpsOpponent || RPS_OPPONENTS[0];
     const aiChoice = rpsGetAiChoice(opp);
     setRpsAiChoice(aiChoice);
@@ -8142,10 +8144,10 @@ export default function MoodLabArena() {
         return (
           <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden",display:"flex",flexDirection:"column",alignItems:"center",
             animation:screenShake?"shake 0.4s ease":"none"}}
-            onMouseDown={(e)=>{if(e.target.closest('[data-back]'))return;if(isPuff&&!rpsPuffHeld)rpsStartPuff();}}
-            onMouseUp={(e)=>{if(e.target.closest('[data-back]'))return;if(rpsPuffHeld)rpsStopPuff();}}
-            onTouchStart={(e)=>{if(e.target.closest('[data-back]'))return;e.preventDefault();if(isPuff&&!rpsPuffHeld)rpsStartPuff();}}
-            onTouchEnd={(e)=>{if(e.target.closest('[data-back]'))return;e.preventDefault();if(rpsPuffHeld)rpsStopPuff();}}>
+            onMouseDown={(e)=>{if(e.target.closest('[data-back]'))return;if(isPuff)rpsStartPuff();}}
+            onMouseUp={(e)=>{if(e.target.closest('[data-back]'))return;rpsStopPuff();}}
+            onTouchStart={(e)=>{if(e.target.closest('[data-back]'))return;e.preventDefault();if(isPuff)rpsStartPuff();}}
+            onTouchEnd={(e)=>{if(e.target.closest('[data-back]'))return;e.preventDefault();rpsStopPuff();}}>
             {/* Dojo background — dark purple/blue with neon */}
             <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg, #0a0520 0%, #12083a 20%, #1a0e4a 40%, #0f0830 65%, #080418 100%)",zIndex:0}}/>
             {/* Neon glow accents */}
