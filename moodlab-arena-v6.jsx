@@ -1965,8 +1965,10 @@ export default function MoodLabArena() {
   const triggerInputPulse = () => { setInputPulse(true); setTimeout(()=>setInputPulse(false),600); };
 
   const resolveInputForGame = (game, callback) => {
-    // Always ask user to choose input method before each game
-    setShowAskPrompt(game);window._inputCb=callback;
+    // Use already-selected device input from Arena home, skip the prompt
+    if(sessionInput) { callback(sessionInput); return; }
+    // Fallback: default to "puff" if no input selected
+    callback("puff");
   };
   const handleAskPick = (id) => { setSessionInput(id); setShowAskPrompt(null); triggerInputPulse(); if(window._inputCb){window._inputCb(id);window._inputCb=null;} };
 
