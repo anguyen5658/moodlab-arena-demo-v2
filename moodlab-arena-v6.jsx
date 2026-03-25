@@ -5761,8 +5761,8 @@ export default function MoodLabArena() {
         </div>
 
 
-        {/* ═══ LIVE GAMES — Synchronized Puff Events card ═══ */}
-        <div style={{position:"absolute",top:215,left:14,right:14,zIndex:12,animation:"arenaFadeIn 0.7s ease 0.4s both"}}>
+        {/* ═══ LIVE GAMES — above bottom nav, moves up when chat open ═══ */}
+        <div style={{position:"fixed",bottom:chatPanel?280:56,left:14,right:14,zIndex:45,transition:"bottom 0.3s ease",animation:"arenaFadeIn 0.7s ease 0.4s both"}}>
           <div style={{borderRadius:16,overflow:"hidden",cursor:"pointer",...GLASS_CARD}} onClick={() => {
             if (peNextCountdown === "NOW!" || (puffEventSchedule && puffEventSchedule.nextAt <= Date.now())) {
               startPuffEvent(puffEventSchedule.nextType);
