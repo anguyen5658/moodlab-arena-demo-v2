@@ -2844,8 +2844,6 @@ export default function MoodLabArena() {
     setCoins(c=>c+r);notify("🎣 Fishing done! +"+r+" coins!",hookScore>0?C.green:C.red);
     setGameActive(null);setHookPhase(null);
   };
-  const triggerShake = () => { setScreenShake(true); setTimeout(()=>setScreenShake(false),400); };
-
   // ── Match Intro Sequence ──
   const startMatchIntro = (opponent) => {
     setMatchIntro({stage:"enter",count:3});
@@ -6572,16 +6570,7 @@ export default function MoodLabArena() {
         const isShootPhase = ["shoot_x","shoot_y","flight","shoot_result"].includes(kickState);
         const isSavePhase = ["save_ready","save_countdown","save_dive","save_result"].includes(kickState);
         const isResult = kickState==="shoot_result"||kickState==="save_result";
-        const goalW = 290, goalH = 140;
-        const zoneW = goalW/3, zoneH = goalH/2;
-        const getBallPos = (z) => ({ x: KICK_ZONES[z].col * zoneW + zoneW/2, y: KICK_ZONES[z].row * zoneH + zoneH/2 });
 
-        const SHOOT_TAUNTS = ["Double puff incoming 🎯","Two puffs, one goal 😏","X then Y... easy right? 🤔","Precision mode ON 😂","Sniper puff activated 🥶"];
-        const GOAL_CHEERS = ["GOLAZOOO! 🔥🔥🔥","DOUBLE PUFF BANGER! 💥","PRECISION = PERFECTION 😤","SHEEEESH! 🥶","SNIPER MERCHANT 👑"];
-        const SAVE_TAUNTS = ["AI's got the ball... 👀","Keeper mode: ON 🧤","Don't let it in! 😬","Quick reflexes or nah? 🤣","This one's SPICY 🌶️"];
-        const SAVE_CHEERS = ["DENIED! 🚫🧤","WALL MODE ACTIVATED 🧱","NOT TODAY! 😤","BRICK WALL ENERGY 💪","AI IS CRYING RN 😭"];
-        const CONCEDE_REACT = ["Bruh... 💀","That one hurt 😂","AI said 'sit down' 😤","Pain. Just pain. 🥲","Keeper had lag 📡"];
-        const crowdEmojis = ["🎉","🔥","😤","💨","🤣","😱","👏","🥳","💀","😂","🙌","⚡"];
 
         return (
           <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden",
