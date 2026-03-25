@@ -352,15 +352,78 @@ const GAME_TEAMS = {
 };
 
 const GAME_TOURNAMENTS = {
-  wildwest: { name: "The Outlaw Circuit", emoji: "🤠", format: "16-player bracket", rounds: ["Saloon","Jail","Main Street","High Noon"], prizes: {gold:{pts:30000,coins:800,label:"Sheriff's Badge 🏅"},silver:{pts:15000,coins:400,label:"Deputy Star ⭐"},bronze:{pts:7500,coins:200,label:"Wanted Poster 📜"},fourth:{pts:3000,coins:100,label:"4th Place"}} },
-  russian: { name: "The Underground", emoji: "🎲", format: "6-table survival", rounds: ["Back Alley","Basement","VIP Room","Penthouse","The Vault"], prizes: {gold:{pts:30000,coins:800,label:"Diamond Chip 💎"},silver:{pts:15000,coins:400,label:"Gold Chip 🪙"},bronze:{pts:7500,coins:200,label:"Silver Chip 🥈"},fourth:{pts:3000,coins:100,label:"4th Place"}} },
-  balloon: { name: "Puff Fest", emoji: "🎈", format: "8-player elimination", rounds: ["Kids Stage","Main Stage","VIP Tent","Headliner","Encore"], prizes: {gold:{pts:30000,coins:800,label:"Golden Balloon 🎈"},silver:{pts:15000,coins:400,label:"Silver Pop 💥"},bronze:{pts:7500,coins:200,label:"Bronze Burst 🟤"},fourth:{pts:3000,coins:100,label:"4th Place"}} },
-  puffpong: { name: "Neon League", emoji: "🏓", format: "8-player bracket", rounds: ["Pixel Park","Laser Lounge","Cyber Stadium","The Grid"], prizes: {gold:{pts:30000,coins:800,label:"Arcade Crown 👑"},silver:{pts:15000,coins:400,label:"Neon Trophy 🏆"},bronze:{pts:7500,coins:200,label:"Pixel Medal 🎮"},fourth:{pts:3000,coins:100,label:"4th Place"}} },
-  rhythm: { name: "Tour de Puff", emoji: "🎵", format: "8-venue progression", rounds: ["Open Mic","Bar Gig","Club Night","Festival","Arena","Stadium","World Tour","420 Bowl"], prizes: {gold:{pts:30000,coins:800,label:"Platinum Record 💿"},silver:{pts:15000,coins:400,label:"Gold Record 🥇"},bronze:{pts:7500,coins:200,label:"Silver Record 🥈"},fourth:{pts:3000,coins:100,label:"4th Place"}} },
-  tugofwar: { name: "The Puff Games", emoji: "💪", format: "4-team bracket", rounds: ["Training Grounds","Arena Gates","Colosseum Floor","Champion's Ring"], prizes: {gold:{pts:30000,coins:800,label:"Champion's Belt 🏅"},silver:{pts:15000,coins:400,label:"Gladiator Shield 🛡️"},bronze:{pts:7500,coins:200,label:"Bronze Sword ⚔️"},fourth:{pts:3000,coins:100,label:"4th Place"}} },
-  hotpotato: { name: "Bomb Squad Cup", emoji: "💣", format: "6-player survival", rounds: ["Training Camp","Field Exercise","Urban Scenario","Final Countdown"], prizes: {gold:{pts:30000,coins:800,label:"Expert Badge 🎖️"},silver:{pts:15000,coins:400,label:"Defuser Medal 🏅"},bronze:{pts:7500,coins:200,label:"Survivor Pin 📌"},fourth:{pts:3000,coins:100,label:"4th Place"}} },
-  rps: { name: "Dojo Championship", emoji: "✊", format: "16-player bracket", rounds: ["White Belt","Green Belt","Brown Belt","Black Belt","Grand Master"], prizes: {gold:{pts:30000,coins:800,label:"Dragon Scroll 📜"},silver:{pts:15000,coins:400,label:"Tiger Claw 🐯"},bronze:{pts:7500,coins:200,label:"Crane Feather 🪶"},fourth:{pts:3000,coins:100,label:"4th Place"}} },
-  hooked: { name: "Deep Sea Masters", emoji: "🎣", format: "8-location progression", rounds: ["Local Pond","River","Lake","Deep Sea","Coral Reef","Abyssal Trench","The Void"], prizes: {gold:{pts:30000,coins:800,label:"Golden Rod 🎣"},silver:{pts:15000,coins:400,label:"Silver Hook 🪝"},bronze:{pts:7500,coins:200,label:"Bronze Reel 🔄"},fourth:{pts:3000,coins:100,label:"4th Place"}} },
+  wildwest: {
+    name: "The Outlaw Circuit", emoji: "🤠",
+    format: "16-player Single Elimination", formatShort: "Bracket",
+    duration: "~30 min", rounds: ["Round of 16","Quarterfinal","Semifinal","HIGH NOON Final"],
+    rules: "Best of 3 per match. Each round DRAW! timing gets shorter. Win or go home.",
+    teamType: "gang",
+    prizes: {gold:{pts:30000,coins:800,label:"Sheriff's Badge 🏅"},silver:{pts:15000,coins:400,label:"Deputy Star ⭐"},bronze:{pts:7500,coins:200,label:"Wanted Poster 📜"},fourth:{pts:3000,coins:100,label:"Bounty Hunter"}},
+  },
+  russian: {
+    name: "The Underground", emoji: "🎲",
+    format: "Survival Series (4 Tables → Final)", formatShort: "Survival",
+    duration: "~20 min", rounds: ["Table 1","Table 2","Table 3","Table 4","FINAL TABLE"],
+    rules: "6 players per table. 1 bullet. Survive → advance. Final table has 2 bullets!",
+    teamType: "crew",
+    prizes: {gold:{pts:30000,coins:800,label:"Diamond Chip 💎"},silver:{pts:15000,coins:400,label:"Gold Chip 🪙"},bronze:{pts:7500,coins:200,label:"Silver Chip 🥈"},fourth:{pts:3000,coins:100,label:"Survivor"}},
+  },
+  balloon: {
+    name: "Puff Fest", emoji: "🎈",
+    format: "Party Rounds (3 Heats + Final)", formatShort: "Party",
+    duration: "~15 min", rounds: ["Heat 1","Heat 2","Heat 3","GRAND FINALE"],
+    rules: "8 players per heat. Top 2 advance. Final: 6 players, lowest pop threshold!",
+    teamType: "crew",
+    prizes: {gold:{pts:30000,coins:800,label:"Golden Balloon 🎈"},silver:{pts:15000,coins:400,label:"Silver Pop 💥"},bronze:{pts:7500,coins:200,label:"Bronze Burst 🟤"},fourth:{pts:3000,coins:100,label:"Party Animal"}},
+  },
+  puffpong: {
+    name: "Neon League", emoji: "🏓",
+    format: "Swiss System (4 Rounds + Final)", formatShort: "Swiss",
+    duration: "~25 min", rounds: ["Match 1","Match 2","Match 3","Match 4","CHAMPIONSHIP"],
+    rules: "8 players. Play 4 matches vs different opponents. Win=3pts. Top 2 play Final.",
+    teamType: "clan",
+    prizes: {gold:{pts:30000,coins:800,label:"Arcade Crown 👑"},silver:{pts:15000,coins:400,label:"Neon Trophy 🏆"},bronze:{pts:7500,coins:200,label:"Pixel Medal 🎮"},fourth:{pts:3000,coins:100,label:"Challenger"}},
+  },
+  rhythm: {
+    name: "Tour de Puff", emoji: "🎵",
+    format: "Score Chase (3 Songs)", formatShort: "Score",
+    duration: "~15 min", rounds: ["Opening Act","Main Set","ENCORE (2x Speed)"],
+    rules: "Everyone plays 3 rounds. Total score = final ranking. No elimination! Round 3 is double speed.",
+    teamType: "label",
+    prizes: {gold:{pts:30000,coins:800,label:"Platinum Record 💿"},silver:{pts:15000,coins:400,label:"Gold Record 🥇"},bronze:{pts:7500,coins:200,label:"Silver Record 🥈"},fourth:{pts:3000,coins:100,label:"Roadie"}},
+  },
+  tugofwar: {
+    name: "The Puff Games", emoji: "💪",
+    format: "Round Robin Teams (4 Teams)", formatShort: "Round Robin",
+    duration: "~20 min", rounds: ["Match 1","Match 2","Match 3","CHAMPIONSHIP PULL"],
+    rules: "4 teams. Each plays all others. Win=3pts, Draw=1pt. Top 2 play Final.",
+    teamType: "legion",
+    prizes: {gold:{pts:30000,coins:800,label:"Champion's Belt 🏅"},silver:{pts:15000,coins:400,label:"Gladiator Shield 🛡️"},bronze:{pts:7500,coins:200,label:"Bronze Sword ⚔️"},fourth:{pts:3000,coins:100,label:"Warrior"}},
+  },
+  hotpotato: {
+    name: "Bomb Squad Cup", emoji: "💣",
+    format: "Heats + Grand Final", formatShort: "Heats",
+    duration: "~15 min", rounds: ["Heat A","Heat B","GRAND FINAL"],
+    rules: "2 heats of 8 players. 3 bomb rounds each. Top 3 survive → 6-player Final.",
+    teamType: "squad",
+    prizes: {gold:{pts:30000,coins:800,label:"Expert Badge 🎖️"},silver:{pts:15000,coins:400,label:"Defuser Medal 🏅"},bronze:{pts:7500,coins:200,label:"Survivor Pin 📌"},fourth:{pts:3000,coins:100,label:"Recruit"}},
+  },
+  rps: {
+    name: "Dojo Championship", emoji: "✊",
+    format: "Double Elimination (16 Players)", formatShort: "Double Elim",
+    duration: "~30 min", rounds: ["Winners R1","Winners QF","Winners SF","Losers R1","Losers QF","Losers SF","GRAND FINAL"],
+    rules: "Lose once → losers bracket. Lose twice → out. Best of 5 each match. Grand Final: Winners vs Losers champion.",
+    teamType: "dojo",
+    prizes: {gold:{pts:30000,coins:800,label:"Dragon Scroll 📜"},silver:{pts:15000,coins:400,label:"Tiger Claw 🐯"},bronze:{pts:7500,coins:200,label:"Crane Feather 🪶"},fourth:{pts:3000,coins:100,label:"White Belt"}},
+  },
+  hooked: {
+    name: "Deep Sea Masters", emoji: "🎣",
+    format: "Catch Competition (3 Sessions)", formatShort: "Catch Comp",
+    duration: "~10 min", rounds: ["Session 1","Session 2","SESSION 3 (Legendary Waters)"],
+    rules: "3 fishing sessions, 2 min each. Total catch points = ranking. Legendary=60, Rare=25, Common=10.",
+    teamType: "crew",
+    prizes: {gold:{pts:30000,coins:800,label:"Golden Rod 🎣"},silver:{pts:15000,coins:400,label:"Silver Hook 🪝"},bronze:{pts:7500,coins:200,label:"Bronze Reel 🔄"},fourth:{pts:3000,coins:100,label:"Deckhand"}},
+  },
 };
 
 const WC_GROUPS = {
@@ -10121,9 +10184,13 @@ export default function MoodLabArena() {
                           "FK3 3D Championship 2026"
                         }</div>
                         <div style={{fontSize:8,color:C.text2}}>{
-                          gTourney ? `${gTourney.format} · ${gTourney.rounds.length} rounds` :
+                          gTourney ? `${gTourney.format} · ${gTourney.duration}` :
                           "48 Teams · Group Stage + Knockout"
                         }</div>
+                        {gTourney && <div style={{display:"flex",gap:4,marginTop:3}}>
+                          <span style={{fontSize:6,fontWeight:800,color:C.cyan,padding:"1px 5px",borderRadius:4,background:`${C.cyan}12`,border:`1px solid ${C.cyan}20`}}>{gTourney.formatShort}</span>
+                          <span style={{fontSize:6,fontWeight:700,color:C.text3,padding:"1px 5px",borderRadius:4,background:`${C.text3}08`}}>{gTourney.rounds.length} rounds</span>
+                        </div>}
                       </div>
                     </div>
 
@@ -10133,7 +10200,7 @@ export default function MoodLabArena() {
                         {e:"🥇",label:"Gold",pts:gTourney.prizes.gold.pts.toLocaleString(),color:C.gold,sub:gTourney.prizes.gold.label},
                         {e:"🥈",label:"Silver",pts:gTourney.prizes.silver.pts.toLocaleString(),color:"#C0C0C0",sub:gTourney.prizes.silver.label},
                         {e:"🥉",label:"Bronze",pts:gTourney.prizes.bronze.pts.toLocaleString(),color:"#CD7F32",sub:gTourney.prizes.bronze.label},
-                        {e:"4th",label:"",pts:gTourney.prizes.fourth.pts.toLocaleString(),color:C.text3,sub:"4th Place"},
+                        {e:"4th",label:"",pts:gTourney.prizes.fourth.pts.toLocaleString(),color:C.text3,sub:gTourney.prizes.fourth.label},
                       ] : [
                         {e:"🥇",label:"Gold",pts:"50,000",color:C.gold},
                         {e:"🥈",label:"Silver",pts:"25,000",color:"#C0C0C0"},
@@ -10147,6 +10214,13 @@ export default function MoodLabArena() {
                       ))}
                     </div>
 
+                    {/* Rules */}
+                    {gTourney && gTourney.rules && (
+                      <div style={{fontSize:7,color:C.text2,padding:"5px 8px",borderRadius:8,background:`rgba(255,255,255,0.02)`,border:`1px solid ${C.border}`,marginBottom:8,lineHeight:1.4,fontStyle:"italic"}}>
+                        {gTourney.rules}
+                      </div>
+                    )}
+
                     {/* Enter button or cooldown */}
                     {canEnterWC ? (
                       <div style={{
@@ -10156,7 +10230,7 @@ export default function MoodLabArena() {
                         boxShadow:`0 0 20px ${C.gold}10`,
                       }}>
                         <div style={{fontSize:12,fontWeight:900,color:C.gold,letterSpacing:1}}>ENTER TOURNAMENT</div>
-                        <div style={{fontSize:7,color:C.text3,marginTop:2}}>{gTourney ? "Choose your team and compete for glory" : "Choose your nation and compete for glory"}</div>
+                        <div style={{fontSize:7,color:C.text3,marginTop:2}}>{gTourney ? `Choose your ${gTourney.teamType||"team"} and compete for glory` : "Choose your nation and compete for glory"}</div>
                         <div style={{fontSize:6,color:C.gold+"60",marginTop:2,fontStyle:"italic"}}>DEMO: Unlimited entries. Production: 1 entry per 6 hours</div>
                       </div>
                     ) : (
@@ -10810,7 +10884,7 @@ export default function MoodLabArena() {
                 {/* ═══ RUSSIAN ROULETTE — SECTION 5: FEATURES ═══ */}
                 <div style={{padding:"14px",borderRadius:16,...GLASS_CARD,marginBottom:12}}><div style={{fontSize:9,fontWeight:800,color:C.cyan,letterSpacing:2,marginBottom:8,textAlign:"center"}}>✨ SPECIAL FEATURES</div><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>{[{icon:"🔫",title:"6-Chamber Revolver",desc:"Spin after each kill",color:C.red},{icon:"👻",title:"Ghost Mode",desc:"Watch after you're out!",color:C.purple},{icon:"❤️",title:"Heartbeat System",desc:"Heart races with tension",color:C.red},{icon:"🫁",title:"Blinker Dodge",desc:"5s+ = 30% dodge max!",color:C.lime},{icon:"💡",title:"Swinging Lamp",desc:"Poker room atmosphere",color:C.gold},{icon:"🏆",title:"Last Standing",desc:"Sole survivor wins!",color:C.gold}].map((f,i)=>(<div key={i} style={{padding:"8px",borderRadius:10,background:`${f.color}06`,border:`1px solid ${f.color}12`,textAlign:"center"}}><div style={{fontSize:18,marginBottom:3}}>{f.icon}</div><div style={{fontSize:8,fontWeight:800,color:f.color}}>{f.title}</div><div style={{fontSize:7,color:C.text3,marginTop:1}}>{f.desc}</div></div>))}</div></div>
                 {/* ═══ RUSSIAN ROULETTE — SECTION 6: TOURNAMENT ═══ */}
-                <div style={{padding:"14px",borderRadius:16,...GLASS_CARD,marginBottom:12}}><div style={{fontSize:9,fontWeight:800,color:C.gold,letterSpacing:2,marginBottom:8,textAlign:"center"}}>🏆 TOURNAMENT PATH</div><div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:3,flexWrap:"wrap"}}>{[{label:"Group",sub:"3 matches",color:C.cyan},{label:"R32",sub:"Survive",color:C.blue},{label:"R16",sub:"Knockout",color:C.green},{label:"QF",sub:"Quarter",color:C.lime},{label:"SF",sub:"Semi",color:C.gold},{label:"FINAL",sub:"🏆",color:C.gold}].map((r,i)=>(<React.Fragment key={i}><div style={{padding:"5px 6px",borderRadius:8,background:`${r.color}10`,border:`1px solid ${r.color}20`,textAlign:"center",minWidth:40}}><div style={{fontSize:8,fontWeight:800,color:r.color}}>{r.label}</div><div style={{fontSize:6,color:C.text3}}>{r.sub}</div></div>{i<5&&<span style={{fontSize:8,color:C.text3+"60"}}>→</span>}</React.Fragment>))}</div><div style={{display:"flex",gap:4,marginTop:8,justifyContent:"center"}}><div style={{padding:"4px 8px",borderRadius:6,background:`${C.gold}12`,border:`1px solid ${C.gold}20`,fontSize:7,fontWeight:700,color:C.gold}}>🥇 50K</div><div style={{padding:"4px 8px",borderRadius:6,background:"rgba(192,192,192,0.08)",border:"1px solid rgba(192,192,192,0.2)",fontSize:7,fontWeight:700,color:"#C0C0C0"}}>🥈 25K</div><div style={{padding:"4px 8px",borderRadius:6,background:"rgba(205,127,50,0.08)",border:"1px solid rgba(205,127,50,0.2)",fontSize:7,fontWeight:700,color:"#CD7F32"}}>🥉 10K</div></div></div>
+                <div style={{padding:"14px",borderRadius:16,...GLASS_CARD,marginBottom:12}}><div style={{fontSize:9,fontWeight:800,color:C.gold,letterSpacing:2,marginBottom:8,textAlign:"center"}}>🎲 THE UNDERGROUND — SURVIVAL</div><div style={{fontSize:7,color:C.text2,textAlign:"center",marginBottom:8,fontStyle:"italic"}}>{GAME_TOURNAMENTS.russian.rules}</div><div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:3,flexWrap:"wrap"}}>{GAME_TOURNAMENTS.russian.rounds.map((r,i)=>{const colors=[C.cyan,C.blue,C.green,C.lime,C.gold];return(<React.Fragment key={i}><div style={{padding:"5px 6px",borderRadius:8,background:`${colors[i%colors.length]}10`,border:`1px solid ${colors[i%colors.length]}20`,textAlign:"center",minWidth:40}}><div style={{fontSize:8,fontWeight:800,color:colors[i%colors.length]}}>{r}</div><div style={{fontSize:6,color:C.text3}}>{i===GAME_TOURNAMENTS.russian.rounds.length-1?"🏆":"Survive"}</div></div>{i<GAME_TOURNAMENTS.russian.rounds.length-1&&<span style={{fontSize:8,color:C.text3+"60"}}>→</span>}</React.Fragment>);})}</div><div style={{display:"flex",gap:4,marginTop:8,justifyContent:"center"}}><div style={{padding:"4px 8px",borderRadius:6,background:`${C.gold}12`,border:`1px solid ${C.gold}20`,fontSize:7,fontWeight:700,color:C.gold}}>🥇 {GAME_TOURNAMENTS.russian.prizes.gold.label}</div><div style={{padding:"4px 8px",borderRadius:6,background:"rgba(192,192,192,0.08)",border:"1px solid rgba(192,192,192,0.2)",fontSize:7,fontWeight:700,color:"#C0C0C0"}}>🥈 {GAME_TOURNAMENTS.russian.prizes.silver.label}</div><div style={{padding:"4px 8px",borderRadius:6,background:"rgba(205,127,50,0.08)",border:"1px solid rgba(205,127,50,0.2)",fontSize:7,fontWeight:700,color:"#CD7F32"}}>🥉 {GAME_TOURNAMENTS.russian.prizes.bronze.label}</div></div></div>
                 {/* ═══ RUSSIAN ROULETTE — SECTION 7: PRO TIPS ═══ */}
                 <div style={{padding:"14px",borderRadius:16,background:`linear-gradient(135deg, ${C.red}06, rgba(0,0,0,0))`,border:`1px solid ${C.red}15`,marginBottom:8,position:"relative",overflow:"hidden"}}><div style={{position:"absolute",top:-20,right:-20,fontSize:60,opacity:0.03,pointerEvents:"none"}}>🧠</div><div style={{position:"relative",zIndex:1}}><div style={{fontSize:9,fontWeight:800,color:C.red,letterSpacing:2,marginBottom:8,textAlign:"center"}}>🧠 PRO TIPS</div><div style={{display:"flex",flexDirection:"column",gap:5}}>{[{tip:"Puff LONG — Blinker (5s+) gives 30% dodge!",icon:"💨",color:C.lime},{tip:"Tapping = 0% dodge — pure luck",icon:"⚠️",color:C.red},{tip:"Cylinder re-spins after every elimination",icon:"🔄",color:C.gold},{tip:"AI personalities have different puff patterns",icon:"👀",color:C.cyan},{tip:"Ghost mode after elimination",icon:"👻",color:C.purple},{tip:"Heartbeat accelerates with tension",icon:"❤️",color:C.red}].map((t,i)=>(<div key={i} style={{display:"flex",gap:6,alignItems:"flex-start"}}><div style={{width:20,height:20,borderRadius:6,background:`${t.color}10`,border:`1px solid ${t.color}15`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,flexShrink:0}}>{t.icon}</div><span style={{fontSize:8,color:C.text2,lineHeight:1.4}}>{t.tip}</span></div>))}</div></div></div>
 
@@ -11963,14 +12037,14 @@ export default function MoodLabArena() {
           display:"flex",alignItems:"center",justifyContent:"center",
         }}>
           <div style={{textAlign:"center",animation:"fadeIn 0.5s ease"}}>
-            <div style={{fontSize:12,fontWeight:800,color:C.gold,letterSpacing:3,marginBottom:16,animation:"pulse 1s infinite"}}>GROUP DRAW</div>
+            <div style={{fontSize:12,fontWeight:800,color:C.gold,letterSpacing:3,marginBottom:16,animation:"pulse 1s infinite"}}>{GAME_TOURNAMENTS[wcGameId] ? `${GAME_TOURNAMENTS[wcGameId].formatShort.toUpperCase()} DRAW` : "GROUP DRAW"}</div>
             <div style={{
               padding:"20px 30px",borderRadius:20,
               ...GLASS_CARD,
               boxShadow:`0 0 40px ${C.gold}15`,
               animation: wcDrawAnim ? "countPulse 0.8s ease infinite" : "none",
             }}>
-              <div style={{fontSize:14,fontWeight:900,color:C.gold,marginBottom:12}}>GROUP {wcTournament.group}</div>
+              <div style={{fontSize:14,fontWeight:900,color:C.gold,marginBottom:12}}>{GAME_TOURNAMENTS[wcGameId] ? `${GAME_TOURNAMENTS[wcGameId].rounds[0]} — Pool ${wcTournament.group}` : `GROUP ${wcTournament.group}`}</div>
               <div style={{display:"flex",flexDirection:"column",gap:8}}>
                 {wcTournament.teams.map((team, i) => (
                   <div key={team.id} style={{
@@ -11989,7 +12063,7 @@ export default function MoodLabArena() {
                   </div>
                 ))}
               </div>
-              <div style={{fontSize:9,color:C.text3,marginTop:12}}>3 matches to play — Top 2 advance</div>
+              <div style={{fontSize:9,color:C.text3,marginTop:12}}>{GAME_TOURNAMENTS[wcGameId] ? `${GAME_TOURNAMENTS[wcGameId].format} — ${GAME_TOURNAMENTS[wcGameId].duration}` : "3 matches to play — Top 2 advance"}</div>
             </div>
           </div>
         </div>
@@ -12009,13 +12083,13 @@ export default function MoodLabArena() {
 
           <div style={{position:"relative",zIndex:2,height:"100%",display:"flex",flexDirection:"column",padding:"48px 14px 20px"}}>
             <div style={{textAlign:"center",marginBottom:8}}>
-              <div style={{fontSize:10,fontWeight:800,color:C.gold,letterSpacing:2}}>{GAME_TOURNAMENTS[wcGameId] ? `${GAME_TOURNAMENTS[wcGameId].emoji} ${GAME_TOURNAMENTS[wcGameId].name.toUpperCase()} — GROUP ${wcTournament.group}` : `🏆 WORLD CUP 2026 — GROUP ${wcTournament.group}`}</div>
+              <div style={{fontSize:10,fontWeight:800,color:C.gold,letterSpacing:2}}>{GAME_TOURNAMENTS[wcGameId] ? `${GAME_TOURNAMENTS[wcGameId].emoji} ${GAME_TOURNAMENTS[wcGameId].name.toUpperCase()} — ${GAME_TOURNAMENTS[wcGameId].formatShort.toUpperCase()} ${wcTournament.group}` : `🏆 WORLD CUP 2026 — GROUP ${wcTournament.group}`}</div>
               <div style={{fontSize:8,color:C.text3,marginTop:2}}>Playing as {wcTeam?.flag||wcTeam?.emoji} {wcTeam?.name}</div>
             </div>
 
             {/* Tab bar */}
             <div style={{display:"flex",gap:0,marginBottom:10,borderBottom:`1px solid ${C.border}`}}>
-              {[{key:"mygroup",label:"Your Group"},{key:"allgroups",label:"All Groups"},{key:"bracket",label:"Bracket"}].map(tab=>(
+              {[{key:"mygroup",label:GAME_TOURNAMENTS[wcGameId]?"Your Pool":"Your Group"},{key:"allgroups",label:GAME_TOURNAMENTS[wcGameId]?"All Pools":"All Groups"},{key:"bracket",label:GAME_TOURNAMENTS[wcGameId]?GAME_TOURNAMENTS[wcGameId].formatShort:"Bracket"}].map(tab=>(
                 <div key={tab.key} onClick={()=>{playFx("nav");setWcViewTab(tab.key);}} style={{
                   flex:1,textAlign:"center",padding:"3px 0",cursor:"pointer",
                   fontSize:8,fontWeight:wcViewTab===tab.key?800:600,
@@ -12064,7 +12138,7 @@ export default function MoodLabArena() {
             {wcGroupResult === "advance" && (
               <div style={{padding:"12px 16px",borderRadius:14,textAlign:"center",marginBottom:12,...LG.tinted(C.green),animation:"fadeIn 0.5s ease",border:`1px solid ${C.green}30`}}>
                 <div style={{fontSize:16,fontWeight:900,color:C.green}}>QUALIFIED!</div>
-                <div style={{fontSize:10,color:C.text2,marginTop:2}}>You advance to the knockout stage</div>
+                <div style={{fontSize:10,color:C.text2,marginTop:2}}>{GAME_TOURNAMENTS[wcGameId] ? `You advance to the ${GAME_TOURNAMENTS[wcGameId].rounds[GAME_TOURNAMENTS[wcGameId].rounds.length-1]}!` : "You advance to the knockout stage"}</div>
               </div>
             )}
             {wcGroupResult === "eliminated" && (
@@ -12157,7 +12231,7 @@ export default function MoodLabArena() {
               });
               return (
                 <div style={{display:"flex",flexDirection:"column",gap:8}}>
-                  <div style={{fontSize:8,color:C.text3,textAlign:"center",marginBottom:4}}>48 Teams -- Top 2 per group advance to R32</div>
+                  <div style={{fontSize:8,color:C.text3,textAlign:"center",marginBottom:4}}>{GAME_TOURNAMENTS[wcGameId] ? `${GAME_TOURNAMENTS[wcGameId].format} — ${GAME_TOURNAMENTS[wcGameId].rules}` : "48 Teams -- Top 2 per group advance to R32"}</div>
                   {bracketRounds.map((roundName, rIdx) => {
                     const matchCount = rIdx === 0 ? 16 : rIdx === 1 ? 8 : rIdx === 2 ? 4 : rIdx === 3 ? 2 : 1;
                     const isActive = rIdx === 0;
@@ -12209,7 +12283,7 @@ export default function MoodLabArena() {
           <div style={{position:"relative",zIndex:2,height:"100%",display:"flex",flexDirection:"column",alignItems:"center",padding:"48px 16px 20px",overflowY:"auto"}}>
             <div style={{textAlign:"center",marginBottom:14}}>
               <div style={{fontSize:10,fontWeight:800,color:C.gold,letterSpacing:2}}>{GAME_TOURNAMENTS[wcGameId] ? `${GAME_TOURNAMENTS[wcGameId].emoji} ${GAME_TOURNAMENTS[wcGameId].name.toUpperCase()}` : "🏆 KNOCKOUT STAGE"}</div>
-              <div style={{fontSize:8,color:C.text3,marginTop:2}}>{wcTeam?.flag||wcTeam?.emoji} {wcTeam?.name} — Win or go home</div>
+              <div style={{fontSize:8,color:C.text3,marginTop:2}}>{wcTeam?.flag||wcTeam?.emoji} {wcTeam?.name} — {GAME_TOURNAMENTS[wcGameId] ? GAME_TOURNAMENTS[wcGameId].rules.split(".")[0] : "Win or go home"}</div>
             </div>
 
             {/* Bracket visualization */}
@@ -12297,8 +12371,11 @@ export default function MoodLabArena() {
             <div style={{fontSize:20,fontWeight:900,color:accentColor,textShadow:`0 0 20px ${accentColor}30`,marginBottom:4}}>
               {(prize.title || prize.label).toUpperCase()}
             </div>
-            <div style={{fontSize:12,color:C.text2,marginBottom:16}}>
+            <div style={{fontSize:12,color:C.text2,marginBottom:4}}>
               {wcTeam?.flag||wcTeam?.emoji} {wcTeam?.name}
+            </div>
+            <div style={{fontSize:8,color:C.text3,marginBottom:16}}>
+              {gtResult ? `${gtResult.emoji} ${gtResult.name} · ${gtResult.formatShort}` : "🏆 World Cup 2026"}
             </div>
 
             {/* Prize breakdown */}
