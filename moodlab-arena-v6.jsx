@@ -4678,6 +4678,469 @@ export default function MoodLabArena() {
     );
   };
 
+
+  // ═════════════════════════════════════════
+  // ── SYNCHRONIZED PUFF EVENTS SYSTEM ──
+  // ═════════════════════════════════════════
+  const PE_TYPES = [
+    {id:"countdown",name:"Countdown Puff",emoji:"3..2..1",desc:"Everyone puffs together!",color:"#00E5FF",duration:10000},
+    {id:"blinker",name:"Blinker Challenge",emoji:"💀",desc:"Who can hit a blinker?",color:"#FF4444",duration:30000},
+    {id:"chain",name:"Puff Chain",emoji:"🔗",desc:"Keep the chain alive!",color:"#34D399",duration:60000},
+    {id:"420",name:"The 420 Challenge",emoji:"🌿",desc:"Puff for exactly 4.20 seconds",color:"#7FFF00",duration:15000},
+  ];
+
+  // Schedule countdown ticker
+  useEffect(() => {
+    const id = setInterval(() => {
+      if (!puffEventSchedule?.nextAt) return;
+      const diff = puffEventSchedule.nextAt - Date.now();
+      if (diff <= 0 && !puffEvent) {
+        setPeNextCountdown("NOW!");
+      } else if (diff > 0) {
+        const mins = Math.floor(diff / 60000);
+        const secs = Math.floor((diff % 60000) / 1000);
+        setPeNextCountdown(`${mins}:${secs.toString().padStart(2,"0")}`);
+      }
+    }, 1000);
+    return () => clearInterval(id);
+  }, [puffEventSchedule, puffEvent]);
+
+  const startPuffEvent = (typeId) => {
+    const evType = PE_TYPES.find(t => t.id === typeId);
+    if (!evType || puffEvent) return;
+    const initData = typeId === "countdown"
+      ? { countNum: 3, phase2: "countdown", participants: Math.floor(80 + Math.random()*120), combinedDuration: 0, myPuffTime: 0, puffing: false }
+      : typeId === "blinker"
+      ? { blinkerCount: 0, myBest: 0, puffing: false, puffTime: 0, leaderboard: [{name:"SmokeKing420",time:5.2},{name:"CloudNine",time:4.8},{name:"BlazeQueen",time:4.6}], participants: Math.floor(60+Math.random()*80) }
+      : typeId === "chain"
+      ? { chainLength: 0, chainTimer: 3.0, chainGoal: 60, chainAlive: true, totalTime: 0, myLinks: 0, puffing: false, lastPuffer: "Waiting...", participants: Math.floor(40+Math.random()*60) }
+      : { myTime: 0, puffing: false, error: null, bestError: null, leaderboard: [{name:"PrecisionPuff",time:4.20,err:0},{name:"SteadyHand",time:4.19,err:0.01},{name:"AlmostPerfect",time:4.22,err:0.02}], participants: Math.floor(50+Math.random()*70) };
+
+    setPuffEvent({ type: typeId, phase: "waiting", data: initData, timer: evType.duration, startedAt: null });
+
+    // 3-second countdown before event starts
+    setTimeout(() => {
+      setPuffEvent(prev => prev ? { ...prev, phase: "active", startedAt: Date.now() } : null);
+      startPuffEventLoop(typeId);
+    }, 3000);
+  };
+
+  const startPuffEventLoop = (typeId) => {
+    if (puffEventRef.current) clearInterval(puffEventRef.current);
+    puffEventRef.current = setInterval(() => {
+      setPuffEvent(prev => {
+        if (!prev || prev.phase !== "active") { clearInterval(puffEventRef.current); return prev; }
+        const elapsed = Date.now() - prev.startedAt;
+        const evType = PE_TYPES.find(t => t.id === typeId);
+        const remaining = Math.max(0, evType.duration - elapsed);
+
+        if (typeId === "countdown") {
+          const sec = Math.floor(elapsed / 1000);
+          let countNum = sec < 3 ? 3 - sec : sec < 4 ? "PUFF!" : null;
+          const newData = { ...prev.data, countNum };
+          if (sec >= 4) {
+            newData.combinedDuration += (prev.data.participants * 0.15);
+            if (newData.puffing) newData.myPuffTime += 0.1;
+          }
+          if (remaining <= 0) {
+            clearInterval(puffEventRef.current);
+            return { ...prev, phase: "result", data: newData, timer: 0 };
+          }
+          return { ...prev, data: newData, timer: remaining };
+        }
+
+        if (typeId === "blinker") {
+          const newData = { ...prev.data };
+          if (Math.random() < 0.08) {
+            newData.blinkerCount += 1;
+            const names = ["GhostHit","VaporKing","CloudChaser","PuffDaddy","BlazeRunner","SmokeSignal"];
+            const simTime = (4.5 + Math.random() * 1.5).toFixed(2);
+            newData.leaderboard = [...newData.leaderboard, {name:names[Math.floor(Math.random()*names.length)],time:parseFloat(simTime)}]
+              .sort((a,b) => b.time - a.time).slice(0, 5);
+          }
+          if (newData.puffing) newData.puffTime += 0.1;
+          if (remaining <= 0) {
+            clearInterval(puffEventRef.current);
+            return { ...prev, phase: "result", data: newData, timer: 0 };
+          }
+          return { ...prev, data: newData, timer: remaining };
+        }
+
+        if (typeId === "chain") {
+          const newData = { ...prev.data };
+          newData.chainTimer = Math.max(0, newData.chainTimer - 0.1);
+          newData.totalTime += 0.1;
+          if (newData.chainTimer < 1.5 && Math.random() < 0.25) {
+            newData.chainTimer = 3.0;
+            newData.chainLength += 1;
+            const names = ["ChainGang","LinkMaster","PuffRelay","SmokeLink","VaporChain"];
+            newData.lastPuffer = names[Math.floor(Math.random()*names.length)];
+          }
+          if (newData.chainTimer <= 0) {
+            newData.chainAlive = false;
+            clearInterval(puffEventRef.current);
+            return { ...prev, phase: "result", data: newData, timer: 0 };
+          }
+          if (newData.totalTime >= 60) {
+            clearInterval(puffEventRef.current);
+            return { ...prev, phase: "result", data: newData, timer: 0 };
+          }
+          return { ...prev, data: newData, timer: remaining };
+        }
+
+        if (typeId === "420") {
+          const newData = { ...prev.data };
+          if (newData.puffing) newData.myTime += 0.1;
+          if (remaining <= 0) {
+            clearInterval(puffEventRef.current);
+            return { ...prev, phase: "result", data: newData, timer: 0 };
+          }
+          return { ...prev, data: newData, timer: remaining };
+        }
+
+        return prev;
+      });
+    }, 100);
+  };
+
+  const puffEventHoldDown = () => {
+    if (!puffEvent || puffEvent.phase !== "active") return;
+    puffEventHoldStart.current = Date.now();
+    setPuffEvent(prev => {
+      if (!prev) return null;
+      return { ...prev, data: { ...prev.data, puffing: true } };
+    });
+  };
+
+  const puffEventHoldUp = () => {
+    if (!puffEvent || puffEvent.phase !== "active") return;
+    const holdDuration = puffEventHoldStart.current ? (Date.now() - puffEventHoldStart.current) / 1000 : 0;
+    puffEventHoldStart.current = null;
+
+    setPuffEvent(prev => {
+      if (!prev) return null;
+      const newData = { ...prev.data, puffing: false };
+
+      if (prev.type === "blinker" && holdDuration >= 4.5) {
+        newData.blinkerCount += 1;
+        newData.myBest = Math.max(newData.myBest, holdDuration);
+        newData.leaderboard = [...newData.leaderboard, {name:"You",time:parseFloat(holdDuration.toFixed(2))}]
+          .sort((a,b) => b.time - a.time).slice(0, 5);
+        setCoins(c => c + 200);
+        notify("+200 coins! BLINKER HIT! " + holdDuration.toFixed(2) + "s", C.red);
+      } else if (prev.type === "blinker") {
+        newData.myBest = Math.max(newData.myBest, holdDuration);
+      }
+
+      if (prev.type === "chain") {
+        newData.chainTimer = 3.0;
+        newData.chainLength += 1;
+        newData.myLinks += 1;
+        newData.lastPuffer = "You";
+        setCoins(c => c + 10);
+      }
+
+      if (prev.type === "420") {
+        const err = Math.abs(holdDuration - 4.20);
+        newData.myTime = holdDuration;
+        newData.error = err;
+        if (newData.bestError === null || err < newData.bestError) newData.bestError = err;
+        if (err <= 0.005) {
+          setCoins(c => c + 420);
+          notify("PERFECT 4.20! +420 coins! 420 Master!", "#7FFF00");
+        } else if (err <= 0.05) {
+          setCoins(c => c + 100);
+          notify("So close! " + holdDuration.toFixed(2) + "s (+" + err.toFixed(2) + "s off) +100 coins", "#7FFF00");
+        } else {
+          notify(holdDuration.toFixed(2) + "s -- " + err.toFixed(2) + "s off from 4.20", C.text2);
+        }
+        newData.leaderboard = [...newData.leaderboard, {name:"You",time:parseFloat(holdDuration.toFixed(2)),err:parseFloat(err.toFixed(3))}]
+          .sort((a,b) => a.err - b.err).slice(0, 5);
+        newData.puffing = false;
+      }
+
+      if (prev.type === "countdown") {
+        newData.myPuffTime = (newData.myPuffTime || 0) + holdDuration;
+        newData.combinedDuration += holdDuration;
+      }
+
+      return { ...prev, data: newData };
+    });
+  };
+
+  const closePuffEvent = () => {
+    if (puffEventRef.current) clearInterval(puffEventRef.current);
+    if (puffEvent) {
+      setPuffEventResult({ type: puffEvent.type, data: puffEvent.data, closedAt: Date.now() });
+    }
+    setPuffEvent(null);
+    const types = ["countdown","blinker","chain","420"];
+    setPuffEventSchedule({ nextType: types[Math.floor(Math.random()*types.length)], nextAt: Date.now() + (90000 + Math.random()*60000) });
+  };
+
+  const renderPuffEvent = () => {
+    if (!puffEvent) return null;
+    const evType = PE_TYPES.find(t => t.id === puffEvent.type);
+    const { phase, data, timer } = puffEvent;
+    const timerSec = (timer / 1000).toFixed(1);
+    const isResult = phase === "result";
+    const isWaiting = phase === "waiting";
+
+    const themes = {
+      countdown: { bg: "rgba(0,229,255,0.08)", glow: C.cyan, accent: C.cyan },
+      blinker: { bg: "rgba(255,68,68,0.08)", glow: "#FF4444", accent: C.gold },
+      chain: { bg: "rgba(52,211,153,0.08)", glow: C.green, accent: C.gold },
+      "420": { bg: "rgba(127,255,0,0.08)", glow: "#7FFF00", accent: C.green },
+    };
+    const theme = themes[puffEvent.type];
+
+    return (
+      <div style={{position:"fixed",inset:0,zIndex:250,background:"rgba(5,5,16,0.92)",backdropFilter:"blur(20px)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",animation:"fadeIn 0.3s ease"}}>
+        {/* Close button */}
+        <div onClick={closePuffEvent} style={{position:"absolute",top:16,right:16,width:36,height:36,borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",...LG.pill,fontSize:16,color:C.text2}}>x</div>
+
+        {/* Background glow */}
+        <div style={{position:"absolute",top:"30%",left:"50%",transform:"translate(-50%,-50%)",width:300,height:300,borderRadius:"50%",background:`radial-gradient(circle, ${theme.glow}15, transparent 70%)`,animation:"breathe 3s ease-in-out infinite",pointerEvents:"none"}}/>
+
+        {/* Event title */}
+        <div style={{textAlign:"center",marginBottom:16,animation:"fadeIn 0.5s ease"}}>
+          <div style={{fontSize:14,fontWeight:700,color:theme.glow,letterSpacing:2,marginBottom:4}}>LIVE EVENT</div>
+          <div style={{fontSize:28,fontWeight:900,color:C.text,textShadow:`0 0 20px ${theme.glow}60`}}>{evType.name} {evType.emoji}</div>
+          <div style={{fontSize:12,color:C.text2,marginTop:4}}>{evType.desc}</div>
+          <div style={{fontSize:10,color:C.text3,marginTop:4}}>{data.participants || 0} participating</div>
+        </div>
+
+        {/* WAITING PHASE */}
+        {isWaiting && (
+          <div style={{textAlign:"center",animation:"countPulse 1s ease-in-out infinite"}}>
+            <div style={{fontSize:64,fontWeight:900,color:theme.glow,textShadow:`0 0 40px ${theme.glow}, 0 0 80px ${theme.glow}60`,animation:"peCountdownPop 1s ease infinite"}}>
+              Starting...
+            </div>
+            <div style={{fontSize:14,color:C.text2,marginTop:8}}>Get ready!</div>
+          </div>
+        )}
+
+        {/* ACTIVE -- Countdown Puff */}
+        {!isWaiting && !isResult && puffEvent.type === "countdown" && (
+          <div style={{textAlign:"center",width:"90%",maxWidth:340}}>
+            {data.countNum !== null && typeof data.countNum === "number" && (
+              <div key={data.countNum} style={{fontSize:120,fontWeight:900,color:theme.glow,textShadow:`0 0 60px ${theme.glow}, 0 0 120px ${theme.glow}50`,animation:"peCountdownPop 0.8s ease",lineHeight:1}}>{data.countNum}</div>
+            )}
+            {data.countNum === "PUFF!" && (
+              <div style={{fontSize:48,fontWeight:900,color:C.gold,textShadow:`0 0 40px ${C.gold}, 0 0 80px ${C.gold}60`,animation:"peCountdownPop 0.5s ease"}}>PUFF!</div>
+            )}
+            {data.countNum === null && (
+              <div style={{fontSize:20,fontWeight:800,color:theme.glow}}>COLLECTIVE PUFF!</div>
+            )}
+            <div style={{marginTop:20,padding:16,borderRadius:16,...LG.base}}>
+              <div style={{fontSize:10,fontWeight:700,color:C.text3,letterSpacing:1,marginBottom:6}}>COMBINED PUFF DURATION</div>
+              <div style={{height:12,borderRadius:6,background:`${C.text3}10`,overflow:"hidden",marginBottom:8}}>
+                <div style={{height:"100%",borderRadius:6,background:`linear-gradient(90deg, ${C.cyan}, ${C.gold})`,width:`${Math.min(100, (data.combinedDuration/260)*100)}%`,transition:"width 0.3s",boxShadow:`0 0 10px ${C.cyan}50`}}/>
+              </div>
+              <div style={{fontSize:18,fontWeight:900,color:C.gold}}>{Math.floor(data.combinedDuration/60)}m {Math.floor(data.combinedDuration%60)}s combined</div>
+              <div style={{fontSize:11,color:C.text2,marginTop:4}}>Your puff: {(data.myPuffTime||0).toFixed(1)}s</div>
+            </div>
+            <div
+              onMouseDown={puffEventHoldDown} onMouseUp={puffEventHoldUp} onMouseLeave={puffEventHoldUp}
+              onTouchStart={puffEventHoldDown} onTouchEnd={puffEventHoldUp}
+              style={{marginTop:16,padding:"16px 40px",borderRadius:100,cursor:"pointer",background:data.puffing?`${theme.glow}30`:`${theme.glow}12`,border:`2px solid ${data.puffing?theme.glow:theme.glow+"40"}`,fontSize:16,fontWeight:900,color:theme.glow,transition:"all 0.2s",transform:data.puffing?"scale(1.05)":"scale(1)",boxShadow:data.puffing?`0 0 30px ${theme.glow}40`:"none"}}>
+              {data.puffing ? "PUFFING..." : "HOLD TO PUFF"}
+            </div>
+            <div style={{fontSize:10,color:C.text3,marginTop:8}}>{timerSec}s remaining</div>
+          </div>
+        )}
+
+        {/* ACTIVE -- Blinker Challenge */}
+        {!isWaiting && !isResult && puffEvent.type === "blinker" && (
+          <div style={{textAlign:"center",width:"90%",maxWidth:340}}>
+            <div style={{fontSize:48,fontWeight:900,color:"#FF4444",textShadow:"0 0 30px rgba(255,68,68,0.5)",marginBottom:8}}>{"💀"}</div>
+            <div style={{padding:12,borderRadius:14,...LG.base,marginBottom:12}}>
+              <div style={{fontSize:10,fontWeight:700,color:C.text3,letterSpacing:1,marginBottom:4}}>BLINKERS HIT</div>
+              <div style={{fontSize:36,fontWeight:900,color:C.gold,textShadow:`0 0 20px ${C.gold}60`}}>{data.blinkerCount}</div>
+              <div style={{fontSize:10,color:C.text2}}>Hit 4.5s+ to score a blinker!</div>
+            </div>
+            {data.puffing && (
+              <div style={{fontSize:32,fontWeight:900,color:data.puffTime>=4.5?"#FF4444":C.text,textShadow:data.puffTime>=4.5?"0 0 20px rgba(255,68,68,0.6)":"none",marginBottom:8,animation:data.puffTime>=4.5?"pulse 0.5s infinite":"none"}}>
+                {data.puffTime.toFixed(1)}s
+                {data.puffTime >= 4.5 && <span style={{fontSize:14,marginLeft:6}}>BLINKER!</span>}
+              </div>
+            )}
+            <div style={{padding:10,borderRadius:12,...LG.base,marginBottom:12}}>
+              <div style={{fontSize:9,fontWeight:700,color:C.text3,letterSpacing:1,marginBottom:6}}>TOP PUFFS</div>
+              {data.leaderboard.slice(0,3).map((e,i) => (
+                <div key={i} style={{display:"flex",justifyContent:"space-between",padding:"3px 0",borderBottom:i<2?`1px solid ${C.border}`:"none"}}>
+                  <span style={{fontSize:11,fontWeight:700,color:i===0?C.gold:i===1?"#C0C0C0":"#CD7F32"}}>{i===0?"🥇":i===1?"🥈":"🥉"} {e.name}</span>
+                  <span style={{fontSize:11,fontWeight:800,color:C.text}}>{e.time.toFixed(2)}s</span>
+                </div>
+              ))}
+            </div>
+            {data.myBest > 0 && <div style={{fontSize:11,color:C.text2,marginBottom:8}}>Your best: {data.myBest.toFixed(2)}s</div>}
+            <div
+              onMouseDown={puffEventHoldDown} onMouseUp={puffEventHoldUp} onMouseLeave={puffEventHoldUp}
+              onTouchStart={puffEventHoldDown} onTouchEnd={puffEventHoldUp}
+              style={{padding:"16px 40px",borderRadius:100,cursor:"pointer",background:data.puffing?"rgba(255,68,68,0.3)":"rgba(255,68,68,0.12)",border:`2px solid ${data.puffing?"#FF4444":"#FF444440"}`,fontSize:16,fontWeight:900,color:"#FF4444",transition:"all 0.2s",transform:data.puffing?"scale(1.05)":"scale(1)",boxShadow:data.puffing?"0 0 30px rgba(255,68,68,0.4)":"none"}}>
+              {data.puffing ? data.puffTime.toFixed(1) + "s HOLDING..." : "HOLD FOR BLINKER"}
+            </div>
+            <div style={{fontSize:10,color:C.text3,marginTop:8}}>{timerSec}s remaining</div>
+          </div>
+        )}
+
+        {/* ACTIVE -- Puff Chain */}
+        {!isWaiting && !isResult && puffEvent.type === "chain" && (
+          <div style={{textAlign:"center",width:"90%",maxWidth:340}}>
+            <div style={{marginBottom:12}}>
+              <div style={{fontSize:10,fontWeight:700,color:C.text3,letterSpacing:1,marginBottom:4}}>CHAIN TIMER</div>
+              <div style={{fontSize:48,fontWeight:900,color:data.chainTimer<1?"#FF4444":data.chainTimer<2?C.orange:C.green,textShadow:`0 0 20px ${data.chainTimer<1?"rgba(255,68,68,0.5)":data.chainTimer<2?"rgba(251,146,60,0.5)":"rgba(52,211,153,0.5)"}`,transition:"color 0.3s",animation:data.chainTimer<1.5?"pulse 0.4s infinite":"none"}}>
+                {data.chainTimer.toFixed(1)}s
+              </div>
+            </div>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:2,flexWrap:"wrap",marginBottom:12,padding:8,borderRadius:12,...LG.base}}>
+              {Array.from({length:Math.min(data.chainLength, 30)}).map((_,i) => (
+                <div key={i} style={{width:12,height:12,borderRadius:3,background:`linear-gradient(135deg, ${C.green}, ${C.gold})`,boxShadow:`0 0 4px ${C.green}40`,animation:"fadeIn 0.2s ease",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                  <span style={{fontSize:6}}>{"🔗"}</span>
+                </div>
+              ))}
+              {data.chainLength === 0 && <span style={{fontSize:11,color:C.text3}}>Puff to start the chain!</span>}
+            </div>
+            <div style={{fontSize:14,fontWeight:800,color:C.gold,marginBottom:4}}>{data.chainLength} links</div>
+            <div style={{fontSize:10,color:C.text2,marginBottom:4}}>Last: {data.lastPuffer} | Your links: {data.myLinks}</div>
+            <div style={{fontSize:10,color:C.text3,marginBottom:12}}>Goal: Keep alive for 60s ({data.totalTime.toFixed(0)}s / 60s)</div>
+            <div
+              onMouseDown={puffEventHoldDown} onMouseUp={puffEventHoldUp} onMouseLeave={puffEventHoldUp}
+              onTouchStart={puffEventHoldDown} onTouchEnd={puffEventHoldUp}
+              style={{padding:"16px 40px",borderRadius:100,cursor:"pointer",background:data.puffing?`${C.green}30`:`${C.green}12`,border:`2px solid ${data.puffing?C.green:C.green+"40"}`,fontSize:16,fontWeight:900,color:C.green,transition:"all 0.2s",transform:data.puffing?"scale(1.05)":"scale(1)",boxShadow:data.puffing?`0 0 30px ${C.green}40`:"none"}}>
+              {data.puffing ? "PUFFING! +1 LINK" : "TAP TO ADD LINK"}
+            </div>
+          </div>
+        )}
+
+        {/* ACTIVE -- 420 Challenge */}
+        {!isWaiting && !isResult && puffEvent.type === "420" && (
+          <div style={{textAlign:"center",width:"90%",maxWidth:340}}>
+            <div style={{fontSize:48,fontWeight:900,color:"#7FFF00",textShadow:"0 0 30px rgba(127,255,0,0.4)",marginBottom:8}}>4.20</div>
+            <div style={{fontSize:12,fontWeight:700,color:C.text2,marginBottom:16}}>Hold for exactly 4.20 seconds</div>
+            <div style={{padding:14,borderRadius:14,...LG.base,marginBottom:12}}>
+              <div style={{position:"relative",height:20,borderRadius:10,background:`${C.text3}10`,overflow:"hidden",marginBottom:8}}>
+                <div style={{position:"absolute",left:`${(4.20/8)*100}%`,top:0,bottom:0,width:3,background:"#7FFF00",boxShadow:"0 0 8px #7FFF00",zIndex:2}}/>
+                {data.puffing && (
+                  <div style={{position:"absolute",left:`${Math.min((data.myTime/8)*100, 100)}%`,top:0,bottom:0,width:6,borderRadius:3,background:C.gold,boxShadow:`0 0 8px ${C.gold}`,transition:"left 0.1s linear",zIndex:3}}/>
+                )}
+              </div>
+              <div style={{display:"flex",justifyContent:"space-between",fontSize:8,color:C.text3}}>
+                <span>0s</span><span>2s</span><span style={{color:"#7FFF00",fontWeight:800}}>4.20s</span><span>6s</span><span>8s</span>
+              </div>
+            </div>
+            {data.puffing && (
+              <div style={{fontSize:36,fontWeight:900,color:Math.abs(data.myTime-4.20)<0.1?"#7FFF00":C.text,marginBottom:8,transition:"color 0.2s"}}>
+                {data.myTime.toFixed(2)}s
+              </div>
+            )}
+            {data.error !== null && !data.puffing && (
+              <div style={{padding:10,borderRadius:10,...LG.base,marginBottom:12}}>
+                <div style={{fontSize:14,fontWeight:800,color:data.error<=0.005?"#7FFF00":data.error<=0.05?C.gold:C.orange}}>
+                  {data.myTime.toFixed(2)}s {data.error <= 0.005 ? "PERFECT! 420 MASTER!" : `(${data.error.toFixed(2)}s off)`}
+                </div>
+                {data.error <= 0.05 && data.error > 0.005 && <div style={{fontSize:11,color:C.text2,marginTop:2}}>So close!</div>}
+              </div>
+            )}
+            <div style={{padding:10,borderRadius:12,...LG.base,marginBottom:12}}>
+              <div style={{fontSize:9,fontWeight:700,color:C.text3,letterSpacing:1,marginBottom:6}}>CLOSEST TO 4.20</div>
+              {data.leaderboard.slice(0,3).map((e,i) => (
+                <div key={i} style={{display:"flex",justifyContent:"space-between",padding:"3px 0",borderBottom:i<2?`1px solid ${C.border}`:"none"}}>
+                  <span style={{fontSize:11,fontWeight:700,color:i===0?C.gold:i===1?"#C0C0C0":"#CD7F32"}}>{i===0?"🥇":i===1?"🥈":"🥉"} {e.name}</span>
+                  <span style={{fontSize:11,fontWeight:800,color:C.text}}>{e.time.toFixed(2)}s <span style={{color:C.text3,fontSize:9}}>(+{e.err.toFixed(3)})</span></span>
+                </div>
+              ))}
+            </div>
+            <div
+              onMouseDown={puffEventHoldDown} onMouseUp={puffEventHoldUp} onMouseLeave={puffEventHoldUp}
+              onTouchStart={puffEventHoldDown} onTouchEnd={puffEventHoldUp}
+              style={{padding:"16px 40px",borderRadius:100,cursor:"pointer",background:data.puffing?"rgba(127,255,0,0.3)":"rgba(127,255,0,0.12)",border:`2px solid ${data.puffing?"#7FFF00":"#7FFF0040"}`,fontSize:16,fontWeight:900,color:"#7FFF00",transition:"all 0.2s",transform:data.puffing?"scale(1.05)":"scale(1)",boxShadow:data.puffing?"0 0 30px rgba(127,255,0,0.4)":"none"}}>
+              {data.puffing ? data.myTime.toFixed(2) + "s" : "HOLD TO PUFF"}
+            </div>
+            <div style={{fontSize:10,color:C.text3,marginTop:8}}>Release at exactly 4.20s! | {timerSec}s remaining</div>
+          </div>
+        )}
+
+        {/* RESULT PHASE */}
+        {isResult && (
+          <div style={{textAlign:"center",width:"90%",maxWidth:340,animation:"fadeIn 0.5s ease"}}>
+            <div style={{fontSize:24,fontWeight:900,color:C.gold,marginBottom:12,textShadow:`0 0 20px ${C.gold}60`}}>EVENT COMPLETE!</div>
+
+            {puffEvent.type === "countdown" && (
+              <div style={{padding:16,borderRadius:16,...LG.base}}>
+                <div style={{fontSize:14,fontWeight:700,color:C.text2,marginBottom:8}}>Arena puffed for</div>
+                <div style={{fontSize:28,fontWeight:900,color:C.gold}}>{Math.floor(data.combinedDuration/60)}m {Math.floor(data.combinedDuration%60)}s combined! {"🌿"}</div>
+                <div style={{fontSize:12,color:C.text2,marginTop:6}}>Your contribution: {(data.myPuffTime||0).toFixed(1)}s</div>
+                <div style={{fontSize:10,color:C.text3,marginTop:4}}>{data.participants} participated</div>
+              </div>
+            )}
+
+            {puffEvent.type === "blinker" && (
+              <div style={{padding:16,borderRadius:16,...LG.base}}>
+                <div style={{fontSize:14,fontWeight:700,color:C.text2,marginBottom:8}}>{data.blinkerCount} blinkers hit! {"💀"}</div>
+                <div style={{fontSize:11,color:C.text2,marginBottom:8}}>Your best: {data.myBest > 0 ? data.myBest.toFixed(2) + "s" : "No attempts"}</div>
+                {data.myBest >= 4.5 && <div style={{fontSize:14,fontWeight:800,color:C.gold}}>You hit a blinker! +200 coins {"🏆"}</div>}
+                <div style={{marginTop:8}}>
+                  <div style={{fontSize:9,fontWeight:700,color:C.text3,letterSpacing:1,marginBottom:4}}>LEADERBOARD</div>
+                  {data.leaderboard.slice(0,3).map((e,i) => (
+                    <div key={i} style={{display:"flex",justifyContent:"space-between",padding:"3px 0"}}>
+                      <span style={{fontSize:11,fontWeight:700,color:i===0?C.gold:C.text2}}>{i+1}. {e.name}</span>
+                      <span style={{fontSize:11,fontWeight:800,color:C.text}}>{e.time.toFixed(2)}s</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {puffEvent.type === "chain" && (
+              <div style={{padding:16,borderRadius:16,...LG.base}}>
+                <div style={{fontSize:14,fontWeight:700,color:data.chainAlive?C.green:"#FF4444",marginBottom:8}}>
+                  {data.totalTime >= 60 ? "CHAIN SURVIVED 60s! " : "Chain broke at " + data.totalTime.toFixed(1) + "s"}
+                </div>
+                <div style={{fontSize:24,fontWeight:900,color:C.gold}}>{data.chainLength} links {"🔗"}</div>
+                <div style={{fontSize:12,color:C.text2,marginTop:6}}>You contributed: {data.myLinks} links (+{data.myLinks*10} coins)</div>
+                {data.totalTime >= 60 && <div style={{fontSize:14,fontWeight:800,color:C.gold,marginTop:8}}>GOAL REACHED! {"🎉"}</div>}
+              </div>
+            )}
+
+            {puffEvent.type === "420" && (
+              <div style={{padding:16,borderRadius:16,...LG.base}}>
+                {data.bestError !== null ? (
+                  <>
+                    <div style={{fontSize:14,fontWeight:700,color:C.text2,marginBottom:8}}>Your best attempt</div>
+                    <div style={{fontSize:28,fontWeight:900,color:data.bestError<=0.005?"#7FFF00":C.gold}}>
+                      {data.myTime.toFixed(2)}s
+                    </div>
+                    <div style={{fontSize:12,color:C.text2,marginTop:4}}>
+                      {data.bestError <= 0.005 ? "PERFECT 4.20! 420 Master! +420 coins 🌿" : `${data.bestError.toFixed(2)}s off from 4.20`}
+                    </div>
+                  </>
+                ) : (
+                  <div style={{fontSize:14,color:C.text3}}>No attempts made</div>
+                )}
+                <div style={{marginTop:8}}>
+                  <div style={{fontSize:9,fontWeight:700,color:C.text3,letterSpacing:1,marginBottom:4}}>PRECISION LEADERBOARD</div>
+                  {data.leaderboard.slice(0,3).map((e,i) => (
+                    <div key={i} style={{display:"flex",justifyContent:"space-between",padding:"3px 0"}}>
+                      <span style={{fontSize:11,fontWeight:700,color:i===0?C.gold:C.text2}}>{i+1}. {e.name}</span>
+                      <span style={{fontSize:11,fontWeight:800,color:C.text}}>{e.time.toFixed(2)}s <span style={{color:C.text3,fontSize:9}}>(+{e.err.toFixed(3)})</span></span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div onClick={closePuffEvent} style={{marginTop:20,padding:"12px 32px",borderRadius:100,cursor:"pointer",background:`${C.gold}15`,border:`1px solid ${C.gold}30`,fontSize:14,fontWeight:800,color:C.gold}}>
+              Close
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+
   /* ── Hub View (the corridor) ── */
 
   // ═════════════════════════════════════════
