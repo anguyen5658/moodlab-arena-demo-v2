@@ -3827,6 +3827,7 @@ export default function MoodLabArena() {
 
     setGameActive(null); setKickState(null); setKickCharging(false);
     if(kickChargeInterval.current){clearInterval(kickChargeInterval.current);kickChargeInterval.current=null;}
+    maybeOfferHalftime();
   };
 
   // ── WORLD CUP TOURNAMENT LOGIC ──
@@ -5630,7 +5631,7 @@ export default function MoodLabArena() {
       setMatchmaking(null);setSelectedGame(null);setFanMode(null);setFanTeam(null);setFanDevice(null);
       setShowVibeCheck(false);setDimLights(false);setScreenShake(false);setScreenFlash(null);
       setMatchIntro(null);setCommentatorText("");setPuffBubbles([]);setAudienceBubbles([]);
-      setConfettiParticles([]);setSmokeParticles([]);
+      setConfettiParticles([]);setSmokeParticles([]);setLiveSpectators([]);setSpectatorTicker([]);setCrowdEnergy(0);setCrowdEruption(false);
       try{setWcPhase(null);setWcTeam(null);setWcTournament(null);setWcBracket(null);setWcFinalResult(null);}catch(e){}
     };
     // Show/hide the HTML back button
@@ -12223,27 +12224,70 @@ export default function MoodLabArena() {
 
   // ── RENDER: ME TAB ──
   // ═════════════════════════════════════════
-  const renderMe = () => (
+  const renderMe = () => {
+    const rank = getCurrentRank();
+    const nextRank = getNextRank();
+    const winRate = getWinRate();
+    return (
     <div style={{padding:"0 14px"}}>
-      <div style={{textAlign:"center",padding:"20px",borderRadius:18,marginBottom:16,background:`radial-gradient(ellipse at 50% 0%, ${C.purple}08, ${C.bg2} 60%)`,border:`1px solid ${C.purple}12`}}>
-        <div style={{width:56,height:56,borderRadius:18,margin:"0 auto 10px",background:`linear-gradient(135deg,${C.gold}25,${C.purple}20)`,border:`2px solid ${C.gold}30`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:28}}>🌟</div>
+      {/* Profile Card — tappable to open full profile */}
+      <div onClick={() => setShowProfile(true)} style={{textAlign:"center",padding:"20px",borderRadius:18,marginBottom:16,cursor:"pointer",background:`radial-gradient(ellipse at 50% 0%, ${rank.color}10, ${C.bg2} 60%)`,border:`1px solid ${rank.color}15`,position:"relative"}}>
+        {/* Rank badge corner */}
+        <div style={{position:"absolute",top:10,right:10,display:"flex",alignItems:"center",gap:3,padding:"3px 8px",borderRadius:100,background:`${rank.color}12`,border:`1px solid ${rank.color}25`}}>
+          <span style={{fontSize:10}}>{rank.emoji}</span>
+          <span style={{fontSize:8,fontWeight:800,color:rank.color}}>{rank.name}</span>
+        </div>
+        {/* Streak badge corner */}
+        <div style={{position:"absolute",top:10,left:10,display:"flex",alignItems:"center",gap:2,padding:"3px 8px",borderRadius:100,background:`${C.orange}10`,border:`1px solid ${C.orange}20`}}>
+          <span style={{fontSize:10,animation:playerProfile.streak>=7?"pulse 1.5s infinite":"none"}}>🔥</span>
+          <span style={{fontSize:9,fontWeight:800,color:C.orange}}>{playerProfile.streak}</span>
+        </div>
+        <div style={{width:56,height:56,borderRadius:18,margin:"0 auto 10px",background:`linear-gradient(135deg,${rank.color}30,${C.purple}20)`,border:`2px solid ${rank.color}40`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:28,boxShadow:`0 0 20px ${rank.color}15`}}>🌟</div>
         <div style={{fontSize:18,fontWeight:900,color:C.text}}>{USER.name}</div>
-        <div style={{fontSize:11,color:C.gold,fontWeight:700,marginTop:2}}>Lv.{USER.level} · {USER.tier}</div>
+        <div style={{fontSize:11,color:rank.color,fontWeight:700,marginTop:2}}>Lv.{USER.level} · {rank.name}</div>
         <div style={{margin:"10px auto 0",maxWidth:200}}>
-          <div style={{height:4,borderRadius:2,background:`${C.text3}15`,overflow:"hidden"}}>
-            <div style={{height:"100%",borderRadius:2,width:`${(xp/USER.xpNext)*100}%`,background:`linear-gradient(90deg,${C.purple},${C.cyan})`}}/>
-          </div>
-          <div style={{fontSize:9,color:C.text3,marginTop:3}}>{xp.toLocaleString()} / {USER.xpNext.toLocaleString()} XP</div>
+          {nextRank ? (<>
+            <div style={{height:4,borderRadius:2,background:`${C.text3}15`,overflow:"hidden"}}>
+              <div style={{height:"100%",borderRadius:2,width:`${playerProfile.rankProgress}%`,background:`linear-gradient(90deg,${rank.color},${nextRank.color})`}}/>
+            </div>
+            <div style={{fontSize:9,color:C.text3,marginTop:3}}>{playerProfile.rankProgress}% to {nextRank.name}</div>
+          </>) : (
+            <div style={{fontSize:9,color:C.gold,marginTop:3}}>Max Rank Achieved!</div>
+          )}
         </div>
       </div>
+      {/* Stats Row */}
       <div style={{display:"flex",gap:6,marginBottom:16}}>
-        {[{l:"🪙 Coins",v:coins.toLocaleString(),c:C.gold},{l:"🎮 Games",v:"142",c:C.cyan},{l:"🏆 Wins",v:"95",c:C.green}].map((s,i)=>(
-          <div key={i} style={{flex:1,padding:"10px",borderRadius:12,textAlign:"center",background:`${s.c}06`,border:`1px solid ${s.c}10`}}>
-            <div style={{fontFamily:"'Courier New',monospace",fontSize:16,fontWeight:900,color:s.c}}>{s.v}</div>
-            <div style={{fontSize:8,color:C.text3,marginTop:2}}>{s.l}</div>
+        {[{l:"🪙 Coins",v:coins.toLocaleString(),c:C.gold},{l:"🎮 Games",v:playerProfile.gamesPlayed.toString(),c:C.cyan},{l:"🏆 Win%",v:winRate+"%",c:C.green},{l:"🔥 Streak",v:playerProfile.streak+"d",c:C.orange}].map((s,i)=>(
+          <div key={i} style={{flex:1,padding:"10px 4px",borderRadius:12,textAlign:"center",background:`${s.c}06`,border:`1px solid ${s.c}10`}}>
+            <div style={{fontFamily:"'Courier New',monospace",fontSize:15,fontWeight:900,color:s.c}}>{s.v}</div>
+            <div style={{fontSize:7,color:C.text3,marginTop:2}}>{s.l}</div>
           </div>
         ))}
       </div>
+      {/* Puff Stats */}
+      <div style={{display:"flex",gap:6,marginBottom:16}}>
+        {[{l:"💨 Total Puffs",v:playerProfile.totalPuffs,c:C.cyan},{l:"💀 Blinkers",v:playerProfile.blinkerCount,c:C.red},{l:"⏱ Puff Time",v:Math.floor(playerProfile.totalPuffTime/60)+"m",c:C.purple}].map((s,i)=>(
+          <div key={i} style={{flex:1,padding:"10px 4px",borderRadius:12,textAlign:"center",background:`${s.c}06`,border:`1px solid ${s.c}10`}}>
+            <div style={{fontFamily:"'Courier New',monospace",fontSize:15,fontWeight:900,color:s.c}}>{s.v}</div>
+            <div style={{fontSize:7,color:C.text3,marginTop:2}}>{s.l}</div>
+          </div>
+        ))}
+      </div>
+      {/* Achievements Preview */}
+      <div style={{fontSize:11,fontWeight:800,color:C.text,marginBottom:8}}>🏅 Achievements · {playerProfile.achievements.length}/{ACHIEVEMENTS.length}</div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:12}}>
+        {ACHIEVEMENTS.slice(0,8).map((a,i)=>{
+          const unlocked = playerProfile.achievements.includes(a.id);
+          return (
+          <div key={i} style={{padding:"10px 4px",borderRadius:10,textAlign:"center",background:unlocked?`${a.color}08`:`${C.text3}04`,border:`1px solid ${unlocked?a.color+"15":C.text3+"06"}`,opacity:unlocked?1:0.35,boxShadow:unlocked?`0 0 10px ${a.color}08`:"none"}}>
+            <div style={{fontSize:20,filter:unlocked?"none":"grayscale(1)"}}>{a.emoji}</div>
+            <div style={{fontSize:7,fontWeight:700,color:unlocked?a.color:C.text3,marginTop:2}}>{a.name}</div>
+          </div>
+        );})}
+      </div>
+      <div onClick={() => setShowAchievements(true)} style={{padding:"10px",borderRadius:10,textAlign:"center",cursor:"pointer",marginBottom:16,background:`${C.purple}06`,border:`1px solid ${C.purple}12`,fontSize:10,fontWeight:700,color:C.purple}}>View All Achievements</div>
+      {/* Legacy Badges */}
       <div style={{fontSize:11,fontWeight:800,color:C.text,marginBottom:8}}>🎖 Badges</div>
       <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:16}}>
         {BADGES.map((b,i)=>(
@@ -12255,7 +12299,7 @@ export default function MoodLabArena() {
       </div>
       <div style={{height:80}}/>
     </div>
-  );
+  );};
 
   // ═════════════════════════════════════════
   // ── MAIN RENDER ──
@@ -12381,6 +12425,8 @@ export default function MoodLabArena() {
       {renderInputPanel()}
       {renderAskPrompt()}
       {renderHalftime()}
+      {renderProfileOverlay()}
+      {renderAchievementsOverlay()}
       {renderPuffReactionsOverlay()}
 
       {/* Nav buttons are in index.html OUTSIDE React — controlled via window.__moodlabGoHome/GoBack */}
@@ -12482,6 +12528,9 @@ export default function MoodLabArena() {
         @keyframes hookLineShake{0%,100%{transform:translateX(-50%) rotate(-1deg)}50%{transform:translateX(-50%) rotate(1deg)}}
         @keyframes hookFishFight{0%,100%{transform:translateX(0) rotate(-3deg)}25%{transform:translateX(-8px) rotate(2deg)}50%{transform:translateX(5px) rotate(-2deg)}75%{transform:translateX(-3px) rotate(3deg)}}
         @keyframes hookFishPull{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-4px) scale(1.05)}}
+        @keyframes specErupt{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+        @keyframes specEruptFlash{0%{opacity:1}100%{opacity:0}}
+        @keyframes specTickerScroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
         @keyframes puffReactFloat{0%{opacity:0;transform:translateY(0) scale(0.5)}10%{opacity:1;transform:translateY(-20px) scale(1)}50%{opacity:0.8;transform:translateY(-150px) scale(1.1)}100%{opacity:0;transform:translateY(-350px) scale(0.6)}}
         *{-webkit-tap-highlight-color:transparent;user-select:none;box-sizing:border-box}
         input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
