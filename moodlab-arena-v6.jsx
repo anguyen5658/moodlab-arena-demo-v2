@@ -41,6 +41,31 @@ const C = {
   glass:"rgba(255,255,255,0.03)", glassBorder:"rgba(255,255,255,0.08)",
 };
 
+// ── LIVE SPECTATOR SYSTEM ──
+const SPECTATOR_NAMES = [
+  "Puff_Master_420","Blinker_Betty","CloudChaser99","THC_Tony","DabQueen",
+  "SmokeRing_Steve","VapeLord69","HazeDaze","KushKing","RollerCoaster",
+  "BlazeRunner","FogMachine","MistWalker","PuffDaddy_Jr","ChillPill",
+  "NebulaNick","GreenGoblin","SkyHighSam","TokeToken","LitLenny",
+  "CloudNine_OG","BubbleBoi","RipTide","SeshGremlin","GlassHouse",
+  "TerpQueen","HotBoxHank","MoonRock_Mike","DankDiva","CouchLock",
+  "WhiteLung","PurpleRain","GoldLeaf","CrystalClear","IceIce_Baby",
+  "StoneAge","RollingThunder","PeacePipe","ChiefKeef_Fan","HighNoon",
+];
+const SPECTATOR_EMOJIS = ["😤","😶‍🌫️","🤤","😎","🥴","😮‍💨","🫠","🤩","😵‍💫","🥳","😈","👽","🤖","👻","💀","🫡","🧿","🦊","🐸","🌚"];
+const SPECTATOR_TICKER_MSGS = [
+  "just joined the arena",
+  "puffed a blinker",
+  "is watching live",
+  "just hit a 3-second pull",
+  "went cloud mode",
+  "is vibing hard",
+  "joined from the lobby",
+  "brought the energy",
+  "is hyped up",
+  "entered spectator mode",
+];
+
 // ── LIQUID GLASS DESIGN SYSTEM (iOS-inspired) ──
 // "clear" is the ONE style used for jumbotron, nav, side buttons — all match
 // GLASS_CLEAR — for nav, side buttons, small UI (more transparent)
@@ -153,6 +178,40 @@ const BADGES = [
   { name:"Show Star", emoji:"⭐", earned:true },{ name:"Predictor", emoji:"🔮", earned:true },
   { name:"Bracket King", emoji:"👑", earned:false },{ name:"100 Games", emoji:"💯", earned:false },
   { name:"WC Champion", emoji:"🏆", earned:false },{ name:"Social", emoji:"🦋", earned:false },
+];
+
+// ── SOCIAL: ACHIEVEMENTS ──
+const ACHIEVEMENTS = [
+  {id:"first_puff", name:"First Puff", desc:"Puff for the first time", emoji:"💨", color:C.cyan, rare:false},
+  {id:"first_win", name:"Winner!", desc:"Win your first game", emoji:"🏆", color:C.gold, rare:false},
+  {id:"blinker_king", name:"Blinker King", desc:"Hit 10 blinkers", emoji:"💀", color:C.red, rare:false},
+  {id:"sweet_spot", name:"Sweet Spot Merchant", desc:"Hit 50 perfect puffs", emoji:"🎯", color:C.green, rare:false},
+  {id:"marathon", name:"Puff Marathon", desc:"Puff for 420 total seconds", emoji:"🏃", color:C.orange, rare:true},
+  {id:"streak_7", name:"Weekly Warrior", desc:"7-day puff streak", emoji:"🔥", color:C.orange, rare:true},
+  {id:"all_games", name:"Arcade Master", desc:"Play all 12 games", emoji:"🎮", color:C.purple, rare:true},
+  {id:"tournament_win", name:"Champion", desc:"Win any tournament", emoji:"👑", color:C.gold, rare:true},
+  {id:"crowd_surfer", name:"Crowd Surfer", desc:"Trigger 10 Puff Waves", emoji:"🌊", color:C.blue, rare:true},
+  {id:"legend", name:"Living Legend", desc:"Reach Legendary rank", emoji:"⭐", color:C.gold, rare:true},
+  {id:"the_420", name:"The 420", desc:"Have exactly 420 total puffs", emoji:"🌿", color:C.lime, rare:true},
+  {id:"blinker_100", name:"Iron Lungs", desc:"Hit 100 blinkers", emoji:"🫁", color:C.red, rare:true},
+];
+
+// ── SOCIAL: RANK SYSTEM ──
+const RANKS = [
+  {name:"Bronze", emoji:"🥉", color:"#CD7F32", minXP:0},
+  {name:"Silver", emoji:"🥈", color:"#C0C0C0", minXP:500},
+  {name:"Gold", emoji:"🥇", color:"#FFD700", minXP:2000},
+  {name:"Platinum", emoji:"💎", color:"#E5E4E2", minXP:5000},
+  {name:"Diamond", emoji:"💠", color:"#B9F2FF", minXP:15000},
+  {name:"Legendary", emoji:"⭐", color:"#FFD700", minXP:50000},
+];
+
+// ── SOCIAL: STREAK REWARDS ──
+const STREAK_REWARDS = [
+  {day:3, coins:100, label:"3-Day Bonus"},
+  {day:7, coins:500, label:"Weekly Warrior"},
+  {day:14, coins:1500, label:"Two-Week Terror"},
+  {day:30, coins:5000, label:"Monthly Monster"},
 ];
 
 // ── WORLD CUP 2026 — NATIONAL TEAMS (48 qualified + Vietnam + China) ──
@@ -756,6 +815,16 @@ export default function MoodLabArena() {
   // ── Atmosphere ──
   const [tick, setTick] = useState(0);
   const [floatingReactions, setFloatingReactions] = useState([]);
+
+  // ── Puff Reactions System ──
+  const [puffReactionMode, setPuffReactionMode] = useState(false);
+  const [puffReactions, setPuffReactions] = useState([]);
+  const [puffHistory, setPuffHistory] = useState([]);
+  const [puffReactionFeed, setPuffReactionFeed] = useState([]);
+  const [puffReactionTotal, setPuffReactionTotal] = useState(0);
+  const [puffChatTab, setPuffChatTab] = useState("chat"); // "chat" | "puffReact"
+  const puffReactionIdRef = useRef(0);
+
   const [particles] = useState(() => Array.from({length:30}, (_,i) => ({
     id:i, x:Math.random()*100, y:Math.random()*100, s:Math.random()*3+1, d:Math.random()*20+10, o:Math.random()*0.4+0.1,
     color:[C.cyan,C.gold,C.purple,C.orange,C.pink][Math.floor(Math.random()*5)],
@@ -766,12 +835,51 @@ export default function MoodLabArena() {
   const [liveScore, setLiveScore] = useState({home:1,away:0,min:34});
   const [notif, setNotif] = useState(null);
 
+  // ── Live Spectator System ──
+  const [liveSpectators, setLiveSpectators] = useState([]);
+  const [spectatorCount, setSpectatorCount] = useState(Math.floor(120 + Math.random() * 80));
+  const [crowdEnergy, setCrowdEnergy] = useState(0);
+  const [spectatorTicker, setSpectatorTicker] = useState([]);
+  const [crowdEruption, setCrowdEruption] = useState(false);
+  const spectatorIntervalRef = useRef(null);
+
   // ── Arena View (Virtual Tour) ──
   const [arenaView, setArenaView] = useState("hub"); // "hub"|"arcade"|"stage"|"oracle"|"wall"|"worldcup"
   const [walking, setWalking] = useState(false);
   const [walkFrom, setWalkFrom] = useState(null);
   const [chatPanel, setChatPanel] = useState(false);
   const [arenaLoading, setArenaLoading] = useState(true); // loading screen on first Arena entry
+
+  // ── Social / Profile ──
+  const [playerProfile, setPlayerProfile] = useState({
+    rank: "Gold",
+    rankProgress: 35,
+    totalPuffs: 420,
+    totalPuffTime: 1260,
+    blinkerCount: 69,
+    streak: 5,
+    lastActive: Date.now(),
+    achievements: ["first_puff", "first_win", "blinker_king"],
+    gamesPlayed: 47,
+    gamesWon: 28,
+    favoriteGame: "finalkick",
+    crewName: null,
+    joinDate: Date.now() - 86400000 * 42,
+  });
+  const [showProfile, setShowProfile] = useState(false);
+  const [showAchievements, setShowAchievements] = useState(false);
+
+  // ── Atmosphere Engine ──
+  const [arenaAtmosphere, setArenaAtmosphere] = useState({
+    smokeLevel: 12,
+    energyLevel: 15,
+    temperature: "chill",
+    weather: "clear",
+    peakHour: false,
+    onlineCount: 1247,
+    is420: false,
+    goldParticles: false,
+  });
 
   // ── World Cup Tournament ──
   const [wcTeam, setWcTeam] = useState(null);           // selected team {id,name,flag,...}
@@ -787,6 +895,33 @@ export default function MoodLabArena() {
   const [wcViewTab, setWcViewTab] = useState("mygroup"); // "mygroup" | "allgroups" | "bracket"
   const [gameTournament, setGameTournament] = useState(null); // {gameId, team, round, bracket, results} for non-FK tournaments
 
+  // ── Synchronized Puff Events ──
+  const [puffEvent, setPuffEvent] = useState(null); // null | {type:"countdown"|"blinker"|"chain"|"420", phase:"waiting"|"active"|"result", data:{}, timer:0}
+  const [puffEventResult, setPuffEventResult] = useState(null); // last event result for display
+  const [puffEventSchedule, setPuffEventSchedule] = useState(() => {
+    // Start first event 2 minutes from now, cycle every 15-30 min (simulated: 90s for demo)
+    const types = ["countdown","blinker","chain","420"];
+    return { nextType: types[Math.floor(Math.random()*types.length)], nextAt: Date.now() + 120000 };
+  });
+  const [peNextCountdown, setPeNextCountdown] = useState(""); // "2:30" display
+  const puffEventRef = useRef(null); // interval ref
+  const puffEventHoldStart = useRef(null); // puff hold start time
+  const puffEventHoldInterval = useRef(null); // puff hold update interval
+
+
+  // ── Halftime Mini-Games ──
+  const [halftimeGame, setHalftimeGame] = useState(null); // null | {type:"roulette"|"tug"|"lucky"|"trivia"}
+  const [halftimeResult, setHalftimeResult] = useState(null); // {coins, message, won}
+  const [htWheel, setHtWheel] = useState(0); // roulette wheel angle
+  const [htSpinning, setHtSpinning] = useState(false);
+  const [htTugPos, setHtTugPos] = useState(50); // 0-100, 50=center
+  const [htTugTimer, setHtTugTimer] = useState(20);
+  const [htLuckyPhase, setHtLuckyPhase] = useState("wait"); // "wait"|"puff_now"|"done"
+  const [htLuckyPuffed, setHtLuckyPuffed] = useState(false);
+  const [htTriviaQ, setHtTriviaQ] = useState(null);
+  const [htTriviaAnswer, setHtTriviaAnswer] = useState(null);
+  const htTimerRef = useRef(null);
+  const htTugRef = useRef(null);
   // ── Derived ──
   const wcDays = Math.max(0, Math.floor((new Date("2026-06-11") - new Date()) / 86400000));
   const playersNow = 1247 + (tick % 13) * 7;
@@ -804,6 +939,85 @@ export default function MoodLabArena() {
   useEffect(() => { const t=setInterval(()=>{setTick(p=>p+1);if(gameActive&&(gameActive.id==="finalkick"||gameActive.id==="finalkick2"||gameActive.id==="finalkick3")&&kickState&&Math.random()<0.3)spawnAudienceBubble();},1000); return()=>clearInterval(t); }, [gameActive,kickState]);
   useEffect(() => { const t=setInterval(()=>setMainStage(p=>(p+1)%3),5000); return()=>clearInterval(t); }, []);
   useEffect(() => { const t=setInterval(()=>setTickerOffset(p=>p-0.5),30); return()=>clearInterval(t); }, []);
+
+  // ── Live Spectator Engine ──
+  const spawnSpectatorPuff = useCallback((forceColor) => {
+    const name = SPECTATOR_NAMES[Math.floor(Math.random()*SPECTATOR_NAMES.length)];
+    const emoji = SPECTATOR_EMOJIS[Math.floor(Math.random()*SPECTATOR_EMOJIS.length)];
+    const puffDur = (1+Math.random()*4).toFixed(1);
+    const side = Math.floor(Math.random()*4);
+    const tColors = [C.cyan,C.pink,C.purple,C.orange,C.gold,C.green,C.blue];
+    const color = forceColor || tColors[Math.floor(Math.random()*tColors.length)];
+    let sx,sy,ex,ey;
+    if(side===0){sx=-5;sy=20+Math.random()*60;ex=40+Math.random()*30;ey=10+Math.random()*30;}
+    else if(side===1){sx=105;sy=20+Math.random()*60;ex=30+Math.random()*30;ey=10+Math.random()*30;}
+    else if(side===2){sx=20+Math.random()*60;sy=-5;ex=30+Math.random()*40;ey=30+Math.random()*20;}
+    else{sx=20+Math.random()*60;sy=105;ex=30+Math.random()*40;ey=40+Math.random()*30;}
+    const id = `spec_${Date.now()}_${Math.random().toString(36).slice(2,6)}`;
+    setLiveSpectators(prev=>[...prev.slice(-14),{id,name,emoji,puffDur,color,sx,sy,ex,ey,ts:Date.now()}]);
+    setCrowdEnergy(prev=>Math.min(100,prev+4+Math.floor(Math.random()*6)));
+    setSpectatorCount(prev=>prev+(Math.random()<0.3?1:0));
+    if(Math.random()<0.4){
+      const msg=SPECTATOR_TICKER_MSGS[Math.floor(Math.random()*SPECTATOR_TICKER_MSGS.length)];
+      setSpectatorTicker(prev=>[...prev.slice(-4),{name,msg,emoji,ts:Date.now()}]);
+    }
+  },[]);
+
+  // Spectator spawn loop — active during games
+  useEffect(()=>{
+    const inGame=!!(gameActive||matchmaking||wcPhase);
+    if(inGame){
+      const loop=()=>{spawnSpectatorPuff();spectatorIntervalRef.current=setTimeout(loop,2000+Math.random()*3000);};
+      spectatorIntervalRef.current=setTimeout(loop,1000);
+      return()=>{if(spectatorIntervalRef.current)clearTimeout(spectatorIntervalRef.current);};
+    } else {
+      setCrowdEnergy(0);setLiveSpectators([]);setSpectatorTicker([]);
+      if(spectatorIntervalRef.current)clearTimeout(spectatorIntervalRef.current);
+    }
+  },[gameActive,matchmaking,wcPhase,spawnSpectatorPuff]);
+
+  // Crowd energy decay
+  useEffect(()=>{const d=setInterval(()=>setCrowdEnergy(p=>Math.max(0,p-2)),1500);return()=>clearInterval(d);},[]);
+
+  // Crowd eruption
+  useEffect(()=>{
+    if(crowdEnergy>=95&&!crowdEruption){
+      setCrowdEruption(true);
+      for(let i=0;i<5;i++)setTimeout(()=>spawnSpectatorPuff(C.gold),i*200);
+      setTimeout(()=>setCrowdEruption(false),3000);
+    }
+  },[crowdEnergy,crowdEruption,spawnSpectatorPuff]);
+
+  // Cleanup old spectator puffs
+  useEffect(()=>{const c=setInterval(()=>{const n=Date.now();setLiveSpectators(p=>p.filter(s=>n-s.ts<4000));},1000);return()=>clearInterval(c);},[]);
+
+  // ── Atmosphere Engine — updates every 10s ──
+  useEffect(() => {
+    const atmosTimer = setInterval(() => {
+      setArenaAtmosphere(prev => {
+        const inGame = !!gameActive;
+        // Smoke drifts randomly, increases when in-game
+        let smoke = prev.smokeLevel + (Math.random() * 10 - 4) + (inGame ? 3 : -1);
+        smoke = Math.max(0, Math.min(100, smoke));
+        // Energy ramps during games, decays otherwise
+        let energy = prev.energyLevel + (inGame ? (Math.random() * 8 + 2) : (Math.random() * 6 - 5));
+        energy = Math.max(0, Math.min(100, energy));
+        // Temperature based on energy
+        const temperature = energy < 25 ? "chill" : energy < 50 ? "warm" : energy < 75 ? "hot" : "blazing";
+        // Weather based on smoke
+        const weather = smoke < 20 ? "clear" : smoke < 40 ? "hazy" : smoke < 60 ? "cloudy" : smoke < 80 ? "foggy" : "storm";
+        // Simulated online count with drift
+        let onlineCount = prev.onlineCount + Math.floor(Math.random() * 40 - 18);
+        onlineCount = Math.max(800, Math.min(5000, onlineCount));
+        // Peak hour when energy > 70
+        const peakHour = energy > 70;
+        // 420 detection
+        const is420 = onlineCount === 420 || onlineCount === 4200 || String(onlineCount).includes("420");
+        return { smokeLevel: smoke, energyLevel: energy, temperature, weather, peakHour, onlineCount, is420, goldParticles: is420 };
+      });
+    }, 10000);
+    return () => clearInterval(atmosTimer);
+  }, [gameActive]);
 
   // ── 3s Action Timer ──
   // Timer runs for: shoot (FK1 zone pick), save_dive, shoot_x/shoot_y (FK2 aim)
@@ -2107,6 +2321,99 @@ export default function MoodLabArena() {
   };
   const triggerPuffWave = () => { setPuffWaveActive(true); spawnSmoke(15); setTimeout(()=>setPuffWaveActive(false),3000); };
   const setCommentary = (text) => { setCommentatorText(text); };
+
+  // ═══════════════════════════════════════════════════════════════
+  // PUFF REACTIONS SYSTEM
+  // ═══════════════════════════════════════════════════════════════
+  const PUFF_REACTION_MAP = {
+    clap:{emoji:"👏",label:"Clap",color:"#00E5FF",glow:"rgba(0,229,255,0.5)"},
+    fire:{emoji:"🔥",label:"Fire",color:"#FF8C00",glow:"rgba(255,140,0,0.5)"},
+    omg:{emoji:"😱",label:"OMG",color:"#C084FC",glow:"rgba(192,132,252,0.5)"},
+    mindblown:{emoji:"🤯",label:"Mind Blown",color:"#FF4D8D",glow:"rgba(255,77,141,0.5)"},
+    skull:{emoji:"💀",label:"INSANE",color:"#FF4444",glow:"rgba(255,68,68,0.6)"},
+    wave:{emoji:"🌊",label:"Wave",color:"#60A5FA",glow:"rgba(96,165,250,0.5)"},
+    love:{emoji:"❤️",label:"Love",color:"#FF69B4",glow:"rgba(255,105,180,0.5)"},
+  };
+  const AI_AUDIENCE_NAMES = ["PuffQueen","Fan_42","LungLord","BlowMaster","VapeGod99","BreatheBoi","PuffDaddy","WindWalker","AirBender","CloudNine","GaleForce","TornadoTed","BreezyBee","StormChaser","ZephyrZoe","CycloneCy","MistMaker","FoggyFrank","HurricaneH","DraftDave"];
+  const spawnPuffReaction = useCallback((reactionKey, userName) => {
+    const r = PUFF_REACTION_MAP[reactionKey];
+    if (!r) return;
+    const id = ++puffReactionIdRef.current;
+    const sizeScale = reactionKey==="skull"?2.2:reactionKey==="mindblown"?1.8:reactionKey==="omg"?1.5:reactionKey==="fire"?1.3:1;
+    const x = 10+Math.random()*80, dur = 2+Math.random()*0.5;
+    setPuffReactions(p=>[...p,{id,emoji:r.emoji,label:r.label,color:r.color,glow:r.glow,x,dur,size:sizeScale,spawn:Date.now()}]);
+    setPuffReactionFeed(p=>[{id,user:userName||"You",emoji:r.emoji,label:r.label,color:r.color,t:Date.now()},...p].slice(0,20));
+    setPuffReactionTotal(p=>p+1);
+    setTimeout(()=>setPuffReactions(p=>p.filter(pr=>pr.id!==id)),(dur+0.5)*1000);
+  },[]);
+  const detectPuffReaction = useCallback((duration) => {
+    const now = Date.now();
+    setPuffHistory(prev => {
+      const updated = [...prev,{t:now,dur:duration}].filter(p=>now-p.t<5000);
+      if(updated.length>=3){spawnPuffReaction("wave","You");return [];}
+      if(updated.length>=2){
+        const last=updated[updated.length-1],prev2=updated[updated.length-2];
+        if(last.t-(prev2.t+prev2.dur*1000)<300&&last.dur<0.5&&prev2.dur<0.5){spawnPuffReaction("love","You");return [];}
+      }
+      if(duration<0.5) spawnPuffReaction("clap","You");
+      else if(duration<1.5) spawnPuffReaction("fire","You");
+      else if(duration<3) spawnPuffReaction("omg","You");
+      else if(duration<4.5) spawnPuffReaction("mindblown","You");
+      else spawnPuffReaction("skull","You");
+      return updated;
+    });
+  },[spawnPuffReaction]);
+  useEffect(()=>{
+    if(!puffReactionMode||!gameActive) return;
+    const keys=Object.keys(PUFF_REACTION_MAP);
+    const weights=[0.25,0.25,0.15,0.1,0.05,0.1,0.1];
+    const pickW=()=>{let r=Math.random(),c=0;for(let i=0;i<keys.length;i++){c+=weights[i];if(r<c)return keys[i];}return keys[0];};
+    const iv=setInterval(()=>{
+      const name=AI_AUDIENCE_NAMES[Math.floor(Math.random()*AI_AUDIENCE_NAMES.length)];
+      spawnPuffReaction(pickW(),name);
+    },3000+Math.random()*5000);
+    return ()=>clearInterval(iv);
+  },[puffReactionMode,gameActive,spawnPuffReaction]);
+  const renderPuffReactionsOverlay = () => {
+    if(puffReactions.length===0&&!puffReactionMode) return null;
+    return (
+      <div style={{position:"fixed",inset:0,pointerEvents:"none",zIndex:250}}>
+        {puffReactions.map(r=>(
+          <div key={r.id} style={{position:"absolute",left:`${r.x}%`,bottom:"10%",fontSize:24*r.size,zIndex:251,animation:`puffReactFloat ${r.dur}s ease-out forwards`,filter:`drop-shadow(0 0 12px ${r.glow}) drop-shadow(0 0 24px ${r.glow})`}}>
+            {r.emoji}
+            <div style={{position:"absolute",bottom:-12,left:"50%",transform:"translateX(-50%)",fontSize:7,fontWeight:800,color:r.color,textShadow:`0 0 8px ${r.glow}`,whiteSpace:"nowrap",opacity:0.9}}>{r.label}</div>
+          </div>
+        ))}
+        {puffReactionMode&&puffReactionTotal>0&&(
+          <div style={{position:"absolute",top:60,right:8,padding:"4px 10px",borderRadius:12,...GLASS_CLEAR,fontSize:9,fontWeight:800,color:C.cyan,zIndex:252,pointerEvents:"auto"}}>
+            <span style={{fontSize:11}}>💨</span> {puffReactionTotal} reactions
+          </div>
+        )}
+      </div>
+    );
+  };
+  const renderPuffReactionFeedTab = () => (
+    <div style={{...GLASS_CARD,padding:"6px 8px",flex:1,overflowY:"auto",maxHeight:120}}>
+      <div style={{fontSize:7,color:C.text3,marginBottom:4,letterSpacing:1}}>💨 PUFF REACTION FEED</div>
+      {puffReactionFeed.slice(0,8).map((r,i)=>(
+        <div key={r.id} style={{display:"flex",gap:4,alignItems:"center",marginBottom:3,animation:"fadeIn 0.3s ease"}}>
+          <span style={{fontSize:7,fontWeight:700,color:r.color,flexShrink:0}}>{r.user}:</span>
+          <span style={{fontSize:12}}>{r.emoji}</span>
+          <span style={{fontSize:7,color:C.text3}}>{r.label}</span>
+        </div>
+      ))}
+      {puffReactionFeed.length===0&&(<div style={{fontSize:8,color:C.text3,fontStyle:"italic"}}>Puff to react! Your breath pattern becomes an emoji 💨</div>)}
+      <div style={{marginTop:6,padding:"4px 0",borderTop:`1px solid ${C.border}`}}>
+        <div style={{fontSize:6,color:C.text3,marginBottom:3,letterSpacing:0.5}}>PUFF PATTERNS:</div>
+        <div style={{display:"flex",flexWrap:"wrap",gap:3}}>
+          {[{emoji:"👏",label:"Quick tap",color:"#00E5FF"},{emoji:"🔥",label:"Short puff",color:"#FF8C00"},{emoji:"😱",label:"Medium",color:"#C084FC"},{emoji:"🤯",label:"Long",color:"#FF4D8D"},{emoji:"💀",label:"Blinker",color:"#FF4444"},{emoji:"🌊",label:"Rapid 3x",color:"#60A5FA"},{emoji:"❤️",label:"Dbl tap",color:"#FF69B4"}].map((r,i)=>(
+            <span key={i} style={{fontSize:6,color:r.color,padding:"1px 4px",borderRadius:4,background:`${r.color}10`,border:`1px solid ${r.color}15`}}>{r.emoji} {r.label}</span>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+
 
   // ═══════════════════════════════════════════════════════════════
   // BALLOON POP — Logic
@@ -3833,6 +4140,205 @@ export default function MoodLabArena() {
     notify("🏳️ Tournament abandoned",C.text3);
   };
 
+
+  // ═════════════════════════════════════════
+  // ── HALFTIME MINI-GAMES LOGIC ──
+  // ═════════════════════════════════════════
+
+  const HT_TRIVIA = [
+    {q:"What is a blinker?", a:"A) 5-second puff", b:"B) A broken device", correct:"a"},
+    {q:"What does 420 refer to?", a:"A) Police code", b:"B) Cannabis culture time", correct:"b"},
+    {q:"Which country hosted WC 2014?", a:"A) Brazil", b:"B) Germany", correct:"a"},
+    {q:"What is a dab?", a:"A) A dance move", b:"B) Concentrated extract", correct:"b"},
+    {q:"Messi has how many Ballon d'Ors?", a:"A) 8", b:"B) 6", correct:"a"},
+    {q:"What is a terpene?", a:"A) Flavor compound", b:"B) Type of rolling paper", correct:"a"},
+    {q:"What year is WC 2026?", a:"A) 2026", b:"B) 2028", correct:"a"},
+    {q:"Indica is known for being...?", a:"A) Energizing", b:"B) Relaxing", correct:"b"},
+  ];
+
+  const HT_WHEEL_SEGMENTS = [
+    {label:"100", coins:100, color:"#00E5FF"},
+    {label:"BUST", coins:-50, color:"#FF4444"},
+    {label:"200", coins:200, color:"#FFD93D"},
+    {label:"50", coins:50, color:"#34D399"},
+    {label:"JACKPOT", coins:500, color:"#C084FC"},
+    {label:"BUST", coins:-50, color:"#FF4444"},
+    {label:"150", coins:150, color:"#FB923C"},
+    {label:"75", coins:75, color:"#60A5FA"},
+  ];
+
+  const startHalftime = (type) => {
+    setHalftimeResult(null);
+    setHtSpinning(false);
+    setHtWheel(0);
+    setHtTugPos(50);
+    setHtTugTimer(20);
+    setHtLuckyPhase("wait");
+    setHtLuckyPuffed(false);
+    setHtTriviaAnswer(null);
+    if(htTimerRef.current) clearInterval(htTimerRef.current);
+    if(htTugRef.current) clearInterval(htTugRef.current);
+
+    if(type === "roulette") {
+      setHalftimeGame({type:"roulette"});
+      playFx("nav");
+    } else if(type === "tug") {
+      setHalftimeGame({type:"tug"});
+      setHtTugPos(50);
+      setHtTugTimer(20);
+      playFx("nav");
+      // AI pulls randomly, timer counts down
+      htTugRef.current = setInterval(() => {
+        setHtTugPos(p => {
+          const aiPull = (Math.random() * 2.5) + 0.5; // AI pulls 0.5-3
+          return Math.max(0, Math.min(100, p + aiPull));
+        });
+        setHtTugTimer(t => {
+          if(t <= 1) {
+            clearInterval(htTugRef.current);
+            // Determine winner
+            setTimeout(() => {
+              setHtTugPos(pos => {
+                const won = pos < 50;
+                const prize = won ? 50 : 0;
+                if(prize) setCoins(c => c + prize);
+                setHalftimeResult({coins:prize, message:won ? "Team A WINS! +50 coins!" : "Team B pulled ahead!", won});
+                if(won) { spawnConfetti(25, [C.cyan, C.gold, C.green]); playFx("win"); }
+                else playFx("lose");
+                return pos;
+              });
+            }, 100);
+            return 0;
+          }
+          return t - 1;
+        });
+      }, 1000);
+    } else if(type === "lucky") {
+      setHalftimeGame({type:"lucky"});
+      setHtLuckyPhase("wait");
+      setHtLuckyPuffed(false);
+      playFx("nav");
+      // Random delay 3-8 seconds, then "PUFF NOW!" for 3 seconds
+      const delay = 3000 + Math.random() * 5000;
+      htTimerRef.current = setTimeout(() => {
+        setHtLuckyPhase("puff_now");
+        playFx("whistle");
+        htTimerRef.current = setTimeout(() => {
+          setHtLuckyPhase("done");
+          setHtLuckyPuffed(wasPuffed => {
+            if(wasPuffed) {
+              setCoins(c => c + 100);
+              setHalftimeResult({coins:100, message:"PERFECT TIMING! +100 coins!", won:true});
+              spawnConfetti(30, [C.gold, C.green, C.cyan]);
+              playFx("win");
+            } else {
+              setHalftimeResult({coins:0, message:"You missed the window!", won:false});
+              playFx("lose");
+            }
+            return wasPuffed;
+          });
+        }, 3000);
+      }, delay);
+    } else if(type === "trivia") {
+      const q = HT_TRIVIA[Math.floor(Math.random() * HT_TRIVIA.length)];
+      setHtTriviaQ(q);
+      setHtTriviaAnswer(null);
+      setHalftimeGame({type:"trivia"});
+      playFx("nav");
+      // 10 second timer
+      htTimerRef.current = setTimeout(() => {
+        setHtTriviaAnswer(ans => {
+          if(!ans) {
+            setHalftimeResult({coins:0, message:"Time's up! Too slow!", won:false});
+            playFx("lose");
+          }
+          return ans;
+        });
+      }, 10000);
+    }
+  };
+
+  const htSpinWheel = () => {
+    if(htSpinning) return;
+    setHtSpinning(true);
+    const extraSpins = 1440 + Math.random() * 1440;
+    setHtWheel(prev => prev + extraSpins);
+    playFx("spin");
+    setTimeout(() => {
+      setHtSpinning(false);
+      const segAngle = 360 / HT_WHEEL_SEGMENTS.length;
+      const finalAngle = (htWheel + extraSpins) % 360;
+      const segIdx = Math.floor(finalAngle / segAngle) % HT_WHEEL_SEGMENTS.length;
+      const seg = HT_WHEEL_SEGMENTS[segIdx];
+      if(seg.coins > 0) {
+        setCoins(c => c + seg.coins);
+        setHalftimeResult({coins:seg.coins, message:seg.label === "JACKPOT" ? "JACKPOT! +500 coins!" : `+${seg.coins} coins!`, won:true});
+        spawnConfetti(seg.coins > 200 ? 50 : 25, [seg.color, C.gold, C.green]);
+        playFx("win");
+      } else {
+        setHalftimeResult({coins:seg.coins, message:"BUST! Better luck next time!", won:false});
+        playFx("lose");
+      }
+    }, 3500);
+  };
+
+  const htTugPuff = () => {
+    // Player pulls (decreases position toward 0)
+    setHtTugPos(p => Math.max(0, p - (2 + Math.random() * 2)));
+  };
+
+  const htLuckyPuff = () => {
+    if(htLuckyPhase === "wait") {
+      // False start!
+      setHtLuckyPuffed(true);
+      setHtLuckyPhase("done");
+      if(htTimerRef.current) clearTimeout(htTimerRef.current);
+      setCoins(c => Math.max(0, c - 20));
+      setHalftimeResult({coins:-20, message:"FALSE START! -20 coins!", won:false});
+      playFx("lose");
+    } else if(htLuckyPhase === "puff_now") {
+      setHtLuckyPuffed(true);
+      setHtLuckyPhase("done");
+      if(htTimerRef.current) clearTimeout(htTimerRef.current);
+      setCoins(c => c + 100);
+      setHalftimeResult({coins:100, message:"PERFECT TIMING! +100 coins!", won:true});
+      spawnConfetti(30, [C.gold, C.green, C.cyan]);
+      playFx("win");
+    }
+  };
+
+  const htAnswerTrivia = (answer) => {
+    if(htTriviaAnswer) return;
+    if(htTimerRef.current) clearTimeout(htTimerRef.current);
+    setHtTriviaAnswer(answer);
+    const correct = answer === htTriviaQ.correct;
+    if(correct) {
+      setCoins(c => c + 75);
+      setHalftimeResult({coins:75, message:"CORRECT! +75 coins!", won:true});
+      spawnConfetti(20, [C.green, C.gold]);
+      playFx("win");
+    } else {
+      setHalftimeResult({coins:0, message:"Wrong answer!", won:false});
+      playFx("lose");
+    }
+  };
+
+  const dismissHalftime = () => {
+    if(htTimerRef.current) { clearTimeout(htTimerRef.current); clearInterval(htTimerRef.current); }
+    if(htTugRef.current) clearInterval(htTugRef.current);
+    setHalftimeGame(null);
+    setHalftimeResult(null);
+  };
+
+  const maybeOfferHalftime = () => {
+    // 50% chance to offer a halftime mini-game between tournament rounds
+    if(Math.random() < 0.5) {
+      const types = ["roulette","lucky","trivia","tug"];
+      const type = types[Math.floor(Math.random() * types.length)];
+      setTimeout(() => startHalftime(type), 1200);
+    }
+  };
+
   const doSpin = () => {
     if(spinning) return; setSpinning(true); setSpinResult(null);
     setSpinAngle(p=>p+1440+Math.random()*1440);
@@ -4172,6 +4678,266 @@ export default function MoodLabArena() {
   };
 
   /* ── Hub View (the corridor) ── */
+
+  // ═════════════════════════════════════════
+  // ── RENDER: HALFTIME MINI-GAMES OVERLAY ──
+  // ═════════════════════════════════════════
+  const renderHalftime = () => {
+    if(!halftimeGame) return null;
+    const ht = halftimeGame;
+
+    const overlayBase = {position:"fixed",inset:0,zIndex:300,display:"flex",alignItems:"center",justifyContent:"center",
+      background:"rgba(0,0,0,0.85)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",animation:"fadeIn 0.3s ease"};
+
+    const cardBase = {width:"90%",maxWidth:380,borderRadius:24,overflow:"hidden",
+      background:"rgba(15,15,40,0.95)",border:"1px solid rgba(255,255,255,0.12)",
+      boxShadow:"0 20px 60px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.1)",
+      padding:24,textAlign:"center",position:"relative"};
+
+    // Close button
+    const closeBtn = (
+      <div onClick={dismissHalftime} style={{position:"absolute",top:12,right:12,width:28,height:28,borderRadius:8,
+        display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",
+        background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.1)",fontSize:12,color:C.text3}}>X</div>
+    );
+
+    // Result overlay
+    if(halftimeResult) {
+      return (
+        <div style={overlayBase} onClick={dismissHalftime}>
+          <div style={{...cardBase,cursor:"pointer"}} onClick={e=>e.stopPropagation()}>
+            {closeBtn}
+            <div style={{fontSize:48,marginBottom:12,animation:"countPulse 1s infinite"}}>{halftimeResult.won ? "🎉" : "😅"}</div>
+            <div style={{fontSize:22,fontWeight:900,color:halftimeResult.won ? C.gold : C.red,marginBottom:8,
+              textShadow:halftimeResult.won ? `0 0 20px ${C.gold}60` : "none"}}>{halftimeResult.won ? "YOU WIN!" : "BETTER LUCK NEXT TIME"}</div>
+            <div style={{fontSize:14,color:C.text2,marginBottom:16}}>{halftimeResult.message}</div>
+            {halftimeResult.coins !== 0 && (
+              <div style={{display:"inline-flex",alignItems:"center",gap:6,padding:"8px 20px",borderRadius:100,
+                background:halftimeResult.coins > 0 ? `${C.gold}15` : `${C.red}15`,
+                border:`1px solid ${halftimeResult.coins > 0 ? C.gold : C.red}25`}}>
+                <span style={{fontSize:18}}>🪙</span>
+                <span style={{fontSize:18,fontWeight:900,color:halftimeResult.coins > 0 ? C.gold : C.red}}>
+                  {halftimeResult.coins > 0 ? "+" : ""}{halftimeResult.coins}
+                </span>
+              </div>
+            )}
+            <div onClick={dismissHalftime} style={{marginTop:20,padding:"10px 30px",borderRadius:100,cursor:"pointer",
+              background:`linear-gradient(135deg, ${C.cyan}20, ${C.purple}20)`,
+              border:`1px solid ${C.cyan}30`,fontSize:13,fontWeight:800,color:C.cyan}}>CONTINUE</div>
+          </div>
+        </div>
+      );
+    }
+
+    // ── PUFF ROULETTE ──
+    if(ht.type === "roulette") {
+      const segCount = HT_WHEEL_SEGMENTS.length;
+      const segAngle = 360 / segCount;
+      return (
+        <div style={overlayBase}>
+          <div style={{...cardBase}}>
+            {closeBtn}
+            <div style={{fontSize:10,fontWeight:800,color:C.pink,letterSpacing:2,marginBottom:4}}>HALFTIME</div>
+            <div style={{fontSize:20,fontWeight:900,color:C.text,marginBottom:4}}>🎰 Puff Roulette</div>
+            <div style={{fontSize:11,color:C.text3,marginBottom:16}}>Spin the wheel and win coins!</div>
+
+            {/* Wheel */}
+            <div style={{position:"relative",width:220,height:220,margin:"0 auto 16px"}}>
+              {/* Pointer */}
+              <div style={{position:"absolute",top:-8,left:"50%",transform:"translateX(-50%)",zIndex:5,fontSize:20}}>
+                <span style={{filter:`drop-shadow(0 0 6px ${C.red})`}}>&#9660;</span>
+              </div>
+              {/* Spinning wheel */}
+              <div style={{width:220,height:220,borderRadius:"50%",position:"relative",overflow:"hidden",
+                border:`3px solid ${C.gold}40`,boxShadow:`0 0 30px ${C.gold}15, inset 0 0 20px rgba(0,0,0,0.4)`,
+                transform:`rotate(${htWheel}deg)`,transition:htSpinning ? "transform 3.5s cubic-bezier(0.17,0.67,0.12,0.99)" : "none"}}>
+                {HT_WHEEL_SEGMENTS.map((seg,i) => {
+                  const rotation = i * segAngle;
+                  const isBust = seg.label === "BUST";
+                  const isJackpot = seg.label === "JACKPOT";
+                  return (
+                    <div key={i} style={{position:"absolute",width:"50%",height:"50%",top:0,left:"50%",
+                      transformOrigin:"0% 100%",transform:`rotate(${rotation}deg) skewY(${-(90-segAngle)}deg)`,
+                      background:seg.color + "30",borderRight:`1px solid ${seg.color}40`}}>
+                      <div style={{position:"absolute",bottom:20,left:10,transform:`skewY(${90-segAngle}deg) rotate(${segAngle/2}deg)`,
+                        fontSize:isBust ? 9 : isJackpot ? 8 : 11,fontWeight:900,color:seg.color,
+                        textShadow:`0 0 8px ${seg.color}60`,whiteSpace:"nowrap"}}>
+                        {isBust ? "BUST" : isJackpot ? "JACKPOT" : seg.label}
+                      </div>
+                    </div>
+                  );
+                })}
+                {/* Center circle */}
+                <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",
+                  width:40,height:40,borderRadius:"50%",background:C.bg,border:`2px solid ${C.gold}40`,
+                  display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,zIndex:2}}>🎰</div>
+              </div>
+            </div>
+
+            <div onClick={htSpinWheel} style={{padding:"12px 40px",borderRadius:100,cursor:htSpinning?"default":"pointer",
+              background:htSpinning ? `${C.text3}15` : `linear-gradient(135deg, ${C.gold}25, ${C.orange}25)`,
+              border:`1px solid ${htSpinning ? C.text3 : C.gold}30`,
+              fontSize:14,fontWeight:900,color:htSpinning ? C.text3 : C.gold,
+              boxShadow:htSpinning ? "none" : `0 0 20px ${C.gold}15`,
+              transition:"all 0.3s"}}>
+              {htSpinning ? "SPINNING..." : "SPIN!"}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ── CROWD TUG ──
+    if(ht.type === "tug") {
+      const teamAWinning = htTugPos < 50;
+      const teamBWinning = htTugPos > 50;
+      return (
+        <div style={overlayBase}>
+          <div style={{...cardBase}}>
+            {closeBtn}
+            <div style={{fontSize:10,fontWeight:800,color:C.pink,letterSpacing:2,marginBottom:4}}>HALFTIME</div>
+            <div style={{fontSize:20,fontWeight:900,color:C.text,marginBottom:4}}>Crowd Tug</div>
+            <div style={{fontSize:11,color:C.text3,marginBottom:12}}>Spam tap/puff to pull your team! You are Team A (left)</div>
+
+            {/* Timer */}
+            <div style={{fontSize:28,fontWeight:900,color:htTugTimer <= 5 ? C.red : C.gold,marginBottom:12,
+              fontFamily:"'Courier New',monospace",textShadow:htTugTimer <= 5 ? `0 0 15px ${C.red}60` : "none",
+              animation:htTugTimer <= 5 ? "countPulse 0.5s infinite" : "none"}}>{htTugTimer}s</div>
+
+            {/* Teams */}
+            <div style={{display:"flex",justifyContent:"space-between",marginBottom:8}}>
+              <div style={{fontSize:13,fontWeight:800,color:C.cyan}}>Team A</div>
+              <div style={{fontSize:13,fontWeight:800,color:C.orange}}>Team B</div>
+            </div>
+
+            {/* Tug rope */}
+            <div style={{position:"relative",height:40,borderRadius:20,overflow:"hidden",
+              background:`linear-gradient(90deg, ${C.cyan}15, ${C.orange}15)`,
+              border:`1px solid rgba(255,255,255,0.1)`,marginBottom:12}}>
+              {/* Center line */}
+              <div style={{position:"absolute",left:"50%",top:0,bottom:0,width:2,background:`${C.text3}30`,transform:"translateX(-50%)"}}/>
+              {/* Marker */}
+              <div style={{position:"absolute",left:`${htTugPos}%`,top:"50%",transform:"translate(-50%,-50%)",
+                width:32,height:32,borderRadius:"50%",
+                background:teamAWinning ? `${C.cyan}30` : teamBWinning ? `${C.orange}30` : `${C.gold}30`,
+                border:`2px solid ${teamAWinning ? C.cyan : teamBWinning ? C.orange : C.gold}`,
+                display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,
+                transition:"left 0.3s ease",
+                boxShadow:`0 0 15px ${teamAWinning ? C.cyan : teamBWinning ? C.orange : C.gold}40`}}>
+                {teamAWinning ? "💪" : teamBWinning ? "😰" : "🤝"}
+              </div>
+            </div>
+
+            {/* Pull button */}
+            <div onClick={htTugPuff} style={{padding:"14px 40px",borderRadius:100,cursor:"pointer",
+              background:`linear-gradient(135deg, ${C.cyan}25, ${C.blue}25)`,
+              border:`1px solid ${C.cyan}30`,fontSize:14,fontWeight:900,color:C.cyan,
+              boxShadow:`0 0 20px ${C.cyan}15`,animation:"countPulse 0.8s infinite",
+              userSelect:"none",WebkitUserSelect:"none"}}>
+              PULL! PULL! PULL!
+            </div>
+            <div style={{fontSize:9,color:C.text3,marginTop:6}}>Spam tap as fast as you can!</div>
+          </div>
+        </div>
+      );
+    }
+
+    // ── LUCKY PUFF ──
+    if(ht.type === "lucky") {
+      const isWait = htLuckyPhase === "wait";
+      const isPuffNow = htLuckyPhase === "puff_now";
+      return (
+        <div style={overlayBase}>
+          <div style={{...cardBase}}>
+            {closeBtn}
+            <div style={{fontSize:10,fontWeight:800,color:C.pink,letterSpacing:2,marginBottom:4}}>HALFTIME</div>
+            <div style={{fontSize:20,fontWeight:900,color:C.text,marginBottom:4}}>Lucky Puff</div>
+            <div style={{fontSize:11,color:C.text3,marginBottom:20}}>Wait for the signal, then PUFF!</div>
+
+            <div style={{width:160,height:160,borderRadius:"50%",margin:"0 auto 20px",display:"flex",alignItems:"center",justifyContent:"center",
+              background:isPuffNow ? `radial-gradient(circle, ${C.green}30, ${C.green}05)` : `radial-gradient(circle, ${C.red}15, ${C.red}03)`,
+              border:`3px solid ${isPuffNow ? C.green : C.red}40`,
+              boxShadow:`0 0 ${isPuffNow ? 40 : 15}px ${isPuffNow ? C.green : C.red}25`,
+              transition:"all 0.3s",animation:isPuffNow ? "countPulse 0.4s infinite" : "none"}}>
+              <div>
+                <div style={{fontSize:36,marginBottom:4}}>{isPuffNow ? "💨" : "⏳"}</div>
+                <div style={{fontSize:16,fontWeight:900,color:isPuffNow ? C.green : C.red,
+                  textShadow:`0 0 15px ${isPuffNow ? C.green : C.red}60`}}>
+                  {isPuffNow ? "PUFF NOW!" : "WAIT..."}
+                </div>
+              </div>
+            </div>
+
+            <div onClick={htLuckyPuff} style={{padding:"14px 40px",borderRadius:100,cursor:"pointer",
+              background:isPuffNow ? `linear-gradient(135deg, ${C.green}30, ${C.cyan}30)` : `${C.text3}10`,
+              border:`1px solid ${isPuffNow ? C.green : C.text3}30`,
+              fontSize:14,fontWeight:900,color:isPuffNow ? C.green : C.text3,
+              boxShadow:isPuffNow ? `0 0 25px ${C.green}20` : "none",
+              animation:isPuffNow ? "countPulse 0.5s infinite" : "none",
+              transition:"all 0.3s",userSelect:"none",WebkitUserSelect:"none"}}>
+              {isPuffNow ? "PUFF!" : "Wait for it..."}
+            </div>
+            <div style={{fontSize:9,color:C.text3,marginTop:8}}>Puff too early = false start (-20 coins)!</div>
+          </div>
+        </div>
+      );
+    }
+
+    // ── PUFF TRIVIA ──
+    if(ht.type === "trivia" && htTriviaQ) {
+      const answered = htTriviaAnswer !== null;
+      const correct = htTriviaAnswer === htTriviaQ.correct;
+      return (
+        <div style={overlayBase}>
+          <div style={{...cardBase}}>
+            {closeBtn}
+            <div style={{fontSize:10,fontWeight:800,color:C.pink,letterSpacing:2,marginBottom:4}}>HALFTIME</div>
+            <div style={{fontSize:20,fontWeight:900,color:C.text,marginBottom:4}}>Puff Trivia</div>
+            <div style={{fontSize:11,color:C.text3,marginBottom:16}}>10 seconds to answer!</div>
+
+            <div style={{fontSize:16,fontWeight:800,color:C.gold,marginBottom:20,lineHeight:1.4,
+              textShadow:`0 0 15px ${C.gold}30`}}>
+              {htTriviaQ.q}
+            </div>
+
+            <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:16}}>
+              {["a","b"].map(opt => {
+                const isSelected = htTriviaAnswer === opt;
+                const isCorrectOpt = htTriviaQ.correct === opt;
+                const showResult = answered;
+                let bg = `rgba(255,255,255,0.04)`;
+                let borderColor = "rgba(255,255,255,0.1)";
+                let textColor = C.text;
+                if(showResult && isCorrectOpt) { bg = `${C.green}15`; borderColor = `${C.green}40`; textColor = C.green; }
+                else if(showResult && isSelected && !correct) { bg = `${C.red}15`; borderColor = `${C.red}40`; textColor = C.red; }
+                return (
+                  <div key={opt} onClick={()=>!answered && htAnswerTrivia(opt)} style={{
+                    padding:"14px 18px",borderRadius:14,cursor:answered?"default":"pointer",
+                    background:bg,border:`1px solid ${borderColor}`,
+                    fontSize:13,fontWeight:700,color:textColor,textAlign:"left",
+                    transition:"all 0.2s",
+                    transform:showResult && isSelected ? "scale(1.02)" : "scale(1)",
+                    boxShadow:showResult && isCorrectOpt ? `0 0 15px ${C.green}20` : "none",
+                  }}>
+                    {opt === "a" ? htTriviaQ.a : htTriviaQ.b}
+                    {showResult && isCorrectOpt && <span style={{float:"right"}}>&#10003;</span>}
+                    {showResult && isSelected && !correct && <span style={{float:"right"}}>&#10007;</span>}
+                  </div>
+                );
+              })}
+            </div>
+
+            {!answered && (
+              <div style={{fontSize:10,color:C.text3}}>Tap A or B, or puff SHORT for A, LONG for B</div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    return null;
+  };
+
   const renderArenaHub = () => {
     const s = stageData[mainStage];
     const isHub = arenaView === "hub";
@@ -4233,7 +4999,68 @@ export default function MoodLabArena() {
           </div>
         </div>
 
-        {/* ═══ CALI CLEAR LOGO — at the red circle location ═══ */}
+        {/* ═══ ATMOSPHERE ENGINE — Smoke, Weather, Energy ═══ */}
+        {/* Weather overlay */}
+        {arenaAtmosphere.weather !== "clear" && (
+          <div style={{
+            position:"absolute",inset:0,zIndex:2,pointerEvents:"none",
+            background: arenaAtmosphere.weather === "hazy" ? "rgba(255,255,255,0.02)"
+              : arenaAtmosphere.weather === "cloudy" ? "rgba(255,255,255,0.035)"
+              : arenaAtmosphere.weather === "foggy" ? "rgba(200,210,255,0.06)"
+              : "rgba(140,160,255,0.05)",
+            transition:"background 3s ease",
+          }}/>
+        )}
+        {/* Smoke particles */}
+        {Array.from({length: Math.max(3, Math.floor(arenaAtmosphere.smokeLevel / 7))}, (_,i) => (
+          <div key={`smoke-${i}`} style={{
+            position:"absolute",
+            left:`${(i * 17 + 5) % 100}%`,
+            bottom:`${10 + (i * 23) % 60}%`,
+            width: 60 + (i % 4) * 30,
+            height: 40 + (i % 3) * 20,
+            borderRadius:"50%",
+            background: i % 3 === 0 ? "rgba(0,229,255,0.03)" : "rgba(255,255,255,0.03)",
+            filter:`blur(${8 + (i % 3) * 4}px)`,
+            opacity: 0.03 + (arenaAtmosphere.smokeLevel / 100) * 0.05,
+            animation:`atmosSmokeDrift ${14 + (i % 5) * 4}s ease-in-out ${i * 1.3}s infinite alternate`,
+            zIndex:2,pointerEvents:"none",
+          }}/>
+        ))}
+        {/* Storm lightning flashes */}
+        {arenaAtmosphere.weather === "storm" && tick % 7 < 1 && (
+          <div style={{
+            position:"absolute",inset:0,zIndex:3,pointerEvents:"none",
+            background:"rgba(200,220,255,0.08)",
+            animation:"atmosLightning 0.15s ease both",
+          }}/>
+        )}
+        {/* 420 celebration particles */}
+        {arenaAtmosphere.is420 && Array.from({length:12}, (_,i) => (
+          <div key={`gold-${i}`} style={{
+            position:"absolute",
+            left:`${(i * 8 + 3) % 100}%`,
+            top:`${(i * 11 + 5) % 80}%`,
+            width:4 + (i % 3) * 2,
+            height:4 + (i % 3) * 2,
+            borderRadius:"50%",
+            background:C.gold,
+            boxShadow:`0 0 8px ${C.gold}`,
+            opacity:0.7,
+            animation:`atmosGoldFloat ${3 + (i % 4)}s ease-in-out ${i * 0.25}s infinite`,
+            zIndex:4,pointerEvents:"none",
+          }}/>
+        ))}
+        {/* 420 VIBES text flash */}
+        {arenaAtmosphere.is420 && (
+          <div style={{
+            position:"absolute",top:"18%",left:"50%",transform:"translateX(-50%)",zIndex:5,pointerEvents:"none",
+            fontSize:28,fontWeight:900,letterSpacing:6,
+            color:C.gold,
+            textShadow:`0 0 20px ${C.gold}, 0 0 40px ${C.gold}80, 0 0 80px ${C.gold}40`,
+            animation:"atmosGoldPulse 1.5s ease-in-out infinite",
+          }}>420 VIBES</div>
+        )}
 
         {/* ═══ JUMBOTRON — taller for visual balance ═══ */}
         <div style={{position:"absolute",top:72,left:18,right:18,zIndex:10,animation:"arenaFadeIn 0.6s ease 0.1s both"}}>
@@ -4263,14 +5090,21 @@ export default function MoodLabArena() {
             <div style={{display:"inline-flex",alignItems:"center",gap:6,padding:"5px 14px",borderRadius:100,
               ...GLASS_CARD,
             }}>
+              {/* Temperature badge */}
+              <div style={{display:"flex",alignItems:"center",gap:2}}>
+                <span style={{fontSize:9}}>{arenaAtmosphere.temperature==="chill"?"😌":arenaAtmosphere.temperature==="warm"?"🌤":arenaAtmosphere.temperature==="hot"?"🔥":"💥"}</span>
+                <span style={{fontSize:8,fontWeight:700,letterSpacing:0.5,color:arenaAtmosphere.temperature==="chill"?C.blue:arenaAtmosphere.temperature==="warm"?C.green:arenaAtmosphere.temperature==="hot"?C.orange:C.red}}>{arenaAtmosphere.temperature.toUpperCase()}</span>
+              </div>
+              <span style={{width:1,height:10,background:C.text3+"30"}}/>
+              {/* Online counter with atmosphere */}
               <div style={{display:"flex",alignItems:"center",gap:3}}>
                 <div style={{width:4,height:4,borderRadius:"50%",background:C.green,boxShadow:`0 0 6px ${C.green}60`,animation:"pulse 2s infinite"}}/>
-                <span style={{fontSize:8,fontWeight:600,color:C.text3}}>In Arena</span>
-                <span style={{fontSize:9,fontWeight:700,color:C.text2}}>{playersNow.toLocaleString()}</span>
+                <span style={{fontSize:9,fontWeight:700,color:arenaAtmosphere.is420?C.gold:C.text2,animation:arenaAtmosphere.is420?"atmosGoldPulse 1s infinite":"none"}}>{arenaAtmosphere.onlineCount.toLocaleString()}</span>
+                <span style={{fontSize:7,fontWeight:600,color:C.text3}}>in Arena</span>
               </div>
               <span style={{width:1,height:10,background:C.text3+"30"}}/>
               <div style={{display:"flex",alignItems:"center",gap:2}}>
-                <span style={{fontSize:8,fontWeight:600,color:C.text3}}>Level</span>
+                <span style={{fontSize:8,fontWeight:600,color:C.text3}}>Lv</span>
                 <span style={{fontSize:9,fontWeight:700,color:C.gold}}>{USER.level}</span>
               </div>
               <span style={{width:1,height:10,background:C.text3+"30"}}/>
@@ -4278,11 +5112,13 @@ export default function MoodLabArena() {
                 <span style={{fontSize:8,fontWeight:600,color:C.text3}}>Puff</span>
                 <span style={{fontSize:9,fontWeight:700,color:C.orange}}>🔥5</span>
               </div>
-              <span style={{width:1,height:10,background:C.text3+"30"}}/>
-              <div style={{display:"flex",alignItems:"center",gap:2}}>
-                <span style={{fontSize:8,fontWeight:600,color:C.text3}}>Blinker</span>
-                <span style={{fontSize:9,fontWeight:700,color:C.green}}>👥{friendsOnline}</span>
-              </div>
+              {arenaAtmosphere.peakHour && (<>
+                <span style={{width:1,height:10,background:C.text3+"30"}}/>
+                <div style={{display:"flex",alignItems:"center",gap:2,padding:"1px 6px",borderRadius:6,background:`${C.red}15`}}>
+                  <div style={{width:4,height:4,borderRadius:"50%",background:C.red,animation:"pulse 1s infinite"}}/>
+                  <span style={{fontSize:7,fontWeight:800,color:C.red,letterSpacing:0.5}}>PEAK</span>
+                </div>
+              </>)}
             </div>
           </div>
         </div>
@@ -5047,7 +5883,7 @@ export default function MoodLabArena() {
   // ── Reusable Game Chat Panel — can be dropped into any game render ──
   const renderGameChatPanel = (gameName) => (
     <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:300,maxHeight:"30%",display:"flex",flexDirection:"column"}}>
-      {/* Reaction emoji bar */}
+      {/* Reaction emoji bar + Puff React toggle */}
       <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:2,padding:"3px 6px",...GLASS_CLEAR,borderRadius:"10px 10px 0 0"}}>
         {[{e:"😂"},{e:"👏"},{e:"😱"},{e:"🔥"},{e:"💀"},{e:"😘"},{e:"👋"},{e:"💨"}].map((r,i)=>(
           <div key={i} onClick={()=>{
@@ -5063,18 +5899,33 @@ export default function MoodLabArena() {
         <div onClick={()=>setAudioOn(!audioOn)} style={{width:28,height:28,borderRadius:7,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:11,marginLeft:2,background:audioOn?`${C.green}10`:`${C.red}10`,border:`1px solid ${audioOn?C.green+"20":C.red+"20"}`}}>
           {audioOn?"🔊":"🔇"}
         </div>
+        {/* Puff Reaction Mode Toggle */}
+        <div onClick={()=>{playFx("tap");setPuffReactionMode(p=>!p);}} style={{width:28,height:28,borderRadius:7,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:9,marginLeft:2,background:puffReactionMode?"rgba(0,229,255,0.15)":"rgba(255,255,255,0.04)",border:`1px solid ${puffReactionMode?"rgba(0,229,255,0.3)":"rgba(255,255,255,0.06)"}`,transition:"all 0.2s",position:"relative"}}>
+          {puffReactionMode?"💨":"💬"}
+          {puffReactionMode&&<div style={{position:"absolute",top:-2,right:-2,width:5,height:5,borderRadius:"50%",background:C.cyan,animation:"pulse 1s infinite"}}/>}
+        </div>
       </div>
-      {/* Chat messages */}
-      <div style={{...GLASS_CARD,padding:"6px 8px",flex:1,overflowY:"auto",maxHeight:120}}>
-        <div style={{fontSize:7,color:C.text3,marginBottom:4,letterSpacing:1}}>💬 {gameName} CHAT</div>
-        {sideChat.you.slice(-6).map((m,i)=>(
-          <div key={i} style={{display:"flex",gap:4,alignItems:"flex-start",marginBottom:3}}>
-            <span style={{fontSize:7,fontWeight:700,color:m.c,flexShrink:0}}>{m.u}:</span>
-            <span style={{fontSize:8,color:C.text2}}>{m.m}</span>
+      {/* Tab bar: Chat / Puff React */}
+      <div style={{display:"flex",gap:0,...GLASS_CARD,borderRadius:0,padding:0,borderBottom:`1px solid ${C.border}`}}>
+        {[{key:"chat",label:"💬 Chat"},{key:"puffReact",label:"💨 Puff React"}].map(t=>(
+          <div key={t.key} onClick={()=>{playFx("tap");setPuffChatTab(t.key);}} style={{flex:1,padding:"4px 0",textAlign:"center",fontSize:8,fontWeight:700,cursor:"pointer",color:puffChatTab===t.key?C.cyan:C.text3,borderBottom:puffChatTab===t.key?`2px solid ${C.cyan}`:"2px solid transparent",background:puffChatTab===t.key?"rgba(0,229,255,0.05)":"transparent",transition:"all 0.2s"}}>
+            {t.label}
           </div>
         ))}
-        {sideChat.you.length===0 && <div style={{fontSize:8,color:C.text3,fontStyle:"italic"}}>Tap an emoji to react! 💨</div>}
       </div>
+      {/* Tab content */}
+      {puffChatTab==="chat" ? (
+        <div style={{...GLASS_CARD,padding:"6px 8px",flex:1,overflowY:"auto",maxHeight:120,borderRadius:0}}>
+          <div style={{fontSize:7,color:C.text3,marginBottom:4,letterSpacing:1}}>💬 {gameName} CHAT</div>
+          {sideChat.you.slice(-6).map((m,i)=>(
+            <div key={i} style={{display:"flex",gap:4,alignItems:"flex-start",marginBottom:3}}>
+              <span style={{fontSize:7,fontWeight:700,color:m.c,flexShrink:0}}>{m.u}:</span>
+              <span style={{fontSize:8,color:C.text2}}>{m.m}</span>
+            </div>
+          ))}
+          {sideChat.you.length===0 && <div style={{fontSize:8,color:C.text3,fontStyle:"italic"}}>Tap an emoji to react! 💨</div>}
+        </div>
+      ) : renderPuffReactionFeedTab()}
     </div>
   );
 
@@ -11357,6 +12208,11 @@ export default function MoodLabArena() {
         @keyframes duelCountdownPop{0%{transform:scale(2.5);opacity:0}30%{transform:scale(0.9);opacity:1}50%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
         @keyframes duelRedPulse{0%,100%{opacity:0.15}50%{opacity:0.3}}
         @keyframes duelDrawFlash{0%{transform:scale(3);opacity:0}100%{transform:scale(1);opacity:1}}
+        @keyframes atmosSmokeDrift{0%{transform:translateX(0) translateY(0) scale(1)}50%{transform:translateX(30px) translateY(-20px) scale(1.3)}100%{transform:translateX(-20px) translateY(10px) scale(0.9)}}
+        @keyframes atmosLightning{0%{opacity:0.12}50%{opacity:0}80%{opacity:0.06}100%{opacity:0}}
+        @keyframes atmosGoldFloat{0%{transform:translateY(0) scale(1);opacity:0.7}50%{transform:translateY(-15px) scale(1.2);opacity:1}100%{transform:translateY(0) scale(1);opacity:0.7}}
+        @keyframes atmosGoldPulse{0%,100%{opacity:1;text-shadow:0 0 10px currentColor}50%{opacity:0.6;text-shadow:0 0 20px currentColor,0 0 40px currentColor}}
+        @keyframes atmosEnergyPulse{0%,100%{filter:brightness(1) drop-shadow(0 0 4px currentColor)}50%{filter:brightness(1.3) drop-shadow(0 0 12px currentColor)}}
         @keyframes duelEyeGlow{0%,100%{opacity:0.5;box-shadow:0 0 4px currentColor}50%{opacity:1;box-shadow:0 0 12px currentColor,0 0 24px currentColor}}
         @keyframes duelMuzzle{0%{transform:scale(0.3);opacity:1}50%{transform:scale(1.5);opacity:0.8}100%{transform:scale(2);opacity:0}}
         @keyframes duelStar{0%,100%{opacity:0.2}50%{opacity:0.8}}
