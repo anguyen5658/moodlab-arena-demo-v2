@@ -656,6 +656,7 @@ export default function MoodLabArena() {
   // ── Rock Paper Scissors ──
   const [rpsPhase, setRpsPhase] = useState(null); // null|"intro"|"choose"|"puff"|"clash"|"result"|"round_result"|"final"
   const [rpsRound, setRpsRound] = useState(0);
+  const rpsRoundRef = useRef(0);
   const [rpsScore, setRpsScore] = useState({you:0, ai:0});
   const [rpsPlayerChoice, setRpsPlayerChoice] = useState(null); // "rock"|"paper"|"scissors"
   const rpsPlayerChoiceRef = useRef(null); // sync ref to avoid stale closure
@@ -4825,7 +4826,7 @@ export default function MoodLabArena() {
   const startRps = () => {
     const opp = RPS_OPPONENTS[Math.floor(Math.random()*RPS_OPPONENTS.length)];
     setRpsOpponent(opp);
-    setRpsRound(0);
+    setRpsRound(0); rpsRoundRef.current=0;
     setRpsScore({you:0,ai:0});
     setRpsPlayerChoice(null);
     setRpsAiChoice(null);
@@ -4847,7 +4848,7 @@ export default function MoodLabArena() {
     setTimeout(()=>{if(!guard.v)return;setRpsIntro(2);setCommentary(opp.name + ": \"" + opp.taunt + "\"");},1000);
     setTimeout(()=>{if(!guard.v)return;setRpsIntro(3);playFx("whistle");setCommentary("Best of 5 rounds... FIGHT!");},2000);
     setTimeout(()=>{if(!guard.v)return;setRpsIntro(4);triggerFlash("goal");playFx("crowd");},2800);
-    setTimeout(()=>{if(!guard.v)return;setRpsPhase("choose");setRpsIntro(0);setRpsRound(0);setCommentary("Round 1 \u2014 Choose your throw!");},3500);
+    setTimeout(()=>{if(!guard.v)return;setRpsPhase("choose");setRpsIntro(0);setRpsRound(0);setCommentary("Round 1 — Choose your throw!");},3500);
   };
 
   const rpsPickChoice = (choice) => {
@@ -4941,11 +4942,11 @@ export default function MoodLabArena() {
         else if(result==="tie") { ns.you += 1; ns.ai += 1; }
         return ns;
       });
-      setRpsRoundResults(prev => [...prev, {round:rpsRound, playerChoice:pc, aiChoice, result, pts, playerPower:finalPower, aiPower:aiPwr}]);
+      setRpsRoundResults(prev => [...prev, {round:rpsRoundRef.current, playerChoice:pc, aiChoice, result, pts, playerPower:finalPower, aiPower:aiPwr}]);
       setRpsPhase("round_result");
       setTimeout(()=>{
         if(!guard||!guard.v) return;
-        const nextRound = rpsRound + 1;
+        const nextRound = rpsRoundRef.current + 1;
         if(nextRound >= 5) {
           setRpsPhase("final");
           setRpsScore(prev => {
@@ -4965,13 +4966,13 @@ export default function MoodLabArena() {
             return prev;
           });
         } else {
-          setRpsRound(nextRound);
+          setRpsRound(nextRound); rpsRoundRef.current=nextRound;
           setRpsPlayerChoice(null);
           setRpsAiChoice(null);
           setRpsPuffPower(0);
           setRpsResult(null);
           setRpsPhase("choose");
-          setCommentary("Round " + (nextRound+1) + " \u2014 Choose your throw!");
+          setCommentary("Round " + (nextRound+1) + " — Choose your throw!");
         }
       },2500);
     },1200);
@@ -8400,7 +8401,8 @@ export default function MoodLabArena() {
       const pool = getDevicePool();
       const canEnterWC = wcCanEnter();
       const cooldownMs = wcCooldownRemaining();
-      const isFinalkick = ["finalkick","finalkick2","finalkick3","russian","puffpong","balloon","rhythm","tugofwar","wildwest","hooked"].includes(selectedGame.id);
+      const isFinalkick = ["finalkick","finalkick2","finalkick3"].includes(selectedGame.id);
+      const hasQuickPlay = true; // all games have quick play
       return (
         <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden"}}>
           {/* Background — matching other pages */}
@@ -8438,8 +8440,8 @@ export default function MoodLabArena() {
               <span style={{fontSize:9,fontWeight:700,color:C.text2}}>How to Play</span>
             </div>
 
-            {/* ═══ TEAM PICKER (for Quick Play) ═══ */}
-            <div onClick={()=>{playFx("tap");setWcPhase("team_select_quick");}} style={{
+            {/* ═══ TEAM PICKER (FK1/2/3 only) ═══ */}
+            {isFinalkick && <div onClick={()=>{playFx("tap");setWcPhase("team_select_quick");}} style={{
               display:"flex",alignItems:"center",gap:8,padding:"6px 12px",borderRadius:10,cursor:"pointer",marginBottom:8,
               background:wcTeam?`${C.cyan}08`:`rgba(255,255,255,0.03)`,border:`1px solid ${wcTeam?C.cyan+"25":C.border}`,
               width:"100%",maxWidth:340,
@@ -8450,7 +8452,7 @@ export default function MoodLabArena() {
                 <div style={{fontSize:7,color:C.text3}}>Tap to {wcTeam?"change":"select"} nation</div>
               </div>
               <span style={{fontSize:10,color:C.text3}}>›</span>
-            </div>
+            </div>}
 
             {/* ═══ SECTION A: QUICK PLAY ═══ */}
             <div style={{width:"100%",maxWidth:340,marginBottom:12}}>
@@ -9213,7 +9215,7 @@ export default function MoodLabArena() {
                       {step:"1",icon:"👥",label:"4-6 Players Join",sub:"You + AI opponents sit in a circle",color:C.cyan,arrow:true},
                       {step:"2",icon:"🎈",label:"Take Turns Puffing",sub:"One player inflates each round",color:C.pink,arrow:true},
                       {step:"3",icon:"💨",label:"Hold & Release",sub:"Hold = charge puff power, release = add air!",color:C.lime,arrow:true},
-                      {step:"4",icon:"📈",label:"Balloon Grows",sub:"Color shifts green \u2192 yellow \u2192 orange \u2192 RED!",color:C.orange,arrow:true},
+                      {step:"4",icon:"📈",label:"Balloon Grows",sub:"Color shifts green → yellow → orange → RED!",color:C.orange,arrow:true},
                       {step:"5",icon:"💥",label:"POP = Eliminated!",sub:"The player who pops it LOSES!",color:C.red,arrow:false},
                     ].map((s,i)=>(
                       <React.Fragment key={i}>
