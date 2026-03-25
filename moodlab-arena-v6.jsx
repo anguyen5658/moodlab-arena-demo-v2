@@ -5588,6 +5588,54 @@ export default function MoodLabArena() {
         </div>
 
 
+        {/* ═══ LIVE EVENTS — Synchronized Puff Events card ═══ */}
+        <div style={{position:"absolute",bottom:125,left:14,right:14,zIndex:12,animation:"arenaFadeIn 0.7s ease 0.4s both"}}>
+          <div style={{borderRadius:16,overflow:"hidden",cursor:"pointer",...GLASS_CARD}} onClick={() => {
+            if (peNextCountdown === "NOW!" || (puffEventSchedule && puffEventSchedule.nextAt <= Date.now())) {
+              startPuffEvent(puffEventSchedule.nextType);
+            } else {
+              notify("Event starts in " + peNextCountdown, C.cyan);
+            }
+          }}>
+            <div style={{padding:"10px 14px"}}>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:6}}>
+                <div style={{display:"flex",alignItems:"center",gap:6}}>
+                  <div style={{width:6,height:6,borderRadius:"50%",background:peNextCountdown==="NOW!"?C.red:C.cyan,boxShadow:`0 0 8px ${peNextCountdown==="NOW!"?C.red:C.cyan}`,animation:"pulse 1.5s infinite"}}/>
+                  <span style={{fontSize:10,fontWeight:800,color:C.text,letterSpacing:1}}>LIVE EVENTS</span>
+                </div>
+                <div style={{padding:"2px 8px",borderRadius:6,background:peNextCountdown==="NOW!"?`${C.red}15`:`${C.cyan}10`,border:`1px solid ${peNextCountdown==="NOW!"?C.red+"30":C.cyan+"20"}`}}>
+                  <span style={{fontSize:9,fontWeight:800,color:peNextCountdown==="NOW!"?C.red:C.cyan}}>{peNextCountdown==="NOW!"?"JOIN NOW!":peNextCountdown}</span>
+                </div>
+              </div>
+              <div style={{display:"flex",alignItems:"center",gap:8}}>
+                <div style={{fontSize:20}}>{(() => { const t = PE_TYPES.find(t=>t.id===puffEventSchedule?.nextType); return t ? t.emoji : "🎮"; })()}</div>
+                <div>
+                  <div style={{fontSize:12,fontWeight:800,color:C.text}}>{(() => { const t = PE_TYPES.find(t=>t.id===puffEventSchedule?.nextType); return t ? t.name : "Loading..."; })()}</div>
+                  <div style={{fontSize:9,color:C.text3}}>{(() => { const t = PE_TYPES.find(t=>t.id===puffEventSchedule?.nextType); return t ? t.desc : ""; })()}</div>
+                </div>
+              </div>
+              {/* Quick launch buttons */}
+              <div style={{display:"flex",gap:4,marginTop:8}}>
+                {PE_TYPES.map(pe => (
+                  <div key={pe.id} onClick={(e) => { e.stopPropagation(); startPuffEvent(pe.id); }} style={{
+                    flex:1,padding:"5px 2px",borderRadius:8,textAlign:"center",cursor:"pointer",
+                    background:`${pe.color}08`,border:`1px solid ${pe.color}15`,transition:"all 0.2s",
+                  }}>
+                    <div style={{fontSize:11}}>{pe.emoji}</div>
+                    <div style={{fontSize:7,fontWeight:700,color:pe.color,marginTop:1}}>{pe.name.split(" ")[0]}</div>
+                  </div>
+                ))}
+              </div>
+              {/* Recent event result */}
+              {puffEventResult && (Date.now() - puffEventResult.closedAt < 300000) && (
+                <div style={{marginTop:6,padding:"4px 8px",borderRadius:6,background:`${C.gold}06`,border:`1px solid ${C.gold}10`,fontSize:9,color:C.text3}}>
+                  Last: {PE_TYPES.find(t=>t.id===puffEventResult.type)?.name} completed - {puffEventResult.data?.participants || 0} participated
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
         {/* ═══ HALFTIME MINI-GAMES — floating card ═══ */}
         <div style={{position:"absolute",bottom:70,left:14,right:14,zIndex:12,animation:"arenaFadeIn 0.8s ease 0.5s both"}}>
           <div style={{borderRadius:18,overflow:"hidden",...GLASS_CARD,padding:"14px 16px"}}>
@@ -6091,6 +6139,7 @@ export default function MoodLabArena() {
       // Reset EVERYTHING — nuclear clear all state
       setGameActive(null);setKickState(null);setIsFK2Mode(false);isFK2Ref.current=false;setIsFK3Mode(false);isFK3Ref.current=false;
       setBpPhase(null);setRrPhase(null);setPpPhase(null);setRpPhase(null);setTowPhase(null);
+      setHpPhase(null);setHookPhase(null);setRpsPhase(null);setDuelPhase("menu");
       setMatchmaking(null);setSelectedGame(null);setFanMode(null);setFanTeam(null);setFanDevice(null);
       setShowVibeCheck(false);setDimLights(false);setScreenShake(false);setScreenFlash(null);
       setMatchIntro(null);setCommentatorText("");setPuffBubbles([]);setAudienceBubbles([]);
@@ -6105,10 +6154,11 @@ export default function MoodLabArena() {
   const cleanupAllGames = () => {
     // FK intervals
     if(kickChargeInterval.current){clearInterval(kickChargeInterval.current);kickChargeInterval.current=null;}
-    if(fk2SweepRef.current){clearInterval(fk2SweepRef.current);fk2SweepRef.current=null;}
     if(actionTimerRef.current){clearInterval(actionTimerRef.current);actionTimerRef.current=null;}
-    // Duel intervals
+    // Duel intervals + timeouts
     if(duelPuffInterval.current){clearInterval(duelPuffInterval.current);duelPuffInterval.current=null;}
+    if(duelTimerRef.current){clearTimeout(duelTimerRef.current);duelTimerRef.current=null;}
+    if(duelSteadyTimerRef.current){clearTimeout(duelSteadyTimerRef.current);duelSteadyTimerRef.current=null;}
     if(duelDrawTime.current) duelDrawTime.current=null;
     // Balloon Pop
     if(bpChargeInterval.current){clearInterval(bpChargeInterval.current);bpChargeInterval.current=null;}
@@ -6120,12 +6170,16 @@ export default function MoodLabArena() {
     if(ppG.current) ppG.current.paused=true;
     // Rhythm Puff
     if(rpInterval.current){clearInterval(rpInterval.current);rpInterval.current=null;}
+    if(rpPuffTimer.current){clearTimeout(rpPuffTimer.current);rpPuffTimer.current=null;}
     // Tug of War
     if(towInterval.current){clearInterval(towInterval.current);towInterval.current=null;}
     if(towPhysics.current){clearInterval(towPhysics.current);towPhysics.current=null;}
+    if(towSurgeTimer.current){clearTimeout(towSurgeTimer.current);towSurgeTimer.current=null;}
+    // Hooked
+    if(hookGameLoop.current){clearInterval(hookGameLoop.current);hookGameLoop.current=null;}
     // Switch puff
     if(switchPuffTimer.current){clearInterval(switchPuffTimer.current);switchPuffTimer.current=null;}
-    // Kill RR setTimeout chain guard
+    // Kill setTimeout chain guards
     if(window._rrActive) { window._rrActive.v = false; window._rrActive = null; }
     if(window._rpActive) { window._rpActive.v = false; window._rpActive = null; }
     if(window._wwActive) { window._wwActive.v = false; window._wwActive = null; }
@@ -12887,6 +12941,7 @@ export default function MoodLabArena() {
       {renderBlePopup()}
       {renderInputPanel()}
       {renderAskPrompt()}
+      {renderPuffEvent()}
       {renderHalftime()}
       {renderProfileOverlay()}
       {renderAchievementsOverlay()}
@@ -12995,6 +13050,10 @@ export default function MoodLabArena() {
         @keyframes specEruptFlash{0%{opacity:1}100%{opacity:0}}
         @keyframes specTickerScroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
         @keyframes puffReactFloat{0%{opacity:0;transform:translateY(0) scale(0.5)}10%{opacity:1;transform:translateY(-20px) scale(1)}50%{opacity:0.8;transform:translateY(-150px) scale(1.1)}100%{opacity:0;transform:translateY(-350px) scale(0.6)}}
+        @keyframes peCountdownPop{0%{transform:scale(2.5);opacity:0}30%{transform:scale(0.9);opacity:1}50%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
+        @keyframes peChainLink{0%{transform:scale(0) rotate(-180deg);opacity:0}60%{transform:scale(1.2) rotate(10deg);opacity:1}100%{transform:scale(1) rotate(0deg);opacity:1}}
+        @keyframes peMeterFill{0%{width:0%}100%{width:var(--fill-pct,50%)}}
+        @keyframes peGlowPulse{0%,100%{box-shadow:0 0 20px var(--glow-color,rgba(0,229,255,0.3))}50%{box-shadow:0 0 40px var(--glow-color,rgba(0,229,255,0.5)),0 0 60px var(--glow-color,rgba(0,229,255,0.2))}}
         *{-webkit-tap-highlight-color:transparent;user-select:none;box-sizing:border-box}
         input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
         input[type=number]{-moz-appearance:textfield}
