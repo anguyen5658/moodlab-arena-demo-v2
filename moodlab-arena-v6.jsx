@@ -292,6 +292,18 @@ const GAME_TEAMS = {
   ],
 };
 
+const GAME_TOURNAMENTS = {
+  wildwest: { name: "The Outlaw Circuit", emoji: "🤠", format: "16-player bracket", rounds: ["Saloon","Jail","Main Street","High Noon"], prizes: {gold:{pts:30000,coins:800,label:"Sheriff's Badge 🏅"},silver:{pts:15000,coins:400,label:"Deputy Star ⭐"},bronze:{pts:7500,coins:200,label:"Wanted Poster 📜"},fourth:{pts:3000,coins:100,label:"4th Place"}} },
+  russian: { name: "The Underground", emoji: "🎲", format: "6-table survival", rounds: ["Back Alley","Basement","VIP Room","Penthouse","The Vault"], prizes: {gold:{pts:30000,coins:800,label:"Diamond Chip 💎"},silver:{pts:15000,coins:400,label:"Gold Chip 🪙"},bronze:{pts:7500,coins:200,label:"Silver Chip 🥈"},fourth:{pts:3000,coins:100,label:"4th Place"}} },
+  balloon: { name: "Puff Fest", emoji: "🎈", format: "8-player elimination", rounds: ["Kids Stage","Main Stage","VIP Tent","Headliner","Encore"], prizes: {gold:{pts:30000,coins:800,label:"Golden Balloon 🎈"},silver:{pts:15000,coins:400,label:"Silver Pop 💥"},bronze:{pts:7500,coins:200,label:"Bronze Burst 🟤"},fourth:{pts:3000,coins:100,label:"4th Place"}} },
+  puffpong: { name: "Neon League", emoji: "🏓", format: "8-player bracket", rounds: ["Pixel Park","Laser Lounge","Cyber Stadium","The Grid"], prizes: {gold:{pts:30000,coins:800,label:"Arcade Crown 👑"},silver:{pts:15000,coins:400,label:"Neon Trophy 🏆"},bronze:{pts:7500,coins:200,label:"Pixel Medal 🎮"},fourth:{pts:3000,coins:100,label:"4th Place"}} },
+  rhythm: { name: "Tour de Puff", emoji: "🎵", format: "8-venue progression", rounds: ["Open Mic","Bar Gig","Club Night","Festival","Arena","Stadium","World Tour","420 Bowl"], prizes: {gold:{pts:30000,coins:800,label:"Platinum Record 💿"},silver:{pts:15000,coins:400,label:"Gold Record 🥇"},bronze:{pts:7500,coins:200,label:"Silver Record 🥈"},fourth:{pts:3000,coins:100,label:"4th Place"}} },
+  tugofwar: { name: "The Puff Games", emoji: "💪", format: "4-team bracket", rounds: ["Training Grounds","Arena Gates","Colosseum Floor","Champion's Ring"], prizes: {gold:{pts:30000,coins:800,label:"Champion's Belt 🏅"},silver:{pts:15000,coins:400,label:"Gladiator Shield 🛡️"},bronze:{pts:7500,coins:200,label:"Bronze Sword ⚔️"},fourth:{pts:3000,coins:100,label:"4th Place"}} },
+  hotpotato: { name: "Bomb Squad Cup", emoji: "💣", format: "6-player survival", rounds: ["Training Camp","Field Exercise","Urban Scenario","Final Countdown"], prizes: {gold:{pts:30000,coins:800,label:"Expert Badge 🎖️"},silver:{pts:15000,coins:400,label:"Defuser Medal 🏅"},bronze:{pts:7500,coins:200,label:"Survivor Pin 📌"},fourth:{pts:3000,coins:100,label:"4th Place"}} },
+  rps: { name: "Dojo Championship", emoji: "✊", format: "16-player bracket", rounds: ["White Belt","Green Belt","Brown Belt","Black Belt","Grand Master"], prizes: {gold:{pts:30000,coins:800,label:"Dragon Scroll 📜"},silver:{pts:15000,coins:400,label:"Tiger Claw 🐯"},bronze:{pts:7500,coins:200,label:"Crane Feather 🪶"},fourth:{pts:3000,coins:100,label:"4th Place"}} },
+  hooked: { name: "Deep Sea Masters", emoji: "🎣", format: "8-location progression", rounds: ["Local Pond","River","Lake","Deep Sea","Coral Reef","Abyssal Trench","The Void"], prizes: {gold:{pts:30000,coins:800,label:"Golden Rod 🎣"},silver:{pts:15000,coins:400,label:"Silver Hook 🪝"},bronze:{pts:7500,coins:200,label:"Bronze Reel 🔄"},fourth:{pts:3000,coins:100,label:"4th Place"}} },
+};
+
 const WC_GROUPS = {
   A:["usa","mex","can","civ"], B:["eng","ita","aus","nzl"], C:["arg","fra","irn","sen"],
   D:["ned","bel","jpn","nga"], E:["esp","por","idn","rsa"], F:["bra","ger","ksa","mar"],
@@ -773,6 +785,7 @@ export default function MoodLabArena() {
   const [wcGroupResult, setWcGroupResult] = useState(null); // after group stage — "advance"|"eliminated"
   const [wcFinalResult, setWcFinalResult] = useState(null); // "gold"|"silver"|"bronze"|"fourth"|"group"
   const [wcViewTab, setWcViewTab] = useState("mygroup"); // "mygroup" | "allgroups" | "bracket"
+  const [gameTournament, setGameTournament] = useState(null); // {gameId, team, round, bracket, results} for non-FK tournaments
 
   // ── Derived ──
   const wcDays = Math.max(0, Math.floor((new Date("2026-06-11") - new Date()) / 86400000));
@@ -2493,6 +2506,12 @@ export default function MoodLabArena() {
     const r=Math.min(300,Math.floor(rpScore/10));
     setCoins(c=>c+r);notify("🎵 Score: "+rpScore+" | +"+r+" coins!",C.purple);
     if(rpScore>500){spawnConfetti(40,[C.purple,C.pink,C.gold,C.cyan]);setCommentary(pick(rpComedy.win));}
+    if(gameActive?.wcMode) {
+      const won = rpScore > 300;
+      const myS = won ? 3 : 0; const aiS = won ? 0 : 3;
+      if(gameActive.wcKnockout) { wcFinishKnockoutMatch(myS, aiS); }
+      else if(gameActive.wcMatchIdx !== undefined) { wcFinishGroupMatch(gameActive.wcMatchIdx, myS, aiS); }
+    }
     setGameActive(null);setRpPhase(null);
   };
 
@@ -2631,6 +2650,11 @@ export default function MoodLabArena() {
     towCleanup();
     const won=towPosRef.current>50;const r=won?80:15;
     setCoins(c=>c+r);notify(won?"💪 Won! +"+r:"😤 Lost! +"+r,won?C.green:C.red);
+    if(gameActive?.wcMode) {
+      const myS = won ? 3 : 0; const aiS = won ? 0 : 3;
+      if(gameActive.wcKnockout) { wcFinishKnockoutMatch(myS, aiS); }
+      else if(gameActive.wcMatchIdx !== undefined) { wcFinishGroupMatch(gameActive.wcMatchIdx, myS, aiS); }
+    }
     setGameActive(null);setTowPhase(null);
   };
 
@@ -3533,7 +3557,9 @@ export default function MoodLabArena() {
     setWcDrawAnim(true);
 
     // Generate group: user's team + 3 random opponents (not same team)
-    const pool = WC_TEAMS.filter(t => t.id !== wcTeam.id && t.group !== "BONUS");
+    const isFK = ["finalkick","finalkick2","finalkick3"].includes(wcGameId);
+    const gameTeamPool = !isFK && GAME_TEAMS[wcGameId] ? GAME_TEAMS[wcGameId] : null;
+    const pool = gameTeamPool ? gameTeamPool.filter(t => t.id !== wcTeam.id) : WC_TEAMS.filter(t => t.id !== wcTeam.id && t.group !== "BONUS");
     const shuffled = [...pool].sort(() => Math.random() - 0.5);
     const groupOpps = shuffled.slice(0, 3);
     const groupTeams = [wcTeam, ...groupOpps];
@@ -3571,11 +3597,11 @@ export default function MoodLabArena() {
   const wcStartGroupMatch = (matchIdx) => {
     if(!wcTournament || wcTournament.groupMatches[matchIdx].played) return;
     playFx("select");
-    // Start a Final Kick game — store context for callback
+    // Start game — store context for callback
     const opp = wcTournament.groupMatches[matchIdx].opp;
     kickOpponent.current = {
       name: opp.name,
-      emoji: opp.flag,
+      emoji: opp.flag || opp.emoji,
       img: `https://api.dicebear.com/9.x/icons/svg?seed=${opp.id}&backgroundColor=transparent`,
       rank: `#${Math.floor(Math.random()*50)+1}`,
       record: `${Math.floor(Math.random()*100)}-${Math.floor(Math.random()*50)}`,
@@ -3592,6 +3618,9 @@ export default function MoodLabArena() {
     else if(fkGame.id === "russian") { startRussianRoulette(); }
     else if(fkGame.id === "hotpotato") { startHotPotato(); }
     else if(fkGame.id === "hooked") { startHooked(); }
+    else if(fkGame.id === "rps") { startRps(); }
+    else if(fkGame.id === "rhythm") { startRhythmPuff(); }
+    else if(fkGame.id === "tugofwar") { startTugOfWar(); }
     else { startKick(fkGame.id); startMatchIntro(kickOpponent.current); }
   };
 
@@ -3651,10 +3680,13 @@ export default function MoodLabArena() {
         // Top 2: advance to knockout
         setWcGroupResult("advance");
         setTimeout(() => {
-          // Generate knockout bracket — 4 rounds: R32, R16, QF, SF, Final
-          const knockoutRounds = ["Round of 32","Round of 16","Quarterfinal","Semifinal","Final"];
+          // Generate knockout bracket — use game-specific rounds or default
+          const isFK = ["finalkick","finalkick2","finalkick3"].includes(wcGameId);
+          const gtInfo = GAME_TOURNAMENTS[wcGameId];
+          const knockoutRounds = (!isFK && gtInfo) ? gtInfo.rounds : ["Round of 32","Round of 16","Quarterfinal","Semifinal","Final"];
+          const koPool = (!isFK && GAME_TEAMS[wcGameId]) ? GAME_TEAMS[wcGameId] : WC_TEAMS;
           const knockoutOpps = knockoutRounds.map(() => {
-            const r = WC_TEAMS.filter(t => t.id !== wcTeam.id && t.group !== "BONUS");
+            const r = koPool.filter(t => t.id !== wcTeam.id && (t.group !== "BONUS"));
             return r[Math.floor(Math.random() * r.length)];
           });
           setWcBracket({ rounds: knockoutRounds, opponents: knockoutOpps, results: [], currentRound: 0 });
@@ -3679,7 +3711,7 @@ export default function MoodLabArena() {
     const opp = wcBracket.opponents[wcBracket.currentRound];
     kickOpponent.current = {
       name: opp.name,
-      emoji: opp.flag,
+      emoji: opp.flag || opp.emoji,
       img: `https://api.dicebear.com/9.x/icons/svg?seed=${opp.id}&backgroundColor=transparent`,
       rank: `#${Math.floor(Math.random()*30)+1}`,
       record: `${Math.floor(Math.random()*150)}-${Math.floor(Math.random()*50)}`,
@@ -3694,6 +3726,9 @@ export default function MoodLabArena() {
     else if(fkGame.id === "russian") { startRussianRoulette(); }
     else if(fkGame.id === "hotpotato") { startHotPotato(); }
     else if(fkGame.id === "hooked") { startHooked(); }
+    else if(fkGame.id === "rps") { startRps(); }
+    else if(fkGame.id === "rhythm") { startRhythmPuff(); }
+    else if(fkGame.id === "tugofwar") { startTugOfWar(); }
     else { startKick(fkGame.id); startMatchIntro(kickOpponent.current); }
   };
 
@@ -3744,11 +3779,12 @@ export default function MoodLabArena() {
 
   const wcClaimPrize = () => {
     if(!wcFinalResult) return;
-    const prize = WC_PRIZES[wcFinalResult];
+    const gtPrize = GAME_TOURNAMENTS[wcGameId];
+    const prize = (gtPrize && gtPrize.prizes[wcFinalResult]) ? gtPrize.prizes[wcFinalResult] : WC_PRIZES[wcFinalResult];
     if(prize) {
       setCoins(c => c + prize.coins);
       setXp(x => x + Math.floor(prize.pts / 10));
-      notify(`${prize.label} — +${prize.coins} coins!`, wcFinalResult === "gold" ? C.gold : C.cyan);
+      notify(`${prize.label || prize.title} — +${prize.coins} coins!`, wcFinalResult === "gold" ? C.gold : C.cyan);
       if(wcFinalResult === "gold") spawnConfetti(80, [C.gold, "#fff", C.cyan]);
       playFx("success");
     }
@@ -4985,9 +5021,14 @@ export default function MoodLabArena() {
     },1200);
   };
 
-  const rpsEndGame = () => {
+  const rpsEndGame = (skipWc) => {
     if(rpsPuffInterval.current){clearInterval(rpsPuffInterval.current);rpsPuffInterval.current=null;}
     if(window._rpsActive) { window._rpsActive.v=false; window._rpsActive=null; }
+    if(!skipWc && gameActive?.wcMode) {
+      const myS = rpsScore.you; const aiS = rpsScore.ai;
+      if(gameActive.wcKnockout) { wcFinishKnockoutMatch(myS, aiS); }
+      else if(gameActive.wcMatchIdx !== undefined) { wcFinishGroupMatch(gameActive.wcMatchIdx, myS, aiS); }
+    }
     setRpsPhase(null);
     setGameActive(null);
   };
@@ -8409,6 +8450,8 @@ export default function MoodLabArena() {
       const canEnterWC = wcCanEnter();
       const cooldownMs = wcCooldownRemaining();
       const isFinalkick = ["finalkick","finalkick2","finalkick3"].includes(selectedGame.id);
+      const hasTournament = isFinalkick || !!GAME_TOURNAMENTS[selectedGame.id];
+      const gTourney = GAME_TOURNAMENTS[selectedGame.id];
       const hasQuickPlay = true; // all games have quick play
       return (
         <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden"}}>
@@ -8447,7 +8490,7 @@ export default function MoodLabArena() {
               <span style={{fontSize:9,fontWeight:700,color:C.text2}}>How to Play</span>
             </div>
 
-            {/* ═══ TEAM PICKER (FK1/2/3 only) ═══ */}
+            {/* ═══ TEAM PICKER ═══ */}
             {isFinalkick && <div onClick={()=>{playFx("tap");setWcPhase("team_select_quick");}} style={{
               display:"flex",alignItems:"center",gap:8,padding:"6px 12px",borderRadius:10,cursor:"pointer",marginBottom:8,
               background:wcTeam?`${C.cyan}08`:`rgba(255,255,255,0.03)`,border:`1px solid ${wcTeam?C.cyan+"25":C.border}`,
@@ -8457,6 +8500,18 @@ export default function MoodLabArena() {
               <div style={{flex:1}}>
                 <div style={{fontSize:9,fontWeight:700,color:wcTeam?C.cyan:C.text3}}>{wcTeam?wcTeam.name:"Choose Your Team"}</div>
                 <div style={{fontSize:7,color:C.text3}}>Tap to {wcTeam?"change":"select"} nation</div>
+              </div>
+              <span style={{fontSize:10,color:C.text3}}>›</span>
+            </div>}
+            {(!isFinalkick && gTourney) && <div onClick={()=>{playFx("tap");setWcGameId(selectedGame.id);setWcPhase("team_select_quick");}} style={{
+              display:"flex",alignItems:"center",gap:8,padding:"6px 12px",borderRadius:10,cursor:"pointer",marginBottom:8,
+              background:wcTeam?`${C.cyan}08`:`rgba(255,255,255,0.03)`,border:`1px solid ${wcTeam?C.cyan+"25":C.border}`,
+              width:"100%",maxWidth:340,
+            }}>
+              <span style={{fontSize:18}}>{wcTeam?wcTeam.emoji||wcTeam.flag:"🏳️"}</span>
+              <div style={{flex:1}}>
+                <div style={{fontSize:9,fontWeight:700,color:wcTeam?C.cyan:C.text3}}>{wcTeam?wcTeam.name:"Choose Your Team"}</div>
+                <div style={{fontSize:7,color:C.text3}}>Tap to {wcTeam?"change":"select"} team</div>
               </div>
               <span style={{fontSize:10,color:C.text3}}>›</span>
             </div>}
@@ -8484,7 +8539,7 @@ export default function MoodLabArena() {
             </div>
 
             {/* ═══ SECTION B: TOURNAMENT ═══ */}
-            {isFinalkick && (
+            {hasTournament && (
               <div style={{width:"100%",maxWidth:340}}>
                 <div style={{fontSize:10,fontWeight:800,color:C.gold,letterSpacing:1.5,marginBottom:6}}>🏆 TOURNAMENT</div>
                 <div style={{
@@ -8499,31 +8554,16 @@ export default function MoodLabArena() {
 
                   <div style={{position:"relative",zIndex:1}}>
                     <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
-                      <span style={{fontSize:24}}>{selectedGame.id==="wildwest"?"🤠":selectedGame.id==="russian"?"🔫":selectedGame.id==="hotpotato"?"💣":selectedGame.id==="hooked"?"🎣":selectedGame.id==="rps"?"✊":"⚽"}</span>
+                      <span style={{fontSize:24}}>{gTourney ? gTourney.emoji : "⚽"}</span>
                       <div>
                         <div style={{fontSize:14,fontWeight:900,color:C.gold,textShadow:`0 0 10px ${C.gold}30`}}>{
+                          gTourney ? gTourney.name :
                           selectedGame.id==="finalkick"?"FK1 World Cup 2026":
                           selectedGame.id==="finalkick2"?"FK2 Precision Cup 2026":
-                          selectedGame.id==="finalkick3"?"FK3 3D Championship 2026":
-                          selectedGame.id==="wildwest"?"Showdown Cup 2026":
-                          selectedGame.id==="russian"?"Roulette Championship 2026":
-                          selectedGame.id==="balloon"?"Balloon Pop Cup 2026":
-                          selectedGame.id==="puffpong"?"Puff Pong Championship 2026":
-                          selectedGame.id==="rhythm"?"Rhythm Puff Festival 2026":
-                          selectedGame.id==="tugofwar"?"Tug of War Arena 2026":
-                          selectedGame.id==="hotpotato"?"Hot Potato Championship 2026":
-                          selectedGame.id==="hooked"?"Hooked Fishing Cup 2026":
-                          "Championship 2026"
+                          "FK3 3D Championship 2026"
                         }</div>
                         <div style={{fontSize:8,color:C.text2}}>{
-                          selectedGame.id==="wildwest"?"48 Gunslingers · Group + Knockout":
-                          selectedGame.id==="russian"?"48 Players · Survival Tournament":
-                          selectedGame.id==="balloon"?"48 Teams · Don't Pop!":
-                          selectedGame.id==="puffpong"?"48 Players · Neon Arena":
-                          selectedGame.id==="rhythm"?"48 DJs · Concert Stage":
-                          selectedGame.id==="tugofwar"?"48 Teams · Colosseum":
-                          selectedGame.id==="hotpotato"?"48 Players · Bomb Circle":
-                          selectedGame.id==="hooked"?"48 Anglers · Deep Sea":
+                          gTourney ? `${gTourney.format} · ${gTourney.rounds.length} rounds` :
                           "48 Teams · Group Stage + Knockout"
                         }</div>
                       </div>
@@ -8531,13 +8571,18 @@ export default function MoodLabArena() {
 
                     {/* Prizes */}
                     <div style={{display:"flex",gap:4,marginBottom:8,flexWrap:"wrap"}}>
-                      {[
+                      {(gTourney ? [
+                        {e:"🥇",label:"Gold",pts:gTourney.prizes.gold.pts.toLocaleString(),color:C.gold,sub:gTourney.prizes.gold.label},
+                        {e:"🥈",label:"Silver",pts:gTourney.prizes.silver.pts.toLocaleString(),color:"#C0C0C0",sub:gTourney.prizes.silver.label},
+                        {e:"🥉",label:"Bronze",pts:gTourney.prizes.bronze.pts.toLocaleString(),color:"#CD7F32",sub:gTourney.prizes.bronze.label},
+                        {e:"4th",label:"",pts:gTourney.prizes.fourth.pts.toLocaleString(),color:C.text3,sub:"4th Place"},
+                      ] : [
                         {e:"🥇",label:"Gold",pts:"50,000",color:C.gold},
                         {e:"🥈",label:"Silver",pts:"25,000",color:"#C0C0C0"},
                         {e:"🥉",label:"Bronze",pts:"10,000",color:"#CD7F32"},
                         {e:"4th",label:"",pts:"5,000",color:C.text3},
-                      ].map((p,i)=>(
-                        <div key={i} style={{padding:"3px 7px",borderRadius:8,background:`${p.color}10`,border:`1px solid ${p.color}18`,display:"flex",alignItems:"center",gap:3}}>
+                      ]).map((p,i)=>(
+                        <div key={i} style={{padding:"3px 7px",borderRadius:8,background:`${p.color}10`,border:`1px solid ${p.color}18`,display:"flex",alignItems:"center",gap:3}} title={p.sub||""}>
                           <span style={{fontSize:10}}>{p.e}</span>
                           <span style={{fontSize:7,fontWeight:700,color:p.color}}>{p.pts}</span>
                         </div>
@@ -8553,7 +8598,7 @@ export default function MoodLabArena() {
                         boxShadow:`0 0 20px ${C.gold}10`,
                       }}>
                         <div style={{fontSize:12,fontWeight:900,color:C.gold,letterSpacing:1}}>ENTER TOURNAMENT</div>
-                        <div style={{fontSize:7,color:C.text3,marginTop:2}}>Choose your nation and compete for glory</div>
+                        <div style={{fontSize:7,color:C.text3,marginTop:2}}>{gTourney ? "Choose your team and compete for glory" : "Choose your nation and compete for glory"}</div>
                         <div style={{fontSize:6,color:C.gold+"60",marginTop:2,fontStyle:"italic"}}>DEMO: Unlimited entries. Production: 1 entry per 6 hours</div>
                       </div>
                     ) : (
@@ -10214,6 +10259,9 @@ export default function MoodLabArena() {
     // ═══ TEAM SELECTION (Tournament or Quick Play) ═══
     if(wcPhase === "team_select" || wcPhase === "team_select_quick") {
       const isQuickMode = wcPhase === "team_select_quick";
+      const isFK = ["finalkick","finalkick2","finalkick3"].includes(wcGameId);
+      const gtInfo = GAME_TOURNAMENTS[wcGameId];
+      const gameTeams = (!isFK && GAME_TEAMS[wcGameId]) ? GAME_TEAMS[wcGameId] : null;
       const confeds = WC_CONFEDERATIONS;
       return (
         <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:110,overflow:"hidden"}}>
@@ -10231,40 +10279,62 @@ export default function MoodLabArena() {
           <div style={{position:"relative",zIndex:2,height:"100%",display:"flex",flexDirection:"column",padding:"48px 12px 16px"}}>
             {/* Title */}
             <div style={{textAlign:"center",marginBottom:12}}>
-              <div style={{fontSize:11,fontWeight:800,color:C.gold,letterSpacing:2,textShadow:`0 0 15px ${C.gold}40`}}>{isQuickMode?"⚡ QUICK PLAY":"🏆 WORLD CUP 2026"}</div>
-              <div style={{fontSize:16,fontWeight:900,color:C.text,marginTop:2}}>Choose Your Team</div>
-              <div style={{fontSize:9,color:C.text3,marginTop:3}}>{isQuickMode?"Pick a nation for your match":"50 nations · Select your squad and fight for glory"}</div>
+              <div style={{fontSize:11,fontWeight:800,color:C.gold,letterSpacing:2,textShadow:`0 0 15px ${C.gold}40`}}>{isQuickMode?"⚡ QUICK PLAY": gtInfo ? `${gtInfo.emoji} ${gtInfo.name.toUpperCase()}` : "🏆 WORLD CUP 2026"}</div>
+              <div style={{fontSize:16,fontWeight:900,color:C.text,marginTop:2}}>Choose Your {gameTeams ? "Team" : "Nation"}</div>
+              <div style={{fontSize:9,color:C.text3,marginTop:3}}>{isQuickMode ? (gameTeams ? "Pick a team for your match" : "Pick a nation for your match") : (gameTeams ? `${gameTeams.length} teams · Select your squad and compete` : "50 nations · Select your squad and fight for glory")}</div>
             </div>
 
             {/* Team grid — scrollable */}
             <div style={{flex:1,overflowY:"auto",paddingBottom:70}}>
-              {confeds.map(conf => {
-                const teams = WC_TEAMS.filter(t => t.confederation === conf.id);
-                if(teams.length === 0) return null;
-                return (
-                  <div key={conf.id} style={{marginBottom:10}}>
-                    <div style={{fontSize:8,fontWeight:800,color:conf.color,letterSpacing:1,marginBottom:4,paddingLeft:4}}>{conf.label}</div>
-                    <div style={{display:"grid",gridTemplateColumns:"repeat(5, 1fr)",gap:4}}>
-                      {teams.map(team => {
-                        const selected = wcTeam?.id === team.id;
-                        return (
-                          <div key={team.id} onClick={()=>wcSelectTeam(team)} style={{
-                            padding:"8px 2px 6px",borderRadius:10,textAlign:"center",cursor:"pointer",
-                            background: selected ? `${C.cyan}15` : "rgba(255,255,255,0.03)",
-                            border: selected ? `2px solid ${C.cyan}60` : "1px solid rgba(255,255,255,0.06)",
-                            boxShadow: selected ? `0 0 15px ${C.cyan}20, inset 0 0 10px ${C.cyan}08` : "none",
-                            transition:"all 0.2s",
-                          }}>
-                            <div style={{fontSize:22,lineHeight:1}}>{team.flag}</div>
-                            <div style={{fontSize:7,fontWeight:700,color:selected?C.cyan:C.text,marginTop:3,lineHeight:1.1}}>{team.name}</div>
-                            <div style={{fontSize:7,color:C.gold,marginTop:2}}>{"⭐".repeat(team.rating)}</div>
-                          </div>
-                        );
-                      })}
+              {gameTeams ? (
+                /* Non-FK game teams */
+                <div style={{display:"grid",gridTemplateColumns:"repeat(3, 1fr)",gap:6,padding:"0 4px"}}>
+                  {gameTeams.map(team => {
+                    const selected = wcTeam?.id === team.id;
+                    return (
+                      <div key={team.id} onClick={()=>wcSelectTeam({...team, flag: team.emoji})} style={{
+                        padding:"12px 6px 10px",borderRadius:14,textAlign:"center",cursor:"pointer",
+                        background: selected ? `${team.color}15` : "rgba(255,255,255,0.03)",
+                        border: selected ? `2px solid ${team.color}60` : "1px solid rgba(255,255,255,0.06)",
+                        boxShadow: selected ? `0 0 15px ${team.color}20, inset 0 0 10px ${team.color}08` : "none",
+                        transition:"all 0.2s",
+                      }}>
+                        <div style={{fontSize:28,lineHeight:1,marginBottom:4}}>{team.emoji}</div>
+                        <div style={{fontSize:9,fontWeight:800,color:selected?team.color:C.text,lineHeight:1.2}}>{team.name}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                /* FK country teams */
+                confeds.map(conf => {
+                  const teams = WC_TEAMS.filter(t => t.confederation === conf.id);
+                  if(teams.length === 0) return null;
+                  return (
+                    <div key={conf.id} style={{marginBottom:10}}>
+                      <div style={{fontSize:8,fontWeight:800,color:conf.color,letterSpacing:1,marginBottom:4,paddingLeft:4}}>{conf.label}</div>
+                      <div style={{display:"grid",gridTemplateColumns:"repeat(5, 1fr)",gap:4}}>
+                        {teams.map(team => {
+                          const selected = wcTeam?.id === team.id;
+                          return (
+                            <div key={team.id} onClick={()=>wcSelectTeam(team)} style={{
+                              padding:"8px 2px 6px",borderRadius:10,textAlign:"center",cursor:"pointer",
+                              background: selected ? `${C.cyan}15` : "rgba(255,255,255,0.03)",
+                              border: selected ? `2px solid ${C.cyan}60` : "1px solid rgba(255,255,255,0.06)",
+                              boxShadow: selected ? `0 0 15px ${C.cyan}20, inset 0 0 10px ${C.cyan}08` : "none",
+                              transition:"all 0.2s",
+                            }}>
+                              <div style={{fontSize:22,lineHeight:1}}>{team.flag}</div>
+                              <div style={{fontSize:7,fontWeight:700,color:selected?C.cyan:C.text,marginTop:3,lineHeight:1.1}}>{team.name}</div>
+                              <div style={{fontSize:7,color:C.gold,marginTop:2}}>{"⭐".repeat(team.rating)}</div>
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })
+              )}
             </div>
 
             {/* Confirm button — fixed bottom */}
@@ -10278,9 +10348,9 @@ export default function MoodLabArena() {
                   backdropFilter:"blur(8px)",
                 }}>
                   <div style={{fontSize:14,fontWeight:900,color:C.cyan}}>
-                    CONFIRM {wcTeam.flag} {wcTeam.name.toUpperCase()}
+                    CONFIRM {wcTeam.flag||wcTeam.emoji} {wcTeam.name.toUpperCase()}
                   </div>
-                  <div style={{fontSize:8,color:C.text3,marginTop:2}}>Enter the World Cup as {wcTeam.name}</div>
+                  <div style={{fontSize:8,color:C.text3,marginTop:2}}>{gtInfo ? `Enter ${gtInfo.name} as ${wcTeam.name}` : `Enter the World Cup as ${wcTeam.name}`}</div>
                 </div>
               </div>
             )}
@@ -10299,9 +10369,9 @@ export default function MoodLabArena() {
             linear-gradient(180deg, #06101E 0%, #0c1a38 40%, #102240 70%, #081830 100%)
           `}}/>
           <div style={{position:"relative",zIndex:2,width:"88%",maxWidth:360,textAlign:"center"}}>
-            <div style={{fontSize:40,marginBottom:8}}>{wcTeam?.flag}</div>
+            <div style={{fontSize:40,marginBottom:8}}>{wcTeam?.flag||wcTeam?.emoji}</div>
             <div style={{fontSize:16,fontWeight:900,color:C.text,marginBottom:2}}>{wcTeam?.name}</div>
-            <div style={{fontSize:10,fontWeight:800,color:C.gold,letterSpacing:2,marginBottom:16}}>🏆 WORLD CUP 2026</div>
+            <div style={{fontSize:10,fontWeight:800,color:C.gold,letterSpacing:2,marginBottom:16}}>{GAME_TOURNAMENTS[wcGameId] ? `${GAME_TOURNAMENTS[wcGameId].emoji} ${GAME_TOURNAMENTS[wcGameId].name.toUpperCase()}` : "🏆 WORLD CUP 2026"}</div>
             <div style={{fontSize:12,fontWeight:700,color:C.text2,marginBottom:4}}>Choose Device Control</div>
             <div style={{fontSize:8,color:C.text3,marginBottom:14}}>You'll be matched with players using the same input type</div>
             <div style={{display:"flex",flexDirection:"column",gap:8}}>
@@ -10352,10 +10422,10 @@ export default function MoodLabArena() {
                     border: team.id === wcTeam.id ? `1px solid ${C.cyan}30` : `1px solid ${C.border}`,
                     animation:`fadeIn 0.4s ease ${i*0.3}s both`,
                   }}>
-                    <span style={{fontSize:24}}>{team.flag}</span>
+                    <span style={{fontSize:24}}>{team.flag||team.emoji}</span>
                     <div style={{flex:1,textAlign:"left"}}>
                       <div style={{fontSize:12,fontWeight:700,color: team.id === wcTeam.id ? C.cyan : C.text}}>{team.name}</div>
-                      <div style={{fontSize:7,color:C.gold}}>{"⭐".repeat(team.rating)}</div>
+                      {team.rating && <div style={{fontSize:7,color:C.gold}}>{"⭐".repeat(team.rating)}</div>}
                     </div>
                     {team.id === wcTeam.id && <span style={{fontSize:8,fontWeight:800,color:C.cyan,padding:"2px 6px",borderRadius:6,background:`${C.cyan}15`}}>YOU</span>}
                   </div>
@@ -10381,8 +10451,8 @@ export default function MoodLabArena() {
 
           <div style={{position:"relative",zIndex:2,height:"100%",display:"flex",flexDirection:"column",padding:"48px 14px 20px"}}>
             <div style={{textAlign:"center",marginBottom:8}}>
-              <div style={{fontSize:10,fontWeight:800,color:C.gold,letterSpacing:2}}>🏆 WORLD CUP 2026 — GROUP {wcTournament.group}</div>
-              <div style={{fontSize:8,color:C.text3,marginTop:2}}>Playing as {wcTeam?.flag} {wcTeam?.name}</div>
+              <div style={{fontSize:10,fontWeight:800,color:C.gold,letterSpacing:2}}>{GAME_TOURNAMENTS[wcGameId] ? `${GAME_TOURNAMENTS[wcGameId].emoji} ${GAME_TOURNAMENTS[wcGameId].name.toUpperCase()} — GROUP ${wcTournament.group}` : `🏆 WORLD CUP 2026 — GROUP ${wcTournament.group}`}</div>
+              <div style={{fontSize:8,color:C.text3,marginTop:2}}>Playing as {wcTeam?.flag||wcTeam?.emoji} {wcTeam?.name}</div>
             </div>
 
             {/* Tab bar */}
@@ -10419,7 +10489,7 @@ export default function MoodLabArena() {
                   return [
                     <div key={`r${i}`} style={{color:qualifies?C.green:C.text3,fontWeight:700}}>{i+1}</div>,
                     <div key={`n${i}`} style={{display:"flex",alignItems:"center",gap:4}}>
-                      <span style={{fontSize:12}}>{s.flag}</span>
+                      <span style={{fontSize:12}}>{s.flag||s.emoji}</span>
                       <span style={{fontWeight:isYou?800:600,color:isYou?C.cyan:C.text,fontSize:8}}>{s.name}</span>
                     </div>,
                     <div key={`p${i}`} style={{textAlign:"center",color:C.text2}}>{s.played}</div>,
@@ -10442,7 +10512,7 @@ export default function MoodLabArena() {
             {wcGroupResult === "eliminated" && (
               <div style={{padding:"12px 16px",borderRadius:14,textAlign:"center",marginBottom:12,...LG.tinted(C.red),animation:"fadeIn 0.5s ease",border:`1px solid ${C.red}30`}}>
                 <div style={{fontSize:16,fontWeight:900,color:C.red}}>ELIMINATED</div>
-                <div style={{fontSize:10,color:C.text2,marginTop:2}}>Your World Cup journey ends here</div>
+                <div style={{fontSize:10,color:C.text2,marginTop:2}}>{GAME_TOURNAMENTS[wcGameId] ? "Your tournament journey ends here" : "Your World Cup journey ends here"}</div>
               </div>
             )}
 
@@ -10460,9 +10530,9 @@ export default function MoodLabArena() {
                   transition:"all 0.2s",
                 }}>
                   <div style={{display:"flex",alignItems:"center",gap:6,flex:1}}>
-                    <span style={{fontSize:18}}>{wcTeam?.flag}</span>
+                    <span style={{fontSize:18}}>{wcTeam?.flag||wcTeam?.emoji}</span>
                     <span style={{fontSize:10,fontWeight:700,color:C.text}}>vs</span>
-                    <span style={{fontSize:18}}>{match.opp.flag}</span>
+                    <span style={{fontSize:18}}>{match.opp.flag||match.opp.emoji}</span>
                     <span style={{fontSize:10,fontWeight:600,color:C.text2}}>{match.opp.name}</span>
                   </div>
                   {played ? (
@@ -10580,8 +10650,8 @@ export default function MoodLabArena() {
 
           <div style={{position:"relative",zIndex:2,height:"100%",display:"flex",flexDirection:"column",alignItems:"center",padding:"48px 16px 20px",overflowY:"auto"}}>
             <div style={{textAlign:"center",marginBottom:14}}>
-              <div style={{fontSize:10,fontWeight:800,color:C.gold,letterSpacing:2}}>🏆 KNOCKOUT STAGE</div>
-              <div style={{fontSize:8,color:C.text3,marginTop:2}}>{wcTeam?.flag} {wcTeam?.name} — Win or go home</div>
+              <div style={{fontSize:10,fontWeight:800,color:C.gold,letterSpacing:2}}>{GAME_TOURNAMENTS[wcGameId] ? `${GAME_TOURNAMENTS[wcGameId].emoji} ${GAME_TOURNAMENTS[wcGameId].name.toUpperCase()}` : "🏆 KNOCKOUT STAGE"}</div>
+              <div style={{fontSize:8,color:C.text3,marginTop:2}}>{wcTeam?.flag||wcTeam?.emoji} {wcTeam?.name} — Win or go home</div>
             </div>
 
             {/* Bracket visualization */}
@@ -10611,7 +10681,7 @@ export default function MoodLabArena() {
                       <div style={{fontSize:10,fontWeight:700,color: isCurrent ? C.gold : C.text}}>{roundName}</div>
                       {(isCurrent || isPast) && opp && (
                         <div style={{fontSize:8,color:C.text2,marginTop:1}}>
-                          {wcTeam?.flag} vs {opp.flag} {opp.name}
+                          {wcTeam?.flag||wcTeam?.emoji} vs {opp.flag||opp.emoji} {opp.name}
                         </div>
                       )}
                       {isFuture && <div style={{fontSize:8,color:C.text3,marginTop:1}}>TBD</div>}
@@ -10637,7 +10707,8 @@ export default function MoodLabArena() {
 
     // ═══ RESULT SCREEN ═══
     if(wcPhase === "result" && wcFinalResult) {
-      const prize = WC_PRIZES[wcFinalResult];
+      const gtResult = GAME_TOURNAMENTS[wcGameId];
+      const prize = (gtResult && gtResult.prizes[wcFinalResult]) ? gtResult.prizes[wcFinalResult] : WC_PRIZES[wcFinalResult];
       const isGold = wcFinalResult === "gold";
       const accentColor = isGold ? C.gold : wcFinalResult === "silver" ? "#C0C0C0" : wcFinalResult === "bronze" ? "#CD7F32" : C.text3;
       return (
@@ -10666,10 +10737,10 @@ export default function MoodLabArena() {
             </div>
 
             <div style={{fontSize:20,fontWeight:900,color:accentColor,textShadow:`0 0 20px ${accentColor}30`,marginBottom:4}}>
-              {prize.title.toUpperCase()}
+              {(prize.title || prize.label).toUpperCase()}
             </div>
             <div style={{fontSize:12,color:C.text2,marginBottom:16}}>
-              {wcTeam?.flag} {wcTeam?.name}
+              {wcTeam?.flag||wcTeam?.emoji} {wcTeam?.name}
             </div>
 
             {/* Prize breakdown */}
