@@ -658,6 +658,7 @@ export default function MoodLabArena() {
   const [rpsRound, setRpsRound] = useState(0);
   const [rpsScore, setRpsScore] = useState({you:0, ai:0});
   const [rpsPlayerChoice, setRpsPlayerChoice] = useState(null); // "rock"|"paper"|"scissors"
+  const rpsPlayerChoiceRef = useRef(null); // sync ref to avoid stale closure
   const [rpsAiChoice, setRpsAiChoice] = useState(null);
   const [rpsPuffPower, setRpsPuffPower] = useState(0); // 0-100
   const [rpsAiPuffPower, setRpsAiPuffPower] = useState(0);
@@ -4852,6 +4853,7 @@ export default function MoodLabArena() {
   const rpsPickChoice = (choice) => {
     if(rpsPhase!=="choose") return;
     setRpsPlayerChoice(choice);
+    rpsPlayerChoiceRef.current = choice; // sync ref for stale closure fix
     playFx("select");
     setCommentary("Now HOLD TO PUFF for power! 💨");
     setRpsPhase("puff");
@@ -4898,7 +4900,7 @@ export default function MoodLabArena() {
     setTimeout(()=>{
       if(!guard||!guard.v) return;
       setRpsClashAnim(false);
-      const pc = rpsPlayerChoice;
+      const pc = rpsPlayerChoiceRef.current || rpsPlayerChoice;
       let result, pts = 0;
       if(pc===aiChoice) {
         if(finalPower > aiPwr + 5) {
@@ -7769,7 +7771,7 @@ export default function MoodLabArena() {
             {screenFlash && <div style={{position:"absolute",inset:0,zIndex:200,pointerEvents:"none",opacity:0,background:screenFlash==="goal"?"rgba(0,255,100,0.25)":"rgba(255,50,50,0.2)",animation:"flashOverlay 0.4s ease forwards"}}/>}
             {/* Confetti */}
             {confettiParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size*0.6,background:p.color,borderRadius:1,transform:`rotate(${p.rot}deg)`,zIndex:210,pointerEvents:"none",animation:`confettiFall ${1.5+Math.random()}s ease-out forwards`}}/>))}
-            {overlayBack(()=>setGameActive(null))}
+            
             {renderGameChatPanel("HOT POTATO")}
             <div style={{display:"flex",flexDirection:"column",alignItems:"center",maxWidth:380,width:"100%",padding:"50px 16px 20px",gap:8,zIndex:10,overflowY:"auto",flex:1}}>
               {/* Title */}
@@ -7966,7 +7968,7 @@ export default function MoodLabArena() {
                 animation:critTension?"hookLineShake 0.1s infinite":highTension?"hookLineShake 0.3s infinite":"none",
                 transition:"background 0.3s",zIndex:5,pointerEvents:"none"}}/>
             )}
-            {overlayBack(()=>setGameActive(null))}
+            
             {renderGameChatPanel("HOOKED")}
             <div style={{display:"flex",flexDirection:"column",alignItems:"center",width:"100%",height:"100%",padding:"50px 16px 16px",zIndex:10,position:"relative"}}>
               {/* Header */}
@@ -8159,7 +8161,7 @@ export default function MoodLabArena() {
             {confettiParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size*0.6,background:p.color,borderRadius:1,transform:`rotate(${p.rot}deg)`,zIndex:210,pointerEvents:"none",animation:`confettiFall ${1.5+Math.random()}s ease-out forwards`}}/>))}
             {/* Floating particles */}
             {[...Array(8)].map((_,i)=>(<div key={"rpsp"+i} style={{position:"absolute",left:(10+i*11)+"%",top:(15+Math.sin(i*2)*25)+"%",width:2+i%3,height:2+i%3,borderRadius:"50%",background:[C.purple,C.cyan,C.pink,C.gold][i%4],opacity:0.06+Math.sin(i*0.9)*0.04,animation:`gentleFloat ${5+i%4*2}s ease-in-out infinite`,animationDelay:i*0.4+"s",pointerEvents:"none",zIndex:1}}/>))}
-            {overlayBack(()=>{rpsEndGame();})}
+            
             {renderGameChatPanel("PUFF DOJO")}
             <div style={{display:"flex",flexDirection:"column",alignItems:"center",maxWidth:380,width:"100%",padding:"50px 16px 20px",gap:6,zIndex:10,overflowY:"auto",flex:1}}>
               {/* Header */}
@@ -8488,7 +8490,7 @@ export default function MoodLabArena() {
 
                   <div style={{position:"relative",zIndex:1}}>
                     <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
-                      <span style={{fontSize:24}}>{selectedGame.id==="wildwest"?"🤠":selectedGame.id==="russian"?"🔫":selectedGame.id==="hotpotato"?"💣":selectedGame.id==="hooked"?"🎣":"⚽"}</span>
+                      <span style={{fontSize:24}}>{selectedGame.id==="wildwest"?"🤠":selectedGame.id==="russian"?"🔫":selectedGame.id==="hotpotato"?"💣":selectedGame.id==="hooked"?"🎣":selectedGame.id==="rps"?"✊":"⚽"}</span>
                       <div>
                         <div style={{fontSize:14,fontWeight:900,color:C.gold,textShadow:`0 0 10px ${C.gold}30`}}>{
                           selectedGame.id==="finalkick"?"FK1 World Cup 2026":
@@ -9857,6 +9859,122 @@ export default function MoodLabArena() {
                       <div key={i} style={{display:"flex",gap:6,alignItems:"flex-start"}}>
                         <span style={{fontSize:8,color:C.blue,fontWeight:900,flexShrink:0}}>💡</span>
                         <span style={{fontSize:8,color:C.text2,lineHeight:1.3}}>{tip}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                </>) : (selectedGame.id==="rps") ? (<>
+
+                {/* ═══ PUFF RPS — SECTION 1: GAME FLOW ═══ */}
+                <div style={{padding:"14px 12px",borderRadius:16,marginBottom:12,position:"relative",overflow:"hidden",
+                  background:"linear-gradient(135deg, rgba(168,85,247,0.1) 0%, rgba(0,229,255,0.04) 50%, rgba(168,85,247,0.06) 100%)",
+                  border:`1px solid ${C.purple}20`,boxShadow:`0 0 20px ${C.purple}06, inset 0 1px 0 ${C.purple}10`}}>
+                  <div style={{position:"relative",zIndex:1}}>
+                  <div style={{fontSize:10,fontWeight:900,color:C.purple,letterSpacing:3,marginBottom:10,textAlign:"center",textShadow:`0 0 12px ${C.purple}30`}}>✊ GAME FLOW</div>
+                  <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:3}}>
+                    {[
+                      {n:"1",t:"CHOOSE",s:"Pick Rock 🪨, Paper 📄, or Scissors ✂️",c:C.cyan},
+                      {n:"2",t:"PUFF",s:"Hold to charge puff power (0-100%)",c:C.lime},
+                      {n:"3",t:"CLASH",s:"Both hands collide — dramatic reveal!",c:C.gold},
+                      {n:"4",t:"RESULT",s:"Win/Lose/Tie + points awarded",c:C.green},
+                      {n:"5",t:"REPEAT",s:"Best of 5 rounds — most points wins",c:C.pink},
+                    ].map((step,i)=>(
+                      <div key={i} style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"6px 8px",borderRadius:10,background:`${step.c}06`,border:`1px solid ${step.c}12`}}>
+                        <div style={{width:22,height:22,borderRadius:11,background:`${step.c}20`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:900,color:step.c,flexShrink:0}}>{step.n}</div>
+                        <div><div style={{fontSize:10,fontWeight:800,color:step.c}}>{step.t}</div><div style={{fontSize:8,color:C.text3}}>{step.s}</div></div>
+                      </div>
+                    ))}
+                  </div>
+                  </div>
+                </div>
+
+                {/* ═══ PUFF RPS — SECTION 2: PUFF POWER TIERS ═══ */}
+                <div style={{padding:"14px 12px",borderRadius:16,marginBottom:12,...GLASS_CARD}}>
+                  <div style={{fontSize:10,fontWeight:900,color:C.gold,letterSpacing:3,marginBottom:10,textAlign:"center"}}>💨 PUFF POWER TIERS</div>
+                  <div style={{display:"flex",flexDirection:"column",gap:6}}>
+                    {[
+                      {tier:"TAP",time:"<0.5s",pts:"+1 pt",risk:"Safe",color:C.text3,emoji:"👆",bar:10},
+                      {tier:"SHORT",time:"0.5-2s",pts:"+2 pts",risk:"Normal",color:C.cyan,emoji:"💨",bar:35},
+                      {tier:"PERFECT",time:"2-3.5s",pts:"+3 pts",risk:"Power!",color:C.green,emoji:"🎯",bar:65},
+                      {tier:"BLINKER",time:"4.5s+",pts:"+5 pts",risk:"HIGH RISK!",color:C.gold,emoji:"🫁",bar:95},
+                    ].map((t,i)=>(
+                      <div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"6px 8px",borderRadius:10,background:`${t.color}08`,border:`1px solid ${t.color}15`}}>
+                        <div style={{fontSize:18}}>{t.emoji}</div>
+                        <div style={{flex:1}}>
+                          <div style={{display:"flex",justifyContent:"space-between",marginBottom:2}}>
+                            <span style={{fontSize:10,fontWeight:800,color:t.color}}>{t.tier}</span>
+                            <span style={{fontSize:8,color:C.text3}}>{t.time}</span>
+                          </div>
+                          <div style={{height:4,borderRadius:2,background:"rgba(255,255,255,0.06)",overflow:"hidden"}}>
+                            <div style={{height:"100%",width:t.bar+"%",background:t.color,borderRadius:2}}/>
+                          </div>
+                        </div>
+                        <div style={{textAlign:"right",minWidth:45}}>
+                          <div style={{fontSize:10,fontWeight:800,color:t.color}}>{t.pts}</div>
+                          <div style={{fontSize:7,color:t.color==="#FFD93D"?C.red:C.text3}}>{t.risk}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{marginTop:8,padding:"6px 10px",borderRadius:8,background:`${C.red}08`,border:`1px solid ${C.red}15`,textAlign:"center"}}>
+                    <div style={{fontSize:9,fontWeight:700,color:C.red}}>⚠️ BLINKER RISK: If you LOSE with blinker, opponent gets +3 bonus!</div>
+                  </div>
+                </div>
+
+                {/* ═══ PUFF RPS — SECTION 3: TIE BREAKER ═══ */}
+                <div style={{padding:"14px 12px",borderRadius:16,marginBottom:12,...GLASS_CARD}}>
+                  <div style={{fontSize:10,fontWeight:900,color:C.cyan,letterSpacing:3,marginBottom:10,textAlign:"center"}}>🤝 TIE BREAKER</div>
+                  <div style={{display:"flex",justifyContent:"center",alignItems:"center",gap:12,marginBottom:8}}>
+                    <div style={{textAlign:"center",padding:"8px 14px",borderRadius:12,background:`${C.cyan}10`,border:`1px solid ${C.cyan}20`}}>
+                      <div style={{fontSize:20}}>🪨</div>
+                      <div style={{fontSize:8,fontWeight:800,color:C.cyan,marginTop:2}}>72% PWR</div>
+                    </div>
+                    <div style={{fontSize:14,fontWeight:900,color:C.gold}}>VS</div>
+                    <div style={{textAlign:"center",padding:"8px 14px",borderRadius:12,background:`${C.red}10`,border:`1px solid ${C.red}20`}}>
+                      <div style={{fontSize:20}}>🪨</div>
+                      <div style={{fontSize:8,fontWeight:800,color:C.red,marginTop:2}}>45% PWR</div>
+                    </div>
+                  </div>
+                  <div style={{textAlign:"center",fontSize:9,color:C.text2}}>Same choice? <strong style={{color:C.green}}>Higher puff power wins!</strong> Equal power = draw (1 pt each)</div>
+                </div>
+
+                {/* ═══ PUFF RPS — SECTION 4: SPECIAL FEATURES ═══ */}
+                <div style={{padding:"14px 12px",borderRadius:16,marginBottom:12,...GLASS_CARD}}>
+                  <div style={{fontSize:10,fontWeight:900,color:C.pink,letterSpacing:3,marginBottom:10,textAlign:"center"}}>⚡ SPECIAL FEATURES</div>
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
+                    {[
+                      {e:"🎯",t:"Power Wins Ties",d:"Same hand? Bigger puff wins!",c:C.cyan},
+                      {e:"🫁",t:"Blinker Risk",d:"5x points BUT -3 if you lose",c:C.gold},
+                      {e:"🔥",t:"Win Streaks",d:"Consecutive wins build streak bonus",c:C.orange},
+                      {e:"💥",t:"Dramatic Clash",d:"Screen shake + flash on reveal",c:C.red},
+                      {e:"🏆",t:"Best of 5",d:"Most points after 5 rounds wins",c:C.green},
+                      {e:"🤖",t:"AI Personality",d:"Each opponent has a unique style",c:C.purple},
+                    ].map((f,i)=>(
+                      <div key={i} style={{padding:"8px 6px",borderRadius:10,textAlign:"center",background:`${f.c}06`,border:`1px solid ${f.c}12`}}>
+                        <div style={{fontSize:16,marginBottom:2}}>{f.e}</div>
+                        <div style={{fontSize:8,fontWeight:800,color:f.c}}>{f.t}</div>
+                        <div style={{fontSize:7,color:C.text3,marginTop:1}}>{f.d}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* ═══ PUFF RPS — SECTION 5: PRO TIPS ═══ */}
+                <div style={{padding:"14px 12px",borderRadius:16,marginBottom:12,...GLASS_CARD}}>
+                  <div style={{fontSize:10,fontWeight:900,color:C.green,letterSpacing:3,marginBottom:10,textAlign:"center"}}>🧠 DOJO MASTER TIPS</div>
+                  <div style={{display:"flex",flexDirection:"column",gap:4}}>
+                    {[
+                      {e:"💡",t:"Blinker on round 5 when you're ahead — risk-free flex!",c:C.gold},
+                      {e:"🎯",t:"Perfect puff (2-3.5s) is the sweet spot for consistent wins",c:C.green},
+                      {e:"🤖",t:"Watch AI patterns — some favor rock, others go random",c:C.cyan},
+                      {e:"⚡",t:"On ties, your puff power decides — always puff hard!",c:C.purple},
+                      {e:"🫁",t:"Blinker when losing = desperate gamble. Sometimes it works!",c:C.red},
+                      {e:"🧘",t:"When high, you might actually be more unpredictable 🌿",c:C.lime},
+                    ].map((tip,i)=>(
+                      <div key={i} style={{display:"flex",alignItems:"flex-start",gap:6,padding:"5px 8px",borderRadius:8,background:`${tip.c}05`}}>
+                        <span style={{fontSize:12,flexShrink:0}}>{tip.e}</span>
+                        <span style={{fontSize:9,color:C.text2,lineHeight:1.4}}>{tip.t}</span>
                       </div>
                     ))}
                   </div>
