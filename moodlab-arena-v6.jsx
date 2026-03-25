@@ -5807,37 +5807,6 @@ export default function MoodLabArena() {
           </div>
         </div>
 
-        {/* ═══ HALFTIME MINI-GAMES — floating card ═══ */}
-        <div style={{position:"absolute",bottom:120,left:14,right:14,zIndex:12,animation:"arenaFadeIn 0.8s ease 0.5s both"}}>
-          <div style={{borderRadius:18,overflow:"hidden",...GLASS_CARD,padding:"14px 16px"}}>
-            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
-              <div style={{display:"flex",alignItems:"center",gap:6}}>
-                <span style={{fontSize:16}}>🎪</span>
-                <span style={{fontSize:13,fontWeight:900,color:C.text}}>HALFTIME</span>
-                <span style={{fontSize:8,fontWeight:700,color:C.pink,padding:"2px 6px",borderRadius:4,background:C.pink+"12",border:"1px solid "+C.pink+"20"}}>MINI-GAMES</span>
-              </div>
-              <div style={{fontSize:9,color:C.text3}}>Win coins!</div>
-            </div>
-            <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:6}}>
-              {[
-                {type:"roulette",emoji:"🎰",label:"Roulette",color:C.gold},
-                {type:"tug",emoji:"🤝",label:"Tug",color:C.cyan},
-                {type:"lucky",emoji:"🍀",label:"Lucky",color:C.green},
-                {type:"trivia",emoji:"🧠",label:"Trivia",color:C.purple},
-              ].map(g => (
-                <div key={g.type} onClick={(e)=>{e.stopPropagation();startHalftime(g.type);}} style={{
-                  padding:"10px 4px",borderRadius:12,textAlign:"center",cursor:"pointer",
-                  background:g.color+"08",border:"1px solid "+g.color+"15",
-                  transition:"all 0.2s",
-                }}>
-                  <div style={{fontSize:22,marginBottom:2,filter:"drop-shadow(0 0 6px "+g.color+"40)"}}>{g.emoji}</div>
-                  <div style={{fontSize:8,fontWeight:800,color:g.color}}>{g.label}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
         {/* ═══ INVISIBLE TAP ZONES ═══ */}
         <div style={{position:"absolute",top:0,left:0,right:0,bottom:60,zIndex:10,pointerEvents:"none"}}>
           {HUB_TAP_ZONES.map(t => (
@@ -5929,7 +5898,7 @@ export default function MoodLabArena() {
 
       {/* ═══ TAB BAR ═══ */}
       <div style={{display:"flex",gap:0,margin:"0 14px 12px",borderRadius:12,overflow:"hidden",...GLASS_CLEAR}}>
-        {[{id:"games",label:"🎮 Games",count:PLAY_GAMES.length},{id:"tournament",label:"⚽ Tournament",count:null},{id:"leaderboard",label:"🏆 Board",count:null}].map(t=>(
+        {[{id:"games",label:"🎮 Games",count:PLAY_GAMES.length},{id:"minigames",label:"🎪 Mini",count:4},{id:"tournament",label:"⚽ Tourney",count:null},{id:"leaderboard",label:"🏆 Board",count:null}].map(t=>(
           <div key={t.id} onClick={()=>{playFx("nav");setArcadeTab(t.id);}} style={{
             flex:1,padding:"10px 0",textAlign:"center",cursor:"pointer",
             background:arcadeTab===t.id?`${C.cyan}12`:"transparent",
@@ -5984,6 +5953,33 @@ export default function MoodLabArena() {
               <div style={{fontSize:8,fontWeight:700,color:C.gold,padding:"3px 8px",borderRadius:6,...LG.tinted(C.gold)}}>🏆 3 Tournaments</div>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* ═══ MINI-GAMES TAB ═══ */}
+      {arcadeTab==="minigames" && (
+        <div style={{padding:"0 14px",animation:"fadeIn 0.3s ease"}}>
+          <div style={{fontSize:11,fontWeight:800,color:C.pink,letterSpacing:2,marginBottom:8}}>🎪 HALFTIME MINI-GAMES</div>
+          <div style={{fontSize:9,color:C.text3,marginBottom:12}}>Quick games to win coins between matches!</div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10}}>
+            {[
+              {type:"roulette",emoji:"🎰",label:"Puff Roulette",desc:"Spin the wheel! Puff to stop.",color:C.gold,reward:"+50-500"},
+              {type:"tug",emoji:"🤝",label:"Crowd Tug",desc:"20s spam puff vs AI!",color:C.cyan,reward:"+50"},
+              {type:"lucky",emoji:"🍀",label:"Lucky Puff",desc:"Wait for signal, puff to win!",color:C.green,reward:"+100"},
+              {type:"trivia",emoji:"🧠",label:"Puff Trivia",desc:"Cannabis & game trivia!",color:C.purple,reward:"+75"},
+            ].map(g => (
+              <div key={g.type} onClick={()=>{playFx("select");startHalftime(g.type);}} style={{
+                padding:"14px 10px",borderRadius:14,textAlign:"center",cursor:"pointer",
+                ...GLASS_CARD,border:`1px solid ${g.color}20`,transition:"all 0.2s",
+              }}>
+                <div style={{fontSize:32,marginBottom:6,filter:`drop-shadow(0 0 8px ${g.color}40)`}}>{g.emoji}</div>
+                <div style={{fontSize:12,fontWeight:800,color:C.text,marginBottom:2}}>{g.label}</div>
+                <div style={{fontSize:8,color:C.text3,marginBottom:4}}>{g.desc}</div>
+                <div style={{fontSize:8,fontWeight:700,color:g.color}}>{g.reward} coins</div>
+              </div>
+            ))}
+          </div>
+          <div style={{height:20}}/>
         </div>
       )}
 
