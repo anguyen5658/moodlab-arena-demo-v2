@@ -4875,9 +4875,10 @@ export default function MoodLabArena() {
     },30);
   };
 
-  const rpsPuffActiveRef = useRef(false); // prevent double-fire
+  const rpsPuffActiveRef = useRef(false);
+  const rpsResolveRef = useRef(null); // store resolve data to avoid closure issues
   const rpsStopPuff = () => {
-    if(!rpsPuffActiveRef.current) return; // use ref, not state
+    if(!rpsPuffActiveRef.current) return;
     rpsPuffActiveRef.current = false;
     setRpsPuffHeld(false);
     setDimLights(false);
@@ -4894,6 +4895,9 @@ export default function MoodLabArena() {
     setRpsAiPuffPower(aiPwr);
     const playerPwrInfo = rpsGetPowerLabel(finalPower);
     const aiPwrInfo = rpsGetPowerLabel(aiPwr);
+    const pc = rpsPlayerChoiceRef.current;
+    // Store everything needed for resolution in a ref (avoids stale closures in setTimeout)
+    rpsResolveRef.current = {pc, aiChoice, finalPower, aiPwr, playerPwrInfo, aiPwrInfo, opp};
     setRpsPhase("clash");
     setRpsClashAnim(true);
     triggerShake();
@@ -4901,9 +4905,10 @@ export default function MoodLabArena() {
     if(playerPwrInfo.tier==="ultra") setCommentary(RPS_BLINKER_COMMENTS[Math.floor(Math.random()*RPS_BLINKER_COMMENTS.length)]);
     else setCommentary("CLASH! 💥");
     setTimeout(()=>{
-      if(!window._rpsActive) return; // only bail if game was fully ended
+      if(!window._rpsActive) return;
       setRpsClashAnim(false);
-      const pc = rpsPlayerChoiceRef.current || rpsPlayerChoice;
+      const d = rpsResolveRef.current; if(!d) return;
+      const {pc, aiChoice, finalPower, aiPwr, playerPwrInfo, aiPwrInfo} = d;
       let result, pts = 0;
       if(pc===aiChoice) {
         if(finalPower > aiPwr + 5) {
@@ -4934,8 +4939,7 @@ export default function MoodLabArena() {
       }
       setRpsResult(result);
       setRpsPointsAwarded(pts);
-      const newStreak = result==="win" ? rpsStreak+1 : 0;
-      setRpsStreak(newStreak);
+      setRpsStreak(prev => result==="win" ? prev+1 : 0); // use updater to avoid stale closure
       setRpsScore(prev => {
         const ns = {...prev};
         if(result==="win") ns.you += pts;
@@ -4959,7 +4963,7 @@ export default function MoodLabArena() {
               setCoins(c=>c+500); setXp(x=>x+200);
             } else if(prev.ai > prev.you) {
               playFx("lose"); triggerFlash("miss");
-              setCommentary("Defeated... " + (rpsOpponent?.name||"AI") + " was too strong! 💀");
+              setCommentary("Defeated... " + (rpsResolveRef.current?.opp?.name||"AI") + " was too strong! 💀");
               setCoins(c=>c+50); setXp(x=>x+50);
             } else {
               playFx("crowd");
