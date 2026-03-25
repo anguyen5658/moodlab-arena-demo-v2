@@ -158,137 +158,137 @@ const BADGES = [
 // ── WORLD CUP 2026 — NATIONAL TEAMS (48 qualified + Vietnam + China) ──
 const WC_TEAMS = [
   // CONCACAF (Hosts + qualified)
-  {id:"usa",name:"USA",flag:"\u{1F1FA}\u{1F1F8}",group:"A",rating:4,confederation:"CONCACAF"},
-  {id:"mex",name:"Mexico",flag:"\u{1F1F2}\u{1F1FD}",group:"A",rating:3,confederation:"CONCACAF"},
-  {id:"can",name:"Canada",flag:"\u{1F1E8}\u{1F1E6}",group:"A",rating:3,confederation:"CONCACAF"},
+  {id:"usa",name:"USA",flag:"🇺🇸",group:"A",rating:4,confederation:"CONCACAF"},
+  {id:"mex",name:"Mexico",flag:"🇲🇽",group:"A",rating:3,confederation:"CONCACAF"},
+  {id:"can",name:"Canada",flag:"🇨🇦",group:"A",rating:3,confederation:"CONCACAF"},
   // CONMEBOL
-  {id:"bra",name:"Brazil",flag:"\u{1F1E7}\u{1F1F7}",group:"F",rating:5,confederation:"CONMEBOL"},
-  {id:"arg",name:"Argentina",flag:"\u{1F1E6}\u{1F1F7}",group:"C",rating:5,confederation:"CONMEBOL"},
-  {id:"col",name:"Colombia",flag:"\u{1F1E8}\u{1F1F4}",group:"H",rating:4,confederation:"CONMEBOL"},
-  {id:"uru",name:"Uruguay",flag:"\u{1F1FA}\u{1F1FE}",group:"H",rating:4,confederation:"CONMEBOL"},
-  {id:"ecu",name:"Ecuador",flag:"\u{1F1EA}\u{1F1E8}",group:"G",rating:3,confederation:"CONMEBOL"},
-  {id:"per",name:"Peru",flag:"\u{1F1F5}\u{1F1EA}",group:"I",rating:3,confederation:"CONMEBOL"},
-  {id:"par",name:"Paraguay",flag:"\u{1F1F5}\u{1F1FE}",group:"L",rating:2,confederation:"CONMEBOL"},
+  {id:"bra",name:"Brazil",flag:"🇧🇷",group:"F",rating:5,confederation:"CONMEBOL"},
+  {id:"arg",name:"Argentina",flag:"🇦🇷",group:"C",rating:5,confederation:"CONMEBOL"},
+  {id:"col",name:"Colombia",flag:"🇨🇴",group:"H",rating:4,confederation:"CONMEBOL"},
+  {id:"uru",name:"Uruguay",flag:"🇺🇾",group:"H",rating:4,confederation:"CONMEBOL"},
+  {id:"ecu",name:"Ecuador",flag:"🇪🇨",group:"G",rating:3,confederation:"CONMEBOL"},
+  {id:"per",name:"Peru",flag:"🇵🇪",group:"I",rating:3,confederation:"CONMEBOL"},
+  {id:"par",name:"Paraguay",flag:"🇵🇾",group:"L",rating:2,confederation:"CONMEBOL"},
   // UEFA
-  {id:"ger",name:"Germany",flag:"\u{1F1E9}\u{1F1EA}",group:"F",rating:5,confederation:"UEFA"},
-  {id:"fra",name:"France",flag:"\u{1F1EB}\u{1F1F7}",group:"C",rating:5,confederation:"UEFA"},
-  {id:"eng",name:"England",flag:"\u{1F3F4}\u{E0067}\u{E0062}\u{E0065}\u{E006E}\u{E0067}\u{E007F}",group:"B",rating:5,confederation:"UEFA"},
-  {id:"esp",name:"Spain",flag:"\u{1F1EA}\u{1F1F8}",group:"E",rating:5,confederation:"UEFA"},
-  {id:"por",name:"Portugal",flag:"\u{1F1F5}\u{1F1F9}",group:"E",rating:5,confederation:"UEFA"},
-  {id:"ned",name:"Netherlands",flag:"\u{1F1F3}\u{1F1F1}",group:"D",rating:4,confederation:"UEFA"},
-  {id:"bel",name:"Belgium",flag:"\u{1F1E7}\u{1F1EA}",group:"D",rating:4,confederation:"UEFA"},
-  {id:"ita",name:"Italy",flag:"\u{1F1EE}\u{1F1F9}",group:"B",rating:4,confederation:"UEFA"},
-  {id:"cro",name:"Croatia",flag:"\u{1F1ED}\u{1F1F7}",group:"G",rating:4,confederation:"UEFA"},
-  {id:"den",name:"Denmark",flag:"\u{1F1E9}\u{1F1F0}",group:"J",rating:3,confederation:"UEFA"},
-  {id:"sui",name:"Switzerland",flag:"\u{1F1E8}\u{1F1ED}",group:"J",rating:3,confederation:"UEFA"},
-  {id:"aut",name:"Austria",flag:"\u{1F1E6}\u{1F1F9}",group:"K",rating:3,confederation:"UEFA"},
-  {id:"srb",name:"Serbia",flag:"\u{1F1F7}\u{1F1F8}",group:"K",rating:3,confederation:"UEFA"},
-  {id:"pol",name:"Poland",flag:"\u{1F1F5}\u{1F1F1}",group:"I",rating:3,confederation:"UEFA"},
-  {id:"sco",name:"Scotland",flag:"\u{1F3F4}\u{E0067}\u{E0062}\u{E0073}\u{E0063}\u{E0074}\u{E007F}",group:"L",rating:2,confederation:"UEFA"},
-  {id:"wal",name:"Wales",flag:"\u{1F3F4}\u{E0067}\u{E0062}\u{E0077}\u{E006C}\u{E0073}\u{E007F}",group:"L",rating:2,confederation:"UEFA"},
-  {id:"tur",name:"Turkey",flag:"\u{1F1F9}\u{1F1F7}",group:"K",rating:3,confederation:"UEFA"},
-  {id:"ukr",name:"Ukraine",flag:"\u{1F1FA}\u{1F1E6}",group:"I",rating:3,confederation:"UEFA"},
+  {id:"ger",name:"Germany",flag:"🇩🇪",group:"F",rating:5,confederation:"UEFA"},
+  {id:"fra",name:"France",flag:"🇫🇷",group:"C",rating:5,confederation:"UEFA"},
+  {id:"eng",name:"England",flag:"🏴󠁧󠁢󠁥󠁮󠁧󠁿",group:"B",rating:5,confederation:"UEFA"},
+  {id:"esp",name:"Spain",flag:"🇪🇸",group:"E",rating:5,confederation:"UEFA"},
+  {id:"por",name:"Portugal",flag:"🇵🇹",group:"E",rating:5,confederation:"UEFA"},
+  {id:"ned",name:"Netherlands",flag:"🇳🇱",group:"D",rating:4,confederation:"UEFA"},
+  {id:"bel",name:"Belgium",flag:"🇧🇪",group:"D",rating:4,confederation:"UEFA"},
+  {id:"ita",name:"Italy",flag:"🇮🇹",group:"B",rating:4,confederation:"UEFA"},
+  {id:"cro",name:"Croatia",flag:"🇭🇷",group:"G",rating:4,confederation:"UEFA"},
+  {id:"den",name:"Denmark",flag:"🇩🇰",group:"J",rating:3,confederation:"UEFA"},
+  {id:"sui",name:"Switzerland",flag:"🇨🇭",group:"J",rating:3,confederation:"UEFA"},
+  {id:"aut",name:"Austria",flag:"🇦🇹",group:"K",rating:3,confederation:"UEFA"},
+  {id:"srb",name:"Serbia",flag:"🇷🇸",group:"K",rating:3,confederation:"UEFA"},
+  {id:"pol",name:"Poland",flag:"🇵🇱",group:"I",rating:3,confederation:"UEFA"},
+  {id:"sco",name:"Scotland",flag:"🏴󠁧󠁢󠁳󠁣󠁴󠁿",group:"L",rating:2,confederation:"UEFA"},
+  {id:"wal",name:"Wales",flag:"🏴󠁧󠁢󠁷󠁬󠁳󠁿",group:"L",rating:2,confederation:"UEFA"},
+  {id:"tur",name:"Turkey",flag:"🇹🇷",group:"K",rating:3,confederation:"UEFA"},
+  {id:"ukr",name:"Ukraine",flag:"🇺🇦",group:"I",rating:3,confederation:"UEFA"},
   // AFC
-  {id:"jpn",name:"Japan",flag:"\u{1F1EF}\u{1F1F5}",group:"D",rating:4,confederation:"AFC"},
-  {id:"kor",name:"South Korea",flag:"\u{1F1F0}\u{1F1F7}",group:"G",rating:3,confederation:"AFC"},
-  {id:"aus",name:"Australia",flag:"\u{1F1E6}\u{1F1FA}",group:"B",rating:3,confederation:"AFC"},
-  {id:"ksa",name:"Saudi Arabia",flag:"\u{1F1F8}\u{1F1E6}",group:"F",rating:2,confederation:"AFC"},
-  {id:"irn",name:"Iran",flag:"\u{1F1EE}\u{1F1F7}",group:"C",rating:3,confederation:"AFC"},
-  {id:"qat",name:"Qatar",flag:"\u{1F1F6}\u{1F1E6}",group:"J",rating:2,confederation:"AFC"},
-  {id:"irq",name:"Iraq",flag:"\u{1F1EE}\u{1F1F6}",group:"J",rating:2,confederation:"AFC"},
-  {id:"uzb",name:"Uzbekistan",flag:"\u{1F1FA}\u{1F1FF}",group:"H",rating:2,confederation:"AFC"},
-  {id:"idn",name:"Indonesia",flag:"\u{1F1EE}\u{1F1E9}",group:"E",rating:1,confederation:"AFC"},
-  {id:"bhr",name:"Bahrain",flag:"\u{1F1E7}\u{1F1ED}",group:"L",rating:1,confederation:"AFC"},
+  {id:"jpn",name:"Japan",flag:"🇯🇵",group:"D",rating:4,confederation:"AFC"},
+  {id:"kor",name:"South Korea",flag:"🇰🇷",group:"G",rating:3,confederation:"AFC"},
+  {id:"aus",name:"Australia",flag:"🇦🇺",group:"B",rating:3,confederation:"AFC"},
+  {id:"ksa",name:"Saudi Arabia",flag:"🇸🇦",group:"F",rating:2,confederation:"AFC"},
+  {id:"irn",name:"Iran",flag:"🇮🇷",group:"C",rating:3,confederation:"AFC"},
+  {id:"qat",name:"Qatar",flag:"🇶🇦",group:"J",rating:2,confederation:"AFC"},
+  {id:"irq",name:"Iraq",flag:"🇮🇶",group:"J",rating:2,confederation:"AFC"},
+  {id:"uzb",name:"Uzbekistan",flag:"🇺🇿",group:"H",rating:2,confederation:"AFC"},
+  {id:"idn",name:"Indonesia",flag:"🇮🇩",group:"E",rating:1,confederation:"AFC"},
+  {id:"bhr",name:"Bahrain",flag:"🇧🇭",group:"L",rating:1,confederation:"AFC"},
   // CAF
-  {id:"mar",name:"Morocco",flag:"\u{1F1F2}\u{1F1E6}",group:"F",rating:4,confederation:"CAF"},
-  {id:"sen",name:"Senegal",flag:"\u{1F1F8}\u{1F1F3}",group:"C",rating:4,confederation:"CAF"},
-  {id:"nga",name:"Nigeria",flag:"\u{1F1F3}\u{1F1EC}",group:"D",rating:3,confederation:"CAF"},
-  {id:"egy",name:"Egypt",flag:"\u{1F1EA}\u{1F1EC}",group:"G",rating:3,confederation:"CAF"},
-  {id:"cmr",name:"Cameroon",flag:"\u{1F1E8}\u{1F1F2}",group:"H",rating:3,confederation:"CAF"},
-  {id:"rsa",name:"South Africa",flag:"\u{1F1FF}\u{1F1E6}",group:"E",rating:2,confederation:"CAF"},
-  {id:"mli",name:"Mali",flag:"\u{1F1F2}\u{1F1F1}",group:"I",rating:2,confederation:"CAF"},
-  {id:"cod",name:"DR Congo",flag:"\u{1F1E8}\u{1F1E9}",group:"K",rating:2,confederation:"CAF"},
-  {id:"civ",name:"Ivory Coast",flag:"\u{1F1E8}\u{1F1EE}",group:"A",rating:3,confederation:"CAF"},
+  {id:"mar",name:"Morocco",flag:"🇲🇦",group:"F",rating:4,confederation:"CAF"},
+  {id:"sen",name:"Senegal",flag:"🇸🇳",group:"C",rating:4,confederation:"CAF"},
+  {id:"nga",name:"Nigeria",flag:"🇳🇬",group:"D",rating:3,confederation:"CAF"},
+  {id:"egy",name:"Egypt",flag:"🇪🇬",group:"G",rating:3,confederation:"CAF"},
+  {id:"cmr",name:"Cameroon",flag:"🇨🇲",group:"H",rating:3,confederation:"CAF"},
+  {id:"rsa",name:"South Africa",flag:"🇿🇦",group:"E",rating:2,confederation:"CAF"},
+  {id:"mli",name:"Mali",flag:"🇲🇱",group:"I",rating:2,confederation:"CAF"},
+  {id:"cod",name:"DR Congo",flag:"🇨🇩",group:"K",rating:2,confederation:"CAF"},
+  {id:"civ",name:"Ivory Coast",flag:"🇨🇮",group:"A",rating:3,confederation:"CAF"},
   // OFC
-  {id:"nzl",name:"New Zealand",flag:"\u{1F1F3}\u{1F1FF}",group:"B",rating:2,confederation:"OFC"},
+  {id:"nzl",name:"New Zealand",flag:"🇳🇿",group:"B",rating:2,confederation:"OFC"},
   // BONUS TEAMS
-  {id:"vnm",name:"Vietnam",flag:"\u{1F1FB}\u{1F1F3}",group:"BONUS",rating:1,confederation:"AFC"},
-  {id:"chn",name:"China",flag:"\u{1F1E8}\u{1F1F3}",group:"BONUS",rating:2,confederation:"AFC"},
+  {id:"vnm",name:"Vietnam",flag:"🇻🇳",group:"BONUS",rating:1,confederation:"AFC"},
+  {id:"chn",name:"China",flag:"🇨🇳",group:"BONUS",rating:2,confederation:"AFC"},
 ];
 
 // ── THEMED TEAMS FOR NON-FK GAMES ──
 const GAME_TEAMS = {
   wildwest: [
-    {id:"puffbandits",name:"Puff Bandits",emoji:"\u{1F920}\u{1F4A8}",color:C.orange},
-    {id:"blinkerboys",name:"Blinker Boys",emoji:"💀\u{1F920}",color:C.red},
-    {id:"smokesignal",name:"Smoke Signal Posse",emoji:"\u{1F32B}\u{FE0F}\u{1F3DC}\u{FE0F}",color:C.purple},
-    {id:"cactuscartel",name:"Cactus Cartel",emoji:"\u{1F335}\u{1F60E}",color:C.green},
-    {id:"goldrush",name:"Gold Rush Gang",emoji:"\u{1F4B0}\u{1F920}",color:C.gold},
-    {id:"tumbleweeds",name:"The Tumbleweeds",emoji:"\u{1F33E}\u{1F4A8}",color:C.lime},
+    {id:"puffbandits",name:"Puff Bandits",emoji:"🤠💨",color:C.orange},
+    {id:"blinkerboys",name:"Blinker Boys",emoji:"💀🤠",color:C.red},
+    {id:"smokesignal",name:"Smoke Signal Posse",emoji:"🌫️🏜️",color:C.purple},
+    {id:"cactuscartel",name:"Cactus Cartel",emoji:"🌵😎",color:C.green},
+    {id:"goldrush",name:"Gold Rush Gang",emoji:"💰🤠",color:C.gold},
+    {id:"tumbleweeds",name:"The Tumbleweeds",emoji:"🌾💨",color:C.lime},
   ],
   russian: [
-    {id:"luckylungs",name:"Lucky Lungs",emoji:"\u{1FAC1}\u{1F340}",color:C.green},
-    {id:"deadmanpuff",name:"Dead Man's Puff",emoji:"💀\u{1F4A8}",color:C.red},
-    {id:"chambersmoke",name:"Chamber of Smoke",emoji:"\u{1F52B}\u{1F32B}\u{FE0F}",color:C.purple},
-    {id:"triggerhappy",name:"Trigger Happy Club",emoji:"\u{1F3AF}\u{1F608}",color:C.orange},
-    {id:"sixshooters",name:"Six Shooters",emoji:"6\u{FE0F}\u{20E3}\u{1F52B}",color:C.cyan},
-    {id:"lastpuff",name:"The Last Puff",emoji:"\u{1F4A8}\u{2620}\u{FE0F}",color:C.gold},
+    {id:"luckylungs",name:"Lucky Lungs",emoji:"🫁🍀",color:C.green},
+    {id:"deadmanpuff",name:"Dead Man's Puff",emoji:"💀💨",color:C.red},
+    {id:"chambersmoke",name:"Chamber of Smoke",emoji:"🔫🌫️",color:C.purple},
+    {id:"triggerhappy",name:"Trigger Happy Club",emoji:"🎯😈",color:C.orange},
+    {id:"sixshooters",name:"Six Shooters",emoji:"6️⃣🔫",color:C.cyan},
+    {id:"lastpuff",name:"The Last Puff",emoji:"💨☠️",color:C.gold},
   ],
   balloon: [
-    {id:"birthdayblink",name:"Birthday Blinkers",emoji:"\u{1F382}💀",color:C.pink},
-    {id:"popsquad",name:"Pop Squad",emoji:"\u{1F4A5}\u{1F388}",color:C.red},
-    {id:"inflatenation",name:"Inflate Nation",emoji:"\u{1F388}\u{1F4A8}",color:C.orange},
-    {id:"heliumhomies",name:"Helium Homies",emoji:"\u{1F388}\u{1F602}",color:C.cyan},
-    {id:"partycrashers",name:"Party Crashers",emoji:"\u{1F389}\u{1F4A3}",color:C.purple},
-    {id:"bigbangs",name:"The Big Bangs",emoji:"\u{1F4A5}\u{1F92F}",color:C.gold},
+    {id:"birthdayblink",name:"Birthday Blinkers",emoji:"🎂💀",color:C.pink},
+    {id:"popsquad",name:"Pop Squad",emoji:"💥🎈",color:C.red},
+    {id:"inflatenation",name:"Inflate Nation",emoji:"🎈💨",color:C.orange},
+    {id:"heliumhomies",name:"Helium Homies",emoji:"🎈😂",color:C.cyan},
+    {id:"partycrashers",name:"Party Crashers",emoji:"🎉💣",color:C.purple},
+    {id:"bigbangs",name:"The Big Bangs",emoji:"💥🤯",color:C.gold},
   ],
   puffpong: [
-    {id:"neonninjas",name:"Neon Ninjas",emoji:"\u{1F977}\u{2728}",color:C.cyan},
-    {id:"pixelpuffers",name:"Pixel Puffers",emoji:"\u{1F579}\u{FE0F}\u{1F4A8}",color:C.green},
-    {id:"retrorippers",name:"Retro Rippers",emoji:"\u{1F3AE}\u{1F525}",color:C.orange},
-    {id:"glowgang",name:"Glow Gang",emoji:"\u{1F4A1}\u{1F60E}",color:C.lime},
-    {id:"arcadeapes",name:"Arcade Apes",emoji:"\u{1F98D}\u{1F579}\u{FE0F}",color:C.purple},
-    {id:"pongpros",name:"Pong Pros",emoji:"\u{1F3D3}\u{1F451}",color:C.gold},
+    {id:"neonninjas",name:"Neon Ninjas",emoji:"🥷✨",color:C.cyan},
+    {id:"pixelpuffers",name:"Pixel Puffers",emoji:"🕹️💨",color:C.green},
+    {id:"retrorippers",name:"Retro Rippers",emoji:"🎮🔥",color:C.orange},
+    {id:"glowgang",name:"Glow Gang",emoji:"💡😎",color:C.lime},
+    {id:"arcadeapes",name:"Arcade Apes",emoji:"🦍🕹️",color:C.purple},
+    {id:"pongpros",name:"Pong Pros",emoji:"🏓👑",color:C.gold},
   ],
   rhythm: [
-    {id:"rollingclouds",name:"Rolling Clouds",emoji:"\u{2601}\u{FE0F}\u{1F3B8}",color:C.purple},
-    {id:"puffdaddy",name:"Puff Daddy & Fam",emoji:"\u{1F4A8}\u{1F468}\u{200D}\u{1F469}\u{200D}\u{1F467}\u{200D}\u{1F466}",color:C.gold},
-    {id:"blinkerbeats",name:"Blinker Beats",emoji:"💀\u{1F941}",color:C.red},
-    {id:"420hz",name:"420 Hz",emoji:"\u{1F3B5}\u{1F33F}",color:C.green},
-    {id:"bassdrops",name:"Bass Drops",emoji:"\u{1F50A}\u{1F4A5}",color:C.cyan},
-    {id:"smokemachine",name:"Smoke Machine",emoji:"\u{1F32B}\u{FE0F}\u{1F3B9}",color:C.pink},
+    {id:"rollingclouds",name:"Rolling Clouds",emoji:"☁️🎸",color:C.purple},
+    {id:"puffdaddy",name:"Puff Daddy & Fam",emoji:"💨👨‍👩‍👧‍👦",color:C.gold},
+    {id:"blinkerbeats",name:"Blinker Beats",emoji:"💀🥁",color:C.red},
+    {id:"420hz",name:"420 Hz",emoji:"🎵🌿",color:C.green},
+    {id:"bassdrops",name:"Bass Drops",emoji:"🔊💥",color:C.cyan},
+    {id:"smokemachine",name:"Smoke Machine",emoji:"🌫️🎹",color:C.pink},
   ],
   tugofwar: [
-    {id:"ironlungs",name:"Iron Lungs",emoji:"\u{1FAC1}\u{1F4AA}",color:C.cyan},
-    {id:"puffpushers",name:"Puff Pushers",emoji:"\u{1F4A8}\u{1F3CB}\u{FE0F}",color:C.green},
-    {id:"blinkerbeasts",name:"Blinker Beasts",emoji:"💀\u{1F4AA}",color:C.red},
-    {id:"smokestrongmen",name:"Smoke Strongmen",emoji:"\u{1F32B}\u{FE0F}\u{1F98D}",color:C.purple},
-    {id:"lunglegion",name:"Lung Legion",emoji:"\u{1FAC1}\u{2694}\u{FE0F}",color:C.gold},
-    {id:"exhaleempire",name:"Exhale Empire",emoji:"\u{1F4A8}\u{1F451}",color:C.orange},
+    {id:"ironlungs",name:"Iron Lungs",emoji:"🫁💪",color:C.cyan},
+    {id:"puffpushers",name:"Puff Pushers",emoji:"💨🏋️",color:C.green},
+    {id:"blinkerbeasts",name:"Blinker Beasts",emoji:"💀💪",color:C.red},
+    {id:"smokestrongmen",name:"Smoke Strongmen",emoji:"🌫️🦍",color:C.purple},
+    {id:"lunglegion",name:"Lung Legion",emoji:"🫁⚔️",color:C.gold},
+    {id:"exhaleempire",name:"Exhale Empire",emoji:"💨👑",color:C.orange},
   ],
   hotpotato: [
-    {id:"bakedbunch",name:"The Baked Bunch",emoji:"\u{1F36A}\u{1F635}",color:C.orange},
-    {id:"friedsquad",name:"Fried Squad",emoji:"\u{1F373}💀",color:C.red},
-    {id:"slowcookers",name:"Slow Cookers",emoji:"\u{1F372}\u{1F634}",color:C.green},
-    {id:"burntofferings",name:"Burnt Offerings",emoji:"\u{1F525}\u{1F35E}",color:C.gold},
-    {id:"hothandlers",name:"Hot Handlers",emoji:"\u{1F525}\u{1F932}",color:C.pink},
-    {id:"bombsquad",name:"Bomb Squad",emoji:"\u{1F4A3}\u{1F60E}",color:C.cyan},
+    {id:"bakedbunch",name:"The Baked Bunch",emoji:"🍪😵",color:C.orange},
+    {id:"friedsquad",name:"Fried Squad",emoji:"🍳💀",color:C.red},
+    {id:"slowcookers",name:"Slow Cookers",emoji:"🍲😴",color:C.green},
+    {id:"burntofferings",name:"Burnt Offerings",emoji:"🔥🍞",color:C.gold},
+    {id:"hothandlers",name:"Hot Handlers",emoji:"🔥🤲",color:C.pink},
+    {id:"bombsquad",name:"Bomb Squad",emoji:"💣😎",color:C.cyan},
   ],
   rps: [
-    {id:"stonepuffers",name:"Stone Temple Puffers",emoji:"\u{1FAA8}\u{1F4A8}",color:C.orange},
-    {id:"papertrail",name:"Paper Trail Gang",emoji:"\u{1F4C4}\u{1F60E}",color:C.cyan},
-    {id:"scissorsensei",name:"Scissor Sensei",emoji:"\u{2702}\u{FE0F}\u{1F977}",color:C.red},
-    {id:"blinkerdojo",name:"Blinker Dojo",emoji:"💀\u{1F94B}",color:C.purple},
-    {id:"rocksolid",name:"Rock Solid Crew",emoji:"\u{1FAA8}\u{1F4AA}",color:C.green},
-    {id:"paperchasers",name:"Paper Chasers",emoji:"\u{1F4C4}\u{1F4B0}",color:C.gold},
+    {id:"stonepuffers",name:"Stone Temple Puffers",emoji:"🪨💨",color:C.orange},
+    {id:"papertrail",name:"Paper Trail Gang",emoji:"📄😎",color:C.cyan},
+    {id:"scissorsensei",name:"Scissor Sensei",emoji:"✂️🥷",color:C.red},
+    {id:"blinkerdojo",name:"Blinker Dojo",emoji:"💀🥋",color:C.purple},
+    {id:"rocksolid",name:"Rock Solid Crew",emoji:"🪨💪",color:C.green},
+    {id:"paperchasers",name:"Paper Chasers",emoji:"📄💰",color:C.gold},
   ],
   hooked: [
-    {id:"deeppuffers",name:"Deep Puffers",emoji:"\u{1F41F}\u{1F4A8}",color:C.blue},
-    {id:"blinkerbait",name:"Blinker Bait Co",emoji:"\u{1F3A3}💀",color:C.red},
-    {id:"cloudanglers",name:"Cloud Anglers",emoji:"\u{2601}\u{FE0F}\u{1F3A3}",color:C.cyan},
-    {id:"reeldeal",name:"The Reel Deal",emoji:"\u{1F3A3}\u{1F60E}",color:C.green},
-    {id:"krakenpuffs",name:"Kraken Puffs",emoji:"\u{1F991}\u{1F4A8}",color:C.purple},
-    {id:"tidalpull",name:"Tidal Pull",emoji:"\u{1F30A}\u{1F4AA}",color:C.gold},
+    {id:"deeppuffers",name:"Deep Puffers",emoji:"🐟💨",color:C.blue},
+    {id:"blinkerbait",name:"Blinker Bait Co",emoji:"🎣💀",color:C.red},
+    {id:"cloudanglers",name:"Cloud Anglers",emoji:"☁️🎣",color:C.cyan},
+    {id:"reeldeal",name:"The Reel Deal",emoji:"🎣😎",color:C.green},
+    {id:"krakenpuffs",name:"Kraken Puffs",emoji:"🦑💨",color:C.purple},
+    {id:"tidalpull",name:"Tidal Pull",emoji:"🌊💪",color:C.gold},
   ],
 };
 
@@ -300,9 +300,9 @@ const WC_GROUPS = {
 };
 
 const WC_PRIZES = {
-  gold:   {label:"\u{1F947} Champion",  pts:50000, coins:500, title:"World Champion"},
-  silver: {label:"\u{1F948} Runner-Up", pts:25000, coins:250, title:"Runner-Up"},
-  bronze: {label:"\u{1F949} Third",     pts:10000, coins:100, title:"Third Place"},
+  gold:   {label:"🥇 Champion",  pts:50000, coins:500, title:"World Champion"},
+  silver: {label:"🥈 Runner-Up", pts:25000, coins:250, title:"Runner-Up"},
+  bronze: {label:"🥉 Third",     pts:10000, coins:100, title:"Third Place"},
   fourth: {label:"4th Place",           pts:5000,  coins:50,  title:"Semifinalist"},
   group:  {label:"Group Exit",          pts:1000,  coins:10,  title:"Group Stage"},
 };
@@ -4785,23 +4785,23 @@ export default function MoodLabArena() {
   // ROCK PAPER SCISSORS — Full Game Engine
   // ═══════════════════════════════════════════════════════════════
   const RPS_CHOICES = ["rock","paper","scissors"];
-  const RPS_EMOJI = {rock:"\u{1FAA8}",paper:"\u{1F4C4}",scissors:"\u{2702}\u{FE0F}"};
+  const RPS_EMOJI = {rock:"🪨",paper:"📄",scissors:"✂️"};
   const RPS_BEATS = {rock:"scissors",paper:"rock",scissors:"paper"};
 
   const RPS_WIN_COMMENTS = [
-    ["Paper wraps rock like a rolling paper! \u{1F4C4}\u{1FAA8}","Rock crushes scissors through the smoke! \u{1FAA8}\u{2702}\u{FE0F}","Scissors cut through the haze! \u{2702}\u{FE0F}\u{1F4A8}"],
-    ["CLEAN WIN! That throw was precise \u{1F3AF}","The puff powered that throw HARD \u{1F4AA}\u{1F4A8}","AI didn't see that coming! \u{1F440}"],
-    ["POWER THROW! The dojo is shaking! \u{1F525}\u{1F3EF}","That rock is ON FIRE! \u{1F525}\u{1FAA8}","Blinker energy on that throw! \u{1F4A8}\u{1F4A8}\u{1F4A8}"],
+    ["Paper wraps rock like a rolling paper! 📄🪨","Rock crushes scissors through the smoke! 🪨✂️","Scissors cut through the haze! ✂️💨"],
+    ["CLEAN WIN! That throw was precise 🎯","The puff powered that throw HARD 💪💨","AI didn't see that coming! 👀"],
+    ["POWER THROW! The dojo is shaking! 🔥🏯","That rock is ON FIRE! 🔥🪨","Blinker energy on that throw! 💨💨💨"],
   ];
   const RPS_LOSE_COMMENTS = [
-    "AI read you like a menu at the dispensary \u{1F624}","Outplayed! Time to take another hit \u{1F4A8}","The bot's got smoke-vision \u{1F916}\u{1F4A8}",
-    "That throw was weaker than mids \u{1F62C}","AI flexed HARD on that one 💀","Counter-puffed! Better luck next round \u{1F32C}\u{FE0F}",
+    "AI read you like a menu at the dispensary 😤","Outplayed! Time to take another hit 💨","The bot's got smoke-vision 🤖💨",
+    "That throw was weaker than mids 😬","AI flexed HARD on that one 💀","Counter-puffed! Better luck next round 🌬️",
   ];
   const RPS_TIE_COMMENTS = [
-    "SAME THROW! Puff power decides it! \u{1F4A8}\u{26A1}","Mirror match! Who puffed harder?! \u{1FA9E}","Identical minds... comparing puff power! \u{1F9E0}\u{1F4A8}",
+    "SAME THROW! Puff power decides it! 💨⚡","Mirror match! Who puffed harder?! 🪞","Identical minds... comparing puff power! 🧠💨",
   ];
   const RPS_BLINKER_COMMENTS = [
-    "BLINKER THROW! That rock is on FIRE! \u{1F525}\u{1FAA8}","ULTRA POWER! Maximum puff energy! \u{1F4A8}\u{1F4A8}\u{1F4A8}","BLINKER RISK! High reward or high regret! \u{26A1}💀",
+    "BLINKER THROW! That rock is on FIRE! 🔥🪨","ULTRA POWER! Maximum puff energy! 💨💨💨","BLINKER RISK! High reward or high regret! ⚡💀",
   ];
 
   const rpsGetAiChoice = (opp) => {
@@ -4853,7 +4853,7 @@ export default function MoodLabArena() {
     if(rpsPhase!=="choose") return;
     setRpsPlayerChoice(choice);
     playFx("select");
-    setCommentary("Now HOLD TO PUFF for power! \u{1F4A8}");
+    setCommentary("Now HOLD TO PUFF for power! 💨");
     setRpsPhase("puff");
     setRpsPuffPower(0);
     setRpsAiPuffPower(0);
@@ -4894,7 +4894,7 @@ export default function MoodLabArena() {
     triggerShake();
     playFx("kick");
     if(playerPwrInfo.tier==="ultra") setCommentary(RPS_BLINKER_COMMENTS[Math.floor(Math.random()*RPS_BLINKER_COMMENTS.length)]);
-    else setCommentary("CLASH! \u{1F4A5}");
+    else setCommentary("CLASH! 💥");
     setTimeout(()=>{
       if(!guard||!guard.v) return;
       setRpsClashAnim(false);
@@ -4903,10 +4903,10 @@ export default function MoodLabArena() {
       if(pc===aiChoice) {
         if(finalPower > aiPwr + 5) {
           result = "win"; pts = playerPwrInfo.points;
-          setCommentary("TIE BROKEN by puff power! You puffed harder! " + (finalPower>aiPwr+30?"DOMINANT! \u{1F4A8}\u{1F4A8}":"Barely! \u{1F62E}"));
+          setCommentary("TIE BROKEN by puff power! You puffed harder! " + (finalPower>aiPwr+30?"DOMINANT! 💨💨":"Barely! 😮"));
         } else if(aiPwr > finalPower + 5) {
           result = "lose"; pts = 0;
-          setCommentary("TIE BROKEN by puff power! AI puffed harder! \u{1F624}\u{1F4A8}");
+          setCommentary("TIE BROKEN by puff power! AI puffed harder! 😤💨");
         } else {
           result = "tie"; pts = 1;
           setCommentary(RPS_TIE_COMMENTS[Math.floor(Math.random()*RPS_TIE_COMMENTS.length)]);
@@ -4921,7 +4921,7 @@ export default function MoodLabArena() {
       } else {
         result = "lose";
         if(playerPwrInfo.tier==="ultra") {
-          pts = -3; setCommentary("BLINKER BACKFIRE! AI gets +3 bonus! 💀\u{1F525}"); triggerFlash("miss");
+          pts = -3; setCommentary("BLINKER BACKFIRE! AI gets +3 bonus! 💀🔥"); triggerFlash("miss");
         } else {
           pts = 0; setCommentary(RPS_LOSE_COMMENTS[Math.floor(Math.random()*RPS_LOSE_COMMENTS.length)]);
         }
@@ -4949,7 +4949,7 @@ export default function MoodLabArena() {
           setRpsScore(prev => {
             if(prev.you > prev.ai) {
               playFx("win"); spawnConfetti(50); triggerFlash("goal");
-              setCommentary("CHAMPION! You dominated the Puff Dojo! 🏆\u{1F4A8}");
+              setCommentary("CHAMPION! You dominated the Puff Dojo! 🏆💨");
               setCoins(c=>c+500); setXp(x=>x+200);
             } else if(prev.ai > prev.you) {
               playFx("lose"); triggerFlash("miss");
@@ -4957,7 +4957,7 @@ export default function MoodLabArena() {
               setCoins(c=>c+50); setXp(x=>x+50);
             } else {
               playFx("crowd");
-              setCommentary("DRAW! Equal warriors in the dojo! \u{1F91D}");
+              setCommentary("DRAW! Equal warriors in the dojo! 🤝");
               setCoins(c=>c+200); setXp(x=>x+100);
             }
             return prev;
@@ -8271,7 +8271,7 @@ export default function MoodLabArena() {
                       <div style={{fontSize:10,fontWeight:800,color:C.cyan,marginTop:4}}>YOU</div>
                     </div>
                     <div style={{fontSize:28,fontWeight:900,color:C.gold,animation:rpsClashAnim?"countPulse 0.2s infinite":"none"}}>
-                      {rpsClashAnim?"\u{1F4A5}":"VS"}
+                      {rpsClashAnim?"💥":"VS"}
                     </div>
                     <div style={{textAlign:"center",animation:rpsClashAnim?"slideInRight 0.4s ease":"none"}}>
                       <div style={{fontSize:48,animation:rpsClashAnim?"countPulse 0.3s infinite":"none"}}>{rpsAiChoice?RPS_EMOJI[rpsAiChoice]:"?"}</div>
@@ -8334,7 +8334,7 @@ export default function MoodLabArena() {
                       <div style={{fontSize:56,marginBottom:8,animation:"countPulse 1s infinite"}}>🏆</div>
                       <div style={{fontSize:26,fontWeight:900,color:C.green,textShadow:`0 0 30px ${C.green}60`,marginBottom:4}}>CHAMPION!</div>
                       <div style={{fontSize:13,color:C.text2,marginBottom:2}}>You dominated the Puff Dojo!</div>
-                      <div style={{fontSize:14,fontWeight:700,color:C.gold,marginBottom:4}}>+500 coins \u{1F4B0}</div>
+                      <div style={{fontSize:14,fontWeight:700,color:C.gold,marginBottom:4}}>+500 coins 💰</div>
                     </div>
                   )}
                   {youLoseFinal && (
