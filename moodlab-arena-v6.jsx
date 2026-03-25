@@ -6796,11 +6796,11 @@ export default function MoodLabArena() {
 
             {/* ═══ TUMBLEWEED ═══ */}
             {duelTumbleweed && isTensionPhase && (
-              <div style={{position:"absolute",bottom:"26%",fontSize:24,animation:"duelTumbleweed 6s linear infinite",opacity:0.5,filter:"drop-shadow(0 3px 8px rgba(0,0,0,0.7))",pointerEvents:"none"}}>🌾</div>
+              <div style={{position:"absolute",bottom:"26%",left:0,fontSize:24,animation:"duelTumbleweed 6s linear infinite",opacity:0.5,filter:"drop-shadow(0 3px 8px rgba(0,0,0,0.7))",pointerEvents:"none",willChange:"transform"}}>🌾</div>
             )}
             {/* Second tumbleweed */}
             {duelTumbleweed && isTensionPhase && duelStaredownStage >= 2 && (
-              <div style={{position:"absolute",bottom:"24%",fontSize:16,animation:"duelTumbleweed 10s linear 2s infinite",opacity:0.3,pointerEvents:"none"}}>🌾</div>
+              <div style={{position:"absolute",bottom:"24%",left:0,fontSize:16,animation:"duelTumbleweed 10s linear 2s infinite",opacity:0.3,pointerEvents:"none",willChange:"transform"}}>🌾</div>
             )}
 
             {/* ═══ DUST PARTICLES ═══ */}
@@ -12985,7 +12985,7 @@ export default function MoodLabArena() {
         @keyframes lightSweep{0%{transform:translateX(-200%) skewX(-15deg)}100%{transform:translateX(400%) skewX(-15deg)}}
         @keyframes jumbotronProgress{from{width:0%}to{width:100%}}
         @keyframes portalParticle{0%{opacity:0;transform:translateY(0) scale(0.5)}20%{opacity:0.7;transform:translateY(-10px) scale(1)}100%{opacity:0;transform:translateY(-65px) scale(0.3)}}
-        @keyframes gridScan{0%{top:100%}100%{top:-2px}}
+        @keyframes gridScan{0%{transform:translateY(100%)}100%{transform:translateY(-100%)}}
         @keyframes energyPulse{0%,100%{transform:translate(-50%,-50%) scale(1);opacity:0.15}50%{transform:translate(-50%,-50%) scale(1.15);opacity:0.04}}
         @keyframes gentleFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
         @keyframes countPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
@@ -13013,7 +13013,7 @@ export default function MoodLabArena() {
         @keyframes bubbleFloat{0%{transform:translateY(0) scale(1);opacity:0.6}50%{opacity:0.4}100%{transform:translateY(-200px) scale(0.3) translateX(20px);opacity:0}}
         @keyframes duelHeartbeat{0%,100%{background:rgba(0,0,0,0);transform:scale(1)}50%{background:rgba(30,0,0,0.15);transform:scale(1.005)}}
         @keyframes duelHeatShimmer{0%,100%{transform:scaleY(1)}50%{transform:scaleY(1.002) translateY(-0.5px)}}
-        @keyframes duelTumbleweed{0%{left:-10%;transform:rotate(0deg)}100%{left:110%;transform:rotate(720deg)}}
+        @keyframes duelTumbleweed{0%{transform:translateX(-50px) rotate(0deg)}100%{transform:translateX(calc(100vw + 50px)) rotate(720deg)}}
         @keyframes duelDust{0%,100%{transform:translateX(0) translateY(0);opacity:0.2}25%{transform:translateX(15px) translateY(-8px);opacity:0.5}50%{transform:translateX(30px) translateY(2px);opacity:0.3}75%{transform:translateX(10px) translateY(-5px);opacity:0.4}}
         @keyframes duelBreathe{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.03);opacity:0.85}}
         @keyframes duelSmoke{0%{transform:scale(0.5);opacity:0.6}100%{transform:scale(3) translateY(-40px);opacity:0}}
@@ -13040,7 +13040,7 @@ export default function MoodLabArena() {
         @keyframes rpNoteGlow{0%,100%{box-shadow:0 0 8px currentColor}50%{box-shadow:0 0 20px currentColor,0 0 30px currentColor}}
         @keyframes rpLanePulse{0%,100%{opacity:.15}50%{opacity:.35}}
         @keyframes hpBombPulse{0%,100%{transform:scale(1);filter:brightness(1)}50%{transform:scale(1.15);filter:brightness(1.3) drop-shadow(0 0 12px rgba(255,100,0,0.6))}}
-        @keyframes hpFuseBurn{0%{width:100%}100%{width:0%}}
+        @keyframes hpFuseBurn{0%{transform:scaleX(1)}100%{transform:scaleX(0)}}
         @keyframes hpExplosion{0%{transform:scale(1);opacity:1}30%{transform:scale(2.5);opacity:1;filter:brightness(2)}60%{transform:scale(3);opacity:0.7}100%{transform:scale(4);opacity:0}}
         @keyframes hpPassAnim{0%{transform:translateX(0)}50%{transform:translateX(10px) scale(1.2)}100%{transform:translateX(0)}}
         @keyframes hookLineShake{0%,100%{transform:translateX(-50%) rotate(-1deg)}50%{transform:translateX(-50%) rotate(1deg)}}
