@@ -5103,14 +5103,14 @@ export default function MoodLabArena() {
                 <span style={{fontSize:7,fontWeight:600,color:C.text3}}>in Arena</span>
               </div>
               <span style={{width:1,height:10,background:C.text3+"30"}}/>
-              <div style={{display:"flex",alignItems:"center",gap:2}}>
+              <div onClick={() => setShowProfile(true)} style={{display:"flex",alignItems:"center",gap:2,cursor:"pointer"}}>
                 <span style={{fontSize:8,fontWeight:600,color:C.text3}}>Lv</span>
                 <span style={{fontSize:9,fontWeight:700,color:C.gold}}>{USER.level}</span>
+                <span style={{fontSize:8,marginLeft:1}}>{getCurrentRank().emoji}</span>
               </div>
               <span style={{width:1,height:10,background:C.text3+"30"}}/>
               <div style={{display:"flex",alignItems:"center",gap:2}}>
-                <span style={{fontSize:8,fontWeight:600,color:C.text3}}>Puff</span>
-                <span style={{fontSize:9,fontWeight:700,color:C.orange}}>🔥5</span>
+                <span style={{fontSize:9,fontWeight:700,color:C.orange,animation:playerProfile.streak>=7?"pulse 1.5s infinite":"none"}}>🔥{playerProfile.streak}</span>
               </div>
               {arenaAtmosphere.peakHour && (<>
                 <span style={{width:1,height:10,background:C.text3+"30"}}/>
@@ -5119,6 +5119,38 @@ export default function MoodLabArena() {
                   <span style={{fontSize:7,fontWeight:800,color:C.red,letterSpacing:0.5}}>PEAK</span>
                 </div>
               </>)}
+            </div>
+          </div>
+        </div>
+
+
+        {/* ═══ HALFTIME MINI-GAMES — floating card ═══ */}
+        <div style={{position:"absolute",bottom:70,left:14,right:14,zIndex:12,animation:"arenaFadeIn 0.8s ease 0.5s both"}}>
+          <div style={{borderRadius:18,overflow:"hidden",...GLASS_CARD,padding:"14px 16px"}}>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
+              <div style={{display:"flex",alignItems:"center",gap:6}}>
+                <span style={{fontSize:16}}>🎪</span>
+                <span style={{fontSize:13,fontWeight:900,color:C.text}}>HALFTIME</span>
+                <span style={{fontSize:8,fontWeight:700,color:C.pink,padding:"2px 6px",borderRadius:4,background:C.pink+"12",border:"1px solid "+C.pink+"20"}}>MINI-GAMES</span>
+              </div>
+              <div style={{fontSize:9,color:C.text3}}>Win coins!</div>
+            </div>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:6}}>
+              {[
+                {type:"roulette",emoji:"🎰",label:"Roulette",color:C.gold},
+                {type:"tug",emoji:"🤝",label:"Tug",color:C.cyan},
+                {type:"lucky",emoji:"🍀",label:"Lucky",color:C.green},
+                {type:"trivia",emoji:"🧠",label:"Trivia",color:C.purple},
+              ].map(g => (
+                <div key={g.type} onClick={(e)=>{e.stopPropagation();startHalftime(g.type);}} style={{
+                  padding:"10px 4px",borderRadius:12,textAlign:"center",cursor:"pointer",
+                  background:g.color+"08",border:"1px solid "+g.color+"15",
+                  transition:"all 0.2s",
+                }}>
+                  <div style={{fontSize:22,marginBottom:2,filter:"drop-shadow(0 0 6px "+g.color+"40)"}}>{g.emoji}</div>
+                  <div style={{fontSize:8,fontWeight:800,color:g.color}}>{g.label}</div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -5928,6 +5960,72 @@ export default function MoodLabArena() {
       ) : renderPuffReactionFeedTab()}
     </div>
   );
+
+
+  // ── RENDER: LIVE SPECTATOR OVERLAY ──
+  const renderSpectatorOverlay = () => {
+    const inGame = !!(gameActive || matchmaking || wcPhase);
+    if (!inGame) return null;
+    return (
+      <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:95,pointerEvents:"none",overflow:"hidden"}}>
+        {liveSpectators.map(s => {
+          const age = Date.now() - s.ts;
+          const prog = Math.min(1, age / 3500);
+          const cx = s.sx + (s.ex - s.sx) * prog;
+          const cy = s.sy + (s.ey - s.sy) * prog - Math.sin(prog * Math.PI) * 15;
+          const op = prog < 0.15 ? prog / 0.15 : prog > 0.7 ? (1 - prog) / 0.3 : 1;
+          return (
+            <div key={s.id} style={{position:"absolute",left:`${cx}%`,top:`${cy}%`,transform:"translate(-50%,-50%)",opacity:op*0.85,willChange:"left,top,opacity"}}>
+              <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:1}}>
+                <div style={{width:28,height:28,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,
+                  background:`radial-gradient(circle, ${s.color}25, ${s.color}08)`,border:`1.5px solid ${s.color}60`,
+                  boxShadow:`0 0 8px ${s.color}30, 0 0 16px ${s.color}15`,
+                  animation:crowdEruption?"specErupt 0.5s infinite":"none",
+                }}>{s.emoji}</div>
+                <div style={{fontSize:7,fontWeight:800,color:s.color,textShadow:`0 0 4px ${s.color}60`,whiteSpace:"nowrap",opacity:0.9}}>+{s.puffDur}s</div>
+              </div>
+            </div>
+          );
+        })}
+        {crowdEruption && <div style={{position:"absolute",inset:0,background:`radial-gradient(circle at 50% 50%, ${C.gold}15, transparent 70%)`,animation:"specEruptFlash 0.4s ease-out"}}/>}
+        <div style={{position:"absolute",top:52,right:10,display:"flex",alignItems:"center",gap:4,padding:"3px 8px",borderRadius:100,
+          background:"rgba(0,0,0,0.5)",border:"1px solid rgba(255,255,255,0.08)",backdropFilter:"blur(8px)",pointerEvents:"auto"}}>
+          <span style={{fontSize:10}}>👁</span>
+          <span style={{fontSize:9,fontWeight:800,color:C.text,fontFamily:"'Courier New',monospace"}}>{spectatorCount.toLocaleString()}</span>
+          <span style={{fontSize:7,color:C.text3}}>watching</span>
+          <div style={{width:4,height:4,borderRadius:"50%",background:C.green,animation:"pulse 2s infinite"}}/>
+        </div>
+        <div style={{position:"absolute",top:72,right:10,width:90,pointerEvents:"auto"}}>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:2}}>
+            <span style={{fontSize:7,fontWeight:700,color:C.text3}}>CROWD</span>
+            <span style={{fontSize:7,fontWeight:800,color:crowdEnergy>80?C.gold:crowdEnergy>50?C.orange:C.text3}}>{Math.round(crowdEnergy)}%</span>
+          </div>
+          <div style={{width:"100%",height:3,borderRadius:2,background:"rgba(255,255,255,0.06)",overflow:"hidden"}}>
+            <div style={{width:`${crowdEnergy}%`,height:"100%",borderRadius:2,transition:"width 0.5s ease",
+              background:crowdEnergy>80?`linear-gradient(90deg,${C.orange},${C.gold})`:crowdEnergy>50?`linear-gradient(90deg,${C.cyan},${C.green})`:`linear-gradient(90deg,${C.text3},${C.cyan})`,
+              boxShadow:crowdEnergy>80?`0 0 8px ${C.gold}40`:"none"}}/>
+          </div>
+          {crowdEruption && <div style={{fontSize:8,fontWeight:900,color:C.gold,textAlign:"center",marginTop:2,animation:"specErupt 0.3s infinite",textShadow:`0 0 6px ${C.gold}`}}>CROWD ERUPTION</div>}
+        </div>
+        {spectatorTicker.length > 0 && (
+          <div style={{position:"absolute",bottom:70,left:0,right:0,overflow:"hidden",height:18}}>
+            <div style={{display:"flex",gap:16,animation:"specTickerScroll 12s linear infinite",whiteSpace:"nowrap",paddingLeft:"100%"}}>
+              {spectatorTicker.map((t,i) => (
+                <span key={i} style={{fontSize:8,fontWeight:600,color:C.text2,opacity:0.7}}>
+                  <span style={{color:C.cyan}}>{t.name}</span> {t.msg} {t.emoji}
+                </span>
+              ))}
+              {spectatorTicker.map((t,i) => (
+                <span key={`d${i}`} style={{fontSize:8,fontWeight:600,color:C.text2,opacity:0.7}}>
+                  <span style={{color:C.cyan}}>{t.name}</span> {t.msg} {t.emoji}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   // Game detail / matchmaking
   const renderGameOverlay = () => {
@@ -11976,6 +12074,153 @@ export default function MoodLabArena() {
   );
 
   // ═════════════════════════════════════════
+
+  // ═════════════════════════════════════════
+  // ── SOCIAL: HELPERS ──
+  // ═════════════════════════════════════════
+  const getCurrentRank = () => {
+    const r = RANKS.find(r => r.name === playerProfile.rank);
+    return r || RANKS[0];
+  };
+  const getNextRank = () => {
+    const idx = RANKS.findIndex(r => r.name === playerProfile.rank);
+    return idx < RANKS.length - 1 ? RANKS[idx + 1] : null;
+  };
+  const getWinRate = () => playerProfile.gamesPlayed > 0 ? Math.round((playerProfile.gamesWon / playerProfile.gamesPlayed) * 100) : 0;
+  const getFavGame = () => PLAY_GAMES.find(g => g.id === playerProfile.favoriteGame);
+  const getDaysSinceJoin = () => Math.floor((Date.now() - playerProfile.joinDate) / 86400000);
+
+  const updateProfileAfterGame = (won) => {
+    setPlayerProfile(p => ({
+      ...p,
+      gamesPlayed: p.gamesPlayed + 1,
+      gamesWon: won ? p.gamesWon + 1 : p.gamesWon,
+      totalPuffs: p.totalPuffs + 1,
+      rankProgress: Math.min(100, p.rankProgress + (won ? 8 : 3)),
+    }));
+  };
+
+  // ═════════════════════════════════════════
+  // ── RENDER: PROFILE OVERLAY ──
+  // ═════════════════════════════════════════
+  const renderProfileOverlay = () => {
+    if (!showProfile) return null;
+    const rank = getCurrentRank();
+    const nextRank = getNextRank();
+    const winRate = getWinRate();
+    const favGame = getFavGame();
+    const daysSince = getDaysSinceJoin();
+    const recentAchievements = ACHIEVEMENTS.filter(a => playerProfile.achievements.includes(a.id)).slice(-3);
+    return (
+      <div onClick={() => setShowProfile(false)} style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:200,background:"rgba(0,0,0,0.75)",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",display:"flex",alignItems:"center",justifyContent:"center",animation:"fadeIn 0.25s ease"}}>
+        <div onClick={e => e.stopPropagation()} style={{width:"92%",maxWidth:380,maxHeight:"85vh",overflow:"auto",borderRadius:24,padding:"24px 20px",position:"relative",background:`radial-gradient(ellipse at 50% 0%, ${rank.color}12, ${C.bg2} 60%)`,border:`1px solid ${rank.color}25`,boxShadow:`0 0 60px ${rank.color}15, 0 20px 40px rgba(0,0,0,0.5)`,animation:"sheetUp 0.35s ease"}}>
+          {/* Close */}
+          <div onClick={() => setShowProfile(false)} style={{position:"absolute",top:16,right:16,width:28,height:28,borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.1)",fontSize:12,color:C.text3}}>x</div>
+          {/* Avatar + Name + Rank */}
+          <div style={{textAlign:"center",marginBottom:20}}>
+            <div style={{width:72,height:72,borderRadius:22,margin:"0 auto 12px",background:`linear-gradient(135deg, ${rank.color}30, ${C.purple}20)`,border:`3px solid ${rank.color}50`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:36,boxShadow:`0 0 30px ${rank.color}20`}}>🌟</div>
+            <div style={{fontSize:22,fontWeight:900,color:C.text,letterSpacing:-0.5}}>{USER.name}</div>
+            <div style={{display:"inline-flex",alignItems:"center",gap:5,marginTop:6,padding:"4px 14px",borderRadius:100,background:`${rank.color}12`,border:`1px solid ${rank.color}30`}}>
+              <span style={{fontSize:14}}>{rank.emoji}</span>
+              <span style={{fontSize:12,fontWeight:800,color:rank.color}}>{rank.name}</span>
+            </div>
+            <div style={{fontSize:9,color:C.text3,marginTop:6}}>Member for {daysSince} days</div>
+          </div>
+          {/* XP Progress */}
+          {nextRank && (
+            <div style={{marginBottom:20,padding:"12px 16px",borderRadius:14,background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.06)"}}>
+              <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}>
+                <span style={{fontSize:9,fontWeight:700,color:rank.color}}>{rank.emoji} {rank.name}</span>
+                <span style={{fontSize:9,fontWeight:700,color:nextRank.color}}>{nextRank.emoji} {nextRank.name}</span>
+              </div>
+              <div style={{height:6,borderRadius:3,background:"rgba(255,255,255,0.06)",overflow:"hidden"}}>
+                <div style={{height:"100%",borderRadius:3,width:`${playerProfile.rankProgress}%`,background:`linear-gradient(90deg, ${rank.color}, ${nextRank.color})`,transition:"width 0.5s ease",boxShadow:`0 0 10px ${rank.color}40`}}/>
+              </div>
+              <div style={{fontSize:8,color:C.text3,marginTop:4,textAlign:"center"}}>{playerProfile.rankProgress}% to {nextRank.name}</div>
+            </div>
+          )}
+          {/* Stats Grid */}
+          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:20}}>
+            {[
+              {label:"Games",value:playerProfile.gamesPlayed,icon:"🎮",color:C.cyan},
+              {label:"Win Rate",value:winRate+"%",icon:"🏆",color:C.green},
+              {label:"Total Puffs",value:playerProfile.totalPuffs,icon:"💨",color:C.orange},
+              {label:"Blinkers",value:playerProfile.blinkerCount,icon:"💀",color:C.red},
+              {label:"Streak",value:playerProfile.streak+"d",icon:"🔥",color:C.gold},
+              {label:"Puff Time",value:Math.floor(playerProfile.totalPuffTime/60)+"m",icon:"⏱",color:C.purple},
+            ].map((s,i) => (
+              <div key={i} style={{padding:"10px 6px",borderRadius:12,textAlign:"center",background:`${s.color}06`,border:`1px solid ${s.color}10`}}>
+                <div style={{fontSize:14,marginBottom:2}}>{s.icon}</div>
+                <div style={{fontFamily:"'Courier New',monospace",fontSize:15,fontWeight:900,color:s.color}}>{s.value}</div>
+                <div style={{fontSize:7,color:C.text3,marginTop:2,fontWeight:600}}>{s.label}</div>
+              </div>
+            ))}
+          </div>
+          {/* Favorite Game */}
+          {favGame && (
+            <div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",borderRadius:12,marginBottom:16,background:`${favGame.color}06`,border:`1px solid ${favGame.color}12`}}>
+              <span style={{fontSize:22}}>{favGame.emoji}</span>
+              <div>
+                <div style={{fontSize:11,fontWeight:800,color:C.text}}>Favorite: {favGame.name}</div>
+                <div style={{fontSize:8,color:C.text3}}>Most played game</div>
+              </div>
+            </div>
+          )}
+          {/* Recent Achievements */}
+          <div style={{marginBottom:16}}>
+            <div style={{fontSize:10,fontWeight:800,color:C.text,marginBottom:8}}>Recent Achievements</div>
+            <div style={{display:"flex",gap:8}}>
+              {recentAchievements.map((a,i) => (
+                <div key={i} style={{flex:1,padding:"10px 6px",borderRadius:12,textAlign:"center",background:`${a.color}08`,border:`1px solid ${a.color}18`,boxShadow:`0 0 12px ${a.color}10`}}>
+                  <div style={{fontSize:20,marginBottom:4}}>{a.emoji}</div>
+                  <div style={{fontSize:8,fontWeight:700,color:a.color}}>{a.name}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+          {/* View All Achievements */}
+          <div onClick={() => {setShowProfile(false); setShowAchievements(true);}} style={{padding:"12px",borderRadius:12,textAlign:"center",cursor:"pointer",background:`${C.purple}08`,border:`1px solid ${C.purple}18`,fontSize:12,fontWeight:800,color:C.purple}}>🏅 View All Achievements</div>
+        </div>
+      </div>
+    );
+  };
+
+  // ═════════════════════════════════════════
+  // ── RENDER: ACHIEVEMENTS OVERLAY ──
+  // ═════════════════════════════════════════
+  const renderAchievementsOverlay = () => {
+    if (!showAchievements) return null;
+    const unlocked = playerProfile.achievements;
+    return (
+      <div onClick={() => setShowAchievements(false)} style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:200,background:"rgba(0,0,0,0.8)",backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)",display:"flex",alignItems:"center",justifyContent:"center",animation:"fadeIn 0.25s ease"}}>
+        <div onClick={e => e.stopPropagation()} style={{width:"92%",maxWidth:400,maxHeight:"85vh",overflow:"auto",borderRadius:24,padding:"24px 16px",background:`radial-gradient(ellipse at 50% 0%, ${C.gold}08, ${C.bg2} 60%)`,border:`1px solid ${C.gold}15`,boxShadow:"0 20px 60px rgba(0,0,0,0.5)",animation:"sheetUp 0.35s ease"}}>
+          <div style={{textAlign:"center",marginBottom:20}}>
+            <div style={{fontSize:28,marginBottom:4}}>🏅</div>
+            <div style={{fontSize:18,fontWeight:900,color:C.text}}>Achievements</div>
+            <div style={{fontSize:10,color:C.text3,marginTop:2}}>{unlocked.length}/{ACHIEVEMENTS.length} Unlocked</div>
+            <div style={{margin:"8px auto 0",width:120,height:4,borderRadius:2,background:"rgba(255,255,255,0.06)",overflow:"hidden"}}>
+              <div style={{height:"100%",borderRadius:2,width:`${(unlocked.length/ACHIEVEMENTS.length)*100}%`,background:`linear-gradient(90deg,${C.gold},${C.orange})`}}/>
+            </div>
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10}}>
+            {ACHIEVEMENTS.map((a,i) => {
+              const isUnlocked = unlocked.includes(a.id);
+              return (
+                <div key={i} style={{padding:"14px 10px",borderRadius:14,textAlign:"center",background:isUnlocked?`${a.color}08`:"rgba(255,255,255,0.02)",border:`1px solid ${isUnlocked?a.color+"25":"rgba(255,255,255,0.04)"}`,boxShadow:isUnlocked?`0 0 20px ${a.color}10`:"none",opacity:isUnlocked?1:0.45,transition:"all 0.3s",position:"relative"}}>
+                  {a.rare && isUnlocked && <div style={{position:"absolute",top:6,right:6,fontSize:7,fontWeight:800,color:C.gold,background:`${C.gold}15`,padding:"1px 5px",borderRadius:4,border:`1px solid ${C.gold}20`}}>RARE</div>}
+                  <div style={{fontSize:28,marginBottom:6,filter:isUnlocked?"none":"grayscale(1)"}}>{a.emoji}</div>
+                  <div style={{fontSize:11,fontWeight:800,color:isUnlocked?a.color:C.text3}}>{a.name}</div>
+                  <div style={{fontSize:8,color:isUnlocked?C.text2:C.text3,marginTop:3}}>{isUnlocked?a.desc:"???"}</div>
+                </div>
+              );
+            })}
+          </div>
+          <div onClick={() => setShowAchievements(false)} style={{marginTop:16,padding:"12px",borderRadius:12,textAlign:"center",cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.08)",fontSize:12,fontWeight:700,color:C.text2}}>Close</div>
+        </div>
+      </div>
+    );
+  };
+
   // ── RENDER: ME TAB ──
   // ═════════════════════════════════════════
   const renderMe = () => (
@@ -12125,6 +12370,7 @@ export default function MoodLabArena() {
       </div> : null}
 
       {/* Overlays */}
+      {renderSpectatorOverlay()}
       {renderGameOverlay()}
       {renderWorldCup()}
       {renderFanMode()}
@@ -12134,6 +12380,8 @@ export default function MoodLabArena() {
       {renderBlePopup()}
       {renderInputPanel()}
       {renderAskPrompt()}
+      {renderHalftime()}
+      {renderPuffReactionsOverlay()}
 
       {/* Nav buttons are in index.html OUTSIDE React — controlled via window.__moodlabGoHome/GoBack */}
 
@@ -12234,6 +12482,7 @@ export default function MoodLabArena() {
         @keyframes hookLineShake{0%,100%{transform:translateX(-50%) rotate(-1deg)}50%{transform:translateX(-50%) rotate(1deg)}}
         @keyframes hookFishFight{0%,100%{transform:translateX(0) rotate(-3deg)}25%{transform:translateX(-8px) rotate(2deg)}50%{transform:translateX(5px) rotate(-2deg)}75%{transform:translateX(-3px) rotate(3deg)}}
         @keyframes hookFishPull{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-4px) scale(1.05)}}
+        @keyframes puffReactFloat{0%{opacity:0;transform:translateY(0) scale(0.5)}10%{opacity:1;transform:translateY(-20px) scale(1)}50%{opacity:0.8;transform:translateY(-150px) scale(1.1)}100%{opacity:0;transform:translateY(-350px) scale(0.6)}}
         *{-webkit-tap-highlight-color:transparent;user-select:none;box-sizing:border-box}
         input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
         input[type=number]{-moz-appearance:textfield}
