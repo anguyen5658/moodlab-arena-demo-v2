@@ -5761,8 +5761,8 @@ export default function MoodLabArena() {
         </div>
 
 
-        {/* ═══ LIVE EVENTS — Synchronized Puff Events card ═══ */}
-        <div style={{position:"absolute",bottom:260,left:14,right:14,zIndex:12,animation:"arenaFadeIn 0.7s ease 0.4s both"}}>
+        {/* ═══ LIVE GAMES — Synchronized Puff Events card ═══ */}
+        <div style={{position:"absolute",top:215,left:14,right:14,zIndex:12,animation:"arenaFadeIn 0.7s ease 0.4s both"}}>
           <div style={{borderRadius:16,overflow:"hidden",cursor:"pointer",...GLASS_CARD}} onClick={() => {
             if (peNextCountdown === "NOW!" || (puffEventSchedule && puffEventSchedule.nextAt <= Date.now())) {
               startPuffEvent(puffEventSchedule.nextType);
@@ -5774,7 +5774,7 @@ export default function MoodLabArena() {
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:6}}>
                 <div style={{display:"flex",alignItems:"center",gap:6}}>
                   <div style={{width:6,height:6,borderRadius:"50%",background:peNextCountdown==="NOW!"?C.red:C.cyan,boxShadow:`0 0 8px ${peNextCountdown==="NOW!"?C.red:C.cyan}`,animation:"pulse 1.5s infinite"}}/>
-                  <span style={{fontSize:10,fontWeight:800,color:C.text,letterSpacing:1}}>LIVE EVENTS</span>
+                  <span style={{fontSize:10,fontWeight:800,color:C.text,letterSpacing:1}}>LIVE GAMES</span>
                 </div>
                 <div style={{padding:"2px 8px",borderRadius:6,background:peNextCountdown==="NOW!"?`${C.red}15`:`${C.cyan}10`,border:`1px solid ${peNextCountdown==="NOW!"?C.red+"30":C.cyan+"20"}`}}>
                   <span style={{fontSize:9,fontWeight:800,color:peNextCountdown==="NOW!"?C.red:C.cyan}}>{peNextCountdown==="NOW!"?"JOIN NOW!":peNextCountdown}</span>
