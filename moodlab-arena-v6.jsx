@@ -1267,6 +1267,44 @@ export default function MoodLabArena() {
   const [fortuneJackpot, setFortuneJackpot] = useState(47382);
   const [fortuneLuckyHour, setFortuneLuckyHour] = useState(false);
   const [fortuneLevel, setFortuneLevel] = useState({level:"Silver Gambler",progress:42,totalWagered:2400});
+  // ── Mystery/Discovery Games State ──
+  const [mbPhase, setMbPhase] = useState(null);
+  const [mbBoxes, setMbBoxes] = useState([]);
+  const [mbPicked, setMbPicked] = useState(null);
+  const [mbRevealed, setMbRevealed] = useState(false);
+  const [mbPrize, setMbPrize] = useState(null);
+  const [mbRound, setMbRound] = useState(0);
+  const [mbScore, setMbScore] = useState(0);
+  const mbPuffStart = useRef(0);
+  const [scPhase, setScPhase] = useState(null);
+  const [scCard, setScCard] = useState([]);
+  const [scRevealed, setScRevealed] = useState([false,false,false,false,false,false]);
+  const [scCurrentIdx, setScCurrentIdx] = useState(null);
+  const [scMatches, setScMatches] = useState({});
+  const [scPrize, setScPrize] = useState(null);
+  const [scRound, setScRound] = useState(0);
+  const [scScore, setScScore] = useState(0);
+  const scPuffStart = useRef(0);
+  const [fcPhase, setFcPhase] = useState(null);
+  const [fcFortune, setFcFortune] = useState("");
+  const [fcCoins, setFcCoins] = useState(0);
+  const [fcCracking, setFcCracking] = useState(false);
+  const [fcRound, setFcRound] = useState(0);
+  const [fcScore, setFcScore] = useState(0);
+  const [fcGolden, setFcGolden] = useState(false);
+  const fcPuffStart = useRef(0);
+  const [tmPhase, setTmPhase] = useState(null);
+  const [tmGrid, setTmGrid] = useState([]);
+  const [tmRevealed, setTmRevealed] = useState(Array(16).fill(false));
+  const [tmTreasures, setTmTreasures] = useState(0);
+  const [tmBombs, setTmBombs] = useState(0);
+  const [tmCoins, setTmCoins] = useState(0);
+  const [tmGameOver, setTmGameOver] = useState(false);
+  const [tmSelected, setTmSelected] = useState(null);
+  const [tmXray, setTmXray] = useState(false);
+  const [tmXrayTiles, setTmXrayTiles] = useState([]);
+  const [tmScore, setTmScore] = useState(0);
+  const tmPuffStart = useRef(0);
   const [wallHubTab, setWallHubTab] = useState("rankings");
   const [wcHubTab, setWcHubTab] = useState("games");
   const chatRef = useRef(null);
@@ -1555,51 +1593,6 @@ export default function MoodLabArena() {
   const [crapsHotDice, setCrapsHotDice] = useState(false);
   const [crapsPuffing, setCrapsPuffing] = useState(false);
   const crapsPuffStart = useRef(0);
-
-  // ── Mystery Box ──
-  const [mbPhase, setMbPhase] = useState(null); // null|pick|puffing|reveal|result|complete
-  const [mbBoxes, setMbBoxes] = useState([]);
-  const [mbPicked, setMbPicked] = useState(null);
-  const [mbRevealed, setMbRevealed] = useState(false);
-  const [mbPrize, setMbPrize] = useState(null);
-  const [mbRound, setMbRound] = useState(0);
-  const [mbScore, setMbScore] = useState(0);
-  const mbPuffStart = useRef(0);
-
-  // ── Scratch & Puff ──
-  const [scPhase, setScPhase] = useState(null); // null|scratching|result|complete
-  const [scCard, setScCard] = useState([]);
-  const [scRevealed, setScRevealed] = useState([false,false,false,false,false,false]);
-  const [scCurrentIdx, setScCurrentIdx] = useState(null);
-  const [scMatches, setScMatches] = useState({});
-  const [scPrize, setScPrize] = useState(null);
-  const [scRound, setScRound] = useState(0);
-  const [scScore, setScScore] = useState(0);
-  const scPuffStart = useRef(0);
-
-  // ── Fortune Cookie ──
-  const [fcPhase, setFcPhase] = useState(null); // null|holding|cracking|reading|result|complete
-  const [fcFortune, setFcFortune] = useState("");
-  const [fcCoins, setFcCoins] = useState(0);
-  const [fcCracking, setFcCracking] = useState(false);
-  const [fcRound, setFcRound] = useState(0);
-  const [fcScore, setFcScore] = useState(0);
-  const [fcGolden, setFcGolden] = useState(false);
-  const fcPuffStart = useRef(0);
-
-  // ── Treasure Map ──
-  const [tmPhase, setTmPhase] = useState(null); // null|playing|result|complete
-  const [tmGrid, setTmGrid] = useState([]);
-  const [tmRevealed, setTmRevealed] = useState(Array(16).fill(false));
-  const [tmTreasures, setTmTreasures] = useState(0);
-  const [tmBombs, setTmBombs] = useState(0);
-  const [tmCoins, setTmCoins] = useState(0);
-  const [tmGameOver, setTmGameOver] = useState(false);
-  const [tmSelected, setTmSelected] = useState(null);
-  const [tmXray, setTmXray] = useState(false);
-  const [tmXrayTiles, setTmXrayTiles] = useState([]);
-  const [tmScore, setTmScore] = useState(0);
-  const tmPuffStart = useRef(0);
 
   // ── Derived ──
   const wcDays = Math.max(0, Math.floor((new Date("2026-06-11") - new Date()) / 86400000));
@@ -7753,6 +7746,174 @@ export default function MoodLabArena() {
     setGameActive(null);
   };
 
+  // ═══ MYSTERY BOX — Pick 1 of 3 boxes, puff to reveal ═══
+  const startMysteryBox = () => {
+    const prizes = [
+      {label:"100 Coins",coins:100,emoji:"🪙",tier:"common"},
+      {label:"250 Coins",coins:250,emoji:"💰",tier:"uncommon"},
+      {label:"500 Coins",coins:500,emoji:"💎",tier:"rare"},
+      {label:"1000 Coins",coins:1000,emoji:"👑",tier:"epic"},
+      {label:"Empty Box",coins:0,emoji:"📦",tier:"bust"},
+    ];
+    const pool = [prizes[Math.floor(Math.random()*4)],prizes[4],prizes[Math.floor(Math.random()*3)]];
+    pool.sort(()=>Math.random()-0.5);
+    setMysteryBoxes(pool);
+    setMysteryBoxPick(null);
+    setMysteryBoxResult(null);
+    setMysteryBoxPhase("pick");
+  };
+  const mysteryBoxSelect = (idx) => {
+    if(mysteryBoxPhase!=="pick") return;
+    setMysteryBoxPick(idx);
+    setMysteryBoxPhase("reveal");
+    playFx("hit");
+    setTimeout(()=>{
+      const prize = mysteryBoxes[idx];
+      setMysteryBoxResult(prize);
+      if(prize.coins>0){setCoins(c=>c+prize.coins);spawnConfetti(prize.coins>=500?30:12);playFx("crowd");}
+      else playFx("miss");
+      setMysteryBoxPhase("result");
+      setTimeout(()=>{mysteryBoxCleanup();},3000);
+    },1200);
+  };
+  const mysteryBoxCleanup = () => {
+    setMysteryBoxPhase(null);setMysteryBoxes([]);setMysteryBoxPick(null);setMysteryBoxResult(null);
+    setGameActive(null);
+  };
+
+  // ═══ SCRATCH & PUFF — 6 scratch areas, match 3 to win ═══
+  const startScratchPuff = () => {
+    const symbols = ["🍒","🍋","🔔","💎","7️⃣","🍀"];
+    const grid = [];
+    const winSymbol = symbols[Math.floor(Math.random()*symbols.length)];
+    const willWin = Math.random()<0.35;
+    if(willWin){
+      const positions = [0,1,2,3,4,5].sort(()=>Math.random()-0.5);
+      for(let i=0;i<6;i++) grid.push(positions.indexOf(i)<3?winSymbol:symbols[Math.floor(Math.random()*symbols.length)]);
+    } else {
+      for(let i=0;i<6;i++) grid.push(symbols[Math.floor(Math.random()*symbols.length)]);
+    }
+    setScratchCards(grid);
+    setScratchRevealed(Array(6).fill(false));
+    setScratchResult(null);
+    setScratchPhase("scratch");
+  };
+  const scratchReveal = (idx) => {
+    if(scratchPhase!=="scratch"||scratchRevealed[idx]) return;
+    playFx("hit");
+    const newRevealed = [...scratchRevealed];
+    newRevealed[idx] = true;
+    setScratchRevealed(newRevealed);
+    const revealedCount = newRevealed.filter(Boolean).length;
+    if(revealedCount>=6){
+      const counts = {};
+      scratchCards.forEach(s=>{counts[s]=(counts[s]||0)+1;});
+      const maxCount = Math.max(...Object.values(counts));
+      const won = maxCount>=3;
+      const prize = won?(maxCount>=4?500:maxCount>=3?200:100):0;
+      if(won){setCoins(c=>c+prize);spawnConfetti(prize>=500?30:15);playFx("crowd");}
+      else playFx("miss");
+      setScratchResult({won,prize,count:maxCount});
+      setScratchPhase("result");
+      setTimeout(()=>{scratchCleanup();},3000);
+    }
+  };
+  const scratchCleanup = () => {
+    setScratchPhase(null);setScratchCards([]);setScratchRevealed([]);setScratchResult(null);
+    setGameActive(null);
+  };
+
+  // ═══ FORTUNE COOKIE — Crack open for wisdom + coins ═══
+  const COOKIE_MESSAGES = [
+    "A puff shared is a puff doubled.",
+    "Your next session brings great fortune.",
+    "The clouds part to reveal your destiny.",
+    "Lucky streaks favor the bold puffer.",
+    "Patience in the session, profit in the soul.",
+    "A blinker today keeps the bad vibes away.",
+    "Your aura is maximum chill today.",
+    "The universe rewards those who puff wisely.",
+    "Great clouds gather before great wins.",
+    "Trust your lungs, trust your luck.",
+  ];
+  const startFortuneCookie = () => {
+    setCookieMessage("");
+    setCookieCoins(0);
+    setCookiePhase("closed");
+  };
+  const crackCookie = () => {
+    if(cookiePhase!=="closed") return;
+    setCookiePhase("cracking");
+    playFx("hit");
+    setTimeout(()=>{
+      const msg = COOKIE_MESSAGES[Math.floor(Math.random()*COOKIE_MESSAGES.length)];
+      const prize = [25,50,75,100,150,200,500][Math.floor(Math.random()*7)];
+      setCookieMessage(msg);
+      setCookieCoins(prize);
+      setCoins(c=>c+prize);
+      spawnConfetti(prize>=200?25:10);
+      playFx("crowd");
+      setCookiePhase("open");
+      setTimeout(()=>{cookieCleanup();},4000);
+    },800);
+  };
+  const cookieCleanup = () => {
+    setCookiePhase(null);setCookieMessage("");setCookieCoins(0);
+    setGameActive(null);
+  };
+
+  // ═══ TREASURE MAP — 16 tiles, find 3 treasures, avoid bombs ═══
+  const startTreasureMap = () => {
+    const grid = Array(16).fill("empty");
+    const positions = [...Array(16).keys()].sort(()=>Math.random()-0.5);
+    positions.slice(0,3).forEach(p=>{grid[p]="treasure";});
+    positions.slice(3,6).forEach(p=>{grid[p]="bomb";});
+    positions.slice(6,8).forEach(p=>{grid[p]="coin";});
+    setTreasureGrid(grid);
+    setTreasureRevealed(Array(16).fill(false));
+    setTreasureFound(0);
+    setTreasureBombs(0);
+    setTreasurePhase("hunt");
+  };
+  const treasureDig = (idx) => {
+    if(treasurePhase!=="hunt"||treasureRevealed[idx]) return;
+    playFx("hit");
+    const newRevealed = [...treasureRevealed];
+    newRevealed[idx] = true;
+    setTreasureRevealed(newRevealed);
+    const cell = treasureGrid[idx];
+    if(cell==="treasure"){
+      const newFound = treasureFound+1;
+      setTreasureFound(newFound);
+      spawnConfetti(10);
+      playFx("crowd");
+      if(newFound>=3){
+        const prize = 500;
+        setCoins(c=>c+prize);
+        spawnConfetti(30);
+        setTreasurePhase("result");
+        setTimeout(()=>{treasureCleanup();},3000);
+      }
+    } else if(cell==="bomb"){
+      const newBombs = treasureBombs+1;
+      setTreasureBombs(newBombs);
+      playFx("miss");
+      triggerFlash("foul");
+      if(newBombs>=2){
+        setTreasurePhase("result");
+        setTimeout(()=>{treasureCleanup();},3000);
+      }
+    } else if(cell==="coin"){
+      setCoins(c=>c+50);
+      playFx("hit");
+    }
+  };
+  const treasureCleanup = () => {
+    setTreasurePhase(null);setTreasureGrid([]);setTreasureRevealed([]);
+    setTreasureFound(0);setTreasureBombs(0);
+    setGameActive(null);
+  };
+
   const renderOracle = () => {
     const FORTUNE_GAMES = [
       // Sportsbook
@@ -7810,6 +7971,10 @@ export default function MoodLabArena() {
       else if(g.id==="coinflip"){setGameActive({id:"coinflip",name:"Coin Flip",emoji:"🪙",color:"#F59E0B"});startCoinFlip();}
       else if(g.id==="puffblackjack"){setGameActive({id:"puffblackjack",name:"Puff Blackjack",emoji:"🃏",color:"#22C55E"});startPuffBlackjack();}
       else if(g.id==="crapsnclouds"){setGameActive({id:"crapsnclouds",name:"Craps & Clouds",emoji:"🎲",color:"#EF4444"});startCrapsNClouds();}
+      else if(g.id==="mysterybox"){setGameActive({id:"mysterybox",name:"Mystery Box",emoji:"🎁",color:C.gold});startMysteryBox();}
+      else if(g.id==="scratchpuff"){setGameActive({id:"scratchpuff",name:"Scratch & Puff",emoji:"🎫",color:C.pink});startScratchPuff();}
+      else if(g.id==="fortunecookie"){setGameActive({id:"fortunecookie",name:"Fortune Cookie",emoji:"🥠",color:C.orange});startFortuneCookie();}
+      else if(g.id==="treasuremap"){setGameActive({id:"treasuremap",name:"Treasure Map",emoji:"🗺️",color:C.gold});startTreasureMap();}
       else notify(g.name+" coming soon!",g.color);
     };
     return (
@@ -15026,6 +15191,153 @@ export default function MoodLabArena() {
                 </div>
               </div>)}
               <div style={{fontSize:11,color:C.text3,fontStyle:"italic",marginTop:8}}>{commentary}</div>
+            </div>
+          </div>
+        );
+      }
+
+      // ═══ MYSTERY BOX RENDER ═══
+      if(gameActive.id==="mysterybox" && mysteryBoxPhase) {
+        return (
+          <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden",display:"flex",flexDirection:"column",background:`radial-gradient(ellipse at 50% 30%, ${C.gold}25, ${C.bg} 70%)`}}>
+            {overlayBack(mysteryBoxCleanup)}
+            <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"0 20px"}}>
+              <div style={{fontSize:32,marginBottom:8}}>🎁</div>
+              <div style={{fontSize:22,fontWeight:900,color:C.gold,textShadow:`0 0 20px ${C.gold}60`,marginBottom:4}}>MYSTERY BOX</div>
+              <div style={{fontSize:11,color:C.text2,marginBottom:24}}>{mysteryBoxPhase==="pick"?"Pick a box!":mysteryBoxPhase==="reveal"?"Revealing...":"Result!"}</div>
+              <div style={{display:"flex",gap:16,marginBottom:24}}>
+                {mysteryBoxes.map((box,i)=>(
+                  <div key={i} onClick={()=>mysteryBoxSelect(i)} style={{
+                    width:80,height:80,borderRadius:16,display:"flex",alignItems:"center",justifyContent:"center",cursor:mysteryBoxPhase==="pick"?"pointer":"default",
+                    fontSize:mysteryBoxPick===i&&mysteryBoxPhase!=="pick"?36:40,
+                    background:mysteryBoxPick===i?`${C.gold}20`:`rgba(255,255,255,0.04)`,
+                    border:mysteryBoxPick===i?`2px solid ${C.gold}`:`1px solid ${C.border2}`,
+                    transition:"all 0.3s",transform:mysteryBoxPick===i?"scale(1.1)":"scale(1)",
+                    boxShadow:mysteryBoxPick===i?`0 0 20px ${C.gold}40`:"none",
+                  }}>
+                    {(mysteryBoxPick===i&&mysteryBoxPhase!=="pick")?box.emoji:"🎁"}
+                  </div>
+                ))}
+              </div>
+              {mysteryBoxResult && (
+                <div style={{textAlign:"center",animation:"fadeIn 0.3s ease"}}>
+                  <div style={{fontSize:18,fontWeight:900,color:mysteryBoxResult.coins>0?C.gold:C.red}}>{mysteryBoxResult.coins>0?"+"+mysteryBoxResult.coins+" Coins!":"Empty Box!"}</div>
+                  <div style={{fontSize:11,color:C.text3,marginTop:4}}>{mysteryBoxResult.label}</div>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      }
+
+      // ═══ SCRATCH & PUFF RENDER ═══
+      if(gameActive.id==="scratchpuff" && scratchPhase) {
+        return (
+          <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden",display:"flex",flexDirection:"column",background:`radial-gradient(ellipse at 50% 30%, ${C.pink}20, ${C.bg} 70%)`}}>
+            {overlayBack(scratchCleanup)}
+            <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"0 20px"}}>
+              <div style={{fontSize:32,marginBottom:8}}>🎫</div>
+              <div style={{fontSize:22,fontWeight:900,color:C.pink,textShadow:`0 0 20px ${C.pink}60`,marginBottom:4}}>SCRATCH & PUFF</div>
+              <div style={{fontSize:11,color:C.text2,marginBottom:20}}>{scratchPhase==="scratch"?"Tap to scratch! Match 3 wins!":"Results"}</div>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,marginBottom:20}}>
+                {scratchCards.map((sym,i)=>(
+                  <div key={i} onClick={()=>scratchReveal(i)} style={{
+                    width:64,height:64,borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",
+                    fontSize:scratchRevealed[i]?28:20,cursor:scratchRevealed[i]?"default":"pointer",
+                    background:scratchRevealed[i]?`${C.pink}15`:`linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02))`,
+                    border:`1px solid ${scratchRevealed[i]?C.pink+"40":C.border2}`,
+                    transition:"all 0.3s",
+                  }}>
+                    {scratchRevealed[i]?sym:"?"}
+                  </div>
+                ))}
+              </div>
+              {scratchResult && (
+                <div style={{textAlign:"center",animation:"fadeIn 0.3s ease"}}>
+                  <div style={{fontSize:18,fontWeight:900,color:scratchResult.won?C.gold:C.red}}>{scratchResult.won?"+"+scratchResult.prize+" Coins!":"No Match"}</div>
+                  <div style={{fontSize:11,color:C.text3,marginTop:4}}>{scratchResult.won?"Matched "+scratchResult.count+"!":"Better luck next time"}</div>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      }
+
+      // ═══ FORTUNE COOKIE RENDER ═══
+      if(gameActive.id==="fortunecookie" && cookiePhase) {
+        return (
+          <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden",display:"flex",flexDirection:"column",background:`radial-gradient(ellipse at 50% 30%, ${C.orange}20, ${C.bg} 70%)`}}>
+            {overlayBack(cookieCleanup)}
+            <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"0 20px"}}>
+              <div onClick={crackCookie} style={{
+                fontSize:cookiePhase==="open"?48:64,marginBottom:16,cursor:cookiePhase==="closed"?"pointer":"default",
+                transition:"all 0.5s",transform:cookiePhase==="cracking"?"rotate(15deg) scale(1.2)":"rotate(0)",
+                filter:cookiePhase==="cracking"?`drop-shadow(0 0 20px ${C.orange}80)`:"none",
+              }}>
+                {cookiePhase==="open"?"🥠":"🥠"}
+              </div>
+              <div style={{fontSize:22,fontWeight:900,color:C.orange,textShadow:`0 0 20px ${C.orange}60`,marginBottom:8}}>FORTUNE COOKIE</div>
+              {cookiePhase==="closed" && <div style={{fontSize:13,color:C.text2,fontWeight:600}}>Tap to crack it open!</div>}
+              {cookiePhase==="cracking" && <div style={{fontSize:13,color:C.gold,fontWeight:700,animation:"pulse 0.5s infinite"}}>Cracking...</div>}
+              {cookiePhase==="open" && (
+                <div style={{textAlign:"center",animation:"fadeIn 0.5s ease",maxWidth:280}}>
+                  <div style={{fontSize:14,color:C.text,fontStyle:"italic",lineHeight:1.5,marginBottom:12,padding:"12px 16px",borderRadius:12,background:`${C.orange}08`,border:`1px solid ${C.orange}18`}}>"{cookieMessage}"</div>
+                  <div style={{fontSize:18,fontWeight:900,color:C.gold}}>+{cookieCoins} Coins!</div>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      }
+
+      // ═══ TREASURE MAP RENDER ═══
+      if(gameActive.id==="treasuremap" && treasurePhase) {
+        const tileEmoji = (idx) => {
+          if(!treasureRevealed[idx]) return "?";
+          const cell = treasureGrid[idx];
+          if(cell==="treasure") return "💎";
+          if(cell==="bomb") return "💣";
+          if(cell==="coin") return "🪙";
+          return "🕳️";
+        };
+        const tileColor = (idx) => {
+          if(!treasureRevealed[idx]) return C.border2;
+          const cell = treasureGrid[idx];
+          if(cell==="treasure") return C.gold+"60";
+          if(cell==="bomb") return C.red+"60";
+          if(cell==="coin") return C.green+"40";
+          return C.text3+"20";
+        };
+        const won = treasureFound>=3;
+        return (
+          <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden",display:"flex",flexDirection:"column",background:`radial-gradient(ellipse at 50% 30%, ${C.gold}18, ${C.bg} 70%)`}}>
+            {overlayBack(treasureCleanup)}
+            <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"0 20px"}}>
+              <div style={{fontSize:28,marginBottom:6}}>🗺️</div>
+              <div style={{fontSize:20,fontWeight:900,color:C.gold,textShadow:`0 0 16px ${C.gold}60`,marginBottom:4}}>TREASURE MAP</div>
+              <div style={{display:"flex",gap:12,marginBottom:12}}>
+                <span style={{fontSize:11,color:C.gold,fontWeight:700}}>💎 {treasureFound}/3</span>
+                <span style={{fontSize:11,color:C.red,fontWeight:700}}>💣 {treasureBombs}/2</span>
+              </div>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",gap:6,marginBottom:16}}>
+                {treasureGrid.map((_,i)=>(
+                  <div key={i} onClick={()=>treasureDig(i)} style={{
+                    width:52,height:52,borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",
+                    fontSize:treasureRevealed[i]?22:16,cursor:(!treasureRevealed[i]&&treasurePhase==="hunt")?"pointer":"default",
+                    background:treasureRevealed[i]?`${tileColor(i)}15`:`linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))`,
+                    border:`1px solid ${tileColor(i)}`,
+                    transition:"all 0.3s",
+                  }}>
+                    {tileEmoji(i)}
+                  </div>
+                ))}
+              </div>
+              {treasurePhase==="result" && (
+                <div style={{textAlign:"center",animation:"fadeIn 0.3s ease"}}>
+                  <div style={{fontSize:20,fontWeight:900,color:won?C.gold:C.red}}>{won?"ALL TREASURES FOUND! +500":"BOOM! Game Over"}</div>
+                  <div style={{fontSize:11,color:C.text3,marginTop:4}}>{won?"You found all 3 treasures!":"Hit "+treasureBombs+" bombs"}</div>
+                </div>
+              )}
             </div>
           </div>
         );
