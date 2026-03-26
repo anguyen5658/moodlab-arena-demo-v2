@@ -7010,6 +7010,8 @@ export default function MoodLabArena() {
         setCommentary(ans==="certain"?"The Blinker backfired! -2x penalty!":"The Crystal Ball says otherwise...");
       }
       setCbPhase("result");
+      // Auto-advance after 2.5s
+      setTimeout(()=>cbNextRound(), 2500);
     },2000);
   };
   const cbNextRound = () => {
@@ -7060,7 +7062,7 @@ export default function MoodLabArena() {
     const leftPct = 30 + Math.floor(Math.random()*40);
     const rightPct = 100 - leftPct;
     setSbResults({left:leftPct,right:rightPct});
-    setSbPhase("results");
+    setSbPhase("results"); setTimeout(()=>{const nx=sbRound+1;if(nx>=5){setSbPhase("complete");}else{setSbRound(nx);setSbPhase("matchup");setSbVote(null);setSbMatchup([SB_STRAINS[Math.floor(Math.random()*SB_STRAINS.length)],SB_STRAINS[Math.floor(Math.random()*SB_STRAINS.length)]]);}},2500);
     playFx("tap");
     const winner = vote==="left"?sbMatchup[0].name:sbMatchup[1].name;
     setCommentary("You voted for "+winner+"! Let's see the results...");
@@ -7124,7 +7126,7 @@ export default function MoodLabArena() {
       setMpScore(s=>s+pts);
       if(correct) { setCoins(c=>c+pts); spawnConfetti(30); playFx("crowd"); setCommentary("Correct prediction! +100 coins!"); }
       else { setCommentary("Not this time... the result was: "+(simResult==="home"?"Home Win":simResult==="draw"?"Draw":"Away Win")); }
-      setMpPhase("result");
+      setMpPhase("result"); setTimeout(()=>{const nx=mpRound+1;if(nx>=5){setMpPhase("complete");}else{setMpRound(nx);setMpPhase("match");setMpPrediction(null);}},2500);
     },2000);
   };
   const mpNextRound = () => {
@@ -7175,7 +7177,7 @@ export default function MoodLabArena() {
     if(pick.type==="yn") { ans = dur < 1.5 ? "no" : "yes"; }
     else { ans = dur < 1.5 ? pick.a : pick.b; }
     setDpAnswer(ans);
-    setDpPhase("reveal");
+    setDpPhase("reveal"); setTimeout(()=>{const nx=dpPick+1;if(nx>=3){setDpPhase("summary");}else{setDpPick(nx);setDpPhase("pick");setDpAnswer(null);}},2500);
     playFx("tap");
     // Simulate correctness
     const correct = Math.random() > 0.4;
