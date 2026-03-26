@@ -6645,8 +6645,8 @@ export default function MoodLabArena() {
       setGameActive(null);setKickState(null);setIsFK2Mode(false);isFK2Ref.current=false;setIsFK3Mode(false);isFK3Ref.current=false;
       setBpPhase(null);setRrPhase(null);setPpPhase(null);setRpPhase(null);setTowPhase(null);
       setHpPhase(null);setHookPhase(null);setRpsPhase(null);setStPhase(null);setPcPhase(null);setDuelPhase("menu");
-      setMatchmaking(null);setSelectedGame(null);setFanMode(null);setFanTeam(null);setFanDevice(null);
-      setShowVibeCheck(false);setVcPhase(null);setVcEliminated(false);setVcCorrectStreak(0);setVcPuffAnswer(null);if(vcTimerRef.current){clearInterval(vcTimerRef.current);vcTimerRef.current=null;}setDimLights(false);setScreenShake(false);setScreenFlash(null);
+      setMatchmaking(null);setSelectedGame(null);setSwPhase(null);setFanMode(null);setFanTeam(null);setFanDevice(null);
+      setShowVibeCheck(false);setVcPhase(null);setVcEliminated(false);setVcCorrectStreak(0);setVcPuffAnswer(null);setVcTimer(10);if(vcTimerRef.current){clearInterval(vcTimerRef.current);vcTimerRef.current=null;}setDimLights(false);setScreenShake(false);setScreenFlash(null);
       setMatchIntro(null);setCommentatorText("");setPuffBubbles([]);setAudienceBubbles([]);
       setConfettiParticles([]);setSmokeParticles([]);setLiveSpectators([]);setSpectatorTicker([]);setCrowdEnergy(0);setCrowdEruption(false);
       try{setWcPhase(null);setWcTeam(null);setWcTournament(null);setWcBracket(null);setWcFinalResult(null);}catch(e){}
@@ -6721,6 +6721,10 @@ export default function MoodLabArena() {
       const r=sc.renderer;if(r){r.dispose();r.forceContextLoss();r.domElement.remove();}
       threeSceneRef.current=null;
     }
+    // Spin & Win
+    if(swTickRef.current){clearInterval(swTickRef.current);swTickRef.current=null;}
+    // Vibe Check
+    if(vcTimerRef.current){clearInterval(vcTimerRef.current);vcTimerRef.current=null;}
     // Reset common state
     setDimLights(false); setScreenShake(false); setScreenFlash(null);
     setKickCharging(false); setIsFK2Mode(false); setIsFK3Mode(false);
