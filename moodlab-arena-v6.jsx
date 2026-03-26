@@ -7440,16 +7440,7 @@ export default function MoodLabArena() {
               ))}
             </div>
           )}
-          {/* Metric toggle pills */}
-          <div style={{display:"flex",gap:4,marginBottom:10}}>
-            {[{id:"coins",l:"Coins"},{id:"wins",l:"Wins"},{id:"winpct",l:"Win%"},{id:"puffs",l:"Puffs"},{id:"blinkers",l:"Blinkers"}].map(m=>(
-              <div key={m.id} onClick={()=>setWallMetric(m.id)} style={{
-                padding:"4px 10px",borderRadius:8,cursor:"pointer",fontSize:9,fontWeight:700,
-                background:wallMetric===m.id?`${C.cyan}15`:`${C.text3}06`,color:wallMetric===m.id?C.cyan:C.text3,
-                border:`1px solid ${wallMetric===m.id?C.cyan+"25":"transparent"}`,transition:"all 0.2s",
-              }}>{m.l}</div>
-            ))}
-          </div>
+
           {/* Leaderboard list */}
           <div style={{...wallGlass,overflow:"hidden",borderRadius:16}}>
             {lbTop10.map((p,i)=>(
@@ -8050,6 +8041,7 @@ export default function MoodLabArena() {
     setStPhase("question");
     setStComment(isFinal ? "FINAL 3 SHOWDOWN! 8 SECONDS!" : "Round "+(roundNum+1)+" - "+playersLeft+" alive");
     setCommentary(isFinal ? "FINAL SHOWDOWN! Only "+playersLeft+" remain!" : playersLeft+" players remaining...");
+    if(stageRole) showMC("round_start", {n:String(roundNum+1)});
     if(stTimerRef.current) clearInterval(stTimerRef.current);
     let t = timerDur;
     stTimerRef.current = setInterval(()=>{
@@ -8103,6 +8095,7 @@ export default function MoodLabArena() {
       const streakBonus = (stStreak+1) >= 5 ? 50 : (stStreak+1) >= 3 ? 25 : 10;
       setCoins(c=>c+streakBonus);
       notify("Correct! +"+streakBonus+" coins",C.green);
+      if(stageRole) showMC("correct", {points:String(streakBonus)});
     } else {
       setStEliminated(true);
       setStStreak(0);
@@ -8111,6 +8104,7 @@ export default function MoodLabArena() {
       playFx("error");
       triggerFlash("miss");
       setCommentary("YOU HAVE BEEN ELIMINATED!");
+      if(stageRole) showMC("wrong");
     }
 
     setTimeout(()=>{
@@ -8125,6 +8119,7 @@ export default function MoodLabArena() {
         triggerFlash("goal");
         setCoins(c=>c+500);
         notify("SOLE SURVIVOR! +500 coins!",C.gold);
+        if(stageRole) showMC("finale");
         return;
       }
       stNextQuestion(roundNum+1, newAlive, newAvatars);
@@ -8249,6 +8244,7 @@ export default function MoodLabArena() {
       const coins = error <= 0.10 ? 100 : error <= 0.25 ? 50 : error <= 0.50 ? 25 : error <= 1.0 ? 10 : 5;
       setCoins(c=>c+coins);
       notify("+"+coins+" coins (error: "+error.toFixed(2)+"s)",error<=0.25?C.green:C.gold);
+      if(stageRole) { if(error<=0.25) showMC("correct",{points:String(coins)}); else if(error>1.0) showMC("wrong"); }
     }
 
     setPcLeaderboard(prev=>{
@@ -8458,11 +8454,11 @@ export default function MoodLabArena() {
       else { pts = 10; label = "LATE -- The party's over bro"; }
     } else {
       const diff = Math.abs(releaseT - dropT) / 1000;
-      if (diff <= 0.2) { pts = 100; label = "PERFECT -- ON THE BEAT!"; playFx("goal"); triggerFlash("goal"); spawnConfetti(40, [C.pink, C.purple, C.gold]); }
-      else if (diff <= 0.5) { pts = 75; label = "GREAT"; playFx("success"); }
+      if (diff <= 0.2) { pts = 100; label = "PERFECT -- ON THE BEAT!"; playFx("goal"); triggerFlash("goal"); spawnConfetti(40, [C.pink, C.purple, C.gold]); if(stageRole) showMC("correct",{points:"100"}); }
+      else if (diff <= 0.5) { pts = 75; label = "GREAT"; playFx("success"); if(stageRole) showMC("correct",{points:"75"}); }
       else if (diff <= 1.0) { pts = 50; label = "GOOD"; playFx("select"); }
-      else if (releaseT > dropT) { pts = 10; label = "LATE -- The party's over bro"; playFx("save"); }
-      else { pts = 0; label = "EARLY -- Too soon!"; playFx("error"); }
+      else if (releaseT > dropT) { pts = 10; label = "LATE -- The party's over bro"; playFx("save"); if(stageRole) showMC("wrong"); }
+      else { pts = 0; label = "EARLY -- Too soon!"; playFx("error"); if(stageRole) showMC("wrong"); }
     }
     if (isBlinker && pts >= 50) { pts += 50; label += " + BLINKER LEGENDARY!"; playFx("crowd"); }
     setBdRoundLabel(label);
@@ -8481,6 +8477,7 @@ export default function MoodLabArena() {
         setCommentary("BEAT DROP COMPLETE! +" + bonus + " coins!");
         if (scoreForFinal >= 250) { spawnConfetti(60, [C.pink, C.purple, C.gold, C.cyan]); playFx("win"); }
         else playFx("success");
+        if(stageRole) showMC("finale");
       }
     }, 2500);
   };
@@ -8571,6 +8568,7 @@ export default function MoodLabArena() {
       setCommentary("ELIMINATED at " + elapsed.toFixed(2) + "s! Needed " + target.toFixed(1) + "s");
       playFx("error");
       triggerShake();
+      if(stageRole) showMC("wrong");
     } else {
       setPlSurvived(true);
       setPlPhase("result");
@@ -8579,9 +8577,11 @@ export default function MoodLabArena() {
       if (isBlinker) {
         setCommentary("BLINKER HOLD! " + elapsed.toFixed(2) + "s -- ABSOLUTE LEGEND!");
         playFx("goal"); triggerFlash("goal"); spawnConfetti(50, [C.orange, C.red, C.gold]);
+        if(stageRole) showMC("correct",{points:"BLINKER"});
       } else {
         setCommentary("SURVIVED! " + elapsed.toFixed(2) + "s (needed " + target.toFixed(1) + "s)");
         playFx("success");
+        if(stageRole) showMC("correct",{points:String(plRound*20)});
       }
       if (eliminatedCount > 0) {
         setTimeout(() => { if (!guard.v) return; setCommentary(eliminatedCount + " players eliminated! " + (newPlayers + 1) + " remain"); }, 1500);
@@ -8601,6 +8601,7 @@ export default function MoodLabArena() {
         setCommentary("PUFF LIMBO CHAMPION! Survived the 5.0s BLINKER round! +150 coins!");
         spawnConfetti(80, [C.gold, C.orange, C.red, C.pink]);
         playFx("win");
+        if(stageRole) showMC("finale");
         setTimeout(() => { if (!guard.v) return; setPlPhase("final"); }, 3000);
       } else {
         plStartRound(plRound + 1, newPlayers + 1, guard);
@@ -8719,6 +8720,7 @@ export default function MoodLabArena() {
         setSpComment("Perfect memory! +" + roundScore + " points!");
         setSpPlayersLeft(p => Math.max(1, Math.floor(p * (0.6 + Math.random()*0.2))));
         playFx("goal");
+        if(stageRole) showMC("correct",{points:String(roundScore)});
         setTimeout(() => {
           if(spRound >= 10) {
             setSpPhase("final");
@@ -8742,6 +8744,7 @@ export default function MoodLabArena() {
       const expected = spPattern[idx] ? spPattern[idx].type : "???";
       setCommentary("WRONG! You puffed " + puffType + " but needed " + expected + "!");
       setSpComment("Eliminated at Round " + spRound + "! You lasted " + spRound + " rounds.");
+      if(stageRole) showMC("wrong");
     }
   };
 
@@ -8885,9 +8888,11 @@ export default function MoodLabArena() {
       playFx("goal");
       setCommentary("YOU WIN! " + prize.emoji + " " + prize.name + "! Bid: " + dur.toFixed(2) + "s");
       setPaComment("SOLD to the champion puffer! +" + prize.value + " coins!");
+      if(stageRole) showMC("correct",{points:String(prize.value)});
     } else {
       setCommentary("Outbid! " + (winner?winner.name:"Nobody") + " wins with " + (winner?winner.time.toFixed(2):"0") + "s!");
       setPaComment("Better luck next round! Your bid: " + dur.toFixed(2) + "s");
+      if(stageRole) showMC("wrong");
     }
     setTimeout(() => {
       if(paRound < PA_PRIZES.length - 1) {
@@ -17064,6 +17069,31 @@ export default function MoodLabArena() {
       {/* Overlays */}
       {renderSpectatorOverlay()}
       {renderGameOverlay()}
+      {/* Stage MC Bar + Role Badge — floats on top of Stage game screens */}
+      {(gameActive || showVibeCheck || swPhase) && stageRole && (
+        <>
+          {/* Role Badge */}
+          <div style={{position:"fixed",top:8,right:8,zIndex:150,
+            padding:"4px 10px",borderRadius:100,fontSize:9,fontWeight:700,
+            background: stageRole==="contestant"?`${C.gold}15`:stageRole==="judge"?`${C.purple}15`:`${C.cyan}15`,
+            border: `1px solid ${stageRole==="contestant"?C.gold:stageRole==="judge"?C.purple:C.cyan}25`,
+            color: stageRole==="contestant"?C.gold:stageRole==="judge"?C.purple:C.cyan,
+            pointerEvents:"none",
+          }}>
+            {stageRole==="contestant"?"🎯 Contestant":stageRole==="judge"?"👨‍⚖️ Judge":"👥 Audience"}
+          </div>
+          {/* MC Commentary Bar */}
+          {mcVisible && (
+            <div style={{position:"fixed",top:40,left:10,right:10,zIndex:150,
+              display:"flex",alignItems:"center",gap:8,padding:"6px 12px",
+              borderRadius:12,background:"rgba(255,217,61,0.08)",border:"1px solid rgba(255,217,61,0.2)",
+              backdropFilter:"blur(8px)",animation:"fadeIn 0.3s ease",pointerEvents:"none"}}>
+              <span style={{fontSize:16}}>🎤</span>
+              <span style={{fontSize:10,fontWeight:600,color:C.text,fontStyle:"italic",flex:1}}>{mcText}</span>
+            </div>
+          )}
+        </>
+      )}
       {renderWorldCup()}
       {renderFanMode()}
       {renderVibeCheck()}
