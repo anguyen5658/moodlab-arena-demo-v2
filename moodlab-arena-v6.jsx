@@ -28,7 +28,7 @@ const ARENA_VIDEOS = {
 const Z = {
   arcade: { primary:"#00E5FF", glow:"rgba(0,229,255,0.35)", dim:"rgba(0,229,255,0.08)", name:"The Arcade", icon:"🎮", sub:"12 Action Games" },
   stage:  { primary:"#FFD93D", glow:"rgba(255,217,61,0.35)", dim:"rgba(255,217,61,0.08)", name:"The Stage", icon:"🎪", sub:"11 Live Shows" },
-  oracle: { primary:"#C084FC", glow:"rgba(192,132,252,0.35)", dim:"rgba(192,132,252,0.08)", name:"The Oracle", icon:"🔮", sub:"6 Predict Types" },
+  oracle: { primary:"#C084FC", glow:"rgba(192,132,252,0.35)", dim:"rgba(192,132,252,0.08)", name:"The Oracle", icon:"🔮", sub:"4 Prediction Games" },
   wall:   { primary:"#FB923C", glow:"rgba(251,146,60,0.35)", dim:"rgba(251,146,60,0.08)", name:"The Wall", icon:"🏆", sub:"Rankings & Glory" },
 };
 
@@ -5157,111 +5157,47 @@ export default function MoodLabArena() {
     );
   };
 
-  /* ── Zone Focus Panel Content (per zone) ── */
+  /* ── Zone Focus Panel Content (per zone) — Minimal welcome stats ── */
   const renderFocusContent = (viewKey) => {
+    const pillStyle = (color) => ({
+      display:"inline-flex",alignItems:"center",gap:4,
+      padding:"5px 10px",borderRadius:100,
+      background:`${color}08`,border:`1px solid ${color}15`,
+      fontSize:10,fontWeight:600,color:color,whiteSpace:"nowrap",
+    });
     if (viewKey === "arcade") return (
-      <div>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:6,marginBottom:12}}>
-          {PLAY_GAMES.map(g=>(
-            <div key={g.id} onClick={()=>{playFx("select");setZone("arcade");setArenaView("hub");setSelectedGame(g);}} style={{textAlign:"center",padding:"8px 4px",borderRadius:10,background:`${g.color}06`,border:`1px solid ${g.color}10`,position:"relative",cursor:"pointer",transition:"all 0.2s"}}>
-              <div style={{fontSize:20,filter:`drop-shadow(0 0 5px ${g.color}40)`,marginBottom:3}}>{g.emoji}</div>
-              <div style={{fontSize:8,fontWeight:700,color:g.color}}>{g.name.split(" ")[0]}</div>
-              <div style={{fontSize:7,color:C.text3,marginTop:1}}>{g.type}</div>
-              {g.hot ? <div style={{position:"absolute",top:3,right:3,fontSize:7,fontWeight:800,color:C.red,padding:"1px 4px",borderRadius:3,background:`${C.red}15`}}>HOT</div> : null}
-            </div>
-          ))}
-        </div>
-        <div style={{padding:"8px 10px",borderRadius:10,background:`${C.cyan}04`,border:`1px solid ${C.cyan}08`,marginBottom:8}}>
-          <div style={{fontSize:9,fontWeight:700,color:C.cyan,marginBottom:4}}>🔥 TRENDING NOW</div>
-          <div style={{fontSize:11,fontWeight:600,color:C.text}}>Wild West Duel · 234 playing · Reaction</div>
-        </div>
+      <div style={{display:"flex",flexWrap:"wrap",gap:6,justifyContent:"center"}}>
+        <span style={pillStyle(C.cyan)}>856 playing</span>
+        <span style={pillStyle(C.red)}>5 HOT games</span>
+        <span style={pillStyle(C.lime)}>3 tournaments live</span>
       </div>
     );
     if (viewKey === "stage") return (
-      <div style={{display:"flex",flexDirection:"column",gap:6}}>
-        {SHOW_GAMES.map(g=>(
-          <div key={g.id} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",borderRadius:12,background:`${g.color}05`,border:`1px solid ${g.color}10`}}>
-            <span style={{fontSize:24,filter:`drop-shadow(0 0 4px ${g.color}40)`}}>{g.emoji}</span>
-            <div style={{flex:1}}>
-              <div style={{fontSize:12,fontWeight:700,color:C.text}}>{g.name}</div>
-              <div style={{fontSize:9,color:C.text3,marginTop:2}}>{g.type} · 👥{g.players}</div>
-            </div>
-            {g.live ? <div style={{display:"flex",alignItems:"center",gap:3,padding:"3px 8px",borderRadius:6,background:`${C.red}12`}}>
-              <div style={{width:5,height:5,borderRadius:"50%",background:C.red,animation:"pulse 1.5s infinite"}}/>
-              <span style={{fontSize:9,fontWeight:700,color:C.red}}>LIVE</span>
-            </div> : null}
-          </div>
-        ))}
-        <div style={{padding:"8px 10px",borderRadius:10,background:`${C.gold}04`,border:`1px solid ${C.gold}08`}}>
-          <div style={{fontSize:9,fontWeight:700,color:C.gold}}>🔥 UP NEXT</div>
-          <div style={{fontSize:10,color:C.text,marginTop:2}}>Vibe Check WC Edition in 12 min</div>
-        </div>
+      <div style={{display:"flex",flexWrap:"wrap",gap:6,justifyContent:"center"}}>
+        <span style={pillStyle(C.red)}>2 LIVE now</span>
+        <span style={pillStyle(C.gold)}>1,247 watching</span>
+        <span style={pillStyle(C.lime)}>12,500 coins tonight</span>
       </div>
     );
     if (viewKey === "oracle") return (
-      <div>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:6,marginBottom:12}}>
-          {PREDICT_TYPES.map(p=>(
-            <div key={p.id} style={{textAlign:"center",padding:"8px 4px",borderRadius:10,background:`${p.color}06`,border:`1px solid ${p.color}10`}}>
-              <div style={{fontSize:18,filter:`drop-shadow(0 0 4px ${p.color}40)`,marginBottom:2}}>{p.emoji}</div>
-              <div style={{fontSize:8,fontWeight:700,color:p.color}}>{p.name.split(" ")[0]}</div>
-              <div style={{fontSize:7,color:C.text3}}>{p.desc}</div>
-            </div>
-          ))}
-        </div>
-        <div style={{fontSize:9,fontWeight:700,color:C.text3,letterSpacing:1,marginBottom:6}}>TODAY&apos;S MATCHES</div>
-        <div style={{display:"flex",flexDirection:"column",gap:5}}>
-          {MATCHES.map(m=>(
-            <div key={m.id} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"8px 10px",borderRadius:10,background:`${C.purple}04`,border:`1px solid ${C.purple}08`}}>
-              <div style={{fontSize:12,fontWeight:700,color:C.text}}>{m.home}</div>
-              <div style={{fontSize:9,color:C.text3}}>vs</div>
-              <div style={{fontSize:12,fontWeight:700,color:C.text}}>{m.away}</div>
-              <div style={{fontSize:9,color:C.text3}}>{m.time}</div>
-              {m.hot ? <div style={{fontSize:7,fontWeight:800,color:C.red,padding:"1px 5px",borderRadius:3,background:`${C.red}12`}}>HOT</div> : null}
-            </div>
-          ))}
-        </div>
+      <div style={{display:"flex",flexWrap:"wrap",gap:6,justifyContent:"center"}}>
+        <span style={pillStyle(C.purple)}>104 open bets</span>
+        <span style={pillStyle(C.lime)}>78% your accuracy</span>
+        <span style={pillStyle(C.red)}>🔥 7-day streak</span>
       </div>
     );
     if (viewKey === "wall") return (
-      <div>
-        <div style={{marginBottom:12}}>
-          {LEADERBOARD.slice(0,5).map((p,i)=>(
-            <div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 10px",borderRadius:10,marginBottom:4,background:p.isYou?`${C.cyan}06`:"transparent",border:p.isYou?`1px solid ${C.cyan}15`:`1px solid transparent`}}>
-              <span style={{fontSize:16,width:24,textAlign:"center"}}>{p.place}</span>
-              <span style={{fontSize:16}}>{p.emoji}</span>
-              <div style={{flex:1,fontSize:12,fontWeight:p.isYou?700:500,color:p.isYou?C.cyan:C.text}}>{p.name}{p.isYou?" (You)":""}</div>
-              <div style={{fontSize:10,fontWeight:700,color:C.text3,fontFamily:"'Courier New',monospace"}}>{(p.score/1000).toFixed(0)}K</div>
-            </div>
-          ))}
-        </div>
-        <div style={{fontSize:9,fontWeight:700,color:C.text3,letterSpacing:1,marginBottom:6}}>YOUR BADGES</div>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:6}}>
-          {BADGES.map((b,i)=>(
-            <div key={i} style={{textAlign:"center",padding:"6px 4px",borderRadius:8,background:b.earned?`${C.orange}06`:`${C.text3}04`,border:`1px solid ${b.earned?C.orange+"10":C.text3+"06"}`}}>
-              <div style={{fontSize:18,opacity:b.earned?1:0.25,filter:b.earned?"none":"grayscale(1)"}}>{b.emoji}</div>
-              <div style={{fontSize:7,fontWeight:600,color:b.earned?C.text:C.text3,marginTop:2}}>{b.name}</div>
-            </div>
-          ))}
-        </div>
+      <div style={{display:"flex",flexWrap:"wrap",gap:6,justifyContent:"center"}}>
+        <span style={pillStyle(C.orange)}>{"#3 your rank"}</span>
+        <span style={pillStyle(C.gold)}>8 records</span>
+        <span style={pillStyle(C.lime)}>Season 1 active</span>
       </div>
     );
     if (viewKey === "worldcup") return (
-      <div>
-        <div style={{textAlign:"center",marginBottom:14}}>
-          <div style={{fontFamily:"'Courier New',monospace",fontSize:36,fontWeight:900,color:C.pink,animation:"countPulse 2s ease-in-out infinite"}}>{wcDays}</div>
-          <div style={{fontSize:10,color:C.text3,letterSpacing:2,fontWeight:700}}>DAYS UNTIL KICKOFF</div>
-          <div style={{fontSize:11,color:C.text2,marginTop:4}}>48 teams · 104 matches · 16 cities</div>
-        </div>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:8,marginBottom:12}}>
-          {[{l:"Bracket Challenge",e:"🗓️",c:C.lime,d:"Predict the whole tournament"},{l:"Golden Boot",e:"⭐",c:C.gold,d:"Who scores most?"},{l:"Country LB",e:"🌍",c:C.cyan,d:"Represent your nation"},{l:"WC Pass",e:"🎫",c:C.pink,d:"Exclusive rewards"}].map((f,i)=>(
-            <div key={i} onClick={()=>notify(`${f.l} — Opening soon!`,f.c)} style={{padding:"12px 10px",borderRadius:14,textAlign:"center",cursor:"pointer",background:`${f.c}05`,border:`1px solid ${f.c}10`}}>
-              <div style={{fontSize:24,marginBottom:4,filter:`drop-shadow(0 0 6px ${f.c}40)`}}>{f.e}</div>
-              <div style={{fontSize:10,fontWeight:800,color:f.c}}>{f.l}</div>
-              <div style={{fontSize:8,color:C.text3,marginTop:2}}>{f.d}</div>
-            </div>
-          ))}
-        </div>
+      <div style={{display:"flex",flexWrap:"wrap",gap:6,justifyContent:"center"}}>
+        <span style={pillStyle(C.pink)}>{wcDays} days to go</span>
+        <span style={pillStyle(C.cyan)}>48 teams</span>
+        <span style={pillStyle(C.gold)}>104 matches</span>
       </div>
     );
     return null;
@@ -5281,8 +5217,8 @@ export default function MoodLabArena() {
           <video autoPlay loop muted playsInline poster={ARENA_IMAGES[viewKey]} style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"center"}}>
             <source src={ARENA_VIDEOS[viewKey]} type="video/mp4"/>
           </video>
-          {/* Subtle bottom gradient only — let video dominate */}
-          <div style={{position:"absolute",inset:0,background:"linear-gradient(to bottom, transparent 0%, transparent 55%, rgba(5,5,16,0.4) 75%, rgba(5,5,16,0.7) 90%)"}}/>
+          {/* Subtle bottom gradient — let the art breathe */}
+          <div style={{position:"absolute",inset:0,background:"linear-gradient(to bottom, transparent 0%, transparent 60%, rgba(5,5,16,0.35) 80%, rgba(5,5,16,0.65) 95%)"}}/>
         </div>
 
         {/* Back button — below header + ticker */}
@@ -5293,40 +5229,32 @@ export default function MoodLabArena() {
           </div>
         </div>
 
-        {/* ═══ BOTTOM HUD — pushes up when chat is open ═══ */}
+        {/* ═══ BOTTOM HUD — compact welcome card, lets art dominate ═══ */}
         <div style={{position:"absolute",bottom:chatPanel?248:62,left:10,right:10,zIndex:10,animation:"panelSlideUp 0.4s ease 0.15s both",transition:"bottom 0.3s ease"}}>
-          {/* Info card — readable liquid glass */}
+          {/* Info card — minimal glass overlay */}
           <div style={{borderRadius:20,overflow:"hidden",marginBottom:8,...GLASS_CARD}}>
-            <div style={{padding:"14px 16px"}}>
-              {/* Zone header row */}
-              <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
-                <div style={{fontSize:26,filter:`drop-shadow(0 0 10px ${z.primary}50)`}}>{z.icon}</div>
-                <div style={{flex:1}}>
-                  <div style={{fontSize:15,fontWeight:900,color:z.primary}}>{z.name}</div>
-                  <div style={{display:"flex",alignItems:"center",gap:6,marginTop:1}}>
-                    <span style={{fontSize:9,color:C.text3}}>{z.sub}</span>
-                    {viewKey !== "worldcup" ? <div style={{display:"flex",alignItems:"center",gap:3}}>
-                      <div style={{width:4,height:4,borderRadius:"50%",background:C.green}}/>
-                      <span style={{fontSize:9,fontWeight:600,color:C.text3}}>{viewKey==="arcade"?"856 playing":viewKey==="stage"?"2 LIVE":viewKey==="oracle"?"104 open":"#3 rank"}</span>
-                    </div> : null}
-                  </div>
-                </div>
+            <div style={{padding:"16px 18px 14px"}}>
+              {/* Zone title + subtitle */}
+              <div style={{textAlign:"center",marginBottom:12}}>
+                <div style={{fontSize:22,fontWeight:900,color:z.primary,textShadow:`0 0 20px ${z.primary}40`,letterSpacing:0.5}}>{z.icon} {z.name}</div>
+                <div style={{fontSize:11,color:C.text3,marginTop:3,letterSpacing:0.5}}>{z.sub}</div>
               </div>
-              {/* Scrollable content — compact */}
-              <div style={{maxHeight:chatPanel?"15vh":"28vh",overflow:"auto",marginBottom:10,transition:"max-height 0.3s ease"}}>
+              {/* Stat pills row */}
+              <div style={{marginBottom:14}}>
                 {renderFocusContent(viewKey)}
               </div>
-              {/* Enter button — centered */}
+              {/* Enter button — prominent and elegant */}
               <div style={{display:"flex",justifyContent:"center"}}>
                 <div onClick={enterZone} style={{
-                  display:"inline-flex",alignItems:"center",gap:6,
-                  padding:"8px 24px",borderRadius:100,cursor:"pointer",
-                  ...GLASS_CLEAR,
+                  display:"inline-flex",alignItems:"center",gap:8,
+                  padding:"10px 28px",borderRadius:100,cursor:"pointer",
+                  background:`${z.primary}12`,
                   border:`1px solid ${z.primary}30`,
-                  boxShadow:`0 0 16px ${z.primary}10, inset 0 1px 0 rgba(255,255,255,0.15)`,
+                  boxShadow:`0 0 20px ${z.primary}12, inset 0 1px 0 rgba(255,255,255,0.12)`,
+                  transition:"all 0.2s ease",
                 }}>
-                  <span style={{fontSize:12,fontWeight:800,color:z.primary,letterSpacing:0.5}}>{"Enter "+z.name}</span>
-                  <span style={{fontSize:12,color:z.primary}}>→</span>
+                  <span style={{fontSize:13,fontWeight:800,color:z.primary,letterSpacing:0.5}}>{"Enter "+z.name}</span>
+                  <span style={{fontSize:14,color:z.primary}}>→</span>
                 </div>
               </div>
             </div>
