@@ -6457,16 +6457,16 @@ export default function MoodLabArena() {
           <video autoPlay loop muted playsInline poster={ARENA_IMAGES.hub} style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"center"}}>
             <source src={ARENA_VIDEOS.hub} type="video/mp4"/>
           </video>
-          {/* Cali Clear logo — right above the World Cup arch */}
-          <div style={{position:"absolute",top:"42%",left:"50%",transform:"translate(-50%,-50%)",pointerEvents:"none"}}>
+          {/* Cali Clear logo — inside the ceiling panel area */}
+          <div style={{position:"absolute",top:"26%",left:"50%",transform:"translate(-50%,-50%)",pointerEvents:"none"}}>
             {/* Outer glow pulse */}
-            <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:200,height:140,borderRadius:"50%",background:`radial-gradient(ellipse, ${C.gold}12, transparent 65%)`,animation:"breathe 3s ease-in-out infinite"}}/>
+            <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:120,height:80,borderRadius:"50%",background:`radial-gradient(ellipse, ${C.gold}15, transparent 65%)`,animation:"breathe 3s ease-in-out infinite"}}/>
             {/* Inner bright glow */}
-            <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:130,height:90,borderRadius:"50%",background:`radial-gradient(ellipse, ${C.gold}20, transparent 70%)`,animation:"breathe 4s ease-in-out 1s infinite"}}/>
+            <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:80,height:55,borderRadius:"50%",background:`radial-gradient(ellipse, ${C.gold}25, transparent 70%)`,animation:"breathe 4s ease-in-out 1s infinite"}}/>
             {/* Logo */}
             <img src="assets/arena/cali-clear-logo.png" alt="" style={{
-              position:"relative",width:110,height:"auto",display:"block",
-              filter:`drop-shadow(0 0 10px ${C.gold}70) drop-shadow(0 0 24px ${C.gold}40) drop-shadow(0 0 48px ${C.gold}20)`,
+              position:"relative",width:65,height:"auto",display:"block",
+              filter:`drop-shadow(0 0 8px ${C.gold}80) drop-shadow(0 0 16px ${C.gold}50) drop-shadow(0 0 32px ${C.gold}25)`,
             }}/>
           </div>
         </div>
