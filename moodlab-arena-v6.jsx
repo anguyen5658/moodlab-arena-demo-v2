@@ -7152,92 +7152,261 @@ export default function MoodLabArena() {
     );
   };
 
-  const renderWall = () => (
+  const renderWall = () => {
+    const wallGlass = {borderRadius:14,background:"rgba(255,255,255,0.025)",border:`1px solid ${C.border}`,backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)"};
+    const wallGlassGold = {...wallGlass,border:`1px solid ${C.gold}20`,boxShadow:`0 0 20px ${C.gold}08`};
+    const rankColors = {Diamond:C.cyan,Platinum:"#E5E4E2",Gold:C.gold,Silver:"#C0C0C0",Bronze:"#CD7F32"};
+    const lbData = WALL_LEADERBOARD[wallTab]||WALL_LEADERBOARD.all;
+    const lbTop10 = lbData.slice(0,10);
+    const youEntry = lbData.find(p=>p.isYou);
+    const youPos = lbData.indexOf(youEntry)+1;
+    const metricLabels = {coins:"Coins",wins:"Wins",winpct:"Win%",puffs:"Puffs",blinkers:"Blinkers"};
+    const wallGameEmojis = wallTab==="arcade"?[{id:"fk",e:"⚽"},{id:"bp",e:"🎈"},{id:"rr",e:"🔫"},{id:"pp",e:"🏓"},{id:"rp",e:"🎵"},{id:"hp",e:"💣"}]:wallTab==="stage"?[{id:"vc",e:"🎤"},{id:"sp",e:"👆"},{id:"pa",e:"💰"},{id:"pd",e:"🏇"},{id:"hl",e:"📈"},{id:"bd",e:"🎶"},{id:"pl",e:"🏋️"}]:wallTab==="oracle"?[{id:"pr",e:"🔮"},{id:"br",e:"📊"}]:[];
+    return (
     <div style={{position:"relative"}}>
-      <div style={{position:"absolute",top:-40,left:"50%",transform:"translateX(-50%)",width:300,height:200,borderRadius:"50%",background:`radial-gradient(circle, ${Z.wall.glow.replace("0.35","0.1")}, transparent 70%)`,pointerEvents:"none"}}/>
+      <div style={{position:"absolute",top:-40,left:"50%",transform:"translateX(-50%)",width:300,height:200,borderRadius:"50%",background:`radial-gradient(circle, ${C.gold}10, transparent 70%)`,pointerEvents:"none"}}/>
       {renderZoneHeader("wall")}
       <div style={{padding:"0 14px"}}>
-        {/* Leaderboard */}
-        <div style={{marginBottom:16}}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
-            <span style={{fontSize:13,fontWeight:800,color:C.text}}>🏅 Leaderboard</span>
-            <div style={{display:"flex",gap:4}}>
-              {[{id:"global",l:"🌍"},{id:"friends",l:"👥"},{id:"weekly",l:"📅"}].map(t=>(
-                <div key={t.id} onClick={()=>setLbTab(t.id)} style={{
-                  width:30,height:26,borderRadius:7,display:"flex",alignItems:"center",justifyContent:"center",
-                  cursor:"pointer",fontSize:12,background:lbTab===t.id?`${C.gold}12`:`${C.text3}06`,
-                  border:`1px solid ${lbTab===t.id?C.gold+"25":C.border}`,transition:"all 0.2s",
-                }}>{t.l}</div>
+
+        {/* ═══ SECTION 1: HALL OF FAME ═══ */}
+        <div style={{marginBottom:18,padding:"16px 12px",borderRadius:16,background:`linear-gradient(135deg, ${C.gold}12, rgba(255,180,0,0.04), ${C.gold}08)`,border:`1px solid ${C.gold}18`,position:"relative",overflow:"hidden"}}>
+          <div style={{position:"absolute",top:-10,right:-10,fontSize:40,opacity:0.08,transform:"rotate(15deg)"}}>🏆</div>
+          <div style={{textAlign:"center",marginBottom:14}}>
+            <div style={{fontSize:14,fontWeight:900,color:C.gold,letterSpacing:1.5,textShadow:`0 0 16px ${C.gold}40`}}>🏆 HALL OF FAME 🏆</div>
+            <div style={{fontSize:9,color:C.text3,marginTop:2}}>Recent Tournament Champions</div>
+          </div>
+          <div style={{display:"flex",gap:8}}>
+            {WALL_CHAMPIONS.map((ch,i)=>(
+              <div key={i} style={{flex:1,padding:"10px 6px",borderRadius:12,textAlign:"center",...wallGlassGold,animation:`wallFloat ${3+i*0.5}s ease-in-out infinite alternate`}}>
+                <div style={{fontSize:24,marginBottom:4,filter:`drop-shadow(0 0 6px ${C.gold}50)`}}>{ch.emoji}</div>
+                <div style={{fontSize:9,fontWeight:800,color:C.gold,marginBottom:2,lineHeight:1.2}}>{ch.tournament}</div>
+                <div style={{fontSize:10,fontWeight:700,color:C.text,marginBottom:2}}>{ch.badge} {ch.player}</div>
+                <div style={{fontSize:12}}>{ch.flag}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* ═══ SECTION 2: MEGA LEADERBOARD ═══ */}
+        <div style={{marginBottom:18}}>
+          <div style={{fontSize:13,fontWeight:900,color:C.text,marginBottom:10}}>🏅 MEGA LEADERBOARD</div>
+          {/* Primary tab bar */}
+          <div style={{display:"flex",gap:4,marginBottom:8,overflowX:"auto",WebkitOverflowScrolling:"touch"}}>
+            {[{id:"all",l:"All"},{id:"arcade",l:"Arcade"},{id:"stage",l:"Stage"},{id:"oracle",l:"Oracle"},{id:"tournament",l:"Tournament"}].map(t=>(
+              <div key={t.id} onClick={()=>{setWallTab(t.id);setWallGameFilter(null);}} style={{
+                padding:"5px 12px",borderRadius:8,cursor:"pointer",fontSize:10,fontWeight:700,whiteSpace:"nowrap",
+                background:wallTab===t.id?`${C.gold}18`:`${C.text3}06`,color:wallTab===t.id?C.gold:C.text3,
+                border:`1px solid ${wallTab===t.id?C.gold+"30":C.border}`,transition:"all 0.2s",
+              }}>{t.l}</div>
+            ))}
+          </div>
+          {/* Game selector */}
+          {wallGameEmojis.length>0&&(
+            <div style={{display:"flex",gap:4,marginBottom:8,overflowX:"auto",paddingBottom:2}}>
+              <div onClick={()=>setWallGameFilter(null)} style={{width:28,height:26,borderRadius:7,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:9,fontWeight:700,background:!wallGameFilter?`${C.cyan}15`:`${C.text3}06`,color:!wallGameFilter?C.cyan:C.text3,border:`1px solid ${!wallGameFilter?C.cyan+"25":C.border}`}}>All</div>
+              {wallGameEmojis.map(g=>(
+                <div key={g.id} onClick={()=>setWallGameFilter(g.id)} style={{width:28,height:26,borderRadius:7,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:13,background:wallGameFilter===g.id?`${C.cyan}15`:`${C.text3}06`,border:`1px solid ${wallGameFilter===g.id?C.cyan+"25":C.border}`}}>{g.e}</div>
               ))}
             </div>
+          )}
+          {/* Metric toggle pills */}
+          <div style={{display:"flex",gap:4,marginBottom:10}}>
+            {[{id:"coins",l:"Coins"},{id:"wins",l:"Wins"},{id:"winpct",l:"Win%"},{id:"puffs",l:"Puffs"},{id:"blinkers",l:"Blinkers"}].map(m=>(
+              <div key={m.id} onClick={()=>setWallMetric(m.id)} style={{
+                padding:"3px 8px",borderRadius:6,cursor:"pointer",fontSize:9,fontWeight:700,
+                background:wallMetric===m.id?`${C.cyan}15`:`${C.text3}06`,color:wallMetric===m.id?C.cyan:C.text3,
+                border:`1px solid ${wallMetric===m.id?C.cyan+"25":"transparent"}`,transition:"all 0.2s",
+              }}>{m.l}</div>
+            ))}
           </div>
-          <div style={{borderRadius:14,overflow:"hidden",border:`1px solid ${C.border}`,background:`rgba(255,255,255,0.015)`}}>
-            {LEADERBOARD.map((p,i)=>(
-              <div key={i} style={{
-                display:"flex",alignItems:"center",gap:10,padding:"10px 12px",
-                borderBottom:i<LEADERBOARD.length-1?`1px solid ${C.border}`:"none",
-                background:p.isYou?`${C.cyan}06`:"transparent",
-              }}>
-                <div style={{width:24,height:24,borderRadius:7,display:"flex",alignItems:"center",justifyContent:"center",fontSize:typeof p.place==="string"&&p.place.length>1?13:11,fontWeight:800,color:i<3?[C.gold,"#C0C0C0","#CD7F32"][i]:C.text3,background:i<3?`${[C.gold,"#C0C0C0","#CD7F32"][i]}12`:`${C.text3}08`}}>{p.place}</div>
-                <span style={{fontSize:16}}>{p.emoji}</span>
+          {/* Leaderboard list */}
+          <div style={{...wallGlass,overflow:"hidden"}}>
+            {lbTop10.map((p,i)=>(
+              <div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 10px",borderBottom:i<9?`1px solid ${C.border}`:"none",background:p.isYou?`${C.cyan}06`:"transparent"}}>
+                <div style={{width:22,height:22,borderRadius:6,display:"flex",alignItems:"center",justifyContent:"center",fontSize:i<3?13:10,fontWeight:800,color:i<3?[C.gold,"#C0C0C0","#CD7F32"][i]:C.text3,background:i<3?`${[C.gold,"#C0C0C0","#CD7F32"][i]}12`:`${C.text3}08`}}>{i<3?["🥇","🥈","🥉"][i]:(i+1)}</div>
+                <span style={{fontSize:15}}>{p.emoji}</span>
                 <div style={{flex:1,minWidth:0}}>
-                  <div style={{fontSize:12,fontWeight:700,color:p.isYou?C.cyan:C.text,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{p.name}</div>
-                  <div style={{fontSize:9,color:C.text3}}>🔥 {p.streak} streak</div>
+                  <div style={{fontSize:11,fontWeight:700,color:p.isYou?C.cyan:C.text,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{p.name}</div>
+                  <div style={{fontSize:8,color:rankColors[p.rank]||C.text3,fontWeight:600}}>{p.rank}</div>
                 </div>
-                <div style={{fontFamily:"'Courier New',monospace",fontSize:12,fontWeight:800,color:p.isYou?C.cyan:C.text2}}>{(p.score/1000).toFixed(0)}K</div>
+                <div style={{fontFamily:"'Courier New',monospace",fontSize:11,fontWeight:800,color:p.isYou?C.cyan:C.text2}}>{wallMetric==="winpct"?p.value+"%":p.value.toLocaleString()}</div>
+                <div style={{fontSize:10,color:p.trend==="up"?C.green:C.red}}>{p.trend==="up"?"▲":"▼"}</div>
               </div>
             ))}
+            {/* Your position if not in top 10 */}
+            {youPos>10&&youEntry&&(
+              <div style={{display:"flex",alignItems:"center",gap:8,padding:"8px 10px",background:`${C.cyan}08`,borderTop:`1px solid ${C.cyan}15`}}>
+                <div style={{fontSize:10,fontWeight:800,color:C.cyan}}>#{youPos}</div>
+                <span style={{fontSize:15}}>{youEntry.emoji}</span>
+                <div style={{flex:1,fontSize:11,fontWeight:700,color:C.cyan}}>You</div>
+                <div style={{fontFamily:"'Courier New',monospace",fontSize:11,fontWeight:800,color:C.cyan}}>{wallMetric==="winpct"?youEntry.value+"%":youEntry.value.toLocaleString()}</div>
+                <div style={{fontSize:10,color:C.green}}>▲3</div>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Badges */}
-        <div style={{marginBottom:16}}>
-          <div style={{fontSize:13,fontWeight:800,color:C.text,marginBottom:10}}>🎖 Badges</div>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8}}>
-            {BADGES.map((b,i)=>(
-              <div key={i} style={{padding:"12px 4px",borderRadius:12,textAlign:"center",background:b.earned?`${C.gold}06`:`${C.text3}04`,border:`1px solid ${b.earned?C.gold+"15":C.text3+"08"}`,opacity:b.earned?1:0.4}}>
-                <div style={{fontSize:22,marginBottom:2,filter:b.earned?`drop-shadow(0 0 4px ${C.gold}40)`:"grayscale(1)"}}>{b.emoji}</div>
-                <div style={{fontSize:8,fontWeight:700,color:b.earned?C.gold:C.text3}}>{b.name}</div>
+        {/* ═══ SECTION 3: ARENA RECORDS ═══ */}
+        <div style={{marginBottom:18,...wallGlassGold,padding:"12px"}}>
+          <div style={{fontSize:13,fontWeight:900,color:C.gold,marginBottom:10}}>🏅 ALL-TIME RECORDS</div>
+          {WALL_RECORDS.map((r,i)=>(
+            <div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"6px 0",borderBottom:i<WALL_RECORDS.length-1?`1px solid ${C.border}`:"none"}}>
+              <span style={{fontSize:14}}>{r.emoji}</span>
+              <div style={{flex:1,minWidth:0}}>
+                <span style={{fontSize:10,fontWeight:700,color:r.today?C.gold:C.text}}>{r.name}: </span>
+                <span style={{fontSize:10,fontWeight:800,color:r.today?C.gold:C.cyan,fontFamily:"'Courier New',monospace"}}>{r.value}</span>
+                <span style={{fontSize:9,color:C.text3}}> {"\u2014"} {r.holder}</span>
               </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Your Stats */}
-        <div style={{padding:"14px",borderRadius:14,background:C.bg2,border:`1px solid ${C.border}`,marginBottom:16}}>
-          <div style={{fontSize:12,fontWeight:800,color:C.text,marginBottom:10}}>📊 Your Stats</div>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8}}>
-            {[{l:"Games",v:"142",c:C.cyan},{l:"Win Rate",v:"67%",c:C.green},{l:"Best Streak",v:"12",c:C.gold}].map((s,i)=>(
-              <div key={i} style={{textAlign:"center",padding:"8px",borderRadius:10,background:`${s.c}06`,border:`1px solid ${s.c}10`}}>
-                <div style={{fontFamily:"'Courier New',monospace",fontSize:18,fontWeight:900,color:s.c}}>{s.v}</div>
-                <div style={{fontSize:8,color:C.text3,fontWeight:600,letterSpacing:0.5,marginTop:2}}>{s.l}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Friends Activity */}
-        <div style={{marginBottom:16}}>
-          <div style={{fontSize:12,fontWeight:800,color:C.text,marginBottom:10}}>👥 Friends Activity</div>
-          {[
-            {name:"Minh Anh",action:"just won Final Kick 🏆",time:"2m ago",emoji:"⚽"},
-            {name:"Hà Linh",action:"predicted USA vs Mexico",time:"5m ago",emoji:"◆"},
-            {name:"Đức Trung",action:"is playing Balloon Pop",time:"now",emoji:"🎈",live:true},
-          ].map((f,i)=>(
-            <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 0",borderBottom:i<2?`1px solid ${C.border}`:"none"}}>
-              <div style={{width:32,height:32,borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",background:`${C.purple}08`,border:`1px solid ${C.purple}15`,fontSize:14}}>{f.emoji}</div>
-              <div style={{flex:1}}>
-                <div style={{fontSize:11,color:C.text}}><strong>{f.name}</strong> <span style={{color:C.text3}}>{f.action}</span></div>
-                <div style={{fontSize:9,color:C.text3}}>{f.time}</div>
-              </div>
-              {f.live && <div onClick={()=>notify("👀 Spectating...",C.cyan)} style={{padding:"4px 10px",borderRadius:6,cursor:"pointer",background:`${C.cyan}08`,border:`1px solid ${C.cyan}15`,fontSize:9,fontWeight:700,color:C.cyan}}>Watch</div>}
+              {r.today&&<div style={{padding:"1px 5px",borderRadius:4,background:`${C.gold}15`,fontSize:7,fontWeight:800,color:C.gold}}>TODAY</div>}
             </div>
           ))}
         </div>
+
+        {/* ═══ SECTION 4: ACHIEVEMENT SHOWCASE ═══ */}
+        <div style={{marginBottom:18}}>
+          <div style={{fontSize:13,fontWeight:900,color:C.text,marginBottom:10}}>🎖️ COMMUNITY ACHIEVEMENTS</div>
+          {/* Recently Unlocked */}
+          <div style={{...wallGlass,padding:"10px 12px",marginBottom:10}}>
+            <div style={{fontSize:10,fontWeight:700,color:C.text3,marginBottom:6}}>Recently Unlocked</div>
+            {WALL_ACHIEVEMENTS_RECENT.map((a,i)=>(
+              <div key={i} style={{display:"flex",alignItems:"center",gap:6,padding:"4px 0",borderBottom:i<WALL_ACHIEVEMENTS_RECENT.length-1?`1px solid ${C.border}`:"none"}}>
+                <span style={{fontSize:13}}>{a.emoji}</span>
+                <div style={{flex:1,fontSize:10,color:C.text}}><strong>{a.player}</strong> <span style={{color:C.text3}}>unlocked</span> {a.achievement}</div>
+                <div style={{fontSize:8,color:C.text3}}>{a.time}</div>
+              </div>
+            ))}
+          </div>
+          {/* Rarest Achievements */}
+          <div style={{display:"flex",gap:6,marginBottom:10}}>
+            {WALL_ACHIEVEMENTS_RARE.map((a,i)=>(
+              <div key={i} style={{flex:1,padding:"10px 6px",borderRadius:12,textAlign:"center",...wallGlassGold}}>
+                <div style={{fontSize:22,marginBottom:2,filter:`drop-shadow(0 0 6px ${C.gold}50)`}}>{a.emoji}</div>
+                <div style={{fontSize:9,fontWeight:800,color:C.gold}}>{a.name}</div>
+                <div style={{fontSize:8,color:C.text3}}>{a.pct} of players</div>
+              </div>
+            ))}
+          </div>
+          {/* Your Progress */}
+          <div style={{...wallGlass,padding:"10px 12px"}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
+              <span style={{fontSize:10,fontWeight:700,color:C.text}}>Your Progress</span>
+              <span style={{fontSize:10,fontWeight:800,color:C.cyan}}>7/12 unlocked</span>
+            </div>
+            <div style={{height:6,borderRadius:3,background:`${C.text3}10`,overflow:"hidden"}}>
+              <div style={{width:"58%",height:"100%",borderRadius:3,background:`linear-gradient(90deg, ${C.cyan}, ${C.gold})`}}/>
+            </div>
+          </div>
+        </div>
+
+        {/* ═══ SECTION 5: ACTIVITY FEED ═══ */}
+        <div style={{marginBottom:18}}>
+          <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:10}}>
+            <span style={{fontSize:13,fontWeight:900,color:C.text}}>🔥 LIVE ACTIVITY</span>
+            <div style={{width:6,height:6,borderRadius:3,background:C.green,boxShadow:`0 0 6px ${C.green}`,animation:"wallPulse 2s ease-in-out infinite"}}/>
+          </div>
+          <div style={{...wallGlass,overflow:"hidden",maxHeight:260,overflowY:"auto"}}>
+            {WALL_ACTIVITY.map((a,i)=>(
+              <div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"7px 10px",borderBottom:i<WALL_ACTIVITY.length-1?`1px solid ${C.border}`:"none"}}>
+                <span style={{fontSize:13}}>{a.emoji}</span>
+                <div style={{flex:1,fontSize:10,color:C.text}}>{a.msg}</div>
+                <div style={{fontSize:8,color:C.text3,whiteSpace:"nowrap"}}>{a.time}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* ═══ SECTION 6: SEASON STANDINGS ═══ */}
+        <div style={{marginBottom:18,...wallGlassGold,padding:"14px 12px"}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+            <div>
+              <div style={{fontSize:13,fontWeight:900,color:C.gold}}>📅 SEASON 1</div>
+              <div style={{fontSize:9,color:C.text3}}>March 2026</div>
+            </div>
+            <div style={{padding:"4px 10px",borderRadius:8,background:`${C.gold}12`,border:`1px solid ${C.gold}20`}}>
+              <div style={{fontSize:9,fontWeight:800,color:C.gold}}>18 days left</div>
+            </div>
+          </div>
+          {/* Your Season Stats */}
+          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:6,marginBottom:12}}>
+            {[{l:"Season Pts",v:"4,200",c:C.gold},{l:"Rank",v:"#12",c:C.cyan},{l:"Tier",v:"Gold",c:C.gold}].map((s,i)=>(
+              <div key={i} style={{textAlign:"center",padding:"8px 4px",borderRadius:10,background:`${s.c}06`,border:`1px solid ${s.c}10`}}>
+                <div style={{fontFamily:"'Courier New',monospace",fontSize:16,fontWeight:900,color:s.c}}>{s.v}</div>
+                <div style={{fontSize:7,color:C.text3,fontWeight:600,letterSpacing:0.5,marginTop:2}}>{s.l}</div>
+              </div>
+            ))}
+          </div>
+          {/* Tier progress */}
+          <div style={{marginBottom:10}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:3}}>
+              <span style={{fontSize:9,fontWeight:700,color:C.gold}}>Gold</span>
+              <span style={{fontSize:9,fontWeight:700,color:"#E5E4E2"}}>Platinum</span>
+            </div>
+            <div style={{height:6,borderRadius:3,background:`${C.text3}10`,overflow:"hidden"}}>
+              <div style={{width:"68%",height:"100%",borderRadius:3,background:`linear-gradient(90deg, ${C.gold}, #E5E4E2)`}}/>
+            </div>
+          </div>
+          {/* Season rewards preview */}
+          <div style={{fontSize:10,fontWeight:700,color:C.text3,marginBottom:6}}>Season Rewards</div>
+          {[{pos:"1st",reward:"10,000 coins + Exclusive Badge",c:C.gold},{pos:"2nd",reward:"5,000 coins",c:"#C0C0C0"},{pos:"3rd",reward:"2,500 coins",c:"#CD7F32"}].map((r,i)=>(
+            <div key={i} style={{display:"flex",alignItems:"center",gap:6,padding:"3px 0"}}>
+              <div style={{fontSize:10,fontWeight:800,color:r.c}}>{r.pos}</div>
+              <div style={{fontSize:9,color:C.text3}}>{r.reward}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* ═══ SECTION 7: SOCIAL ═══ */}
+        <div style={{marginBottom:18}}>
+          <div style={{fontSize:13,fontWeight:900,color:C.text,marginBottom:10}}>👥 FRIENDS</div>
+          {/* Friend cards */}
+          <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:12}}>
+            {WALL_FRIENDS.map((f,i)=>(
+              <div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 10px",...wallGlass}}>
+                <span style={{fontSize:16}}>{f.emoji}</span>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{display:"flex",alignItems:"center",gap:4}}>
+                    <span style={{fontSize:11,fontWeight:700,color:C.text}}>{f.name}</span>
+                    <span style={{fontSize:8,fontWeight:600,color:rankColors[f.rank]||C.text3}}>{f.rank}</span>
+                  </div>
+                  <div style={{display:"flex",alignItems:"center",gap:4}}>
+                    {f.online?(
+                      <><div style={{width:5,height:5,borderRadius:3,background:C.green,boxShadow:`0 0 4px ${C.green}`}}/><span style={{fontSize:8,color:C.green}}>Online</span></>
+                    ):(
+                      <span style={{fontSize:8,color:C.text3}}>Last seen {f.lastSeen}</span>
+                    )}
+                  </div>
+                </div>
+                <div onClick={()=>notify("Challenge sent! 🎮",C.cyan)} style={{padding:"4px 10px",borderRadius:6,cursor:"pointer",background:`${C.cyan}10`,border:`1px solid ${C.cyan}20`,fontSize:9,fontWeight:700,color:C.cyan}}>Challenge</div>
+              </div>
+            ))}
+          </div>
+          {/* Recent Opponents */}
+          <div style={{fontSize:11,fontWeight:700,color:C.text3,marginBottom:6}}>Recent Opponents</div>
+          <div style={{display:"flex",flexDirection:"column",gap:4}}>
+            {WALL_OPPONENTS.map((o,i)=>(
+              <div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"6px 10px",...wallGlass}}>
+                <span style={{fontSize:14}}>{o.emoji}</span>
+                <div style={{flex:1}}>
+                  <span style={{fontSize:10,fontWeight:700,color:C.text}}>{o.name}</span>
+                  <span style={{fontSize:9,color:C.text3}}> {"\u2014"} {o.game}</span>
+                </div>
+                <div style={{fontSize:8,fontWeight:700,color:o.result==="Won"?C.green:C.red}}>{o.result}</div>
+                <div onClick={()=>notify("Rematch requested! 🔄",C.cyan)} style={{padding:"3px 8px",borderRadius:5,cursor:"pointer",background:`${C.cyan}08`,border:`1px solid ${C.cyan}15`,fontSize:8,fontWeight:700,color:C.cyan}}>Rematch</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
       </div>
+      {/* CSS keyframes for Wall animations */}
+      <style>{`
+        @keyframes wallFloat { 0%{transform:translateY(0)} 100%{transform:translateY(-3px)} }
+        @keyframes wallPulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+      `}</style>
       <div style={{height:80}}/>
     </div>
-  );
+    );
+  };
 
   // ═════════════════════════════════════════
   // ── RENDER: GAME OVERLAYS ──
