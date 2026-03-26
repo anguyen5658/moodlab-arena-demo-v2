@@ -28,7 +28,7 @@ const ARENA_VIDEOS = {
 const Z = {
   arcade: { primary:"#00E5FF", glow:"rgba(0,229,255,0.35)", dim:"rgba(0,229,255,0.08)", name:"The Arcade", icon:"🎮", sub:"12 Action Games" },
   stage:  { primary:"#FFD93D", glow:"rgba(255,217,61,0.35)", dim:"rgba(255,217,61,0.08)", name:"The Stage", icon:"🎪", sub:"11 Live Shows" },
-  oracle: { primary:"#C084FC", glow:"rgba(192,132,252,0.35)", dim:"rgba(192,132,252,0.08)", name:"The Oracle", icon:"🔮", sub:"4 Prediction Games" },
+  oracle: { primary:"#FFD93D", glow:"rgba(255,217,61,0.35)", dim:"rgba(255,217,61,0.08)", name:"The Casino", icon:"🎰", sub:"12 Casino Games" },
   wall:   { primary:"#FB923C", glow:"rgba(251,146,60,0.35)", dim:"rgba(251,146,60,0.08)", name:"The Wall", icon:"🏆", sub:"Rankings & Glory" },
   worldcup:{ primary:"#FFD93D", glow:"rgba(255,217,61,0.35)", dim:"rgba(255,217,61,0.08)", name:"World Cup 2026", icon:"⚽", sub:"Limited Event" },
 };
@@ -165,6 +165,10 @@ const ORACLE_GAMES = [
   { id:"strainbattle", name:"Strain Battle", emoji:"🌿", players:"1", time:"2-3m", type:"Vote", color:"#22C55E", desc:"Vote for the best strain in epic matchups.", inputs:["puff"] },
   { id:"matchpredictor", name:"Match Predictor", emoji:"📊", players:"1", time:"1-2m", type:"Sports", color:"#3B82F6", desc:"Predict WC match outcomes. Win/Draw/Lose.", inputs:["puff"] },
   { id:"dailypicks", name:"Daily Picks", emoji:"📅", players:"1", time:"2-3m", type:"Daily", color:"#F97316", desc:"3 daily predictions with streak multipliers.", inputs:["puff"] },
+  { id:"puffslots", name:"Puff Slots", emoji:"🎰", players:"1", time:"2-3m", type:"Casino", color:"#FFD700", desc:"3-reel slot machine. Puff to spin the reels!", inputs:["puff"] },
+  { id:"puffblackjack", name:"Puff Blackjack", emoji:"🃏", players:"1", time:"3-5m", type:"Casino", color:"#22C55E", desc:"Classic blackjack with puff controls. Hit or Stand!", inputs:["puff"] },
+  { id:"coinflip", name:"Coin Flip", emoji:"🪙", players:"1", time:"1-2m", type:"Casino", color:"#F59E0B", desc:"50/50 flip with puff confidence multiplier.", inputs:["puff"] },
+  { id:"crapsnclouds", name:"Craps & Clouds", emoji:"🎲", players:"1", time:"2-3m", type:"Casino", color:"#EF4444", desc:"Dice game where your puff controls the roll!", inputs:["puff"] },
 ];
 
 const ORACLE_WC_MATCHES = [
@@ -1487,6 +1491,58 @@ export default function MoodLabArena() {
   const [dpCurrentPick, setDpCurrentPick] = useState(0);
   const [dpAnswer, setDpAnswer] = useState(null);
   const dpPuffStart = useRef(0);
+
+  // ── Puff Slots ──
+  const [slotsPhase, setSlotsPhase] = useState(null); // null|spinning|result|bonus
+  const [slotsReels, setSlotsReels] = useState(["🍒","🍒","🍒"]);
+  const [slotsSpinning, setSlotsSpinning] = useState(false);
+  const [slotsWin, setSlotsWin] = useState(0);
+  const [slotsRound, setSlotsRound] = useState(0);
+  const [slotsBonusRound, setSlotsBonusRound] = useState(false);
+  const [slotsScore, setSlotsScore] = useState(0);
+  const [slotsHistory, setSlotsHistory] = useState([]);
+  const slotsPuffStart = useRef(0);
+  const slotsSpinTimer = useRef(null);
+
+  // ── Puff Blackjack ──
+  const [bjPhase, setBjPhase] = useState(null); // null|dealing|player_turn|dealer_turn|result
+  const [bjPlayerHand, setBjPlayerHand] = useState([]);
+  const [bjDealerHand, setBjDealerHand] = useState([]);
+  const [bjPlayerTotal, setBjPlayerTotal] = useState(0);
+  const [bjDealerTotal, setBjDealerTotal] = useState(0);
+  const [bjBet, setBjBet] = useState(50);
+  const [bjResult, setBjResult] = useState(null);
+  const [bjRound, setBjRound] = useState(0);
+  const [bjScore, setBjScore] = useState(0);
+  const [bjPuffing, setBjPuffing] = useState(false);
+  const bjPuffStart = useRef(0);
+  const bjTimerRef = useRef(null);
+
+  // ── Coin Flip ──
+  const [cfPhase, setCfPhase] = useState(null); // null|betting|flipping|result
+  const [cfChoice, setCfChoice] = useState(null); // "heads"|"tails"
+  const [cfResult, setCfResult] = useState(null);
+  const [cfBet, setCfBet] = useState(50);
+  const [cfPuffConfidence, setCfPuffConfidence] = useState(0);
+  const [cfStreak, setCfStreak] = useState(0);
+  const [cfRound, setCfRound] = useState(0);
+  const [cfScore, setCfScore] = useState(0);
+  const [cfFlipping, setCfFlipping] = useState(false);
+  const [cfPuffing, setCfPuffing] = useState(false);
+  const cfPuffStart = useRef(0);
+
+  // ── Craps & Clouds ──
+  const [crapsPhase, setCrapsPhase] = useState(null); // null|betting|rolling|result
+  const [crapsDice, setCrapsDice] = useState([1,1]);
+  const [crapsRolling, setCrapsRolling] = useState(false);
+  const [crapsPoint, setCrapsPoint] = useState(null);
+  const [crapsBet, setCrapsBet] = useState(50);
+  const [crapsResult, setCrapsResult] = useState(null);
+  const [crapsRound, setCrapsRound] = useState(0);
+  const [crapsScore, setCrapsScore] = useState(0);
+  const [crapsHotDice, setCrapsHotDice] = useState(false);
+  const [crapsPuffing, setCrapsPuffing] = useState(false);
+  const crapsPuffStart = useRef(0);
 
   // ── Derived ──
   const wcDays = Math.max(0, Math.floor((new Date("2026-06-11") - new Date()) / 86400000));
@@ -5384,27 +5440,30 @@ export default function MoodLabArena() {
     if (viewKey === "oracle") return (
       <div>
         <div style={{display:"flex",flexWrap:"wrap",gap:6,justifyContent:"center"}}>
-          <span style={pillStyle(C.purple)}>104 open bets</span>
-          <span style={pillStyle(C.lime)}>78% your accuracy</span>
-          <span style={pillStyle(C.red)}>🔥 7-day streak</span>
+          <span style={pillStyle(C.gold)}>12 Games</span>
+          <span style={pillStyle(C.green)}>Win Rate 62%</span>
+          <span style={pillStyle(C.red)}>🔥 Hot Streak 5</span>
+          <span style={pillStyle(C.gold)}>Jackpot 50K</span>
         </div>
-        {/* Hot prediction with vote bar */}
-        <div style={{marginTop:10,padding:"8px 12px",borderRadius:10,
-          background:`${C.purple}06`,border:`1px solid ${C.purple}15`}}>
-          <div style={{fontSize:10,fontWeight:700,color:C.text,marginBottom:4}}>⚽ Brazil vs Germany</div>
-          <div style={{display:"flex",alignItems:"center",gap:4}}>
-            <span style={{fontSize:8,color:C.cyan,fontWeight:700}}>72%</span>
-            <div style={{flex:1,height:6,borderRadius:3,background:`${C.text3}15`,overflow:"hidden"}}>
-              <div style={{width:"72%",height:"100%",borderRadius:3,background:`linear-gradient(90deg,${C.cyan},${C.blue})`}}/>
+        {/* Quick actions */}
+        <div style={{display:"flex",gap:6,marginTop:10}}>
+          {[
+            {label:"Sportsbook",emoji:"🔮",color:C.purple},
+            {label:"Slots",emoji:"🎰",color:C.gold},
+            {label:"Cards",emoji:"🃏",color:C.green},
+          ].map((a,i)=>(
+            <div key={i} onClick={()=>{setZone("oracle");setArenaView("oracle");setOracleHubTab(i===0?"sportsbook":i===1?"slots":"cards");}} style={{
+              flex:1,padding:"8px 6px",borderRadius:10,textAlign:"center",cursor:"pointer",
+              background:`${a.color}08`,border:`1px solid ${a.color}15`,
+            }}>
+              <div style={{fontSize:20}}>{a.emoji}</div>
+              <div style={{fontSize:9,fontWeight:700,color:a.color,marginTop:2}}>{a.label}</div>
             </div>
-            <span style={{fontSize:8,color:C.red,fontWeight:700}}>28%</span>
-          </div>
-          <div style={{fontSize:7,color:C.text3,marginTop:2,textAlign:"center"}}>847 predictions</div>
+          ))}
         </div>
-        {/* Daily pick teaser */}
+        {/* Jackpot teaser */}
         <div style={{textAlign:"center",marginTop:6}}>
-          <span style={{fontSize:9,color:C.lime,fontWeight:700}}>📅 Morning Pick OPEN</span>
-          <span style={{fontSize:8,color:C.text3}}> · closes in 2h</span>
+          <span style={{fontSize:9,color:C.gold,fontWeight:700}}>🏆 Daily Jackpot: 50,000 coins</span>
         </div>
       </div>
     );
@@ -6524,7 +6583,7 @@ export default function MoodLabArena() {
   // ═════════════════════════════════════════
   const renderZoneHeader = (zKey) => {
     const z = Z[zKey];
-    const taglines = {arcade:"PLAY · COMPETE · WIN",stage:"WATCH · PLAY · WIN",oracle:"PREDICT · BET · WIN",wall:"YOUR LEGACY · YOUR GLORY",worldcup:"PLAY · PREDICT · CELEBRATE"};
+    const taglines = {arcade:"PLAY · COMPETE · WIN",stage:"WATCH · PLAY · WIN",oracle:"BET · SPIN · WIN",wall:"YOUR LEGACY · YOUR GLORY",worldcup:"PLAY · PREDICT · CELEBRATE"};
     return (
       <div style={{padding:"0 14px",marginBottom:12}}>
         <div onClick={()=>{playFx("back");setZone(null);setSelectedGame(null);setArenaView("hub");}} style={{display:"inline-flex",alignItems:"center",gap:6,cursor:"pointer",marginBottom:10,padding:"6px 12px",borderRadius:8,background:`${C.text3}06`,border:`1px solid ${C.border}`}}>
@@ -7001,7 +7060,7 @@ export default function MoodLabArena() {
         setCoins(c=>c+pts);
         playFx("crowd");
         spawnConfetti(30);
-        setCommentary(ans==="certain"?"BLINKER BONUS! 3x COINS! The Oracle speaks through you!":"Correct! The Crystal Ball confirms your vision!");
+        setCommentary(ans==="certain"?"BLINKER BONUS! 3x COINS! The Casino pays out big!":"Correct! The Crystal Ball confirms your vision!");
       } else {
         const penalty = ans==="certain" ? -100 : 0;
         setCbScore(s=>s+penalty);
@@ -7212,226 +7271,729 @@ export default function MoodLabArena() {
     setGameActive(null);
   };
 
+  // ═══════════════════════════════════════════════════════════════
+  // PUFF SLOTS -- 3-Reel Slot Machine Casino Game Engine
+  // ═══════════════════════════════════════════════════════════════
+  const SLOTS_SYMBOLS = ["🍒","🍋","🔔","💎","7️⃣","🌿"];
+  const SLOTS_PAYOUTS = {"🍒":50,"🍋":75,"🔔":100,"💎":200,"7️⃣":500,"🌿":1000};
+  const startPuffSlots = () => {
+    setSlotsReels(["🍒","🍒","🍒"]);
+    setSlotsSpinning(false);
+    setSlotsWin(0);
+    setSlotsRound(0);
+    setSlotsScore(0);
+    setSlotsBonusRound(false);
+    setSlotsHistory([]);
+    setSlotsPhase("intro");
+    playFx("crowd");
+    setCommentary("Welcome to Puff Slots! Hold to spin!");
+    setTimeout(()=>setSlotsPhase("ready"),1500);
+  };
+  const slotsHandlePuff = () => {
+    if(slotsPhase!=="ready") return;
+    setSlotsSpinning(true);
+    slotsPuffStart.current = Date.now();
+    setSlotsPhase("spinning");
+    playFx("whistle");
+    setCommentary("Reels are spinning...");
+  };
+  const slotsHandlePuffEnd = () => {
+    if(slotsPhase!=="spinning"||!slotsSpinning) return;
+    const dur = (Date.now()-slotsPuffStart.current)/1000;
+    setSlotsSpinning(false);
+    const isBlinker = dur >= 4.5;
+    const isBonus = isBlinker;
+    setSlotsBonusRound(isBonus);
+    // Generate reels
+    const pick = () => SLOTS_SYMBOLS[Math.floor(Math.random()*SLOTS_SYMBOLS.length)];
+    let r1,r2,r3;
+    if(isBonus) {
+      // Bonus: guaranteed 2 matching + higher chance of 3
+      r1 = pick();
+      r2 = r1;
+      r3 = Math.random()>0.5 ? r1 : pick();
+      setCommentary("BLINKER BONUS! 2x multiplier active!");
+    } else {
+      r1=pick(); r2=pick(); r3=pick();
+    }
+    // Animate reels stopping one by one
+    const finalReels = [r1,r2,r3];
+    setSlotsReels(["❓","❓","❓"]);
+    setTimeout(()=>{setSlotsReels([r1,"❓","❓"]);playFx("select");},400);
+    setTimeout(()=>{setSlotsReels([r1,r2,"❓"]);playFx("select");},800);
+    setTimeout(()=>{
+      setSlotsReels(finalReels);
+      playFx("select");
+      // Calculate win
+      let win=0;
+      if(r1===r2&&r2===r3) {
+        win = SLOTS_PAYOUTS[r1]||50;
+        if(isBonus) win *= 2;
+        spawnConfetti(40);
+        triggerFlash("goal");
+        playFx("crowd");
+        if(r1==="🌿") setCommentary("JACKPOT! 🌿🌿🌿 CANNABIS JACKPOT!!!");
+        else if(r1==="7️⃣") setCommentary("TRIPLE SEVENS! MASSIVE WIN!");
+        else setCommentary("WINNER! "+r1+r1+r1+" pays out "+win+"!");
+      } else if(r1===r2||r2===r3||r1===r3) {
+        win = 10;
+        if(isBonus) win *= 2;
+        setCommentary("Two matching! Small win: +"+win);
+      } else {
+        setCommentary("No match. Try again!");
+      }
+      setSlotsWin(win);
+      setSlotsScore(s=>s+win);
+      if(win>0) setCoins(c=>c+win);
+      setSlotsHistory(h=>[...h,{reels:finalReels,win,bonus:isBonus}]);
+      setSlotsPhase("result");
+      // Auto-advance after 2.5s
+      setTimeout(()=>slotsNextRound(),2500);
+    },1200);
+  };
+  const slotsNextRound = () => {
+    const next = slotsRound+1;
+    if(next>=8) { setSlotsPhase("complete"); return; }
+    setSlotsRound(next);
+    setSlotsWin(0);
+    setSlotsBonusRound(false);
+    setSlotsPhase("ready");
+    setCommentary("Spin "+(next+1)+"/8 — HOLD to puff!");
+  };
+  const slotsCleanup = () => {
+    setSlotsPhase(null);setSlotsReels(["🍒","🍒","🍒"]);setSlotsSpinning(false);setSlotsWin(0);setSlotsRound(0);setSlotsScore(0);setSlotsBonusRound(false);setSlotsHistory([]);
+    if(slotsSpinTimer.current){clearTimeout(slotsSpinTimer.current);slotsSpinTimer.current=null;}
+    setGameActive(null);
+  };
+
+  // ═══════════════════════════════════════════════════════════════
+  // PUFF BLACKJACK -- Card Game Engine
+  // ═══════════════════════════════════════════════════════════════
+  const BJ_SUITS = ["♠️","♥️","♦️","♣️"];
+  const BJ_VALUES = ["A","2","3","4","5","6","7","8","9","10","J","Q","K"];
+  const bjDrawCard = () => {
+    const suit = BJ_SUITS[Math.floor(Math.random()*BJ_SUITS.length)];
+    const val = BJ_VALUES[Math.floor(Math.random()*BJ_VALUES.length)];
+    return {suit,val,display:val+suit};
+  };
+  const bjHandTotal = (hand) => {
+    let total=0, aces=0;
+    for(const c of hand) {
+      if(c.val==="A"){aces++;total+=11;}
+      else if(["K","Q","J"].includes(c.val)) total+=10;
+      else total+=parseInt(c.val);
+    }
+    while(total>21&&aces>0){total-=10;aces--;}
+    return total;
+  };
+  const startPuffBlackjack = () => {
+    setBjPlayerHand([]);setBjDealerHand([]);setBjPlayerTotal(0);setBjDealerTotal(0);
+    setBjBet(50);setBjResult(null);setBjRound(0);setBjScore(0);setBjPuffing(false);
+    setBjPhase("intro");
+    playFx("crowd");
+    setCommentary("Welcome to Puff Blackjack! Get closer to 21!");
+    setTimeout(()=>bjDeal(),1500);
+  };
+  const bjDeal = () => {
+    const p1=bjDrawCard(),p2=bjDrawCard(),d1=bjDrawCard(),d2=bjDrawCard();
+    const pHand=[p1,p2], dHand=[d1,d2];
+    const pTotal=bjHandTotal(pHand), dTotal=bjHandTotal(dHand);
+    setBjPlayerHand(pHand);setBjDealerHand(dHand);
+    setBjPlayerTotal(pTotal);setBjDealerTotal(dTotal);
+    setBjResult(null);setBjPhase("dealing");
+    playFx("select");
+    setCommentary("Cards dealt...");
+    setTimeout(()=>{
+      // Check for natural blackjack
+      if(pTotal===21) {
+        setCommentary("BLACKJACK! Natural 21!");
+        bjResolve(pHand,dHand,true);
+      } else {
+        setBjPhase("player_turn");
+        setCommentary("Your turn! Short puff = HIT, Long puff = STAND, Blinker = DOUBLE DOWN");
+      }
+    },1200);
+  };
+  const bjHandlePuff = () => {
+    if(bjPhase!=="player_turn") return;
+    setBjPuffing(true);
+    bjPuffStart.current = Date.now();
+  };
+  const bjHandlePuffEnd = () => {
+    if(!bjPuffing||bjPhase!=="player_turn") return;
+    const dur = (Date.now()-bjPuffStart.current)/1000;
+    setBjPuffing(false);
+    if(dur >= 4.5) {
+      // DOUBLE DOWN
+      setBjBet(b=>b*2);
+      const newCard=bjDrawCard();
+      const newHand=[...bjPlayerHand,newCard];
+      const newTotal=bjHandTotal(newHand);
+      setBjPlayerHand(newHand);setBjPlayerTotal(newTotal);
+      playFx("whistle");
+      setCommentary("DOUBLE DOWN! Bet doubled! One more card...");
+      triggerFlash("goal");
+      if(newTotal>21) {
+        setTimeout(()=>{setCommentary("BUST! Over 21!");bjResolve(newHand,bjDealerHand,false);},800);
+      } else {
+        setTimeout(()=>bjDealerPlay(newHand),800);
+      }
+    } else if(dur >= 1.5) {
+      // STAND
+      playFx("select");
+      setCommentary("You STAND at "+bjPlayerTotal+"!");
+      bjDealerPlay(bjPlayerHand);
+    } else {
+      // HIT
+      const newCard=bjDrawCard();
+      const newHand=[...bjPlayerHand,newCard];
+      const newTotal=bjHandTotal(newHand);
+      setBjPlayerHand(newHand);setBjPlayerTotal(newTotal);
+      playFx("select");
+      if(newTotal>21) {
+        setCommentary("BUST! "+newTotal+" — over 21!");
+        setTimeout(()=>bjResolve(newHand,bjDealerHand,false),800);
+      } else if(newTotal===21) {
+        setCommentary("21! Perfect! Standing...");
+        setTimeout(()=>bjDealerPlay(newHand),800);
+      } else {
+        setCommentary("HIT! You have "+newTotal+". Hit or Stand?");
+      }
+    }
+  };
+  const bjDealerPlay = (playerHand) => {
+    setBjPhase("dealer_turn");
+    setCommentary("Dealer reveals...");
+    let dHand=[...bjDealerHand];
+    const playDealer = (hand,step) => {
+      const total = bjHandTotal(hand);
+      setBjDealerHand([...hand]);setBjDealerTotal(total);
+      if(total<17) {
+        setTimeout(()=>{
+          const card=bjDrawCard();
+          hand.push(card);
+          playFx("select");
+          setCommentary("Dealer hits... "+bjHandTotal(hand));
+          playDealer(hand,step+1);
+        },700);
+      } else {
+        setTimeout(()=>bjResolve(playerHand,hand,false),600);
+      }
+    };
+    setTimeout(()=>playDealer(dHand,0),600);
+  };
+  const bjResolve = (pHand,dHand,isNatural) => {
+    const pTotal=bjHandTotal(pHand), dTotal=bjHandTotal(dHand);
+    setBjPlayerTotal(pTotal);setBjDealerTotal(dTotal);
+    let result,winAmt=0;
+    if(isNatural&&pTotal===21) {
+      if(dTotal===21){result="push";setCommentary("Both Blackjack! Push!");}
+      else{result="blackjack";winAmt=Math.floor(bjBet*2.5);setCommentary("BLACKJACK! 2.5x payout!");spawnConfetti(40);triggerFlash("goal");}
+    } else if(pTotal>21) {
+      result="bust";setCommentary("BUST! You lose "+bjBet);
+    } else if(dTotal>21) {
+      result="win";winAmt=bjBet*2;setCommentary("Dealer busts! You WIN "+winAmt+"!");spawnConfetti(25);
+    } else if(pTotal>dTotal) {
+      result="win";winAmt=bjBet*2;setCommentary("You win! "+pTotal+" beats "+dTotal);spawnConfetti(20);
+    } else if(pTotal<dTotal) {
+      result="lose";setCommentary("Dealer wins. "+dTotal+" beats "+pTotal);
+    } else {
+      result="push";setCommentary("Push! Both have "+pTotal);
+    }
+    if(winAmt>0){setCoins(c=>c+winAmt);playFx("crowd");}
+    setBjResult(result);setBjScore(s=>s+winAmt);setBjPhase("result");
+    setTimeout(()=>bjNextRound(),2500);
+  };
+  const bjNextRound = () => {
+    const next=bjRound+1;
+    if(next>=7){setBjPhase("complete");return;}
+    setBjRound(next);setBjBet(50);setBjResult(null);
+    bjDeal();
+  };
+  const bjCleanup = () => {
+    setBjPhase(null);setBjPlayerHand([]);setBjDealerHand([]);setBjPlayerTotal(0);setBjDealerTotal(0);
+    setBjBet(50);setBjResult(null);setBjRound(0);setBjScore(0);setBjPuffing(false);
+    if(bjTimerRef.current){clearTimeout(bjTimerRef.current);bjTimerRef.current=null;}
+    setGameActive(null);
+  };
+
+  // ═══════════════════════════════════════════════════════════════
+  // COIN FLIP -- 50/50 with Puff Confidence Multiplier
+  // ═══════════════════════════════════════════════════════════════
+  const startCoinFlip = () => {
+    setCfChoice(null);setCfResult(null);setCfBet(50);setCfPuffConfidence(0);
+    setCfStreak(0);setCfRound(0);setCfScore(0);setCfFlipping(false);setCfPuffing(false);
+    setCfPhase("intro");
+    playFx("crowd");
+    setCommentary("Coin Flip! Pick heads or tails, then puff your confidence!");
+    setTimeout(()=>setCfPhase("betting"),1500);
+  };
+  const cfPickSide = (side) => {
+    setCfChoice(side);
+    playFx("select");
+    setCommentary("You picked "+side.toUpperCase()+"! Now PUFF to set confidence. Longer = higher multiplier!");
+    setCfPhase("puffing");
+  };
+  const cfHandlePuff = () => {
+    if(cfPhase!=="puffing"||!cfChoice) return;
+    setCfPuffing(true);
+    cfPuffStart.current = Date.now();
+  };
+  const cfHandlePuffEnd = () => {
+    if(!cfPuffing||cfPhase!=="puffing") return;
+    const dur = (Date.now()-cfPuffStart.current)/1000;
+    setCfPuffing(false);
+    let mult=1, label="SAFE";
+    if(dur>=4.5){mult=5;label="BLINKER 5x";}
+    else if(dur>=3.5){mult=3;label="3x";}
+    else if(dur>=2.0){mult=2;label="2x";}
+    else if(dur>=0.5){mult=1.5;label="1.5x";}
+    else{mult=1;label="SAFE 1x";}
+    setCfPuffConfidence(mult);
+    setCommentary(label+" confidence locked! Flipping...");
+    setCfFlipping(true);
+    setCfPhase("flipping");
+    playFx("whistle");
+    // Flip animation + result
+    setTimeout(()=>{
+      const outcome = Math.random()>0.5?"heads":"tails";
+      setCfResult(outcome);
+      setCfFlipping(false);
+      const won = outcome===cfChoice;
+      if(won) {
+        const winAmt = Math.floor(cfBet*mult);
+        setCoins(c=>c+winAmt);
+        setCfScore(s=>s+winAmt);
+        setCfStreak(s=>s+1);
+        spawnConfetti(25);
+        playFx("crowd");
+        if(mult>=5) triggerFlash("goal");
+        setCommentary("WIN! "+outcome.toUpperCase()+"! +"+ winAmt+" coins"+(mult>=3?" ("+mult+"x!)":"")+"!");
+      } else {
+        const lossAmt = mult>=5 ? cfBet*2 : 0;
+        if(lossAmt>0) setCoins(c=>Math.max(0,c-lossAmt));
+        setCfStreak(0);
+        setCommentary("TAILS UP! You guessed wrong."+(mult>=5?" Blinker penalty: -"+lossAmt:""));
+      }
+      setCfPhase("result");
+      setTimeout(()=>cfNextRound(),2500);
+    },1500);
+  };
+  const cfNextRound = () => {
+    const next=cfRound+1;
+    if(next>=8){setCfPhase("complete");return;}
+    setCfRound(next);setCfChoice(null);setCfResult(null);setCfPuffConfidence(0);setCfFlipping(false);
+    setCfPhase("betting");
+    setCommentary("Round "+(next+1)+"/8 — Pick heads or tails!");
+  };
+  const cfCleanup = () => {
+    setCfPhase(null);setCfChoice(null);setCfResult(null);setCfBet(50);setCfPuffConfidence(0);
+    setCfStreak(0);setCfRound(0);setCfScore(0);setCfFlipping(false);setCfPuffing(false);
+    setGameActive(null);
+  };
+
+  // ═══════════════════════════════════════════════════════════════
+  // CRAPS & CLOUDS -- Dice Game with Puff Roll Control
+  // ═══════════════════════════════════════════════════════════════
+  const startCrapsNClouds = () => {
+    setCrapsDice([1,1]);setCrapsRolling(false);setCrapsPoint(null);setCrapsBet(50);
+    setCrapsResult(null);setCrapsRound(0);setCrapsScore(0);setCrapsHotDice(false);setCrapsPuffing(false);
+    setCrapsPhase("intro");
+    playFx("crowd");
+    setCommentary("Craps & Clouds! Puff to roll the dice!");
+    setTimeout(()=>{setCrapsPhase("rolling");setCommentary("Come-out roll! HOLD to puff your roll!");},1500);
+  };
+  const crapsHandlePuff = () => {
+    if(crapsPhase!=="rolling") return;
+    setCrapsPuffing(true);
+    crapsPuffStart.current = Date.now();
+    setCrapsRolling(true);
+    setCommentary("Rolling...");
+  };
+  const crapsHandlePuffEnd = () => {
+    if(!crapsPuffing||crapsPhase!=="rolling") return;
+    const dur = (Date.now()-crapsPuffStart.current)/1000;
+    setCrapsPuffing(false);
+    setCrapsRolling(false);
+    const isBlinker = dur >= 4.5;
+    setCrapsHotDice(isBlinker);
+    // Map puff duration to dice total
+    let base;
+    if(dur<0.5) base=2+Math.floor(Math.random()*2); // 2-3
+    else if(dur<1.5) base=4+Math.floor(Math.random()*2); // 4-5
+    else if(dur<2.5) base=6+Math.floor(Math.random()*3); // 6-7-8
+    else if(dur<3.5) base=9+Math.floor(Math.random()*2); // 9-10
+    else base=11+Math.floor(Math.random()*2); // 11-12
+    // Add variance
+    const variance = Math.random()>0.5?1:-1;
+    let total = Math.max(2,Math.min(12,base+(Math.random()>0.6?variance:0)));
+    total = Math.round(total);
+    // Split into two dice
+    const d1 = Math.max(1,Math.min(6,Math.floor(total/2)+(Math.random()>0.5?1:0)));
+    const d2 = Math.max(1,Math.min(6,total-d1));
+    setCrapsDice([d1,d2]);
+    playFx("whistle");
+    if(isBlinker) {setCommentary("HOT DICE! +50% payout if you win!");triggerFlash("goal");}
+    // Resolve
+    setTimeout(()=>{
+      const diceTotal = d1+d2;
+      if(crapsPoint===null) {
+        // Come-out roll
+        if(diceTotal===7||diceTotal===11) {
+          const win = isBlinker?Math.floor(crapsBet*1.5):crapsBet;
+          setCrapsResult("win");setCoins(c=>c+win);setCrapsScore(s=>s+win);
+          spawnConfetti(20);playFx("crowd");
+          setCommentary("NATURAL "+diceTotal+"! You WIN +"+win+"!");
+        } else if(diceTotal===2||diceTotal===3||diceTotal===12) {
+          setCrapsResult("lose");
+          setCommentary("CRAPS! "+diceTotal+" — you lose!");
+        } else {
+          setCrapsPoint(diceTotal);
+          setCrapsResult(null);
+          setCommentary("Point is "+diceTotal+"! Roll it again to win!");
+          setCrapsPhase("rolling");
+          return; // Don't advance round, keep rolling
+        }
+      } else {
+        // Point phase
+        if(diceTotal===crapsPoint) {
+          const win = isBlinker?Math.floor(crapsBet*1.5):crapsBet;
+          setCrapsResult("win");setCoins(c=>c+win);setCrapsScore(s=>s+win);
+          spawnConfetti(30);playFx("crowd");triggerFlash("goal");
+          setCommentary("HIT THE POINT! "+diceTotal+"! You WIN +"+win+"!");
+          setCrapsPoint(null);
+        } else if(diceTotal===7) {
+          setCrapsResult("lose");
+          setCommentary("SEVEN OUT! You lose. Point was "+crapsPoint);
+          setCrapsPoint(null);
+        } else {
+          setCommentary("Rolled "+diceTotal+". Need "+crapsPoint+" to win. Roll again!");
+          setCrapsPhase("rolling");
+          return; // Keep rolling
+        }
+      }
+      setCrapsPhase("result");
+      setTimeout(()=>crapsNextRound(),2500);
+    },800);
+  };
+  const crapsNextRound = () => {
+    const next=crapsRound+1;
+    if(next>=8){setCrapsPhase("complete");return;}
+    setCrapsRound(next);setCrapsDice([1,1]);setCrapsResult(null);setCrapsHotDice(false);setCrapsPoint(null);
+    setCrapsPhase("rolling");
+    setCommentary("Round "+(next+1)+"/8 — Come-out roll! HOLD to puff!");
+  };
+  const crapsCleanup = () => {
+    setCrapsPhase(null);setCrapsDice([1,1]);setCrapsRolling(false);setCrapsPoint(null);setCrapsBet(50);
+    setCrapsResult(null);setCrapsRound(0);setCrapsScore(0);setCrapsHotDice(false);setCrapsPuffing(false);
+    setGameActive(null);
+  };
+
   const renderOracle = () => {
-    const oracleStats = [{label:"Predictions",val:"147",icon:"🔮",color:"#9333EA"},{label:"Accuracy",val:"78%",icon:"🎯",color:C.gold},{label:"Streak",val:"7 🔥",icon:"⚡",color:"#F97316"},{label:"Best",val:"15",icon:"🏆",color:C.cyan},{label:"Coins Won",val:"+4,200",icon:"🪙",color:C.lime}];
-    const trendingPreds = [
-      {text:"Brazil vs Germany",emoji:"⚽",count:847,split:[65,35],hot:true},
-      {text:"Gorilla Glue vs Blue Dream",emoji:"🌿",count:423,split:[58,42]},
-      {text:"FK1 WC Champion",emoji:"🎮",count:1204,split:[72,28],hot:true},
-      {text:"Bitcoin $100K by July?",emoji:"🪙",count:631,split:[55,45]},
+    const CASINO_GAMES = [
+      {id:"crystalball",name:"Fortune Teller",emoji:"🔮",type:"Prediction",color:C.purple,desc:"Yes or No? Puff your prediction!"},
+      {id:"strainbattle",name:"Strain Battle",emoji:"🌿",type:"Prediction",color:C.green,desc:"Which strain wins? Vote by puff!"},
+      {id:"matchpredictor",name:"Match Predictor",emoji:"📊",type:"Prediction",color:C.blue,desc:"Predict WC match results!"},
+      {id:"dailypicks",name:"Daily Bets",emoji:"📅",type:"Streak",color:C.orange,desc:"3 bets per day. Build your streak!"},
+      {id:"spinwin",name:"Spin & Win",emoji:"🎰",type:"Luck",color:C.pink,desc:"Spin the wheel! Puff = spin force!"},
+      {id:"puffslots",name:"Puff Slots",emoji:"🎰",type:"Luck",color:C.gold,desc:"3 reels. Puff to spin. Blinker = bonus round!"},
+      {id:"coinflip",name:"Coin Flip",emoji:"🪙",type:"50/50",color:C.gold,desc:"Heads or tails? Puff confidence = bet multiplier!"},
+      {id:"puffblackjack",name:"Puff Blackjack",emoji:"🃏",type:"Cards",color:C.green,desc:"Short puff = Hit. Long puff = Stand. Beat 21!"},
+      {id:"highcard",name:"High Card Puff",emoji:"🎴",type:"Cards",color:C.red,desc:"Flip a card. Is yours higher? Puff to bet!"},
+      {id:"crapsnclouds",name:"Craps & Clouds",emoji:"🎲",type:"Dice",color:C.cyan,desc:"Puff duration = dice roll. Roll the bones!"},
+      {id:"puffderby",name:"Puff Derby",emoji:"🏇",type:"Racing",color:C.green,desc:"Pick a horse. Spam puff = speed!"},
     ];
-    const oracleGamesList = [
-      {name:"Match Predictor",emoji:"📊",color:"#3B82F6",id:"matchpredictor"},
-      {name:"Daily Picks",emoji:"📅",color:"#F97316",id:"dailypicks"},
-      {name:"Strain Battle",emoji:"🌿",color:"#22C55E",id:"strainbattle"},
-      {name:"Crystal Ball",emoji:"🔮",color:"#9333EA",id:"crystalball"},
+    const casinoTabs = [
+      {id:"sportsbook",label:"Sportsbook",emoji:"🔮"},
+      {id:"slots",label:"Slots & Luck",emoji:"🎰"},
+      {id:"cards",label:"Cards",emoji:"🃏"},
+      {id:"all",label:"All Games",emoji:"🎲"},
     ];
-    const recentPreds = [
+    const sportsGames = CASINO_GAMES.filter(g=>["Prediction","Streak"].includes(g.type));
+    const slotsGames = CASINO_GAMES.filter(g=>["Luck","50/50"].includes(g.type));
+    const cardGames = CASINO_GAMES.filter(g=>["Cards","Dice","Racing"].includes(g.type));
+    const recentBets = [
       {q:"Brazil vs Germany",ans:"Brazil",result:"correct",coins:"+100",time:"2h ago"},
       {q:"Gorilla Glue vs Blue Dream",ans:"Gorilla Glue",result:"correct",coins:"+50",time:"5h ago"},
       {q:"FK1 WC Winner",ans:"MoodLab FC",result:"pending",coins:"--",time:"1d ago"},
-      {q:"BTC $100K by July?",ans:"Yes",result:"wrong",coins:"-0",time:"1d ago"},
-      {q:"Indica vs Sativa poll",ans:"Indica",result:"correct",coins:"+30",time:"2d ago"},
+      {q:"Coin Flip",ans:"Heads",result:"wrong",coins:"-25",time:"1d ago"},
+      {q:"Puff Blackjack",ans:"20 vs Dealer 18",result:"correct",coins:"+200",time:"2d ago"},
       {q:"Arsenal vs Man City",ans:"Draw",result:"correct",coins:"+150",time:"2d ago"},
-      {q:"Purple Haze rating",ans:">4.5",result:"wrong",coins:"-0",time:"3d ago"},
-      {q:"Next viral strain?",ans:"Gelato 41",result:"pending",coins:"--",time:"3d ago"},
+      {q:"Spin & Win",ans:"Gold Wedge",result:"correct",coins:"+500",time:"3d ago"},
+      {q:"High Card Puff",ans:"King",result:"wrong",coins:"-50",time:"3d ago"},
       {q:"Super Bowl LVIII",ans:"Chiefs",result:"correct",coins:"+200",time:"4d ago"},
-      {q:"ETH merge date?",ans:"On time",result:"correct",coins:"+75",time:"5d ago"},
+      {q:"Puff Derby",ans:"Horse #3",result:"correct",coins:"+75",time:"5d ago"},
     ];
+    const launchGame = (g) => {
+      if(g.id==="crystalball"){setGameActive({id:"crystalball",name:"Fortune Teller",emoji:"🔮",color:"#9333EA"});startCrystalBall();}
+      else if(g.id==="strainbattle"){setGameActive({id:"strainbattle",name:"Strain Battle",emoji:"🌿",color:"#22C55E"});startStrainBattle();}
+      else if(g.id==="matchpredictor"){setGameActive({id:"matchpredictor",name:"Match Predictor",emoji:"📊",color:"#3B82F6"});startMatchPredictor();}
+      else if(g.id==="dailypicks"){setGameActive({id:"dailypicks",name:"Daily Bets",emoji:"📅",color:"#F97316"});startDailyPicks();}
+      else if(g.id==="spinwin"){setHalftimeGame({type:"roulette",phase:"intro"});}
+      else if(g.id==="coinflip"){setHalftimeGame({type:"lucky",phase:"intro"});}
+      else notify(g.name+" coming soon!",g.color);
+    };
     return (
     <div style={{position:"relative"}}>
-      {/* Starfield particles */}
-      {[...Array(12)].map((_,i)=>(
-        <div key={"star"+i} style={{position:"absolute",left:`${(i*17+7)%100}%`,top:`${(i*23+11)%400}px`,width:1+i%3,height:1+i%3,borderRadius:"50%",background:i%3===0?"#9333EA":"#FFD700",opacity:0.15+Math.random()*0.15,animation:`pulse ${2+i%3}s infinite ${i*0.3}s`,pointerEvents:"none",zIndex:0}}/>
+      {/* Gold neon particles */}
+      {[...Array(14)].map((_,i)=>(
+        <div key={"chip"+i} style={{position:"absolute",left:`${(i*13+5)%100}%`,top:`${(i*27+8)%450}px`,width:2+i%3,height:2+i%3,borderRadius:"50%",background:i%3===0?C.gold:i%3===1?C.green:C.red,opacity:0.12+Math.random()*0.12,animation:`pulse ${2+i%3}s infinite ${i*0.25}s`,pointerEvents:"none",zIndex:0}}/>
       ))}
-      <div style={{position:"absolute",top:-40,left:"50%",transform:"translateX(-50%)",width:300,height:200,borderRadius:"50%",background:"radial-gradient(circle, rgba(147,51,234,0.12), transparent 70%)",pointerEvents:"none"}}/>
-      {renderZoneHeader("oracle")}
+      <div style={{position:"absolute",top:-40,left:"50%",transform:"translateX(-50%)",width:320,height:220,borderRadius:"50%",background:`radial-gradient(circle, ${C.gold}14, transparent 70%)`,pointerEvents:"none"}}/>
 
-      {/* STAT STRIP */}
+      {/* HERO HEADER */}
       <div style={{padding:"0 14px",marginBottom:8}}>
-        <div style={{display:"flex",gap:6}}>
-          <div style={{flex:1,padding:"6px 0",borderRadius:8,textAlign:"center",background:"rgba(147,51,234,0.06)",border:"1px solid rgba(147,51,234,0.12)"}}>
-            <div style={{fontSize:14,fontWeight:900,color:"#9333EA"}}>147</div>
-            <div style={{fontSize:6,color:C.text3}}>Predictions</div>
+        <div onClick={()=>{playFx("back");setZone(null);setSelectedGame(null);setArenaView("hub");}} style={{display:"inline-flex",alignItems:"center",gap:6,cursor:"pointer",marginBottom:10,padding:"6px 12px",borderRadius:8,background:`${C.text3}06`,border:`1px solid ${C.border}`}}>
+          <span style={{fontSize:14,color:C.text2}}>←</span>
+          <span style={{fontSize:11,fontWeight:600,color:C.text2}}>Lobby</span>
+        </div>
+        <div style={{textAlign:"center",marginBottom:6}}>
+          <div style={{fontSize:28,fontWeight:900,color:C.gold,letterSpacing:2,textShadow:`0 0 30px ${C.gold}60, 0 0 60px ${C.gold}30`,fontFamily:"Georgia, serif"}}>THE CASINO</div>
+          <div style={{fontSize:10,color:C.text2,fontWeight:600,letterSpacing:3,marginTop:2}}>YOUR LUCK. YOUR PUFF.</div>
+        </div>
+        {/* Decorative emoji strip */}
+        <div style={{display:"flex",justifyContent:"center",gap:8,marginBottom:4,opacity:0.3}}>
+          {["🎰","🃏","🎲","🪙","🎴","🏇","🔮"].map((e,i)=>(
+            <span key={i} style={{fontSize:12}}>{e}</span>
+          ))}
+        </div>
+      </div>
+
+      {/* BALANCE STRIP */}
+      <div style={{padding:"0 14px",marginBottom:8}}>
+        <div style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",borderRadius:14,background:`linear-gradient(135deg, ${C.gold}08, rgba(52,211,153,0.04))`,border:`1px solid ${C.gold}20`,position:"relative",overflow:"hidden"}}>
+          <div style={{position:"absolute",top:0,right:0,width:80,height:"100%",background:`linear-gradient(90deg, transparent, ${C.gold}06)`,pointerEvents:"none"}}/>
+          <span style={{fontSize:18}}>🪙</span>
+          <div style={{flex:1}}>
+            <div style={{fontSize:8,color:C.text3,fontWeight:700,letterSpacing:1}}>BALANCE</div>
+            <div style={{fontSize:20,fontWeight:900,color:C.gold,letterSpacing:0.5}}>12,580</div>
           </div>
-          <div style={{flex:1,padding:"6px 0",borderRadius:8,textAlign:"center",background:`${C.green}06`,border:`1px solid ${C.green}12`}}>
-            <div style={{fontSize:14,fontWeight:900,color:C.green}}>78%</div>
-            <div style={{fontSize:6,color:C.text3}}>Accuracy</div>
-          </div>
-          <div style={{flex:1,padding:"6px 0",borderRadius:8,textAlign:"center",background:`${C.orange}06`,border:`1px solid ${C.orange}12`}}>
-            <div style={{fontSize:14,fontWeight:900,color:C.orange}}>🔥7</div>
-            <div style={{fontSize:6,color:C.text3}}>Streak</div>
-          </div>
-          <div style={{flex:1,padding:"6px 0",borderRadius:8,textAlign:"center",background:`${C.gold}06`,border:`1px solid ${C.gold}12`}}>
-            <div style={{fontSize:14,fontWeight:900,color:C.gold}}>+4.2K</div>
-            <div style={{fontSize:6,color:C.text3}}>Coins</div>
+          <div style={{padding:"4px 10px",borderRadius:100,background:`${C.green}12`,border:`1px solid ${C.green}25`}}>
+            <span style={{fontSize:8,fontWeight:800,color:C.green}}>🔥 Hot Streak: 5 wins</span>
           </div>
         </div>
       </div>
 
-      {/* DAILY PICKS — compact strip */}
+      {/* DAILY JACKPOT BANNER */}
+      <div style={{padding:"0 14px",marginBottom:8}}>
+        <div style={{textAlign:"center",padding:"8px 14px",borderRadius:12,background:`linear-gradient(135deg, ${C.gold}10, ${C.red}08)`,border:`1px solid ${C.gold}18`,cursor:"pointer"}}>
+          <div style={{fontSize:8,fontWeight:700,color:C.text3,letterSpacing:2}}>DAILY JACKPOT</div>
+          <div style={{fontSize:18,fontWeight:900,color:C.gold,textShadow:`0 0 16px ${C.gold}40`}}>🏆 50,000 coins</div>
+          <div style={{fontSize:7,color:C.text3}}>Play any game for a chance to win</div>
+        </div>
+      </div>
+
+      {/* STAT STRIP */}
+      <div style={{padding:"0 14px",marginBottom:8}}>
+        <div style={{display:"flex",gap:6}}>
+          <div style={{flex:1,padding:"6px 0",borderRadius:8,textAlign:"center",background:`${C.gold}06`,border:`1px solid ${C.gold}12`}}>
+            <div style={{fontSize:14,fontWeight:900,color:C.gold}}>284</div>
+            <div style={{fontSize:6,color:C.text3}}>Bets Made</div>
+          </div>
+          <div style={{flex:1,padding:"6px 0",borderRadius:8,textAlign:"center",background:`${C.green}06`,border:`1px solid ${C.green}12`}}>
+            <div style={{fontSize:14,fontWeight:900,color:C.green}}>62%</div>
+            <div style={{fontSize:6,color:C.text3}}>Win Rate</div>
+          </div>
+          <div style={{flex:1,padding:"6px 0",borderRadius:8,textAlign:"center",background:`${C.orange}06`,border:`1px solid ${C.orange}12`}}>
+            <div style={{fontSize:14,fontWeight:900,color:C.orange}}>🔥5</div>
+            <div style={{fontSize:6,color:C.text3}}>Streak</div>
+          </div>
+          <div style={{flex:1,padding:"6px 0",borderRadius:8,textAlign:"center",background:`${C.red}06`,border:`1px solid ${C.red}12`}}>
+            <div style={{fontSize:14,fontWeight:900,color:C.red}}>50K</div>
+            <div style={{fontSize:6,color:C.text3}}>Jackpot Pool</div>
+          </div>
+        </div>
+      </div>
+
+      {/* DAILY BETS — compact strip */}
       <div style={{padding:"0 14px",marginBottom:10}}>
-        <div onClick={()=>{setGameActive({id:"dailypicks",name:"Daily Picks",emoji:"📅",color:"#F97316"});startDailyPicks();}} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 12px",borderRadius:12,cursor:"pointer",background:"rgba(147,51,234,0.04)",border:"1px solid rgba(147,51,234,0.12)"}}>
+        <div onClick={()=>{setGameActive({id:"dailypicks",name:"Daily Bets",emoji:"📅",color:"#F97316"});startDailyPicks();}} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 12px",borderRadius:12,cursor:"pointer",background:`${C.gold}04`,border:`1px solid ${C.gold}12`}}>
           <span style={{fontSize:14}}>📅</span>
           <div style={{flex:1}}>
-            <span style={{fontSize:10,fontWeight:800,color:"#9333EA"}}>3 PICKS TODAY</span>
+            <span style={{fontSize:10,fontWeight:800,color:C.gold}}>3 DAILY BETS</span>
             <span style={{fontSize:8,color:C.text3,marginLeft:6}}>🌅 🌤 🌙</span>
           </div>
-          <span style={{fontSize:8,fontWeight:700,color:C.gold,padding:"2px 8px",borderRadius:100,background:`${C.gold}10`,border:`1px solid ${C.gold}20`}}>🔥 7-day · 3x</span>
+          <span style={{fontSize:8,fontWeight:700,color:C.green,padding:"2px 8px",borderRadius:100,background:`${C.green}10`,border:`1px solid ${C.green}20`}}>🔥 5-day · 2x</span>
         </div>
       </div>
 
       <div style={{padding:"0 14px",position:"relative",zIndex:1}}>
 
-        {/* TAB BAR — TOP */}
-        <div style={{display:"flex",borderBottom:"1px solid rgba(147,51,234,0.15)",marginBottom:10}}>
-          {["games","world_cup","fun","trending","history"].map(t=>(
-            <div key={t} onClick={()=>setOracleHubTab(t)} style={{
+        {/* TAB BAR */}
+        <div style={{display:"flex",borderBottom:`1px solid ${C.gold}18`,marginBottom:10}}>
+          {casinoTabs.map(t=>(
+            <div key={t.id} onClick={()=>setOracleHubTab(t.id)} style={{
               flex:1,padding:"8px 0",textAlign:"center",cursor:"pointer",
-              fontSize:9,fontWeight:oracleHubTab===t?800:600,
-              color:oracleHubTab===t?"#9333EA":C.text3,
-              borderBottom:oracleHubTab===t?"2px solid #9333EA":"2px solid transparent",
-            }}>{t==="world_cup"?"World Cup":t==="fun"?"Just for Fun":t.charAt(0).toUpperCase()+t.slice(1)}</div>
+              fontSize:9,fontWeight:(oracleHubTab===t.id||(t.id==="sportsbook"&&["games","world_cup","fun"].includes(oracleHubTab)))?800:600,
+              color:(oracleHubTab===t.id||(t.id==="sportsbook"&&["games","world_cup","fun"].includes(oracleHubTab)))?C.gold:C.text3,
+              borderBottom:(oracleHubTab===t.id||(t.id==="sportsbook"&&["games","world_cup","fun"].includes(oracleHubTab)))?`2px solid ${C.gold}`:"2px solid transparent",
+            }}><span style={{marginRight:3}}>{t.emoji}</span>{t.label}</div>
           ))}
         </div>
 
-        {/* PREDICTION GAMES GRID */}
-        {oracleHubTab==="games" && <div style={{marginBottom:4}}>
+        {/* SPORTSBOOK TAB */}
+        {(oracleHubTab==="sportsbook"||oracleHubTab==="games"||oracleHubTab==="world_cup"||oracleHubTab==="fun") && <div style={{marginBottom:4}}>
           <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:10}}>
-            <span style={{fontSize:13}}>🎮</span>
-            <span style={{fontSize:11,fontWeight:900,color:C.text,letterSpacing:1.5}}>PREDICTION GAMES</span>
+            <span style={{fontSize:13}}>🔮</span>
+            <span style={{fontSize:11,fontWeight:900,color:C.text,letterSpacing:1.5}}>SPORTSBOOK</span>
+            <span style={{fontSize:7,color:C.text3,marginLeft:"auto"}}>Predictions & Bets</span>
           </div>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-            {oracleGamesList.map((g,i)=>(
-              <div key={i} onClick={()=>{
-                if(g.id==="crystalball"){setGameActive({id:"crystalball",name:"Crystal Ball",emoji:"🔮",color:"#9333EA"});startCrystalBall();}
-                else if(g.id==="strainbattle"){setGameActive({id:"strainbattle",name:"Strain Battle",emoji:"🌿",color:"#22C55E"});startStrainBattle();}
-                else if(g.id==="matchpredictor"){setGameActive({id:"matchpredictor",name:"Match Predictor",emoji:"📊",color:"#3B82F6"});startMatchPredictor();}
-                else if(g.id==="dailypicks"){setGameActive({id:"dailypicks",name:"Daily Picks",emoji:"📅",color:"#F97316"});startDailyPicks();}
-                else notify(g.name+" coming soon!",g.color);
-              }} style={{padding:"14px 12px",borderRadius:14,cursor:"pointer",textAlign:"center",position:"relative",overflow:"hidden",
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:12}}>
+            {sportsGames.map((g,i)=>(
+              <div key={i} onClick={()=>launchGame(g)} style={{padding:"14px 12px",borderRadius:14,cursor:"pointer",textAlign:"center",position:"relative",overflow:"hidden",
                 background:`radial-gradient(ellipse at 50% 0%, ${g.color}10, rgba(255,255,255,0.01) 70%)`,border:`1px solid ${g.color}18`,transition:"all 0.3s",
                 animation:`fadeIn 0.3s ease ${i*0.06}s both`,
               }}>
                 <div style={{fontSize:28,marginBottom:4,filter:`drop-shadow(0 0 8px ${g.color}50)`}}>{g.emoji}</div>
                 <div style={{fontSize:11,fontWeight:800,color:g.color}}>{g.name}</div>
+                <div style={{fontSize:7,color:C.text3,marginTop:1}}>{g.desc}</div>
+                <div style={{fontSize:7,fontWeight:700,color:C.lime,marginTop:3}}>PLAY NOW</div>
+              </div>
+            ))}
+          </div>
+
+          {/* WC Predictions sub-section */}
+          <div style={{fontSize:10,fontWeight:800,color:C.gold,letterSpacing:2,marginBottom:8}}>⚽ WC MATCH BETS</div>
+          {ORACLE_WC_MATCHES.slice(0,3).map((m,i)=>(
+            <div key={m.id} onClick={()=>{setGameActive({id:"matchpredictor",name:"Match Predictor",emoji:"📊",color:"#3B82F6"});startMatchPredictor();}} style={{
+              display:"flex",alignItems:"center",padding:"10px 12px",borderRadius:12,marginBottom:6,cursor:"pointer",
+              background:`${C.green}04`,border:`1px solid ${C.green}12`,
+            }}>
+              <div style={{flex:1}}>
+                <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:3}}>
+                  <span style={{fontSize:14}}>{m.homeFlag}</span>
+                  <span style={{fontSize:11,fontWeight:700,color:C.text}}>{m.home}</span>
+                  <span style={{fontSize:9,color:C.text3}}>vs</span>
+                  <span style={{fontSize:11,fontWeight:700,color:C.text}}>{m.away}</span>
+                  <span style={{fontSize:14}}>{m.awayFlag}</span>
+                  {m.hot && <span style={{fontSize:6,fontWeight:900,color:C.red,padding:"1px 4px",borderRadius:3,background:`${C.red}15`}}>HOT</span>}
+                </div>
+                <div style={{display:"flex",alignItems:"center",gap:4}}>
+                  <span style={{fontSize:8,color:C.cyan,fontWeight:700}}>{m.predictions.home}%</span>
+                  <div style={{flex:1,height:4,borderRadius:2,background:`${C.text3}15`,overflow:"hidden",display:"flex"}}>
+                    <div style={{width:`${m.predictions.home}%`,background:C.cyan}}/>
+                    <div style={{width:`${m.predictions.draw}%`,background:C.gold}}/>
+                    <div style={{width:`${m.predictions.away}%`,background:C.red}}/>
+                  </div>
+                  <span style={{fontSize:8,color:C.red,fontWeight:700}}>{m.predictions.away}%</span>
+                </div>
+              </div>
+              <div style={{padding:"4px 10px",borderRadius:8,background:`${C.green}12`,border:`1px solid ${C.green}20`}}>
+                <span style={{fontSize:8,fontWeight:800,color:C.green}}>BET</span>
+              </div>
+            </div>
+          ))}
+
+          {/* Just for Fun sub-section */}
+          <div style={{fontSize:10,fontWeight:800,color:C.cyan,letterSpacing:2,marginTop:12,marginBottom:8}}>🎮 JUST FOR FUN</div>
+          {ORACLE_FUN_PREDS.slice(0,3).map((p,i)=>(
+            <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",borderRadius:12,marginBottom:6,
+              background:`${p.color}04`,border:`1px solid ${p.color}12`,cursor:"pointer"}}>
+              <span style={{fontSize:20}}>{p.emoji}</span>
+              <div style={{flex:1}}>
+                <div style={{fontSize:10,fontWeight:700,color:C.text}}>{p.question}</div>
+                <div style={{fontSize:8,color:p.color,fontWeight:700,marginTop:2}}>Top: {p.topAnswer} · {p.votes} votes</div>
+              </div>
+              <div style={{padding:"4px 8px",borderRadius:6,background:`${p.color}12`,border:`1px solid ${p.color}20`}}>
+                <span style={{fontSize:7,fontWeight:800,color:p.color}}>BET</span>
+              </div>
+            </div>
+          ))}
+        </div>}
+
+        {/* SLOTS & LUCK TAB */}
+        {(oracleHubTab==="slots"||oracleHubTab==="trending") && <div style={{marginBottom:4}}>
+          <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:10}}>
+            <span style={{fontSize:13}}>🎰</span>
+            <span style={{fontSize:11,fontWeight:900,color:C.text,letterSpacing:1.5}}>SLOTS & LUCK</span>
+            <span style={{fontSize:7,color:C.text3,marginLeft:"auto"}}>Spin to win</span>
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+            {slotsGames.map((g,i)=>(
+              <div key={i} onClick={()=>launchGame(g)} style={{padding:"14px 12px",borderRadius:14,cursor:"pointer",textAlign:"center",position:"relative",overflow:"hidden",
+                background:`radial-gradient(ellipse at 50% 0%, ${g.color}10, rgba(255,255,255,0.01) 70%)`,border:`1px solid ${g.color}18`,transition:"all 0.3s",
+                animation:`fadeIn 0.3s ease ${i*0.06}s both`,
+              }}>
+                <div style={{fontSize:28,marginBottom:4,filter:`drop-shadow(0 0 8px ${g.color}50)`}}>{g.emoji}</div>
+                <div style={{fontSize:11,fontWeight:800,color:g.color}}>{g.name}</div>
+                <div style={{fontSize:7,color:C.text3,marginTop:1}}>{g.desc}</div>
+                <div style={{fontSize:7,fontWeight:700,color:C.lime,marginTop:3}}>PLAY NOW</div>
+              </div>
+            ))}
+            {/* Scratch & Puff placeholder */}
+            <div style={{padding:"14px 12px",borderRadius:14,cursor:"pointer",textAlign:"center",position:"relative",overflow:"hidden",
+              background:`radial-gradient(ellipse at 50% 0%, ${C.pink}06, rgba(255,255,255,0.01) 70%)`,border:`1px dashed ${C.pink}18`,transition:"all 0.3s",opacity:0.7,
+            }}>
+              <div style={{fontSize:28,marginBottom:4}}>🎫</div>
+              <div style={{fontSize:11,fontWeight:800,color:C.pink}}>Scratch & Puff</div>
+              <div style={{fontSize:7,color:C.text3,marginTop:1}}>Scratch to reveal prizes!</div>
+              <div style={{fontSize:7,fontWeight:700,color:C.gold,marginTop:3}}>COMING SOON</div>
+            </div>
+            {/* Lucky Puff */}
+            <div onClick={()=>setHalftimeGame({type:"lucky",phase:"intro"})} style={{padding:"14px 12px",borderRadius:14,cursor:"pointer",textAlign:"center",position:"relative",overflow:"hidden",
+              background:`radial-gradient(ellipse at 50% 0%, ${C.green}10, rgba(255,255,255,0.01) 70%)`,border:`1px solid ${C.green}18`,transition:"all 0.3s",
+            }}>
+              <div style={{fontSize:28,marginBottom:4,filter:`drop-shadow(0 0 8px ${C.green}50)`}}>🍀</div>
+              <div style={{fontSize:11,fontWeight:800,color:C.green}}>Lucky Puff</div>
+              <div style={{fontSize:7,color:C.text3,marginTop:1}}>Feeling lucky? Puff for prizes!</div>
+              <div style={{fontSize:7,fontWeight:700,color:C.lime,marginTop:3}}>PLAY NOW</div>
+            </div>
+          </div>
+        </div>}
+
+        {/* CARDS TAB */}
+        {(oracleHubTab==="cards"||oracleHubTab==="history") && <div style={{marginBottom:4}}>
+          <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:10}}>
+            <span style={{fontSize:13}}>🃏</span>
+            <span style={{fontSize:11,fontWeight:900,color:C.text,letterSpacing:1.5}}>CARDS & TABLE</span>
+            <span style={{fontSize:7,color:C.text3,marginLeft:"auto"}}>Test your skill</span>
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+            {cardGames.map((g,i)=>(
+              <div key={i} onClick={()=>launchGame(g)} style={{padding:"14px 12px",borderRadius:14,cursor:"pointer",textAlign:"center",position:"relative",overflow:"hidden",
+                background:`radial-gradient(ellipse at 50% 0%, ${g.color}10, rgba(255,255,255,0.01) 70%)`,border:`1px solid ${g.color}18`,transition:"all 0.3s",
+                animation:`fadeIn 0.3s ease ${i*0.06}s both`,
+              }}>
+                <div style={{fontSize:28,marginBottom:4,filter:`drop-shadow(0 0 8px ${g.color}50)`}}>{g.emoji}</div>
+                <div style={{fontSize:11,fontWeight:800,color:g.color}}>{g.name}</div>
+                <div style={{fontSize:7,color:C.text3,marginTop:1}}>{g.desc}</div>
                 <div style={{fontSize:7,fontWeight:700,color:C.lime,marginTop:3}}>PLAY NOW</div>
               </div>
             ))}
           </div>
         </div>}
 
-        {/* World Cup tab */}
-        {oracleHubTab==="world_cup" && (
-          <div style={{marginBottom:4}}>
-            <div style={{fontSize:10,fontWeight:800,color:C.gold,letterSpacing:2,marginBottom:8}}>⚽ MATCH PREDICTIONS</div>
-            {ORACLE_WC_MATCHES.map((m,i)=>(
-              <div key={m.id} onClick={()=>{setGameActive({id:"matchpredictor",name:"Match Predictor",emoji:"📊",color:"#3B82F6"});startMatchPredictor();}} style={{
-                display:"flex",alignItems:"center",padding:"10px 12px",borderRadius:12,marginBottom:6,cursor:"pointer",
-                background:`${C.green}04`,border:`1px solid ${C.green}12`,
+        {/* ALL GAMES TAB */}
+        {oracleHubTab==="all" && <div style={{marginBottom:4}}>
+          <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:10}}>
+            <span style={{fontSize:13}}>🎲</span>
+            <span style={{fontSize:11,fontWeight:900,color:C.text,letterSpacing:1.5}}>ALL CASINO GAMES</span>
+            <span style={{fontSize:7,color:C.text3,marginLeft:"auto"}}>{CASINO_GAMES.length} games</span>
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+            {CASINO_GAMES.map((g,i)=>(
+              <div key={i} onClick={()=>launchGame(g)} style={{padding:"12px 10px",borderRadius:14,cursor:"pointer",textAlign:"center",position:"relative",overflow:"hidden",
+                background:`radial-gradient(ellipse at 50% 0%, ${g.color}10, rgba(255,255,255,0.01) 70%)`,border:`1px solid ${g.color}18`,transition:"all 0.3s",
+                animation:`fadeIn 0.3s ease ${i*0.04}s both`,
               }}>
-                <div style={{flex:1}}>
-                  <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:3}}>
-                    <span style={{fontSize:14}}>{m.homeFlag}</span>
-                    <span style={{fontSize:11,fontWeight:700,color:C.text}}>{m.home}</span>
-                    <span style={{fontSize:9,color:C.text3}}>vs</span>
-                    <span style={{fontSize:11,fontWeight:700,color:C.text}}>{m.away}</span>
-                    <span style={{fontSize:14}}>{m.awayFlag}</span>
-                    {m.hot && <span style={{fontSize:6,fontWeight:900,color:C.red,padding:"1px 4px",borderRadius:3,background:`${C.red}15`}}>HOT</span>}
-                  </div>
-                  <div style={{display:"flex",alignItems:"center",gap:4,marginBottom:2}}>
-                    <span style={{fontSize:8,color:C.cyan,fontWeight:700}}>{m.predictions.home}%</span>
-                    <div style={{flex:1,height:4,borderRadius:2,background:`${C.text3}15`,overflow:"hidden",display:"flex"}}>
-                      <div style={{width:`${m.predictions.home}%`,background:C.cyan}}/>
-                      <div style={{width:`${m.predictions.draw}%`,background:C.gold}}/>
-                      <div style={{width:`${m.predictions.away}%`,background:C.red}}/>
-                    </div>
-                    <span style={{fontSize:8,color:C.red,fontWeight:700}}>{m.predictions.away}%</span>
-                  </div>
-                  <div style={{fontSize:7,color:C.text3}}>{m.time} · Group {m.group}</div>
-                </div>
-                <div style={{padding:"4px 10px",borderRadius:8,background:`${C.green}12`,border:`1px solid ${C.green}20`}}>
-                  <span style={{fontSize:8,fontWeight:800,color:C.green}}>PREDICT</span>
-                </div>
-              </div>
-            ))}
-
-            <div style={{fontSize:10,fontWeight:800,color:C.gold,letterSpacing:2,marginTop:12,marginBottom:8}}>🏆 TOURNAMENT PREDICTIONS</div>
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
-              {ORACLE_WC_SPECIALS.map((s,i)=>(
-                <div key={s.id} style={{padding:"10px 8px",borderRadius:12,textAlign:"center",cursor:"pointer",
-                  background:`${C.gold}04`,border:`1px solid ${C.gold}12`}}>
-                  <div style={{fontSize:18,marginBottom:2}}>{s.emoji}</div>
-                  <div style={{fontSize:8,fontWeight:700,color:C.text,marginBottom:3}}>{s.question}</div>
-                  <div style={{fontSize:9,fontWeight:800,color:C.gold}}>{s.topPick}</div>
-                  <div style={{fontSize:7,color:C.text3}}>{s.topPct}% · {s.total} votes</div>
-                </div>
-              ))}
-            </div>
-            {/* Cross-link to WC zone */}
-            <div onClick={()=>{playFx("nav");setZone("worldcup");setArenaView("worldcup");setWcHubTab("games");}} style={{
-              display:"flex",alignItems:"center",gap:10,padding:"10px 14px",borderRadius:14,cursor:"pointer",marginTop:10,
-              background:`linear-gradient(135deg, ${C.green}08, ${C.gold}06)`,border:`1px solid ${C.green}20`,
-            }}>
-              <span style={{fontSize:18}}>⚽</span>
-              <div style={{flex:1}}>
-                <div style={{fontSize:10,fontWeight:800,color:C.green}}>Play the match yourself!</div>
-                <div style={{fontSize:8,color:C.text3}}>Enter the World Cup zone and play FK1/FK2/FK3</div>
-              </div>
-              <span style={{fontSize:12,color:C.green}}>→</span>
-            </div>
-          </div>
-        )}
-
-        {/* Arena tab */}
-        {oracleHubTab==="fun" && (
-          <div style={{marginBottom:4}}>
-            <div style={{fontSize:10,fontWeight:800,color:C.cyan,letterSpacing:2,marginBottom:8}}>🎮 JUST FOR FUN</div>
-            {ORACLE_FUN_PREDS.map((p,i)=>(
-              <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",borderRadius:12,marginBottom:6,
-                background:`${p.color}04`,border:`1px solid ${p.color}12`,cursor:"pointer"}}>
-                <span style={{fontSize:20}}>{p.emoji}</span>
-                <div style={{flex:1}}>
-                  <div style={{fontSize:10,fontWeight:700,color:C.text}}>{p.question}</div>
-                  <div style={{fontSize:8,color:p.color,fontWeight:700,marginTop:2}}>Top: {p.topAnswer} · {p.votes} votes</div>
-                </div>
-                <div style={{padding:"4px 8px",borderRadius:6,background:`${p.color}12`,border:`1px solid ${p.color}20`}}>
-                  <span style={{fontSize:7,fontWeight:800,color:p.color}}>PREDICT</span>
-                </div>
+                <div style={{fontSize:22,marginBottom:3,filter:`drop-shadow(0 0 6px ${g.color}50)`}}>{g.emoji}</div>
+                <div style={{fontSize:10,fontWeight:800,color:g.color}}>{g.name}</div>
+                <div style={{fontSize:6,color:C.text3,marginTop:1}}>{g.type}</div>
               </div>
             ))}
           </div>
-        )}
+        </div>}
 
-        {/* Trending tab */}
-        {oracleHubTab==="trending" && (
-          <div style={{marginBottom:14}}>
-            {trendingPreds.map((tp,i)=>(
-              <div key={i} style={{padding:"10px 12px",borderRadius:12,marginBottom:6,background:"rgba(147,51,234,0.04)",border:"1px solid rgba(147,51,234,0.10)",position:"relative"}}>
-                {tp.hot && <div style={{position:"absolute",top:6,right:8,fontSize:7,fontWeight:800,color:C.red,padding:"1px 4px",borderRadius:3,background:"rgba(255,50,50,0.12)"}}>HOT</div>}
-                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
-                  <span style={{fontSize:16}}>{tp.emoji}</span>
-                  <span style={{fontSize:11,fontWeight:700,color:C.text,flex:1}}>{tp.text}</span>
-                  <span style={{fontSize:9,color:C.text3}}>{tp.count.toLocaleString()}</span>
-                </div>
-                <div style={{display:"flex",alignItems:"center",gap:6}}>
-                  <span style={{fontSize:8,fontWeight:700,color:C.cyan}}>{tp.split[0]}%</span>
-                  <div style={{flex:1,height:6,borderRadius:3,background:"rgba(255,255,255,0.06)",overflow:"hidden"}}>
-                    <div style={{width:`${tp.split[0]}%`,height:"100%",borderRadius:3,background:"linear-gradient(90deg, #9333EA, #FFD700)",transition:"width 0.5s"}}/>
-                  </div>
-                  <span style={{fontSize:8,fontWeight:700,color:"#F97316"}}>{tp.split[1]}%</span>
-                </div>
-              </div>
-            ))}
+        {/* RECENT BETS */}
+        <div style={{marginTop:12,marginBottom:14}}>
+          <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:8}}>
+            <span style={{fontSize:11}}>📜</span>
+            <span style={{fontSize:10,fontWeight:800,color:C.text3,letterSpacing:1}}>RECENT BETS</span>
           </div>
-        )}
-
-        {/* History tab */}
-        {oracleHubTab==="history" && (
-          <div style={{marginBottom:14,borderRadius:14,overflow:"hidden",border:"1px solid rgba(147,51,234,0.12)",background:"rgba(147,51,234,0.03)"}}>
-            {recentPreds.map((p,i)=>(
+          <div style={{borderRadius:14,overflow:"hidden",border:`1px solid ${C.gold}12`,background:`${C.gold}03`}}>
+            {recentBets.slice(0,6).map((p,i)=>(
               <div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 12px",
-                borderBottom:i<recentPreds.length-1?"1px solid rgba(255,255,255,0.04)":"none",
+                borderBottom:i<5?`1px solid ${C.border}`:"none",
               }}>
                 <div style={{width:18,height:18,borderRadius:5,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,
                   background:p.result==="correct"?`${C.green}15`:p.result==="wrong"?`${C.red}15`:`${C.gold}12`,
@@ -7439,7 +8001,7 @@ export default function MoodLabArena() {
                 }}>{p.result==="correct"?"✓":p.result==="wrong"?"✗":"⏳"}</div>
                 <div style={{flex:1,minWidth:0}}>
                   <div style={{fontSize:10,fontWeight:700,color:C.text,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{p.q}</div>
-                  <div style={{fontSize:8,color:C.text3}}>Picked: {p.ans}</div>
+                  <div style={{fontSize:8,color:C.text3}}>Bet: {p.ans}</div>
                 </div>
                 <div style={{textAlign:"right"}}>
                   <div style={{fontSize:9,fontWeight:700,color:p.result==="correct"?C.green:p.result==="wrong"?C.red:C.text3}}>{p.coins}</div>
@@ -7448,7 +8010,7 @@ export default function MoodLabArena() {
               </div>
             ))}
           </div>
-        )}
+        </div>
 
       </div>
       <div style={{height:80}}/>
@@ -7779,7 +8341,7 @@ export default function MoodLabArena() {
     const youEntry = lbData.find(p=>p.isYou);
     const youPos = lbData.indexOf(youEntry)+1;
     const wallGameEmojis = wallTab==="arcade"?[{id:"fk",e:"⚽"},{id:"bp",e:"🎈"},{id:"rr",e:"🔫"},{id:"pp",e:"🏓"},{id:"rp",e:"🎵"},{id:"hp",e:"💣"}]:wallTab==="stage"?[{id:"vc",e:"🎤"},{id:"sp",e:"👆"},{id:"pa",e:"💰"},{id:"pd",e:"🏇"},{id:"hl",e:"📈"},{id:"bd",e:"🎶"},{id:"pl",e:"🏋️"}]:wallTab==="oracle"?[{id:"pr",e:"🔮"},{id:"br",e:"📊"}]:[];
-    const zoneTabColors = {all:C.gold,arcade:C.cyan,stage:"#FFD93D",oracle:C.purple,tournament:C.orange};
+    const zoneTabColors = {all:C.gold,arcade:C.cyan,stage:"#FFD93D",oracle:C.gold,tournament:C.orange};
     return (
     <div style={{position:"relative"}}>
       {/* Gold particle background */}
@@ -7886,7 +8448,7 @@ export default function MoodLabArena() {
           </div>
           {/* Premium zone tab pills */}
           <div style={{display:"flex",gap:5,marginBottom:10,overflowX:"auto",WebkitOverflowScrolling:"touch",paddingBottom:2}}>
-            {[{id:"all",l:"All",e:"🌐"},{id:"arcade",l:"Arcade",e:"🎮"},{id:"stage",l:"Stage",e:"🎪"},{id:"oracle",l:"Oracle",e:"🔮"},{id:"tournament",l:"Tournament",e:"🏆"}].map(t=>{
+            {[{id:"all",l:"All",e:"🌐"},{id:"arcade",l:"Arcade",e:"🎮"},{id:"stage",l:"Stage",e:"🎪"},{id:"oracle",l:"Casino",e:"🎰"},{id:"tournament",l:"Tournament",e:"🏆"}].map(t=>{
               const tc = zoneTabColors[t.id]||C.gold;
               const sel = wallTab===t.id;
               return (
@@ -8090,6 +8652,10 @@ export default function MoodLabArena() {
       setSbPhase(null);setSbMatchup(null);setSbVote(null);setSbResults(null);
       setMpPhase(null);setMpMatch(null);setMpPrediction(null);
       setDpPhase(null);setDpPicks([]);setDpAnswered([]);setDpResults([]);setDpAnswer(null);
+      setSlotsPhase(null);setSlotsSpinning(false);setSlotsWin(0);setSlotsRound(0);setSlotsBonusRound(false);
+      setBjPhase(null);setBjPlayerHand([]);setBjDealerHand([]);setBjResult(null);setBjPuffing(false);
+      setCfPhase(null);setCfChoice(null);setCfResult(null);setCfPuffing(false);setCfFlipping(false);
+      setCrapsPhase(null);setCrapsDice([1,1]);setCrapsRolling(false);setCrapsPoint(null);setCrapsResult(null);setCrapsPuffing(false);
     };
     // Show/hide the HTML back button
     const btn = document.getElementById('back-btn');
@@ -8172,6 +8738,9 @@ export default function MoodLabArena() {
     if(vcTimerRef.current){clearInterval(vcTimerRef.current);vcTimerRef.current=null;}
     // Oracle Games (Crystal Ball, Strain Battle, Match Predictor, Daily Picks)
     if(cbTimerRef.current){clearTimeout(cbTimerRef.current);cbTimerRef.current=null;}
+    // Casino Games (Slots, Blackjack, Coin Flip, Craps)
+    if(slotsSpinTimer.current){clearTimeout(slotsSpinTimer.current);slotsSpinTimer.current=null;}
+    if(bjTimerRef.current){clearTimeout(bjTimerRef.current);bjTimerRef.current=null;}
     // Reset common state
     setDimLights(false); setScreenShake(false); setScreenFlash(null);
     setKickCharging(false); setIsFK2Mode(false); setIsFK3Mode(false);
@@ -17769,7 +18338,7 @@ export default function MoodLabArena() {
             <div style={{display:"flex",alignItems:"center",gap:5}}>
               <span style={{fontSize:11,fontWeight:800,color:C.text}}>💬</span>
               <span style={{fontSize:8,fontWeight:700,color:C.cyan,padding:"2px 6px",borderRadius:4,background:`${C.cyan}10`,border:`1px solid ${C.cyan}15`}}>
-                {arenaView==="hub"?"🏠 Hub Lobby":arenaView==="arcade"?"🎮 Arcade":arenaView==="stage"?"🎪 Stage":arenaView==="oracle"?"🔮 Oracle":arenaView==="wall"?"🧱 Wall":"🏟️ Arena"}
+                {arenaView==="hub"?"🏠 Hub Lobby":arenaView==="arcade"?"🎮 Arcade":arenaView==="stage"?"🎪 Stage":arenaView==="oracle"?"🎰 Casino":arenaView==="wall"?"🧱 Wall":"🏟️ Arena"}
               </span>
               <div style={{display:"flex",alignItems:"center",gap:2}}>
                 <div style={{width:4,height:4,borderRadius:"50%",background:C.green,animation:"pulse 2s infinite"}}/>
