@@ -28,10 +28,19 @@ const ARENA_VIDEOS = {
 const Z = {
   arcade: { primary:"#00E5FF", glow:"rgba(0,229,255,0.35)", dim:"rgba(0,229,255,0.08)", name:"The Arcade", icon:"🎮", sub:"12 Action Games" },
   stage:  { primary:"#FFD93D", glow:"rgba(255,217,61,0.35)", dim:"rgba(255,217,61,0.08)", name:"The Stage", icon:"🎪", sub:"11 Live Shows" },
-  oracle: { primary:"#FFD93D", glow:"rgba(255,217,61,0.35)", dim:"rgba(255,217,61,0.08)", name:"The Casino", icon:"🎰", sub:"12 Casino Games" },
+  oracle: { primary:"#FFD93D", glow:"rgba(255,217,61,0.35)", dim:"rgba(255,217,61,0.08)", name:"The Fortune", icon:"🔮", sub:"16 Fortune Games" },
   wall:   { primary:"#FB923C", glow:"rgba(251,146,60,0.35)", dim:"rgba(251,146,60,0.08)", name:"The Wall", icon:"🏆", sub:"Rankings & Glory" },
   worldcup:{ primary:"#FFD93D", glow:"rgba(255,217,61,0.35)", dim:"rgba(255,217,61,0.08)", name:"World Cup 2026", icon:"⚽", sub:"Limited Event" },
 };
+
+const FORTUNE_LEVELS = [
+  {name:"Bronze Gambler", emoji:"🥉", minWager:0, color:"#CD7F32"},
+  {name:"Silver Gambler", emoji:"🥈", minWager:1000, color:"#C0C0C0"},
+  {name:"Gold Gambler", emoji:"🥇", minWager:5000, color:"#FFD700"},
+  {name:"Platinum Player", emoji:"💎", minWager:15000, color:"#E5E4E2"},
+  {name:"Diamond Dealer", emoji:"💠", minWager:50000, color:"#B9F2FF"},
+  {name:"High Roller", emoji:"👑", minWager:200000, color:"#FFD700"},
+];
 
 const C = {
   bg:"#050510", bg2:"#0a0a20", bg3:"#0f0f2a", card:"#12123a",
@@ -165,10 +174,10 @@ const ORACLE_GAMES = [
   { id:"strainbattle", name:"Strain Battle", emoji:"🌿", players:"1", time:"2-3m", type:"Vote", color:"#22C55E", desc:"Vote for the best strain in epic matchups.", inputs:["puff"] },
   { id:"matchpredictor", name:"Match Predictor", emoji:"📊", players:"1", time:"1-2m", type:"Sports", color:"#3B82F6", desc:"Predict WC match outcomes. Win/Draw/Lose.", inputs:["puff"] },
   { id:"dailypicks", name:"Daily Picks", emoji:"📅", players:"1", time:"2-3m", type:"Daily", color:"#F97316", desc:"3 daily predictions with streak multipliers.", inputs:["puff"] },
-  { id:"puffslots", name:"Puff Slots", emoji:"🎰", players:"1", time:"2-3m", type:"Casino", color:"#FFD700", desc:"3-reel slot machine. Puff to spin the reels!", inputs:["puff"] },
-  { id:"puffblackjack", name:"Puff Blackjack", emoji:"🃏", players:"1", time:"3-5m", type:"Casino", color:"#22C55E", desc:"Classic blackjack with puff controls. Hit or Stand!", inputs:["puff"] },
-  { id:"coinflip", name:"Coin Flip", emoji:"🪙", players:"1", time:"1-2m", type:"Casino", color:"#F59E0B", desc:"50/50 flip with puff confidence multiplier.", inputs:["puff"] },
-  { id:"crapsnclouds", name:"Craps & Clouds", emoji:"🎲", players:"1", time:"2-3m", type:"Casino", color:"#EF4444", desc:"Dice game where your puff controls the roll!", inputs:["puff"] },
+  { id:"puffslots", name:"Puff Slots", emoji:"🎰", players:"1", time:"2-3m", type:"Fortune", color:"#FFD700", desc:"3-reel slot machine. Puff to spin the reels!", inputs:["puff"] },
+  { id:"puffblackjack", name:"Puff Blackjack", emoji:"🃏", players:"1", time:"3-5m", type:"Fortune", color:"#22C55E", desc:"Classic blackjack with puff controls. Hit or Stand!", inputs:["puff"] },
+  { id:"coinflip", name:"Coin Flip", emoji:"🪙", players:"1", time:"1-2m", type:"Fortune", color:"#F59E0B", desc:"50/50 flip with puff confidence multiplier.", inputs:["puff"] },
+  { id:"crapsnclouds", name:"Craps & Clouds", emoji:"🎲", players:"1", time:"2-3m", type:"Fortune", color:"#EF4444", desc:"Dice game where your puff controls the roll!", inputs:["puff"] },
 ];
 
 const ORACLE_WC_MATCHES = [
@@ -1254,7 +1263,10 @@ export default function MoodLabArena() {
   const [wallMetric, setWallMetric] = useState("coins");
   const [wallGameFilter, setWallGameFilter] = useState(null);
   const [arcadeHubTab, setArcadeHubTab] = useState("games");
-  const [oracleHubTab, setOracleHubTab] = useState("games");
+  const [oracleHubTab, setOracleHubTab] = useState("sportsbook");
+  const [fortuneJackpot, setFortuneJackpot] = useState(47382);
+  const [fortuneLuckyHour, setFortuneLuckyHour] = useState(false);
+  const [fortuneLevel, setFortuneLevel] = useState({level:"Silver Gambler",progress:42,totalWagered:2400});
   const [wallHubTab, setWallHubTab] = useState("rankings");
   const [wcHubTab, setWcHubTab] = useState("games");
   const chatRef = useRef(null);
@@ -1544,6 +1556,51 @@ export default function MoodLabArena() {
   const [crapsPuffing, setCrapsPuffing] = useState(false);
   const crapsPuffStart = useRef(0);
 
+  // ── Mystery Box ──
+  const [mbPhase, setMbPhase] = useState(null); // null|pick|puffing|reveal|result|complete
+  const [mbBoxes, setMbBoxes] = useState([]);
+  const [mbPicked, setMbPicked] = useState(null);
+  const [mbRevealed, setMbRevealed] = useState(false);
+  const [mbPrize, setMbPrize] = useState(null);
+  const [mbRound, setMbRound] = useState(0);
+  const [mbScore, setMbScore] = useState(0);
+  const mbPuffStart = useRef(0);
+
+  // ── Scratch & Puff ──
+  const [scPhase, setScPhase] = useState(null); // null|scratching|result|complete
+  const [scCard, setScCard] = useState([]);
+  const [scRevealed, setScRevealed] = useState([false,false,false,false,false,false]);
+  const [scCurrentIdx, setScCurrentIdx] = useState(null);
+  const [scMatches, setScMatches] = useState({});
+  const [scPrize, setScPrize] = useState(null);
+  const [scRound, setScRound] = useState(0);
+  const [scScore, setScScore] = useState(0);
+  const scPuffStart = useRef(0);
+
+  // ── Fortune Cookie ──
+  const [fcPhase, setFcPhase] = useState(null); // null|holding|cracking|reading|result|complete
+  const [fcFortune, setFcFortune] = useState("");
+  const [fcCoins, setFcCoins] = useState(0);
+  const [fcCracking, setFcCracking] = useState(false);
+  const [fcRound, setFcRound] = useState(0);
+  const [fcScore, setFcScore] = useState(0);
+  const [fcGolden, setFcGolden] = useState(false);
+  const fcPuffStart = useRef(0);
+
+  // ── Treasure Map ──
+  const [tmPhase, setTmPhase] = useState(null); // null|playing|result|complete
+  const [tmGrid, setTmGrid] = useState([]);
+  const [tmRevealed, setTmRevealed] = useState(Array(16).fill(false));
+  const [tmTreasures, setTmTreasures] = useState(0);
+  const [tmBombs, setTmBombs] = useState(0);
+  const [tmCoins, setTmCoins] = useState(0);
+  const [tmGameOver, setTmGameOver] = useState(false);
+  const [tmSelected, setTmSelected] = useState(null);
+  const [tmXray, setTmXray] = useState(false);
+  const [tmXrayTiles, setTmXrayTiles] = useState([]);
+  const [tmScore, setTmScore] = useState(0);
+  const tmPuffStart = useRef(0);
+
   // ── Derived ──
   const wcDays = Math.max(0, Math.floor((new Date("2026-06-11") - new Date()) / 86400000));
   const playersNow = 1247 + (tick % 13) * 7;
@@ -1560,6 +1617,9 @@ export default function MoodLabArena() {
   // ── EFFECTS ──
   useEffect(() => { const t=setInterval(()=>{setTick(p=>p+1);if(gameActive&&(gameActive.id==="finalkick"||gameActive.id==="finalkick2"||gameActive.id==="finalkick3")&&kickState&&Math.random()<0.3)spawnAudienceBubble();},1000); return()=>clearInterval(t); }, [gameActive,kickState]);
   useEffect(() => { const t=setInterval(()=>setMainStage(p=>(p+1)%3),5000); return()=>clearInterval(t); }, []);
+  // Fortune jackpot growing + lucky hour system
+  useEffect(()=>{if(tick%30===0)setFortuneJackpot(j=>j+Math.floor(Math.random()*50)+10);},[tick]);
+  useEffect(()=>{if(tick%300===0&&Math.random()<0.1)setFortuneLuckyHour(true);if(fortuneLuckyHour&&tick%3600===0)setFortuneLuckyHour(false);},[tick,fortuneLuckyHour]);
   // tickerOffset now driven by CSS animation (tickerScroll) — no React re-renders
 
   // ── Live Spectator Engine ──
@@ -5439,20 +5499,24 @@ export default function MoodLabArena() {
     );
     if (viewKey === "oracle") return (
       <div>
+        <div style={{textAlign:"center",marginBottom:6}}>
+          <div style={{fontSize:16,fontWeight:900,color:C.gold,letterSpacing:2,textShadow:`0 0 20px ${C.gold}50, 0 0 40px ${C.gold}25`,fontFamily:"Georgia, serif"}}>THE FORTUNE</div>
+          <div style={{fontSize:7,color:C.text3,letterSpacing:2,marginTop:2}}>FORTUNE FAVORS THE BOLD</div>
+        </div>
         <div style={{display:"flex",flexWrap:"wrap",gap:6,justifyContent:"center"}}>
-          <span style={pillStyle(C.gold)}>12 Games</span>
+          <span style={pillStyle(C.gold)}>16 Games</span>
           <span style={pillStyle(C.green)}>Win Rate 62%</span>
-          <span style={pillStyle(C.red)}>🔥 Hot Streak 5</span>
-          <span style={pillStyle(C.gold)}>Jackpot 50K</span>
+          <span style={pillStyle(C.gold)}>Jackpot {Math.floor(fortuneJackpot/1000)}K</span>
+          <span style={pillStyle((FORTUNE_LEVELS.find(l=>l.name===fortuneLevel.level)||FORTUNE_LEVELS[1]).color)}>Level: {fortuneLevel.level.split(" ")[0]}</span>
         </div>
         {/* Quick actions */}
         <div style={{display:"flex",gap:6,marginTop:10}}>
           {[
-            {label:"Sportsbook",emoji:"🔮",color:C.purple},
-            {label:"Slots",emoji:"🎰",color:C.gold},
-            {label:"Cards",emoji:"🃏",color:C.green},
+            {label:"Sportsbook",emoji:"🔮",color:C.purple,tab:"sportsbook"},
+            {label:"Luck",emoji:"🎰",color:C.gold,tab:"luck"},
+            {label:"Mystery",emoji:"✨",color:C.orange,tab:"mystery"},
           ].map((a,i)=>(
-            <div key={i} onClick={()=>{setZone("oracle");setArenaView("oracle");setOracleHubTab(i===0?"sportsbook":i===1?"slots":"cards");}} style={{
+            <div key={i} onClick={()=>{setZone("oracle");setArenaView("oracle");setOracleHubTab(a.tab);}} style={{
               flex:1,padding:"8px 6px",borderRadius:10,textAlign:"center",cursor:"pointer",
               background:`${a.color}08`,border:`1px solid ${a.color}15`,
             }}>
@@ -5463,7 +5527,7 @@ export default function MoodLabArena() {
         </div>
         {/* Jackpot teaser */}
         <div style={{textAlign:"center",marginTop:6}}>
-          <span style={{fontSize:9,color:C.gold,fontWeight:700}}>🏆 Daily Jackpot: 50,000 coins</span>
+          <span style={{fontSize:9,color:C.gold,fontWeight:700}}>🏆 Daily Jackpot: {fortuneJackpot.toLocaleString()} coins</span>
         </div>
       </div>
     );
@@ -6583,7 +6647,7 @@ export default function MoodLabArena() {
   // ═════════════════════════════════════════
   const renderZoneHeader = (zKey) => {
     const z = Z[zKey];
-    const taglines = {arcade:"PLAY · COMPETE · WIN",stage:"WATCH · PLAY · WIN",oracle:"BET · SPIN · WIN",wall:"YOUR LEGACY · YOUR GLORY",worldcup:"PLAY · PREDICT · CELEBRATE"};
+    const taglines = {arcade:"PLAY · COMPETE · WIN",stage:"WATCH · PLAY · WIN",oracle:"PUFF YOUR FORTUNE",wall:"YOUR LEGACY · YOUR GLORY",worldcup:"PLAY · PREDICT · CELEBRATE"};
     return (
       <div style={{padding:"0 14px",marginBottom:12}}>
         <div onClick={()=>{playFx("back");setZone(null);setSelectedGame(null);setArenaView("hub");}} style={{display:"inline-flex",alignItems:"center",gap:6,cursor:"pointer",marginBottom:10,padding:"6px 12px",borderRadius:8,background:`${C.text3}06`,border:`1px solid ${C.border}`}}>
@@ -7060,7 +7124,7 @@ export default function MoodLabArena() {
         setCoins(c=>c+pts);
         playFx("crowd");
         spawnConfetti(30);
-        setCommentary(ans==="certain"?"BLINKER BONUS! 3x COINS! The Casino pays out big!":"Correct! The Crystal Ball confirms your vision!");
+        setCommentary(ans==="certain"?"BLINKER BONUS! 3x COINS! The Fortune pays out big!":"Correct! The Crystal Ball confirms your vision!");
       } else {
         const penalty = ans==="certain" ? -100 : 0;
         setCbScore(s=>s+penalty);
@@ -7272,7 +7336,7 @@ export default function MoodLabArena() {
   };
 
   // ═══════════════════════════════════════════════════════════════
-  // PUFF SLOTS -- 3-Reel Slot Machine Casino Game Engine
+  // PUFF SLOTS -- 3-Reel Slot Machine Fortune Game Engine
   // ═══════════════════════════════════════════════════════════════
   const SLOTS_SYMBOLS = ["🍒","🍋","🔔","💎","7️⃣","🌿"];
   const SLOTS_PAYOUTS = {"🍒":50,"🍋":75,"🔔":100,"💎":200,"7️⃣":500,"🌿":1000};
@@ -7690,28 +7754,40 @@ export default function MoodLabArena() {
   };
 
   const renderOracle = () => {
-    const CASINO_GAMES = [
-      {id:"crystalball",name:"Fortune Teller",emoji:"🔮",type:"Prediction",color:C.purple,desc:"Yes or No? Puff your prediction!"},
-      {id:"strainbattle",name:"Strain Battle",emoji:"🌿",type:"Prediction",color:C.green,desc:"Which strain wins? Vote by puff!"},
-      {id:"matchpredictor",name:"Match Predictor",emoji:"📊",type:"Prediction",color:C.blue,desc:"Predict WC match results!"},
-      {id:"dailypicks",name:"Daily Bets",emoji:"📅",type:"Streak",color:C.orange,desc:"3 bets per day. Build your streak!"},
-      {id:"spinwin",name:"Spin & Win",emoji:"🎰",type:"Luck",color:C.pink,desc:"Spin the wheel! Puff = spin force!"},
-      {id:"puffslots",name:"Puff Slots",emoji:"🎰",type:"Luck",color:C.gold,desc:"3 reels. Puff to spin. Blinker = bonus round!"},
-      {id:"coinflip",name:"Coin Flip",emoji:"🪙",type:"50/50",color:C.gold,desc:"Heads or tails? Puff confidence = bet multiplier!"},
-      {id:"puffblackjack",name:"Puff Blackjack",emoji:"🃏",type:"Cards",color:C.green,desc:"Short puff = Hit. Long puff = Stand. Beat 21!"},
-      {id:"highcard",name:"High Card Puff",emoji:"🎴",type:"Cards",color:C.red,desc:"Flip a card. Is yours higher? Puff to bet!"},
-      {id:"crapsnclouds",name:"Craps & Clouds",emoji:"🎲",type:"Dice",color:C.cyan,desc:"Puff duration = dice roll. Roll the bones!"},
-      {id:"puffderby",name:"Puff Derby",emoji:"🏇",type:"Racing",color:C.green,desc:"Pick a horse. Spam puff = speed!"},
+    const FORTUNE_GAMES = [
+      // Sportsbook
+      {id:"crystalball",name:"Fortune Teller",emoji:"🔮",type:"Predict",color:C.purple,desc:"Yes or No? Puff your prediction!",cat:"sportsbook"},
+      {id:"strainbattle",name:"Strain Battle",emoji:"🌿",type:"Predict",color:C.green,desc:"Which strain wins? Vote by puff!",cat:"sportsbook"},
+      {id:"matchpredictor",name:"Match Predictor",emoji:"📊",type:"Predict",color:C.blue,desc:"Predict WC match results!",cat:"sportsbook"},
+      {id:"dailypicks",name:"Daily Bets",emoji:"📅",type:"Streak",color:C.orange,desc:"3 bets per day. Build your streak!",cat:"sportsbook"},
+      // Luck
+      {id:"spinwin",name:"Spin & Win",emoji:"🎡",type:"Luck",color:C.pink,desc:"Spin the wheel! Puff = spin force!",cat:"luck"},
+      {id:"puffslots",name:"Puff Slots",emoji:"🎰",type:"Luck",color:C.gold,desc:"3 reels. Puff to spin. Blinker = bonus!",cat:"luck"},
+      {id:"coinflip",name:"Coin Flip",emoji:"🪙",type:"50/50",color:C.gold,desc:"Puff confidence = bet multiplier!",cat:"luck"},
+      // Table
+      {id:"puffblackjack",name:"Puff Blackjack",emoji:"🃏",type:"Cards",color:C.green,desc:"Short = Hit. Long = Stand. Beat 21!",cat:"table"},
+      {id:"highcard",name:"High Card Puff",emoji:"🎴",type:"Cards",color:C.red,desc:"Is yours higher? Puff to bet!",cat:"table"},
+      {id:"crapsnclouds",name:"Craps & Clouds",emoji:"🎲",type:"Dice",color:C.cyan,desc:"Puff duration = dice roll!",cat:"table"},
+      // Mystery
+      {id:"mysterybox",name:"Mystery Box",emoji:"🎁",type:"Discovery",color:C.gold,desc:"3 boxes. Pick one. Puff to reveal!",cat:"mystery"},
+      {id:"scratchpuff",name:"Scratch & Puff",emoji:"🎫",type:"Discovery",color:C.pink,desc:"6 areas. Puff to scratch. Match 3 wins!",cat:"mystery"},
+      {id:"fortunecookie",name:"Fortune Cookie",emoji:"🥠",type:"Fortune",color:C.orange,desc:"Crack it open! Wisdom + coins inside!",cat:"mystery"},
+      {id:"treasuremap",name:"Treasure Map",emoji:"🗺️",type:"Adventure",color:C.gold,desc:"16 tiles. Find 3 treasures. Avoid bombs!",cat:"mystery"},
+      // Arena Bets
+      {id:"puffderby",name:"Puff Derby",emoji:"🏇",type:"Racing",color:C.green,desc:"Pick a horse. Spam puff = speed!",cat:"bets"},
     ];
-    const casinoTabs = [
+    const fortuneTabs = [
       {id:"sportsbook",label:"Sportsbook",emoji:"🔮"},
-      {id:"slots",label:"Slots & Luck",emoji:"🎰"},
-      {id:"cards",label:"Cards",emoji:"🃏"},
-      {id:"all",label:"All Games",emoji:"🎲"},
+      {id:"luck",label:"Luck",emoji:"🎰"},
+      {id:"table",label:"Table",emoji:"🃏"},
+      {id:"mystery",label:"Mystery",emoji:"✨"},
+      {id:"bets",label:"Arena Bets",emoji:"🏇"},
     ];
-    const sportsGames = CASINO_GAMES.filter(g=>["Prediction","Streak"].includes(g.type));
-    const slotsGames = CASINO_GAMES.filter(g=>["Luck","50/50"].includes(g.type));
-    const cardGames = CASINO_GAMES.filter(g=>["Cards","Dice","Racing"].includes(g.type));
+    const sportsGames = FORTUNE_GAMES.filter(g=>g.cat==="sportsbook");
+    const luckGames = FORTUNE_GAMES.filter(g=>g.cat==="luck");
+    const tableGames = FORTUNE_GAMES.filter(g=>g.cat==="table");
+    const mysteryGames = FORTUNE_GAMES.filter(g=>g.cat==="mystery");
+    const betsGames = FORTUNE_GAMES.filter(g=>g.cat==="bets");
     const recentBets = [
       {q:"Brazil vs Germany",ans:"Brazil",result:"correct",coins:"+100",time:"2h ago"},
       {q:"Gorilla Glue vs Blue Dream",ans:"Gorilla Glue",result:"correct",coins:"+50",time:"5h ago"},
@@ -7751,12 +7827,12 @@ export default function MoodLabArena() {
           <span style={{fontSize:11,fontWeight:600,color:C.text2}}>Lobby</span>
         </div>
         <div style={{textAlign:"center",marginBottom:6}}>
-          <div style={{fontSize:28,fontWeight:900,color:C.gold,letterSpacing:2,textShadow:`0 0 30px ${C.gold}60, 0 0 60px ${C.gold}30`,fontFamily:"Georgia, serif"}}>THE CASINO</div>
-          <div style={{fontSize:10,color:C.text2,fontWeight:600,letterSpacing:3,marginTop:2}}>YOUR LUCK. YOUR PUFF.</div>
+          <div style={{fontSize:28,fontWeight:900,color:C.gold,letterSpacing:2,textShadow:`0 0 30px ${C.gold}60, 0 0 60px ${C.gold}30`,fontFamily:"Georgia, serif"}}>THE FORTUNE</div>
+          <div style={{fontSize:10,color:C.text2,fontWeight:600,letterSpacing:3,marginTop:2}}>FORTUNE FAVORS THE BOLD</div>
         </div>
         {/* Decorative emoji strip */}
         <div style={{display:"flex",justifyContent:"center",gap:8,marginBottom:4,opacity:0.3}}>
-          {["🎰","🃏","🎲","🪙","🎴","🏇","🔮"].map((e,i)=>(
+          {["🔮","♠️","♥️","♦️","♣️","🥠","🎁"].map((e,i)=>(
             <span key={i} style={{fontSize:12}}>{e}</span>
           ))}
         </div>
@@ -7781,8 +7857,30 @@ export default function MoodLabArena() {
       <div style={{padding:"0 14px",marginBottom:8}}>
         <div style={{textAlign:"center",padding:"8px 14px",borderRadius:12,background:`linear-gradient(135deg, ${C.gold}10, ${C.red}08)`,border:`1px solid ${C.gold}18`,cursor:"pointer"}}>
           <div style={{fontSize:8,fontWeight:700,color:C.text3,letterSpacing:2}}>DAILY JACKPOT</div>
-          <div style={{fontSize:18,fontWeight:900,color:C.gold,textShadow:`0 0 16px ${C.gold}40`}}>🏆 50,000 coins</div>
+          <div style={{fontSize:18,fontWeight:900,color:C.gold,textShadow:`0 0 16px ${C.gold}40`}}>🏆 {fortuneJackpot.toLocaleString()} coins</div>
           <div style={{fontSize:7,color:C.text3}}>Play any game for a chance to win</div>
+        </div>
+      </div>
+
+      {/* LUCKY HOUR INDICATOR */}
+      {fortuneLuckyHour && <div style={{padding:"0 14px",marginBottom:8}}>
+        <div style={{textAlign:"center",padding:"8px 14px",borderRadius:12,background:`linear-gradient(135deg, ${C.gold}14, ${C.orange}10)`,border:`1px solid ${C.gold}30`,animation:"pulse 1.5s infinite"}}>
+          <div style={{fontSize:10,fontWeight:900,color:C.gold,letterSpacing:1.5,textShadow:`0 0 12px ${C.gold}60`}}>LUCKY HOUR LIVE! 2x ALL WINS!</div>
+          <div style={{fontSize:7,color:C.orange,fontWeight:700,marginTop:2}}>47 min left</div>
+        </div>
+      </div>}
+
+      {/* FORTUNE LEVEL BADGE */}
+      <div style={{padding:"0 14px",marginBottom:8}}>
+        <div style={{display:"flex",alignItems:"center",gap:8,padding:"8px 12px",borderRadius:12,background:`${C.gold}04`,border:`1px solid ${C.gold}12`}}>
+          <span style={{fontSize:14}}>{(FORTUNE_LEVELS.find(l=>l.name===fortuneLevel.level)||FORTUNE_LEVELS[1]).emoji}</span>
+          <div style={{flex:1}}>
+            <div style={{fontSize:9,fontWeight:800,color:(FORTUNE_LEVELS.find(l=>l.name===fortuneLevel.level)||FORTUNE_LEVELS[1]).color}}>{fortuneLevel.level}</div>
+            <div style={{width:"100%",height:4,borderRadius:2,background:`${C.text3}15`,marginTop:3}}>
+              <div style={{width:`${fortuneLevel.progress}%`,height:"100%",borderRadius:2,background:`linear-gradient(90deg, ${C.gold}, ${C.orange})`,transition:"width 0.5s"}}/>
+            </div>
+          </div>
+          <span style={{fontSize:7,color:C.text3,fontWeight:700}}>{fortuneLevel.progress}% to next</span>
         </div>
       </div>
 
@@ -7802,7 +7900,7 @@ export default function MoodLabArena() {
             <div style={{fontSize:6,color:C.text3}}>Streak</div>
           </div>
           <div style={{flex:1,padding:"6px 0",borderRadius:8,textAlign:"center",background:`${C.red}06`,border:`1px solid ${C.red}12`}}>
-            <div style={{fontSize:14,fontWeight:900,color:C.red}}>50K</div>
+            <div style={{fontSize:14,fontWeight:900,color:C.red}}>{Math.floor(fortuneJackpot/1000)}K</div>
             <div style={{fontSize:6,color:C.text3}}>Jackpot Pool</div>
           </div>
         </div>
@@ -7824,18 +7922,18 @@ export default function MoodLabArena() {
 
         {/* TAB BAR */}
         <div style={{display:"flex",borderBottom:`1px solid ${C.gold}18`,marginBottom:10}}>
-          {casinoTabs.map(t=>(
+          {fortuneTabs.map(t=>(
             <div key={t.id} onClick={()=>setOracleHubTab(t.id)} style={{
               flex:1,padding:"8px 0",textAlign:"center",cursor:"pointer",
-              fontSize:9,fontWeight:(oracleHubTab===t.id||(t.id==="sportsbook"&&["games","world_cup","fun"].includes(oracleHubTab)))?800:600,
-              color:(oracleHubTab===t.id||(t.id==="sportsbook"&&["games","world_cup","fun"].includes(oracleHubTab)))?C.gold:C.text3,
-              borderBottom:(oracleHubTab===t.id||(t.id==="sportsbook"&&["games","world_cup","fun"].includes(oracleHubTab)))?`2px solid ${C.gold}`:"2px solid transparent",
+              fontSize:9,fontWeight:oracleHubTab===t.id?800:600,
+              color:oracleHubTab===t.id?C.gold:C.text3,
+              borderBottom:oracleHubTab===t.id?`2px solid ${C.gold}`:"2px solid transparent",
             }}><span style={{marginRight:3}}>{t.emoji}</span>{t.label}</div>
           ))}
         </div>
 
         {/* SPORTSBOOK TAB */}
-        {(oracleHubTab==="sportsbook"||oracleHubTab==="games"||oracleHubTab==="world_cup"||oracleHubTab==="fun") && <div style={{marginBottom:4}}>
+        {oracleHubTab==="sportsbook" && <div style={{marginBottom:4}}>
           <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:10}}>
             <span style={{fontSize:13}}>🔮</span>
             <span style={{fontSize:11,fontWeight:900,color:C.text,letterSpacing:1.5}}>SPORTSBOOK</span>
@@ -7904,15 +8002,15 @@ export default function MoodLabArena() {
           ))}
         </div>}
 
-        {/* SLOTS & LUCK TAB */}
-        {(oracleHubTab==="slots"||oracleHubTab==="trending") && <div style={{marginBottom:4}}>
+        {/* LUCK TAB */}
+        {oracleHubTab==="luck" && <div style={{marginBottom:4}}>
           <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:10}}>
             <span style={{fontSize:13}}>🎰</span>
-            <span style={{fontSize:11,fontWeight:900,color:C.text,letterSpacing:1.5}}>SLOTS & LUCK</span>
+            <span style={{fontSize:11,fontWeight:900,color:C.text,letterSpacing:1.5}}>LUCK GAMES</span>
             <span style={{fontSize:7,color:C.text3,marginLeft:"auto"}}>Spin to win</span>
           </div>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-            {slotsGames.map((g,i)=>(
+            {luckGames.map((g,i)=>(
               <div key={i} onClick={()=>launchGame(g)} style={{padding:"14px 12px",borderRadius:14,cursor:"pointer",textAlign:"center",position:"relative",overflow:"hidden",
                 background:`radial-gradient(ellipse at 50% 0%, ${g.color}10, rgba(255,255,255,0.01) 70%)`,border:`1px solid ${g.color}18`,transition:"all 0.3s",
                 animation:`fadeIn 0.3s ease ${i*0.06}s both`,
@@ -7923,15 +8021,6 @@ export default function MoodLabArena() {
                 <div style={{fontSize:7,fontWeight:700,color:C.lime,marginTop:3}}>PLAY NOW</div>
               </div>
             ))}
-            {/* Scratch & Puff placeholder */}
-            <div style={{padding:"14px 12px",borderRadius:14,cursor:"pointer",textAlign:"center",position:"relative",overflow:"hidden",
-              background:`radial-gradient(ellipse at 50% 0%, ${C.pink}06, rgba(255,255,255,0.01) 70%)`,border:`1px dashed ${C.pink}18`,transition:"all 0.3s",opacity:0.7,
-            }}>
-              <div style={{fontSize:28,marginBottom:4}}>🎫</div>
-              <div style={{fontSize:11,fontWeight:800,color:C.pink}}>Scratch & Puff</div>
-              <div style={{fontSize:7,color:C.text3,marginTop:1}}>Scratch to reveal prizes!</div>
-              <div style={{fontSize:7,fontWeight:700,color:C.gold,marginTop:3}}>COMING SOON</div>
-            </div>
             {/* Lucky Puff */}
             <div onClick={()=>setHalftimeGame({type:"lucky",phase:"intro"})} style={{padding:"14px 12px",borderRadius:14,cursor:"pointer",textAlign:"center",position:"relative",overflow:"hidden",
               background:`radial-gradient(ellipse at 50% 0%, ${C.green}10, rgba(255,255,255,0.01) 70%)`,border:`1px solid ${C.green}18`,transition:"all 0.3s",
@@ -7944,15 +8033,15 @@ export default function MoodLabArena() {
           </div>
         </div>}
 
-        {/* CARDS TAB */}
-        {(oracleHubTab==="cards"||oracleHubTab==="history") && <div style={{marginBottom:4}}>
+        {/* TABLE TAB */}
+        {oracleHubTab==="table" && <div style={{marginBottom:4}}>
           <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:10}}>
             <span style={{fontSize:13}}>🃏</span>
-            <span style={{fontSize:11,fontWeight:900,color:C.text,letterSpacing:1.5}}>CARDS & TABLE</span>
+            <span style={{fontSize:11,fontWeight:900,color:C.text,letterSpacing:1.5}}>TABLE GAMES</span>
             <span style={{fontSize:7,color:C.text3,marginLeft:"auto"}}>Test your skill</span>
           </div>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-            {cardGames.map((g,i)=>(
+            {tableGames.map((g,i)=>(
               <div key={i} onClick={()=>launchGame(g)} style={{padding:"14px 12px",borderRadius:14,cursor:"pointer",textAlign:"center",position:"relative",overflow:"hidden",
                 background:`radial-gradient(ellipse at 50% 0%, ${g.color}10, rgba(255,255,255,0.01) 70%)`,border:`1px solid ${g.color}18`,transition:"all 0.3s",
                 animation:`fadeIn 0.3s ease ${i*0.06}s both`,
@@ -7966,24 +8055,63 @@ export default function MoodLabArena() {
           </div>
         </div>}
 
-        {/* ALL GAMES TAB */}
-        {oracleHubTab==="all" && <div style={{marginBottom:4}}>
+        {/* MYSTERY TAB */}
+        {oracleHubTab==="mystery" && <div style={{marginBottom:4}}>
           <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:10}}>
-            <span style={{fontSize:13}}>🎲</span>
-            <span style={{fontSize:11,fontWeight:900,color:C.text,letterSpacing:1.5}}>ALL CASINO GAMES</span>
-            <span style={{fontSize:7,color:C.text3,marginLeft:"auto"}}>{CASINO_GAMES.length} games</span>
+            <span style={{fontSize:13}}>✨</span>
+            <span style={{fontSize:11,fontWeight:900,color:C.text,letterSpacing:1.5}}>MYSTERY GAMES</span>
+            <span style={{fontSize:7,color:C.text3,marginLeft:"auto"}}>Discover your fortune</span>
           </div>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-            {CASINO_GAMES.map((g,i)=>(
-              <div key={i} onClick={()=>launchGame(g)} style={{padding:"12px 10px",borderRadius:14,cursor:"pointer",textAlign:"center",position:"relative",overflow:"hidden",
+            {mysteryGames.map((g,i)=>(
+              <div key={i} onClick={()=>launchGame(g)} style={{padding:"14px 12px",borderRadius:14,cursor:"pointer",textAlign:"center",position:"relative",overflow:"hidden",
                 background:`radial-gradient(ellipse at 50% 0%, ${g.color}10, rgba(255,255,255,0.01) 70%)`,border:`1px solid ${g.color}18`,transition:"all 0.3s",
-                animation:`fadeIn 0.3s ease ${i*0.04}s both`,
+                animation:`fadeIn 0.3s ease ${i*0.06}s both`,
               }}>
-                <div style={{fontSize:22,marginBottom:3,filter:`drop-shadow(0 0 6px ${g.color}50)`}}>{g.emoji}</div>
-                <div style={{fontSize:10,fontWeight:800,color:g.color}}>{g.name}</div>
-                <div style={{fontSize:6,color:C.text3,marginTop:1}}>{g.type}</div>
+                <div style={{fontSize:28,marginBottom:4,filter:`drop-shadow(0 0 8px ${g.color}50)`}}>{g.emoji}</div>
+                <div style={{fontSize:11,fontWeight:800,color:g.color}}>{g.name}</div>
+                <div style={{fontSize:7,color:C.text3,marginTop:1}}>{g.desc}</div>
+                <div style={{fontSize:7,fontWeight:700,color:C.lime,marginTop:3}}>PLAY NOW</div>
               </div>
             ))}
+          </div>
+        </div>}
+
+        {/* ARENA BETS TAB */}
+        {oracleHubTab==="bets" && <div style={{marginBottom:4}}>
+          <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:10}}>
+            <span style={{fontSize:13}}>🏇</span>
+            <span style={{fontSize:11,fontWeight:900,color:C.text,letterSpacing:1.5}}>ARENA BETS</span>
+            <span style={{fontSize:7,color:C.text3,marginLeft:"auto"}}>{betsGames.length+FORTUNE_GAMES.length} total games</span>
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+            {betsGames.map((g,i)=>(
+              <div key={i} onClick={()=>launchGame(g)} style={{padding:"14px 12px",borderRadius:14,cursor:"pointer",textAlign:"center",position:"relative",overflow:"hidden",
+                background:`radial-gradient(ellipse at 50% 0%, ${g.color}10, rgba(255,255,255,0.01) 70%)`,border:`1px solid ${g.color}18`,transition:"all 0.3s",
+                animation:`fadeIn 0.3s ease ${i*0.06}s both`,
+              }}>
+                <div style={{fontSize:28,marginBottom:4,filter:`drop-shadow(0 0 8px ${g.color}50)`}}>{g.emoji}</div>
+                <div style={{fontSize:11,fontWeight:800,color:g.color}}>{g.name}</div>
+                <div style={{fontSize:7,color:C.text3,marginTop:1}}>{g.desc}</div>
+                <div style={{fontSize:7,fontWeight:700,color:C.lime,marginTop:3}}>PLAY NOW</div>
+              </div>
+            ))}
+          </div>
+          {/* All Fortune Games section */}
+          <div style={{marginTop:14}}>
+            <div style={{fontSize:9,fontWeight:800,color:C.gold,letterSpacing:1.5,marginBottom:8}}>ALL {FORTUNE_GAMES.length} FORTUNE GAMES</div>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:6}}>
+              {FORTUNE_GAMES.map((g,i)=>(
+                <div key={i} onClick={()=>launchGame(g)} style={{padding:"10px 6px",borderRadius:12,cursor:"pointer",textAlign:"center",position:"relative",overflow:"hidden",
+                  background:`radial-gradient(ellipse at 50% 0%, ${g.color}10, rgba(255,255,255,0.01) 70%)`,border:`1px solid ${g.color}18`,transition:"all 0.3s",
+                  animation:`fadeIn 0.3s ease ${i*0.03}s both`,
+                }}>
+                  <div style={{fontSize:20,marginBottom:2,filter:`drop-shadow(0 0 6px ${g.color}50)`}}>{g.emoji}</div>
+                  <div style={{fontSize:8,fontWeight:800,color:g.color}}>{g.name}</div>
+                  <div style={{fontSize:6,color:C.text3,marginTop:1}}>{g.type}</div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>}
 
@@ -8039,7 +8167,7 @@ export default function MoodLabArena() {
     const wcLeaderboard = [
       {name:"CloudChaser99",emoji:"👑",stat:"23 wins",coins:8400,color:C.gold,badge:"🏆 Champion"},
       {name:"VibeKing",emoji:"😎",stat:"19 wins",coins:6200,color:C.cyan,badge:"⚽ Striker"},
-      {name:"NeonQueen",emoji:"👸",stat:"17 wins",coins:5800,color:C.purple,badge:"🎰 Casino"},
+      {name:"NeonQueen",emoji:"👸",stat:"17 wins",coins:5800,color:C.purple,badge:"🔮 Fortune"},
       {name:"Steve",emoji:"🌟",stat:"14 wins",coins:3200,color:C.green,badge:"🇧🇷 Fan",you:true},
       {name:"BlazedPanda",emoji:"🐼",stat:"12 wins",coins:2900,color:C.orange,badge:"🎯 Sniper"},
       {name:"PuffDaddy",emoji:"💨",stat:"10 wins",coins:2100,color:C.pink,badge:"💨 Lungs"},
@@ -8451,7 +8579,7 @@ export default function MoodLabArena() {
           </div>
           {/* Premium zone tab pills */}
           <div style={{display:"flex",gap:5,marginBottom:10,overflowX:"auto",WebkitOverflowScrolling:"touch",paddingBottom:2}}>
-            {[{id:"all",l:"All",e:"🌐"},{id:"arcade",l:"Arcade",e:"🎮"},{id:"stage",l:"Stage",e:"🎪"},{id:"oracle",l:"Casino",e:"🎰"},{id:"tournament",l:"Tournament",e:"🏆"}].map(t=>{
+            {[{id:"all",l:"All",e:"🌐"},{id:"arcade",l:"Arcade",e:"🎮"},{id:"stage",l:"Stage",e:"🎪"},{id:"oracle",l:"Fortune",e:"🔮"},{id:"tournament",l:"Tournament",e:"🏆"}].map(t=>{
               const tc = zoneTabColors[t.id]||C.gold;
               const sel = wallTab===t.id;
               return (
@@ -8741,7 +8869,7 @@ export default function MoodLabArena() {
     if(vcTimerRef.current){clearInterval(vcTimerRef.current);vcTimerRef.current=null;}
     // Oracle Games (Crystal Ball, Strain Battle, Match Predictor, Daily Picks)
     if(cbTimerRef.current){clearTimeout(cbTimerRef.current);cbTimerRef.current=null;}
-    // Casino Games (Slots, Blackjack, Coin Flip, Craps)
+    // Fortune Games (Slots, Blackjack, Coin Flip, Craps)
     if(slotsSpinTimer.current){clearTimeout(slotsSpinTimer.current);slotsSpinTimer.current=null;}
     if(bjTimerRef.current){clearTimeout(bjTimerRef.current);bjTimerRef.current=null;}
     // Reset common state
@@ -18621,7 +18749,7 @@ export default function MoodLabArena() {
             <div style={{display:"flex",alignItems:"center",gap:5}}>
               <span style={{fontSize:11,fontWeight:800,color:C.text}}>💬</span>
               <span style={{fontSize:8,fontWeight:700,color:C.cyan,padding:"2px 6px",borderRadius:4,background:`${C.cyan}10`,border:`1px solid ${C.cyan}15`}}>
-                {arenaView==="hub"?"🏠 Hub Lobby":arenaView==="arcade"?"🎮 Arcade":arenaView==="stage"?"🎪 Stage":arenaView==="oracle"?"🎰 Casino":arenaView==="wall"?"🧱 Wall":"🏟️ Arena"}
+                {arenaView==="hub"?"🏠 Hub Lobby":arenaView==="arcade"?"🎮 Arcade":arenaView==="stage"?"🎪 Stage":arenaView==="oracle"?"🔮 Fortune":arenaView==="wall"?"🧱 Wall":"🏟️ Arena"}
               </span>
               <div style={{display:"flex",alignItems:"center",gap:2}}>
                 <div style={{width:4,height:4,borderRadius:"50%",background:C.green,animation:"pulse 2s infinite"}}/>
