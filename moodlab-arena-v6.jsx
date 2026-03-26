@@ -6591,10 +6591,10 @@ export default function MoodLabArena() {
         {/* Tournaments tab */}
         {arcadeHubTab==="tournaments" && (
           <div style={{marginBottom:14}}>
-            <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:6,scrollbarWidth:"none"}}>
+            <div style={{display:"flex",flexDirection:"column",gap:8}}>
               {arcadeTournaments.map((t,i)=>(
                 <div key={i} onClick={()=>{playFx("select");if(t.game==="Final Kick")setWcPhase("team_select");else notify(t.name+" - "+t.prize,t.color);}} style={{
-                  minWidth:160,padding:"12px 12px",borderRadius:14,cursor:"pointer",flexShrink:0,
+                  padding:"12px 14px",borderRadius:14,cursor:"pointer",flexShrink:0,
                   background:`radial-gradient(ellipse at 30% 20%, ${t.color}10, ${C.bg2} 70%)`,
                   border:`1px solid ${t.color}20`,
                 }}>
@@ -6751,54 +6751,28 @@ export default function MoodLabArena() {
           </div>
         </div>
 
-        {/* 2. SHOW GRID - Row 1: ON AIR */}
-        <div style={{marginBottom:6}}>
-          <div style={{display:"flex",alignItems:"center",gap:5,marginBottom:6}}>
-            <div style={{width:6,height:6,borderRadius:"50%",background:C.red,boxShadow:`0 0 6px ${C.red}`,animation:"pulse 1.5s infinite"}}/>
-            <span style={{fontSize:9,fontWeight:900,color:C.red,letterSpacing:1}}>ON AIR</span>
-          </div>
-          <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:4,scrollbarWidth:"none"}}>
-            {onAirShows.map(g=>(
-              <div key={g.id} onClick={()=>launchShowFromHub(g)} style={{
-                minWidth:110,padding:"8px 10px",borderRadius:12,cursor:"pointer",flexShrink:0,
-                background:`radial-gradient(ellipse at 50% 0%, ${C.red}08, ${C.bg2})`,
-                border:`1.5px solid ${C.red}20`,boxShadow:`0 0 12px ${C.red}06`,
-              }}>
-                <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:4}}>
-                  <span style={{fontSize:16}}>{g.emoji}</span>
-                  <div style={{flex:1,minWidth:0}}>
-                    <div style={{fontSize:10,fontWeight:800,color:C.text,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{g.name}</div>
-                    <div style={{fontSize:7,color:C.red,fontWeight:700}}>LIVE NOW</div>
-                  </div>
-                </div>
-                <span style={{fontSize:7,fontWeight:700,color:g.color,padding:"1px 5px",borderRadius:3,background:`${g.color}10`}}>{g.type}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-        {/* Row 2: COMING UP */}
+        {/* 2. ALL SHOWS — 2-column grid */}
         <div style={{marginBottom:8}}>
-          <div style={{display:"flex",alignItems:"center",gap:5,marginBottom:6}}>
-            <span style={{fontSize:9}}>{"⏰"}</span>
-            <span style={{fontSize:9,fontWeight:900,color:C.text2,letterSpacing:1}}>COMING UP</span>
-          </div>
-          <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:4,scrollbarWidth:"none"}}>
-            {upcomingShows.map(g=>(
-              <div key={g.id} onClick={()=>launchShowFromHub(g)} style={{
-                minWidth:110,padding:"8px 10px",borderRadius:12,cursor:"pointer",flexShrink:0,
-                background:`radial-gradient(ellipse at 50% 0%, ${g.color}04, ${C.bg2})`,
-                border:`1px solid ${g.color}10`,
-              }}>
-                <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:4}}>
-                  <span style={{fontSize:16}}>{g.emoji}</span>
-                  <div style={{flex:1,minWidth:0}}>
-                    <div style={{fontSize:10,fontWeight:800,color:C.text,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{g.name}</div>
-                    <div style={{fontSize:7,color:C.text3,fontWeight:600}}>{g.time}</div>
-                  </div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
+            {SHOW_GAMES.map((g,i)=>{
+              const isLive = g.id===liveShow.id||g.id===liveShow2.id||g.id===liveShow3.id;
+              return (
+                <div key={g.id} onClick={()=>launchShowFromHub(g)} style={{
+                  padding:"10px 8px",borderRadius:12,cursor:"pointer",textAlign:"center",position:"relative",
+                  background:isLive?"rgba(255,50,50,0.06)":"rgba(255,255,255,0.02)",
+                  border:`1px solid ${isLive?"rgba(255,50,50,0.2)":C.border}`,
+                }}>
+                  {isLive && <div style={{position:"absolute",top:4,right:4,display:"flex",alignItems:"center",gap:3}}>
+                    <div style={{width:4,height:4,borderRadius:"50%",background:C.red,animation:"pulse 1.5s infinite"}}/>
+                    <span style={{fontSize:6,fontWeight:900,color:C.red}}>LIVE</span>
+                  </div>}
+                  <div style={{fontSize:20,marginBottom:2}}>{g.emoji}</div>
+                  <div style={{fontSize:9,fontWeight:800,color:isLive?C.text:C.text2}}>{g.name}</div>
+                  <div style={{fontSize:7,color:g.color,fontWeight:700,marginTop:1}}>{g.type}</div>
+                  {!isLive && <div style={{fontSize:6,color:C.text3,marginTop:1}}>in {8+i*4}m</div>}
                 </div>
-                <span style={{fontSize:7,fontWeight:700,color:g.color,padding:"1px 5px",borderRadius:3,background:`${g.color}10`}}>{g.type}</span>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
