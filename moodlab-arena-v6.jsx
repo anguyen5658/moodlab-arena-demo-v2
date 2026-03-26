@@ -7647,6 +7647,7 @@ export default function MoodLabArena() {
       setGameActive(null);setKickState(null);setIsFK2Mode(false);isFK2Ref.current=false;setIsFK3Mode(false);isFK3Ref.current=false;
       setBpPhase(null);setRrPhase(null);setPpPhase(null);setRpPhase(null);setTowPhase(null);
       setHpPhase(null);setHookPhase(null);setRpsPhase(null);setStPhase(null);setPcPhase(null);setDuelPhase("menu");
+      setSpPhase(null);setPaPhase(null);setBdPhase(null);setPlPhase(null);setPdPhase(null);setHlPhase(null);
       setMatchmaking(null);setSelectedGame(null);setSwPhase(null);setFanMode(null);setFanTeam(null);setFanDevice(null);
       setShowVibeCheck(false);setVcPhase(null);setVcEliminated(false);setVcCorrectStreak(0);setVcPuffAnswer(null);setVcTimer(10);if(vcTimerRef.current){clearInterval(vcTimerRef.current);vcTimerRef.current=null;}setDimLights(false);setScreenShake(false);setScreenFlash(null);setStageRole(null);setMcVisible(false);
       setMatchIntro(null);setCommentatorText("");setPuffBubbles([]);setAudienceBubbles([]);
