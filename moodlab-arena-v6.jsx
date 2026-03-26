@@ -7621,7 +7621,7 @@ export default function MoodLabArena() {
       setBpPhase(null);setRrPhase(null);setPpPhase(null);setRpPhase(null);setTowPhase(null);
       setHpPhase(null);setHookPhase(null);setRpsPhase(null);setStPhase(null);setPcPhase(null);setDuelPhase("menu");
       setMatchmaking(null);setSelectedGame(null);setSwPhase(null);setFanMode(null);setFanTeam(null);setFanDevice(null);
-      setShowVibeCheck(false);setVcPhase(null);setVcEliminated(false);setVcCorrectStreak(0);setVcPuffAnswer(null);setVcTimer(10);if(vcTimerRef.current){clearInterval(vcTimerRef.current);vcTimerRef.current=null;}setDimLights(false);setScreenShake(false);setScreenFlash(null);
+      setShowVibeCheck(false);setVcPhase(null);setVcEliminated(false);setVcCorrectStreak(0);setVcPuffAnswer(null);setVcTimer(10);if(vcTimerRef.current){clearInterval(vcTimerRef.current);vcTimerRef.current=null;}setDimLights(false);setScreenShake(false);setScreenFlash(null);setStageRole(null);setMcVisible(false);
       setMatchIntro(null);setCommentatorText("");setPuffBubbles([]);setAudienceBubbles([]);
       setConfettiParticles([]);setSmokeParticles([]);setLiveSpectators([]);setSpectatorTicker([]);setCrowdEnergy(0);setCrowdEruption(false);
       try{setWcPhase(null);setWcTeam(null);setWcTournament(null);setWcBracket(null);setWcFinalResult(null);}catch(e){}
@@ -8130,6 +8130,7 @@ export default function MoodLabArena() {
     if(stTimerRef.current){clearInterval(stTimerRef.current);stTimerRef.current=null;}
     setStPhase(null);
     setGameActive(null);
+    setStageRole(null);setMcVisible(false);
   };
 
   // ===============================================================
@@ -8276,6 +8277,7 @@ export default function MoodLabArena() {
       setCoins(c=>c+200);
       notify("TOP 3 FINISH! +200 bonus coins!",C.gold);
     }
+    if(stageRole) showMC("finale");
   };
 
   const pcEndGame = () => {
@@ -8283,6 +8285,7 @@ export default function MoodLabArena() {
     if(pcTimerRef.current){clearInterval(pcTimerRef.current);pcTimerRef.current=null;}
     setPcPhase(null);
     setGameActive(null);
+    setStageRole(null);setMcVisible(false);
   };
 
 
@@ -8348,6 +8351,7 @@ export default function MoodLabArena() {
     if (window._bdActive) { window._bdActive.v = false; window._bdActive = null; }
     setBdPhase(null);
     setGameActive(null);
+    setStageRole(null);setMcVisible(false);
   };
 
   const startBeatDrop = () => {
@@ -8493,6 +8497,7 @@ export default function MoodLabArena() {
     if (window._plActive) { window._plActive.v = false; window._plActive = null; }
     setPlPhase(null);
     setGameActive(null);
+    setStageRole(null);setMcVisible(false);
   };
 
   const startPuffLimbo = () => {
@@ -8755,6 +8760,7 @@ export default function MoodLabArena() {
     if(earned > 0) { setCoins(c => c + earned); notify("+"+earned+" coins!", C.green); }
     setSpPhase(null);
     setGameActive(null);
+    setStageRole(null);setMcVisible(false);
   };
 
   // =====================================================================
@@ -8908,6 +8914,7 @@ export default function MoodLabArena() {
     if(paPuffInterval.current){clearInterval(paPuffInterval.current);paPuffInterval.current=null;}
     setPaPhase(null);
     setGameActive(null);
+    setStageRole(null);setMcVisible(false);
   };
 
   const PD_HORSE_EMOJIS = ["\uD83D\uDC0E","\uD83C\uDFC7","\uD83E\uDD84","\uD83D\uDC34","\uD83C\uDFA0","\uD83D\uDC2A"];
@@ -8917,13 +8924,13 @@ export default function MoodLabArena() {
   const pdPickHorse = (idx) => { setPdPlayerHorse(idx);playFx("select");setCommentary(PD_HORSE_NAMES[idx]+" selected!");setPdPhase("countdown");let c=3;const cd=setInterval(()=>{c--;if(c<=0){clearInterval(cd);setPdPhase("racing");setCommentary("AND THEY'RE OFF!");playFx("whistle");triggerFlash("goal");pdStartRace(idx);}},800); };
   const pdStartRace = (pi) => { pdPosRef.current=[0,0,0,0,0,0];pdFinishRef.current=[];pdStaminaRef.current=100;pdLastPuff.current=Date.now();let tl=30;setPdRaceTime(30);pdAiRef.current=setInterval(()=>{if(Date.now()-pdLastPuff.current>500){pdStaminaRef.current=Math.min(100,pdStaminaRef.current+0.4);setPdStamina(Math.round(pdStaminaRef.current));}const np=[...pdPosRef.current];for(let i=0;i<6;i++){if(i===pi||pdFinishRef.current.includes(i))continue;const p=PD_AI[i];let mv=p.bs*(0.6+Math.random()*0.8);if(Math.random()<p.bc)mv+=p.bz;if(Math.random()<p.rc)mv=0;if(np[i]>70)mv*=1.2;if(np[i]>90)mv*=1.1;np[i]=Math.min(100,np[i]+mv*0.16);if(np[i]>=100&&!pdFinishRef.current.includes(i)){pdFinishRef.current=[...pdFinishRef.current,i];setPdFinishOrder([...pdFinishRef.current]);}}if(np[pi]>=100&&!pdFinishRef.current.includes(pi)){pdFinishRef.current=[...pdFinishRef.current,pi];setPdFinishOrder([...pdFinishRef.current]);}pdPosRef.current=np;setPdPositions([...np]);if(pdFinishRef.current.length>=6)pdEndRace(pi);},50);pdTimerRef.current=setInterval(()=>{tl--;setPdRaceTime(tl);if(tl<=10&&tl>0)setCommentary(tl+" seconds!");if(tl<=0)pdEndRace(pi);},1000); };
   const pdPuff = () => { if(pdPhase!=="racing"||pdPlayerHorse===null)return;const idx=pdPlayerHorse;pdLastPuff.current=Date.now();setPdPuffCount(p=>p+1);playFx("tap");let boost=3+Math.random()*2;if(pdStaminaRef.current<=0){boost=1;}else{pdStaminaRef.current=Math.max(0,pdStaminaRef.current-5);setPdStamina(Math.round(pdStaminaRef.current));}const np=[...pdPosRef.current];np[idx]=Math.min(100,np[idx]+boost);pdPosRef.current=np;setPdPositions([...np]);if(np[idx]>=100&&!pdFinishRef.current.includes(idx)){pdFinishRef.current=[...pdFinishRef.current,idx];setPdFinishOrder([...pdFinishRef.current]);} };
-  const pdEndRace = (pi) => { if(pdAiRef.current){clearInterval(pdAiRef.current);pdAiRef.current=null;}if(pdTimerRef.current){clearInterval(pdTimerRef.current);pdTimerRef.current=null;}const fin=[...pdFinishRef.current];const rem=[0,1,2,3,4,5].filter(i=>!fin.includes(i));rem.sort((a,b)=>pdPosRef.current[b]-pdPosRef.current[a]);const fo=[...fin,...rem];setPdFinishOrder(fo);pdFinishRef.current=fo;const place=fo.indexOf(pi)+1;setCoins(c=>c+([0,500,300,150,75,30,10][place]||10));setPdPhase("result");if(place===1){setCommentary(PD_HORSE_NAMES[pi]+" WINS!");triggerFlash("goal");playFx("crowd");setConfettiParticles(Array.from({length:30},(_,i)=>({id:Date.now()+i,x:Math.random()*100,y:-10-Math.random()*20,size:4+Math.random()*4,color:[C.green,C.gold,C.cyan,C.pink][i%4],rot:Math.random()*360})));}else if(place<=3){setCommentary("Top 3!");playFx("select");}else{setCommentary("Better luck next time!");playFx("tap");} };
-  const pdCleanup = () => { if(pdAiRef.current){clearInterval(pdAiRef.current);pdAiRef.current=null;}if(pdTimerRef.current){clearInterval(pdTimerRef.current);pdTimerRef.current=null;}setPdPhase(null);setGameActive(null); };
+  const pdEndRace = (pi) => { if(pdAiRef.current){clearInterval(pdAiRef.current);pdAiRef.current=null;}if(pdTimerRef.current){clearInterval(pdTimerRef.current);pdTimerRef.current=null;}const fin=[...pdFinishRef.current];const rem=[0,1,2,3,4,5].filter(i=>!fin.includes(i));rem.sort((a,b)=>pdPosRef.current[b]-pdPosRef.current[a]);const fo=[...fin,...rem];setPdFinishOrder(fo);pdFinishRef.current=fo;const place=fo.indexOf(pi)+1;setCoins(c=>c+([0,500,300,150,75,30,10][place]||10));setPdPhase("result");if(place===1){setCommentary(PD_HORSE_NAMES[pi]+" WINS!");triggerFlash("goal");playFx("crowd");if(stageRole)showMC("correct",{points:"500"});setConfettiParticles(Array.from({length:30},(_,i)=>({id:Date.now()+i,x:Math.random()*100,y:-10-Math.random()*20,size:4+Math.random()*4,color:[C.green,C.gold,C.cyan,C.pink][i%4],rot:Math.random()*360})));}else if(place<=3){setCommentary("Top 3!");playFx("select");}else{setCommentary("Better luck next time!");playFx("tap");} };
+  const pdCleanup = () => { if(pdAiRef.current){clearInterval(pdAiRef.current);pdAiRef.current=null;}if(pdTimerRef.current){clearInterval(pdTimerRef.current);pdTimerRef.current=null;}setPdPhase(null);setGameActive(null);setStageRole(null);setMcVisible(false); };
   const hlPickRandom = () => { const av=HL_STATS.filter((_,i)=>!hlUsedRef.current.includes(i));if(av.length===0){hlUsedRef.current=[];return HL_STATS[Math.floor(Math.random()*HL_STATS.length)];}const pk=av[Math.floor(Math.random()*av.length)];hlUsedRef.current=[...hlUsedRef.current,HL_STATS.indexOf(pk)];return pk; };
   const startHigherLower = () => { hlUsedRef.current=[];const f=hlPickRandom();const s=hlPickRandom();setHlCurrent(f);setHlNext(s);setHlStreak(0);setHlBestStreak(0);setHlScore(0);setHlRound(1);setHlRevealing(false);setHlRevealNum(0);setHlPuffStart(null);setHlPhase("playing");setCommentary("Higher or Lower?");playFx("crowd"); };
-  const hlGuess = (guess) => { if(hlPhase!=="playing"||hlRevealing||!hlNext)return;setHlRevealing(true);setHlPuffStart(null);playFx("tap");const target=hlNext.value;let step=0;const rid=setInterval(()=>{step++;setHlRevealNum(Math.round(target*(1-Math.pow(1-step/20,3))));if(step>=20){clearInterval(rid);setHlRevealNum(target);const actual=hlNext.value>hlCurrent.value?"higher":hlNext.value<hlCurrent.value?"lower":guess;const correct=guess===actual||hlNext.value===hlCurrent.value;setTimeout(()=>{if(correct){const ns=hlStreak+1;const pts=10*ns;setHlStreak(ns);setHlBestStreak(b=>Math.max(b,ns));setHlScore(s=>s+pts);setCommentary("CORRECT! +"+pts);playFx("select");triggerFlash("goal");setHlPhase("correct");}else{setHlStreak(0);setCommentary("WRONG! It was "+actual.toUpperCase());playFx("whistle");triggerFlash("miss");setScreenShake(true);setTimeout(()=>setScreenShake(false),400);setHlPhase("wrong");}setTimeout(()=>{const nr=hlRound+1;if(nr>10){setCoins(c=>c+Math.max(10,Math.floor(hlScore/2)));setHlPhase("result");setCommentary("Game over! Score: "+hlScore);if(hlBestStreak>=5)setConfettiParticles(Array.from({length:20},(_,i)=>({id:Date.now()+i,x:Math.random()*100,y:-10-Math.random()*20,size:4+Math.random()*4,color:[C.cyan,C.gold,C.green,C.pink][i%4],rot:Math.random()*360})));}else{setHlRound(nr);setHlCurrent(hlNext);setHlNext(hlPickRandom());setHlRevealing(false);setHlRevealNum(0);setHlPhase("playing");setCommentary("Round "+nr+"/10");}},1800);},600);}},40); };
+  const hlGuess = (guess) => { if(hlPhase!=="playing"||hlRevealing||!hlNext)return;setHlRevealing(true);setHlPuffStart(null);playFx("tap");const target=hlNext.value;let step=0;const rid=setInterval(()=>{step++;setHlRevealNum(Math.round(target*(1-Math.pow(1-step/20,3))));if(step>=20){clearInterval(rid);setHlRevealNum(target);const actual=hlNext.value>hlCurrent.value?"higher":hlNext.value<hlCurrent.value?"lower":guess;const correct=guess===actual||hlNext.value===hlCurrent.value;setTimeout(()=>{if(correct){const ns=hlStreak+1;const pts=10*ns;setHlStreak(ns);setHlBestStreak(b=>Math.max(b,ns));setHlScore(s=>s+pts);setCommentary("CORRECT! +"+pts);playFx("select");triggerFlash("goal");setHlPhase("correct");if(stageRole)showMC("correct",{points:String(pts)});}else{setHlStreak(0);setCommentary("WRONG! It was "+actual.toUpperCase());playFx("whistle");triggerFlash("miss");if(stageRole)showMC("wrong");setScreenShake(true);setTimeout(()=>setScreenShake(false),400);setHlPhase("wrong");}setTimeout(()=>{const nr=hlRound+1;if(nr>10){setCoins(c=>c+Math.max(10,Math.floor(hlScore/2)));setHlPhase("result");setCommentary("Game over! Score: "+hlScore);if(hlBestStreak>=5)setConfettiParticles(Array.from({length:20},(_,i)=>({id:Date.now()+i,x:Math.random()*100,y:-10-Math.random()*20,size:4+Math.random()*4,color:[C.cyan,C.gold,C.green,C.pink][i%4],rot:Math.random()*360})));}else{setHlRound(nr);setHlCurrent(hlNext);setHlNext(hlPickRandom());setHlRevealing(false);setHlRevealNum(0);setHlPhase("playing");setCommentary("Round "+nr+"/10");}},1800);},600);}},40); };
   const hlHandlePuff = (isLong) => { hlGuess(isLong?"higher":"lower"); };
-  const hlCleanup = () => { setHlPhase(null);setGameActive(null);setHlRevealing(false);setHlPuffStart(null);hlUsedRef.current=[]; };
+  const hlCleanup = () => { setHlPhase(null);setGameActive(null);setHlRevealing(false);setHlPuffStart(null);hlUsedRef.current=[];setStageRole(null);setMcVisible(false); };
   const overlayBack = (onClose) => (
     <button type="button" data-back="true" onClick={()=>{cleanupAllGames();onClose();}}
       style={{position:"absolute",top:12,left:12,zIndex:9999,width:40,height:40,borderRadius:20,
