@@ -7461,7 +7461,7 @@ export default function MoodLabArena() {
 
 
 
-        </div>}
+        }
 
         {/* Records tab */}
         {wallHubTab==="records" && (
