@@ -4475,8 +4475,29 @@ export default function MoodLabArena() {
   const wcConfirmTeam = () => {
     if(!wcTeam) return;
     playFx("success");
-    // Show device selection before group draw
-    setWcDeviceInput(sessionInput||"puff");setWcPhase("group_draw");
+    setWcDeviceInput(sessionInput||"puff");
+    setWcPhase("group_draw");
+    setWcDrawAnim(true);
+
+    // Generate group: user's team + 3 random opponents
+    const isFK = ["finalkick","finalkick2","finalkick3"].includes(wcGameId);
+    const gameTeamPool = !isFK && GAME_TEAMS[wcGameId] ? GAME_TEAMS[wcGameId] : null;
+    const pool = gameTeamPool ? gameTeamPool.filter(t => t.id !== wcTeam.id) : WC_TEAMS.filter(t => t.id !== wcTeam.id && t.group !== "BONUS");
+    const shuffled = [...pool].sort(() => Math.random() - 0.5);
+    const groupOpps = shuffled.slice(0, 3);
+    const groupTeams = [wcTeam, ...groupOpps];
+    const groupLetter = String.fromCharCode(65 + Math.floor(Math.random() * 12));
+
+    const standings = groupTeams.map(t => ({...t, played:0, won:0, drawn:0, lost:0, gf:0, ga:0, pts:0}));
+    const matches = [
+      {home: groupTeams[0], away: groupTeams[1], played: false, homeScore:0, awayScore:0},
+      {home: groupTeams[2], away: groupTeams[3], played: false, homeScore:0, awayScore:0},
+      {home: groupTeams[0], away: groupTeams[2], played: false, homeScore:0, awayScore:0},
+    ];
+    setWcTournament({group: groupLetter, teams: groupTeams, standings, groupMatches: matches});
+    setWcMatchday(0);
+
+    setTimeout(() => setWcDrawAnim(false), 3000);
   };
 
   const wcConfirmDevice = (inputId) => {
