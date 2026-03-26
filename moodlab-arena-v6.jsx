@@ -6543,12 +6543,31 @@ export default function MoodLabArena() {
 
         {/* ======= ALL GAMES - Smart 2-Column Grid ======= */}
         {arcadeHubTab==="games" && <div style={{marginBottom:4}}>
-          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:6}}>
             <div style={{display:"flex",alignItems:"center",gap:6}}>
               <span style={{fontSize:13}}>🎮</span>
               <span style={{fontSize:11,fontWeight:900,color:C.text,letterSpacing:1.5}}>ALL GAMES</span>
             </div>
             <span style={{fontSize:9,color:C.text3}}>{PLAY_GAMES.length} games</span>
+          </div>
+          {/* Compact stats strip */}
+          <div style={{display:"flex",gap:6,marginBottom:10}}>
+            <div style={{flex:1,padding:"6px 0",borderRadius:8,textAlign:"center",background:`${C.cyan}06`,border:`1px solid ${C.cyan}12`}}>
+              <div style={{fontSize:14,fontWeight:900,color:C.cyan}}>{myStats.gamesPlayed}</div>
+              <div style={{fontSize:6,color:C.text3,fontWeight:600}}>Played</div>
+            </div>
+            <div style={{flex:1,padding:"6px 0",borderRadius:8,textAlign:"center",background:`${C.green}06`,border:`1px solid ${C.green}12`}}>
+              <div style={{fontSize:14,fontWeight:900,color:C.green}}>{myStats.winRate}%</div>
+              <div style={{fontSize:6,color:C.text3,fontWeight:600}}>Win Rate</div>
+            </div>
+            <div style={{flex:1,padding:"6px 0",borderRadius:8,textAlign:"center",background:`${C.gold}06`,border:`1px solid ${C.gold}12`}}>
+              <div style={{fontSize:14,fontWeight:900,color:C.gold}}>{myStats.coinsWon.toLocaleString()}</div>
+              <div style={{fontSize:6,color:C.text3,fontWeight:600}}>Coins</div>
+            </div>
+            <div style={{flex:1,padding:"6px 0",borderRadius:8,textAlign:"center",background:`${C.orange}06`,border:`1px solid ${C.orange}12`}}>
+              <div style={{fontSize:14,fontWeight:900,color:C.orange}}>🔥{myStats.streak}</div>
+              <div style={{fontSize:6,color:C.text3,fontWeight:600}}>Streak</div>
+            </div>
           </div>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
             {smartSorted.map((g,i)=>{
