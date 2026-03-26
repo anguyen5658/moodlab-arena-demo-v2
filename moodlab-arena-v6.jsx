@@ -6898,7 +6898,7 @@ export default function MoodLabArena() {
         setCbStreak(s=>s+1);
         setCoins(c=>c+pts);
         playFx("crowd");
-        triggerConfetti();
+        spawnConfetti(30);
         setCommentary(ans==="certain"?"BLINKER BONUS! 3x COINS! The Oracle speaks through you!":"Correct! The Crystal Ball confirms your vision!");
       } else {
         const penalty = ans==="certain" ? -100 : 0;
@@ -7020,7 +7020,7 @@ export default function MoodLabArena() {
       const pts = correct ? 100 : 0;
       setMpResults(prev=>[...prev,{match:mpMatch,prediction:pred,result:simResult,correct}]);
       setMpScore(s=>s+pts);
-      if(correct) { setCoins(c=>c+pts); triggerConfetti(); playFx("crowd"); setCommentary("Correct prediction! +100 coins!"); }
+      if(correct) { setCoins(c=>c+pts); spawnConfetti(30); playFx("crowd"); setCommentary("Correct prediction! +100 coins!"); }
       else { setCommentary("Not this time... the result was: "+(simResult==="home"?"Home Win":simResult==="draw"?"Draw":"Away Win")); }
       setMpPhase("result");
     },2000);
@@ -7085,7 +7085,7 @@ export default function MoodLabArena() {
       if(correct) {
         setDpStreak(s=>s+1);
         setCoins(c=>c+pts);
-        triggerConfetti();
+        spawnConfetti(30);
         setCommentary(mult>1?"Streak bonus! "+mult+"x multiplier! +"+pts+" coins!":"Correct! +"+pts+" coins!");
       } else {
         setDpStreak(0);
@@ -8761,7 +8761,7 @@ export default function MoodLabArena() {
           if(spRound >= 10) {
             setSpPhase("final");
             setCommentary("INCREDIBLE! You completed all 10 rounds!");
-            triggerConfetti();
+            spawnConfetti(30);
           } else {
             spStartRound(spRound + 1);
           }
@@ -8921,7 +8921,7 @@ export default function MoodLabArena() {
       setPaTotalWon(t => t + prize.value);
       setCoins(c => c + prize.value);
       triggerFlash("goal");
-      triggerConfetti();
+      spawnConfetti(30);
       playFx("goal");
       setCommentary("YOU WIN! " + prize.emoji + " " + prize.name + "! Bid: " + dur.toFixed(2) + "s");
       setPaComment("SOLD to the champion puffer! +" + prize.value + " coins!");
