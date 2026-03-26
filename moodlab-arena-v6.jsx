@@ -8830,6 +8830,7 @@ export default function MoodLabArena() {
   const paStartRound = (roundNum) => {
     const prize = PA_PRIZES[Math.min(roundNum, PA_PRIZES.length - 1)];
     setPaRound(roundNum);
+    paRoundRef.current = roundNum;
     setPaPrize(prize);
     setPaBids([]);
     setPaWinner(null);
@@ -8883,7 +8884,7 @@ export default function MoodLabArena() {
           setPaShowGavel(true);
           setCommentary("You were DISQUALIFIED! " + (validBids[0]?validBids[0].name+" wins!":"No winner!"));
           setTimeout(() => {
-            if(paRound < PA_PRIZES.length - 1) { paStartRound(paRound + 1); }
+            if(paRoundRef.current < PA_PRIZES.length - 1) { paStartRound(paRoundRef.current + 1); }
             else { setPaPhase("final"); setCommentary("Auction complete!"); }
           }, 3000);
         }, 1500);
@@ -8933,7 +8934,7 @@ export default function MoodLabArena() {
     }
     setTimeout(() => {
       if(paRound < PA_PRIZES.length - 1) {
-        paStartRound(paRound + 1);
+        paStartRound(paRoundRef.current + 1);
       } else {
         setPaPhase("final");
         setCommentary("Auction complete! Total won: " + paTotalWon + " value!");
