@@ -2427,6 +2427,7 @@ export default function MoodLabArena() {
   const walkBack = useCallback(() => { walkTo("hub"); }, [walkTo]);
 
   const startMatch = (game, mode) => {
+    setSelectedGame(null); // Clear game detail overlay
     resolveInputForGame(game, (input) => {
       setMatchmaking({game,mode,stage:"searching",input});
       setTimeout(()=>{
