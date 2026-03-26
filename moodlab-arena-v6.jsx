@@ -5157,7 +5157,7 @@ export default function MoodLabArena() {
     );
   };
 
-  /* ── Zone Focus Panel Content (per zone) — Minimal welcome stats ── */
+  /* ── Zone Focus Panel Content (per zone) — Enhanced welcome previews ── */
   const renderFocusContent = (viewKey) => {
     const pillStyle = (color) => ({
       display:"inline-flex",alignItems:"center",gap:4,
@@ -5166,31 +5166,112 @@ export default function MoodLabArena() {
       fontSize:10,fontWeight:600,color:color,whiteSpace:"nowrap",
     });
     if (viewKey === "arcade") return (
-      <div style={{display:"flex",flexWrap:"wrap",gap:6,justifyContent:"center"}}>
-        <span style={pillStyle(C.cyan)}>856 playing</span>
-        <span style={pillStyle(C.red)}>5 HOT games</span>
-        <span style={pillStyle(C.lime)}>3 tournaments live</span>
+      <div>
+        <div style={{display:"flex",flexWrap:"wrap",gap:6,justifyContent:"center"}}>
+          <span style={pillStyle(C.cyan)}>856 playing</span>
+          <span style={pillStyle(C.red)}>5 HOT games</span>
+          <span style={pillStyle(C.lime)}>3 tournaments live</span>
+        </div>
+        {/* Hot Games strip */}
+        <div style={{display:"flex",gap:6,marginTop:10}}>
+          {PLAY_GAMES.filter(g=>g.hot).slice(0,3).map(g=>(
+            <div key={g.id} onClick={()=>{setZone("arcade");setArenaView("arcade");setSelectedGame(g);}} style={{
+              flex:1,padding:"8px 6px",borderRadius:10,textAlign:"center",cursor:"pointer",
+              background:`${g.color}08`,border:`1px solid ${g.color}15`,
+            }}>
+              <div style={{fontSize:20}}>{g.emoji}</div>
+              <div style={{fontSize:9,fontWeight:700,color:g.color,marginTop:2}}>{g.name.split(" ")[0]}</div>
+              <div style={{fontSize:7,color:C.text3}}>{g.type}</div>
+            </div>
+          ))}
+        </div>
+        {/* Quick stats */}
+        <div style={{display:"flex",justifyContent:"center",gap:12,marginTop:8}}>
+          <span style={{fontSize:9,color:C.text2}}>Win Rate: <span style={{color:C.lime,fontWeight:800}}>62%</span></span>
+          <span style={{fontSize:9,color:C.text2}}>Streak: <span style={{color:C.orange,fontWeight:800}}>🔥 5</span></span>
+        </div>
       </div>
     );
     if (viewKey === "stage") return (
-      <div style={{display:"flex",flexWrap:"wrap",gap:6,justifyContent:"center"}}>
-        <span style={pillStyle(C.red)}>2 LIVE now</span>
-        <span style={pillStyle(C.gold)}>1,247 watching</span>
-        <span style={pillStyle(C.lime)}>12,500 coins tonight</span>
+      <div>
+        <div style={{display:"flex",flexWrap:"wrap",gap:6,justifyContent:"center"}}>
+          <span style={pillStyle(C.red)}>2 LIVE now</span>
+          <span style={pillStyle(C.gold)}>1,247 watching</span>
+          <span style={pillStyle(C.lime)}>12,500 coins tonight</span>
+        </div>
+        {/* NOW LIVE strip */}
+        <div style={{marginTop:10}}>
+          <div style={{display:"flex",alignItems:"center",gap:6,padding:"8px 12px",borderRadius:10,
+            background:"rgba(255,50,50,0.06)",border:"1px solid rgba(255,50,50,0.15)"}}>
+            <div style={{width:6,height:6,borderRadius:"50%",background:C.red,animation:"pulse 1.5s infinite"}}/>
+            <span style={{fontSize:11,fontWeight:700,color:C.text}}>🧠 Vibe Check</span>
+            <span style={{fontSize:9,color:C.text3,marginLeft:"auto"}}>1,247 watching</span>
+          </div>
+        </div>
+        {/* Next show countdown */}
+        <div style={{textAlign:"center",marginTop:6}}>
+          <span style={{fontSize:9,color:C.text3}}>Next: </span>
+          <span style={{fontSize:9,fontWeight:700,color:C.gold}}>🎭 Simon Puffs in 8 min</span>
+        </div>
       </div>
     );
     if (viewKey === "oracle") return (
-      <div style={{display:"flex",flexWrap:"wrap",gap:6,justifyContent:"center"}}>
-        <span style={pillStyle(C.purple)}>104 open bets</span>
-        <span style={pillStyle(C.lime)}>78% your accuracy</span>
-        <span style={pillStyle(C.red)}>🔥 7-day streak</span>
+      <div>
+        <div style={{display:"flex",flexWrap:"wrap",gap:6,justifyContent:"center"}}>
+          <span style={pillStyle(C.purple)}>104 open bets</span>
+          <span style={pillStyle(C.lime)}>78% your accuracy</span>
+          <span style={pillStyle(C.red)}>🔥 7-day streak</span>
+        </div>
+        {/* Hot prediction with vote bar */}
+        <div style={{marginTop:10,padding:"8px 12px",borderRadius:10,
+          background:`${C.purple}06`,border:`1px solid ${C.purple}15`}}>
+          <div style={{fontSize:10,fontWeight:700,color:C.text,marginBottom:4}}>⚽ Brazil vs Germany</div>
+          <div style={{display:"flex",alignItems:"center",gap:4}}>
+            <span style={{fontSize:8,color:C.cyan,fontWeight:700}}>72%</span>
+            <div style={{flex:1,height:6,borderRadius:3,background:`${C.text3}15`,overflow:"hidden"}}>
+              <div style={{width:"72%",height:"100%",borderRadius:3,background:`linear-gradient(90deg,${C.cyan},${C.blue})`}}/>
+            </div>
+            <span style={{fontSize:8,color:C.red,fontWeight:700}}>28%</span>
+          </div>
+          <div style={{fontSize:7,color:C.text3,marginTop:2,textAlign:"center"}}>847 predictions</div>
+        </div>
+        {/* Daily pick teaser */}
+        <div style={{textAlign:"center",marginTop:6}}>
+          <span style={{fontSize:9,color:C.lime,fontWeight:700}}>📅 Morning Pick OPEN</span>
+          <span style={{fontSize:8,color:C.text3}}> · closes in 2h</span>
+        </div>
       </div>
     );
     if (viewKey === "wall") return (
-      <div style={{display:"flex",flexWrap:"wrap",gap:6,justifyContent:"center"}}>
-        <span style={pillStyle(C.orange)}>{"#3 your rank"}</span>
-        <span style={pillStyle(C.gold)}>8 records</span>
-        <span style={pillStyle(C.lime)}>Season 1 active</span>
+      <div>
+        <div style={{display:"flex",flexWrap:"wrap",gap:6,justifyContent:"center"}}>
+          <span style={pillStyle(C.orange)}>{"#3 your rank"}</span>
+          <span style={pillStyle(C.gold)}>8 records</span>
+          <span style={pillStyle(C.lime)}>Season 1 active</span>
+        </div>
+        {/* Mini podium */}
+        <div style={{display:"flex",justifyContent:"center",gap:8,marginTop:10}}>
+          {[
+            {pos:"🥈",name:"VibeKing",pts:"2.6K"},
+            {pos:"🥇",name:"ChillMaster",pts:"2.8K",first:true},
+            {pos:"🥉",name:"You",pts:"421",isYou:true},
+          ].map((p,i)=>(
+            <div key={i} style={{textAlign:"center",padding:"6px 10px",borderRadius:10,
+              background:p.first?`${C.gold}10`:p.isYou?`${C.cyan}08`:`${C.text3}06`,
+              border:`1px solid ${p.first?C.gold+"25":p.isYou?C.cyan+"20":C.text3+"10"}`,
+              transform:p.first?"translateY(-4px)":"none",
+            }}>
+              <div style={{fontSize:16}}>{p.pos}</div>
+              <div style={{fontSize:8,fontWeight:700,color:p.isYou?C.cyan:C.text,marginTop:2}}>{p.name}</div>
+              <div style={{fontSize:7,color:C.text3}}>{p.pts}</div>
+            </div>
+          ))}
+        </div>
+        {/* Your rank badge */}
+        <div style={{textAlign:"center",marginTop:6}}>
+          <span style={{fontSize:9,color:C.gold,fontWeight:700}}>🥉 #3 · Gold</span>
+          <span style={{fontSize:8,color:C.green}}> · ↑3 today</span>
+        </div>
       </div>
     );
     if (viewKey === "worldcup") return (
