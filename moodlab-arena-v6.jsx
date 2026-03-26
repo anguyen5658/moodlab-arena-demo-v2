@@ -6341,55 +6341,8 @@ export default function MoodLabArena() {
         </div>
 
 
-        {/* ═══ LIVE GAMES — above bottom nav, moves up when chat open ═══ */}
-        <div style={{position:"fixed",bottom:56,left:14,right:14,zIndex:45,transition:"bottom 0.3s ease",animation:"arenaFadeIn 0.7s ease 0.4s both"}}>
-          <div style={{borderRadius:16,overflow:"hidden",cursor:"pointer",...GLASS_CARD}} onClick={() => {
-            if (peNextCountdown === "NOW!" || (puffEventSchedule && puffEventSchedule.nextAt <= Date.now())) {
-              startPuffEvent(puffEventSchedule.nextType);
-            } else {
-              notify("Event starts in " + peNextCountdown, C.cyan);
-            }
-          }}>
-            <div style={{padding:"10px 14px"}}>
-              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:6}}>
-                <div style={{display:"flex",alignItems:"center",gap:6}}>
-                  <div style={{width:6,height:6,borderRadius:"50%",background:peNextCountdown==="NOW!"?C.red:C.cyan,boxShadow:`0 0 8px ${peNextCountdown==="NOW!"?C.red:C.cyan}`,animation:"pulse 1.5s infinite"}}/>
-                  <span style={{fontSize:10,fontWeight:800,color:C.text,letterSpacing:1}}>LIVE GAMES</span>
-                </div>
-                <div style={{padding:"2px 8px",borderRadius:6,background:peNextCountdown==="NOW!"?`${C.red}15`:`${C.cyan}10`,border:`1px solid ${peNextCountdown==="NOW!"?C.red+"30":C.cyan+"20"}`}}>
-                  <span style={{fontSize:9,fontWeight:800,color:peNextCountdown==="NOW!"?C.red:C.cyan}}>{peNextCountdown==="NOW!"?"JOIN NOW!":peNextCountdown}</span>
-                </div>
-              </div>
-              <div style={{display:"flex",alignItems:"center",gap:8}}>
-                <div style={{fontSize:20}}>{(() => { const t = PE_TYPES.find(t=>t.id===puffEventSchedule?.nextType); return t ? t.emoji : "🎮"; })()}</div>
-                <div>
-                  <div style={{fontSize:12,fontWeight:800,color:C.text}}>{(() => { const t = PE_TYPES.find(t=>t.id===puffEventSchedule?.nextType); return t ? t.name : "Loading..."; })()}</div>
-                  <div style={{fontSize:9,color:C.text3}}>{(() => { const t = PE_TYPES.find(t=>t.id===puffEventSchedule?.nextType); return t ? t.desc : ""; })()}</div>
-                </div>
-              </div>
-              {/* Quick launch buttons */}
-              <div style={{display:"flex",gap:4,marginTop:8}}>
-                {PE_TYPES.map(pe => (
-                  <div key={pe.id} onClick={(e) => { e.stopPropagation(); startPuffEvent(pe.id); }} style={{
-                    flex:1,padding:"5px 2px",borderRadius:8,textAlign:"center",cursor:"pointer",
-                    background:`${pe.color}08`,border:`1px solid ${pe.color}15`,transition:"all 0.2s",
-                  }}>
-                    <div style={{fontSize:11}}>{pe.emoji}</div>
-                    <div style={{fontSize:7,fontWeight:700,color:pe.color,marginTop:1}}>{pe.name.split(" ")[0]}</div>
-                  </div>
-                ))}
-              </div>
-              {/* Recent event result */}
-              {puffEventResult && (Date.now() - puffEventResult.closedAt < 300000) && (
-                <div style={{marginTop:6,padding:"4px 8px",borderRadius:6,background:`${C.gold}06`,border:`1px solid ${C.gold}10`,fontSize:9,color:C.text3}}>
-                  Last: {PE_TYPES.find(t=>t.id===puffEventResult.type)?.name} completed - {puffEventResult.data?.participants || 0} participated
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
 
-        {/* ═══ INVISIBLE TAP ZONES ═══ */}
+{/* ═══ INVISIBLE TAP ZONES ═══ */}
         <div style={{position:"absolute",top:0,left:0,right:0,bottom:60,zIndex:10,pointerEvents:"none"}}>
           {HUB_TAP_ZONES.map(t => (
             <div key={t.key} onClick={()=>{playFx("nav");walkTo(t.key);}} style={{
