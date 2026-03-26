@@ -563,10 +563,17 @@ export default function MoodLabArena() {
   const [vcAnswered, setVcAnswered] = useState(false);
   const [vcStreak, setVcStreak] = useState(0);
 
-  // ── Spin & Win ──
-  const [spinAngle, setSpinAngle] = useState(0);
-  const [spinning, setSpinning] = useState(false);
-  const [spinResult, setSpinResult] = useState(null);
+  // ── Spin & Win (Full Game Show) ──
+  const [swPhase, setSwPhase] = useState(null); // null|intro|spinning|result|bonus|complete
+  const [swAngle, setSwAngle] = useState(0);
+  const [swSpinning, setSwSpinning] = useState(false);
+  const [swPrize, setSwPrize] = useState(null);
+  const [swRound, setSwRound] = useState(0);
+  const [swTotalWon, setSwTotalWon] = useState(0);
+  const [swBonusRound, setSwBonusRound] = useState(false);
+  const [swShowBust, setSwShowBust] = useState(false);
+  const [swShowJackpot, setSwShowJackpot] = useState(false);
+  const swTickRef = useRef(null);
 
   // ── Predictions ──
   const [selectedMatch, setSelectedMatch] = useState(null);
@@ -837,6 +844,36 @@ export default function MoodLabArena() {
     {name:"The Blinker",emoji:"💨",taunt:"MAXIMUM POWER always",style:"blinker"},
     {name:"Puff Master",emoji:"👑",taunt:"I read you like a rolling paper",style:"adaptive"},
   ];
+
+
+  // ── Survival Trivia ──
+  const [stPhase, setStPhase] = useState(null); // null|"intro"|"question"|"reveal"|"eliminated"|"winner"
+  const [stPlayers, setStPlayers] = useState(100);
+  const [stRound, setStRound] = useState(0);
+  const [stTimer, setStTimer] = useState(15);
+  const [stAnswer, setStAnswer] = useState(null);
+  const [stEliminated, setStEliminated] = useState(false);
+  const [stStreak, setStStreak] = useState(0);
+  const [stQuestion, setStQuestion] = useState(null);
+  const [stCorrect, setStCorrect] = useState(null);
+  const [stFinalMode, setStFinalMode] = useState(false);
+  const [stComment, setStComment] = useState("");
+  const [stAvatars, setStAvatars] = useState([]);
+  const stTimerRef = useRef(null);
+
+  // ── Puff Clock ──
+  const [pcPhase, setPcPhase] = useState(null); // null|"intro"|"target"|"puffing"|"reveal"|"result"
+  const [pcTarget, setPcTarget] = useState(0);
+  const [pcRound, setPcRound] = useState(0);
+  const [pcPuffTime, setPcPuffTime] = useState(0);
+  const [pcHolding, setPcHolding] = useState(false);
+  const [pcResults, setPcResults] = useState([]);
+  const [pcLeaderboard, setPcLeaderboard] = useState([]);
+  const [pcComment, setPcComment] = useState("");
+  const [pcPerfect420, setPcPerfect420] = useState(false);
+  const pcPuffStart = useRef(0);
+  const pcPuffInterval = useRef(null);
+  const pcTimerRef = useRef(null);
 
   // ── Visual Effects Engine ──
   const [screenShake, setScreenShake] = useState(false);
@@ -2004,7 +2041,7 @@ export default function MoodLabArena() {
       setMatchmaking({game,mode,stage:"searching",input});
       setTimeout(()=>{
         setMatchmaking(p=>p?{...p,stage:"found",opp:mode==="ai"?"🤖 AI Bot":mode==="random"?"🎲 Player_847":"👫 Minh"}:null);
-        setTimeout(()=>{setMatchmaking(null);setGameActive({...game,activeInput:input});if(game.id==="wildwest")startDuel();if(game.id==="finalkick"||game.id==="finalkick2"||game.id==="finalkick3"){startKick(game.id);startMatchIntro(kickOpponent.current);}if(game.id==="balloon")startBalloonPop();if(game.id==="russian")startRussianRoulette();if(game.id==="puffpong")startPuffPong();if(game.id==="rhythm")startRhythmPuff();if(game.id==="tugofwar")startTugOfWar();if(game.id==="hotpotato")startHotPotato();if(game.id==="hooked")startHooked();if(game.id==="rps")startRps();},800);
+        setTimeout(()=>{setMatchmaking(null);setGameActive({...game,activeInput:input});if(game.id==="wildwest")startDuel();if(game.id==="finalkick"||game.id==="finalkick2"||game.id==="finalkick3"){startKick(game.id);startMatchIntro(kickOpponent.current);}if(game.id==="balloon")startBalloonPop();if(game.id==="russian")startRussianRoulette();if(game.id==="puffpong")startPuffPong();if(game.id==="rhythm")startRhythmPuff();if(game.id==="tugofwar")startTugOfWar();if(game.id==="hotpotato")startHotPotato();if(game.id==="hooked")startHooked();if(game.id==="rps")startRps();if(game.id==="survivaltrivia")startSurvivalTrivia();if(game.id==="puffclock")startPuffClock();},800);
       },mode==="ai"?400:1200);
     });
   };
@@ -4513,13 +4550,142 @@ export default function MoodLabArena() {
     }
   };
 
-  const doSpin = () => {
-    if(spinning) return; setSpinning(true); setSpinResult(null);
-    setSpinAngle(p=>p+1440+Math.random()*1440);
-    setTimeout(()=>{
-      const r=[{t:"100 Coins 🪙",c:100},{t:"200 Coins 🪙",c:200},{t:"JACKPOT 500!",c:500},{t:"50 XP ✨",c:0},{t:"Power-up ⚡",c:25},{t:"150 Coins 🪙",c:150}][Math.floor(Math.random()*6)];
-      setSpinResult(r);if(r.c)setCoins(c=>c+r.c);setSpinning(false);notify(`🎰 ${r.t}`,r.c>200?C.gold:C.cyan);
-    },3500);
+  // ══ Spin & Win: 12-Segment Wheel Data ══
+  const SW_SEGMENTS = [
+    {label:"50", value:50, color:C.cyan, emoji:"🪙"},
+    {label:"100", value:100, color:C.green, emoji:"💰"},
+    {label:"BUST", value:-50, color:C.red, emoji:"💀"},
+    {label:"200", value:200, color:C.gold, emoji:"🏆"},
+    {label:"75", value:75, color:C.blue, emoji:"🪙"},
+    {label:"BUST", value:-50, color:C.red, emoji:"💀"},
+    {label:"150", value:150, color:C.purple, emoji:"💎"},
+    {label:"50", value:50, color:C.cyan, emoji:"🪙"},
+    {label:"500", value:500, color:C.gold, emoji:"🎰"},
+    {label:"BUST", value:-50, color:C.red, emoji:"💀"},
+    {label:"100", value:100, color:C.green, emoji:"💰"},
+    {label:"JACKPOT", value:1000, color:C.gold, emoji:"👑"},
+  ];
+
+  const swStartGame = () => {
+    setSwPhase("intro");
+    setSwAngle(0);
+    setSwRound(0);
+    setSwTotalWon(0);
+    setSwBonusRound(false);
+    setSwPrize(null);
+    setSwShowBust(false);
+    setSwShowJackpot(false);
+    playFx("crowd");
+    setTimeout(() => setSwPhase("ready"), 1800);
+  };
+
+  const swDoSpin = () => {
+    if(swSpinning) return;
+    setSwSpinning(true);
+    setSwPrize(null);
+    setSwShowBust(false);
+    setSwShowJackpot(false);
+    playFx("crowd");
+
+    // Puff duration determines spin force
+    const puffDur = puffStartTime.current ? (Date.now() - puffStartTime.current) / 1000 : (0.5 + Math.random() * 2);
+    let rotations;
+    if(puffDur >= 4.5) rotations = 10 + Math.random() * 5; // Blinker = max randomness
+    else if(puffDur >= 2.0) rotations = 5 + Math.random() * 3; // Long puff
+    else rotations = 2 + Math.random() * 1; // Short puff
+
+    const extraDeg = Math.random() * 360;
+    const totalDeg = rotations * 360 + extraDeg;
+    const spinDuration = Math.min(2500 + rotations * 400, 6000);
+
+    setSwAngle(prev => prev + totalDeg);
+
+    // Tick sound effect during spin
+    if(swTickRef.current) clearInterval(swTickRef.current);
+    let tickCount = 0;
+    const maxTicks = Math.floor(rotations * 12);
+    swTickRef.current = setInterval(() => {
+      tickCount++;
+      if(tickCount < maxTicks) {
+        try {
+          const actx = new (window.AudioContext || window.webkitAudioContext)();
+          const osc = actx.createOscillator();
+          const gain = actx.createGain();
+          osc.connect(gain);
+          gain.connect(actx.destination);
+          osc.frequency.value = 800 + Math.random() * 400;
+          osc.type = "square";
+          gain.gain.value = 0.03;
+          osc.start();
+          osc.stop(actx.currentTime + 0.02);
+          setTimeout(() => actx.close(), 100);
+        } catch(e) {}
+      } else {
+        clearInterval(swTickRef.current);
+      }
+    }, Math.max(40, spinDuration / maxTicks));
+
+    setTimeout(() => {
+      if(swTickRef.current) clearInterval(swTickRef.current);
+      // Calculate which segment the pointer landed on
+      const finalAngle = swAngle + totalDeg;
+      const normalizedAngle = ((finalAngle % 360) + 360) % 360;
+      const segIdx = Math.floor(((360 - normalizedAngle) % 360 + 360) % 360 / 30) % 12;
+      const prize = SW_SEGMENTS[segIdx];
+      const currentRound = swRound + 1;
+      const isBonusActive = swBonusRound;
+      const actualValue = isBonusActive ? prize.value * 2 : prize.value;
+      const prizeResult = {...prize, actualValue};
+
+      setSwPrize(prizeResult);
+      setSwSpinning(false);
+      setSwRound(currentRound);
+      setSwPhase("result");
+
+      if(prize.label === "BUST") {
+        setSwShowBust(true);
+        setSwTotalWon(prev => Math.max(0, prev + actualValue));
+        setCoins(c => Math.max(0, c + actualValue));
+        playFx("lose");
+        setTimeout(() => { try { playFx("laugh"); } catch(e) {} }, 300);
+        triggerFlash("red");
+        notify("💀 BUST! -" + Math.abs(actualValue) + " coins!", C.red);
+      } else if(prize.label === "JACKPOT") {
+        setSwShowJackpot(true);
+        setSwTotalWon(prev => prev + actualValue);
+        setCoins(c => c + actualValue);
+        playFx("win");
+        playFx("crowd");
+        spawnConfetti(80, [C.gold, C.orange, "#fff", C.cyan, C.pink]);
+        triggerFlash("gold");
+        notify("👑 JACKPOT! +" + actualValue + " coins!", C.gold);
+      } else {
+        setSwTotalWon(prev => prev + actualValue);
+        setCoins(c => c + actualValue);
+        playFx("win");
+        spawnConfetti(20, [prize.color, C.gold]);
+        notify(prize.emoji + " +" + actualValue + " coins!", prize.color);
+      }
+
+      // After result, check if game continues
+      const maxSpins = isBonusActive ? 1 : 3;
+      const newTotal = swTotalWon + actualValue;
+      setTimeout(() => {
+        if(currentRound >= maxSpins) {
+          if(!isBonusActive && newTotal > 500) {
+            setSwBonusRound(true);
+            setSwPhase("bonus");
+            playFx("crowd");
+            spawnConfetti(40, [C.gold, C.orange]);
+            notify("🌟 BONUS ROUND UNLOCKED!", C.gold);
+          } else {
+            setSwPhase("complete");
+          }
+        } else {
+          setSwPhase("ready");
+        }
+      }, 2200);
+    }, spinDuration);
   };
 
   // ═════════════════════════════════════════
@@ -6100,36 +6266,150 @@ export default function MoodLabArena() {
     </div>
   );
 
-  const renderStage = () => (
+  const renderStage = () => {
+    const liveShow = SHOW_GAMES[0];
+    const upcomingShows = SHOW_GAMES.slice(1,5);
+    const stageStats = {watched:vcRound+3, correct:vcScore>0?Math.floor(vcScore/100):7, coinsWon:vcScore+420};
+    const nowViewers = 1247 + Math.floor(Math.random()*100);
+    return (
     <div style={{position:"relative"}}>
-      <div style={{position:"absolute",top:-40,left:"50%",transform:"translateX(-50%)",width:300,height:200,borderRadius:"50%",background:`radial-gradient(circle, ${Z.stage.glow.replace("0.35","0.1")}, transparent 70%)`,pointerEvents:"none"}}/>
+      {/* Stage lights effect */}
+      <div style={{position:"absolute",top:-60,left:"50%",transform:"translateX(-50%)",width:400,height:300,pointerEvents:"none",
+        background:`radial-gradient(ellipse at 30% 0%, ${C.purple}18, transparent 50%), radial-gradient(ellipse at 70% 0%, ${C.pink}15, transparent 50%), radial-gradient(ellipse at 50% 10%, ${C.gold}10, transparent 60%)`
+      }}/>
+      <div style={{position:"absolute",top:0,left:0,right:0,height:200,pointerEvents:"none",overflow:"hidden"}}>
+        <div style={{position:"absolute",top:-80,width:120,height:300,background:`linear-gradient(90deg, transparent, ${C.gold}06, transparent)`,transform:"rotate(15deg)",animation:"spotlightSweep 6s ease-in-out infinite"}}/>
+      </div>
       {renderZoneHeader("stage")}
       <div style={{padding:"0 14px"}}>
-        {SHOW_GAMES.map(g=>(
-          <div key={g.id} onClick={()=>{if(g.id==="vibecheck")setShowVibeCheck(true);else if(g.id==="spinwin"){setSelectedGame(g);doSpin();}else notify(`${g.name} — tap to join!`,g.color);}} style={{
-            padding:"16px",borderRadius:16,marginBottom:10,cursor:"pointer",position:"relative",overflow:"hidden",
-            background:`radial-gradient(ellipse at 0% 50%, ${g.color}08, ${C.bg2} 60%)`,
-            border:`1px solid ${g.color}15`,transition:"all 0.3s",
-          }}>
-            {g.live && <div style={{position:"absolute",top:12,right:12,display:"flex",alignItems:"center",gap:4}}><div style={{width:5,height:5,borderRadius:"50%",background:C.red,animation:"pulse 1.5s infinite"}}/><span style={{fontSize:9,fontWeight:700,color:C.red}}>LIVE</span></div>}
-            <div style={{display:"flex",alignItems:"center",gap:14}}>
-              <div style={{fontSize:34,filter:`drop-shadow(0 0 8px ${g.color}40)`}}>{g.emoji}</div>
-              <div>
-                <div style={{fontSize:16,fontWeight:800,color:C.text}}>{g.name}</div>
-                <div style={{fontSize:11,color:C.text3,marginTop:2}}>{g.desc}</div>
-                <div style={{display:"flex",gap:4,marginTop:6}}>
-                  <span style={{fontSize:9,fontWeight:600,color:g.color,padding:"2px 6px",borderRadius:4,background:`${g.color}10`}}>{g.type}</span>
-                  <span style={{fontSize:9,color:C.text3,padding:"2px 6px",borderRadius:4,background:`${C.text3}08`}}>👥{g.players}</span>
-                </div>
+
+        {/* NOW SHOWING - Hero Card */}
+        <div onClick={()=>{setShowVibeCheck(true);setVcPhase("intro");setVcPlayers(100);setVcRound(0);setVcEliminated(false);setVcCorrectStreak(0);setVcScore(0);}} style={{
+          position:"relative",overflow:"hidden",borderRadius:20,padding:"24px 18px",marginBottom:16,cursor:"pointer",
+          background:`radial-gradient(ellipse at 20% 30%, ${liveShow.color}18, transparent 60%), radial-gradient(ellipse at 80% 70%, ${C.purple}12, transparent 50%), linear-gradient(135deg, ${C.bg2}, ${C.bg3})`,
+          border:`1.5px solid ${liveShow.color}25`,boxShadow:`0 0 30px ${liveShow.color}08, inset 0 1px 0 rgba(255,255,255,0.05)`,
+        }}>
+          <div style={{position:"absolute",top:14,right:14,display:"flex",alignItems:"center",gap:5,padding:"4px 10px",borderRadius:6,background:`${C.red}20`,border:`1px solid ${C.red}40`,boxShadow:`0 0 12px ${C.red}30`}}>
+            <div style={{width:7,height:7,borderRadius:"50%",background:C.red,boxShadow:`0 0 8px ${C.red}`,animation:"pulse 1.5s infinite"}}/>
+            <span style={{fontSize:10,fontWeight:900,color:C.red,letterSpacing:1.5}}>LIVE</span>
+          </div>
+          <div style={{fontSize:9,fontWeight:700,color:C.pink,letterSpacing:2,marginBottom:8}}>NOW SHOWING</div>
+          <div style={{display:"flex",alignItems:"center",gap:14,marginBottom:12}}>
+            <div style={{width:52,height:52,borderRadius:14,display:"flex",alignItems:"center",justifyContent:"center",fontSize:28,
+              background:`radial-gradient(circle, ${liveShow.color}20, ${liveShow.color}05)`,border:`1.5px solid ${liveShow.color}30`,
+              boxShadow:`0 0 16px ${liveShow.color}15`,filter:`drop-shadow(0 0 8px ${liveShow.color}40)`
+            }}>{liveShow.emoji}</div>
+            <div style={{flex:1}}>
+              <div style={{fontSize:20,fontWeight:900,color:C.text,lineHeight:1.2}}>{liveShow.name}</div>
+              <div style={{display:"flex",alignItems:"center",gap:8,marginTop:4}}>
+                <span style={{fontSize:11,color:C.text2}}>🎤 MC Host</span>
+                <span style={{fontSize:10,color:C.text3}}>|</span>
+                <span style={{fontSize:11,color:C.pink}}>👁 {nowViewers.toLocaleString()} watching</span>
               </div>
             </div>
           </div>
-        ))}
+          <div style={{fontSize:12,color:C.text3,marginBottom:14,lineHeight:1.4}}>{liveShow.desc}</div>
+          <div style={{display:"flex",alignItems:"center",gap:8}}>
+            <div style={{flex:1,padding:"10px 0",borderRadius:12,textAlign:"center",
+              background:`linear-gradient(135deg, ${C.pink}20, ${C.purple}15)`,border:`1px solid ${C.pink}30`,
+              boxShadow:`0 0 16px ${C.pink}10`
+            }}>
+              <span style={{fontSize:13,fontWeight:900,color:C.pink,letterSpacing:1}}>JOIN NOW</span>
+            </div>
+            <div style={{padding:"10px 14px",borderRadius:12,background:`${C.text3}08`,border:`1px solid ${C.border}`}}>
+              <span style={{fontSize:11,color:C.text2}}>👥 {liveShow.players}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* SHOW SCHEDULE - Horizontal Scroll */}
+        <div style={{marginBottom:16}}>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
+            <div style={{fontSize:11,fontWeight:800,color:C.text,letterSpacing:1}}>SHOW SCHEDULE</div>
+            <div style={{fontSize:9,color:C.text3}}>Scroll for more ></div>
+          </div>
+          <div style={{display:"flex",gap:10,overflowX:"auto",paddingBottom:6,WebkitOverflowScrolling:"touch",scrollbarWidth:"none"}}>
+            {upcomingShows.map((g,i)=>{
+              const mins = [12,34,58,90][i]||30;
+              return (
+                <div key={g.id} onClick={()=>notify(`${g.name} starts in ${mins} min!`,g.color)} style={{
+                  minWidth:140,padding:"14px 12px",borderRadius:14,cursor:"pointer",flexShrink:0,
+                  background:`radial-gradient(ellipse at 50% 0%, ${g.color}08, ${C.bg2} 70%)`,
+                  border:`1px solid ${g.color}12`,transition:"all 0.3s",
+                }}>
+                  <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
+                    <div style={{fontSize:22,filter:`drop-shadow(0 0 6px ${g.color}40)`}}>{g.emoji}</div>
+                    <div style={{padding:"3px 7px",borderRadius:5,background:`${C.orange}12`,border:`1px solid ${C.orange}20`}}>
+                      <span style={{fontSize:8,fontWeight:800,color:C.orange}}>{mins}m</span>
+                    </div>
+                  </div>
+                  <div style={{fontSize:12,fontWeight:800,color:C.text,marginBottom:2}}>{g.name}</div>
+                  <div style={{fontSize:9,color:C.text3}}>{g.type} | {g.players}</div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* ALL SHOWS - 2 Column Grid */}
+        <div style={{marginBottom:16}}>
+          <div style={{fontSize:11,fontWeight:800,color:C.text,letterSpacing:1,marginBottom:10}}>ALL SHOWS</div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+            {SHOW_GAMES.map(g=>(
+              <div key={g.id} onClick={()=>{
+                if(g.id==="vibecheck"){setShowVibeCheck(true);setVcPhase("intro");setVcPlayers(100);setVcRound(0);setVcEliminated(false);setVcCorrectStreak(0);setVcScore(0);}
+                else if(g.id==="spinwin"){setSelectedGame(g);swStartGame();}
+                else notify(`${g.name} -- tap to join!`,g.color);
+              }} style={{
+                padding:"12px 10px",borderRadius:14,cursor:"pointer",position:"relative",overflow:"hidden",
+                background:`radial-gradient(ellipse at 50% 0%, ${g.color}06, ${C.bg2} 70%)`,
+                border:`1px solid ${g.color}10`,transition:"all 0.3s",
+              }}>
+                {g.live && <div style={{position:"absolute",top:6,right:6,display:"flex",alignItems:"center",gap:3}}>
+                  <div style={{width:4,height:4,borderRadius:"50%",background:C.red,animation:"pulse 1.5s infinite"}}/>
+                  <span style={{fontSize:7,fontWeight:700,color:C.red}}>LIVE</span>
+                </div>}
+                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
+                  <div style={{fontSize:22,filter:`drop-shadow(0 0 6px ${g.color}30)`}}>{g.emoji}</div>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{fontSize:11,fontWeight:800,color:C.text,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{g.name}</div>
+                  </div>
+                </div>
+                <div style={{display:"flex",gap:3,flexWrap:"wrap"}}>
+                  <span style={{fontSize:8,fontWeight:700,color:g.color,padding:"2px 5px",borderRadius:3,background:`${g.color}10`}}>{g.type}</span>
+                  <span style={{fontSize:8,color:C.text3,padding:"2px 5px",borderRadius:3,background:`${C.text3}06`}}>👥{g.players}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* YOUR STAGE STATS */}
+        <div style={{borderRadius:16,padding:"14px",marginBottom:16,
+          background:`radial-gradient(ellipse at 50% 0%, ${C.purple}06, ${C.bg2} 60%)`,
+          border:`1px solid ${C.purple}12`,
+        }}>
+          <div style={{fontSize:11,fontWeight:800,color:C.purple,letterSpacing:1,marginBottom:10}}>YOUR STAGE STATS</div>
+          <div style={{display:"flex",justifyContent:"space-around"}}>
+            {[
+              {label:"Shows Watched",val:stageStats.watched,icon:"📺",color:C.cyan},
+              {label:"Correct Answers",val:stageStats.correct,icon:"✅",color:C.green},
+              {label:"Coins Won",val:stageStats.coinsWon,icon:"🪙",color:C.gold},
+            ].map((s,i)=>(
+              <div key={i} style={{textAlign:"center"}}>
+                <div style={{fontSize:18,marginBottom:2}}>{s.icon}</div>
+                <div style={{fontSize:16,fontWeight:900,color:s.color}}>{s.val}</div>
+                <div style={{fontSize:8,color:C.text3,marginTop:1}}>{s.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
       </div>
       <div style={{height:80}}/>
     </div>
-  );
-
+    );
+  };
   const renderOracle = () => (
     <div style={{position:"relative"}}>
       <div style={{position:"absolute",top:-40,left:"50%",transform:"translateX(-50%)",width:300,height:200,borderRadius:"50%",background:`radial-gradient(circle, ${Z.oracle.glow.replace("0.35","0.1")}, transparent 70%)`,pointerEvents:"none"}}/>
@@ -6308,9 +6588,9 @@ export default function MoodLabArena() {
       // Reset EVERYTHING — nuclear clear all state
       setGameActive(null);setKickState(null);setIsFK2Mode(false);isFK2Ref.current=false;setIsFK3Mode(false);isFK3Ref.current=false;
       setBpPhase(null);setRrPhase(null);setPpPhase(null);setRpPhase(null);setTowPhase(null);
-      setHpPhase(null);setHookPhase(null);setRpsPhase(null);setDuelPhase("menu");
+      setHpPhase(null);setHookPhase(null);setRpsPhase(null);setStPhase(null);setPcPhase(null);setDuelPhase("menu");
       setMatchmaking(null);setSelectedGame(null);setFanMode(null);setFanTeam(null);setFanDevice(null);
-      setShowVibeCheck(false);setDimLights(false);setScreenShake(false);setScreenFlash(null);
+      setShowVibeCheck(false);setVcPhase(null);setVcEliminated(false);setVcCorrectStreak(0);setVcPuffAnswer(null);if(vcTimerRef.current){clearInterval(vcTimerRef.current);vcTimerRef.current=null;}setDimLights(false);setScreenShake(false);setScreenFlash(null);
       setMatchIntro(null);setCommentatorText("");setPuffBubbles([]);setAudienceBubbles([]);
       setConfettiParticles([]);setSmokeParticles([]);setLiveSpectators([]);setSpectatorTicker([]);setCrowdEnergy(0);setCrowdEruption(false);
       try{setWcPhase(null);setWcTeam(null);setWcTournament(null);setWcBracket(null);setWcFinalResult(null);}catch(e){}
@@ -6360,6 +6640,11 @@ export default function MoodLabArena() {
     // Rock Paper Scissors
     if(rpsPuffInterval.current){clearInterval(rpsPuffInterval.current);rpsPuffInterval.current=null;}
     if(window._rpsActive) { window._rpsActive.v = false; window._rpsActive = null; }
+    // Survival Trivia
+    if(stTimerRef.current){clearInterval(stTimerRef.current);stTimerRef.current=null;}
+    // Puff Clock
+    if(pcPuffInterval.current){clearInterval(pcPuffInterval.current);pcPuffInterval.current=null;}
+    if(pcTimerRef.current){clearInterval(pcTimerRef.current);pcTimerRef.current=null;}
     // Three.js cleanup — dispose geometries, materials, particles
     if(threeSceneRef.current){
       const sc=threeSceneRef.current;
@@ -6590,6 +6875,351 @@ export default function MoodLabArena() {
       else if(gameActive.wcMatchIdx !== undefined) { wcFinishGroupMatch(gameActive.wcMatchIdx, myS, aiS); }
     }
     setRpsPhase(null);
+    setGameActive(null);
+  };
+
+
+  // ===============================================================
+  // SURVIVAL TRIVIA -- Full Game Engine
+  // ===============================================================
+  const ST_QUESTIONS = [
+    {q:"What color is cannabis?",a:["Green","Blue","Red","Yellow"],c:0},
+    {q:"What do you light a joint with?",a:["Lighter","Spoon","Pen","Phone"],c:0},
+    {q:"What is THC?",a:["A cannabinoid","A vitamin","A mineral","A protein"],c:0},
+    {q:"Which part of the plant do you smoke?",a:["Flower","Root","Stem","Bark"],c:0},
+    {q:"What does CBD stand for?",a:["Cannabidiol","Carbon Dioxide","Chill Buzz Drug","Cool Bud Drop"],c:0},
+    {q:"What is a blinker?",a:["Max-length puff","A car signal","Eye twitch","Short puff"],c:0},
+    {q:"Which snack is the classic munchie?",a:["Doritos","Salad","Rice cakes","Broccoli"],c:0},
+    {q:"What year was cannabis first legalized in a US state?",a:["2012","2000","2016","1995"],c:0},
+    {q:"Which US state legalized recreational cannabis first?",a:["Colorado","California","Oregon","Alaska"],c:0},
+    {q:"What is a dab rig used for?",a:["Concentrates","Flower","Edibles","Topicals"],c:0},
+    {q:"What does 420 refer to in cannabis culture?",a:["April 20th","4:20 PM break","Police code","A strain name"],c:0},
+    {q:"Which terpene smells like citrus?",a:["Limonene","Myrcene","Pinene","Linalool"],c:0},
+    {q:"What is decarboxylation?",a:["Heating to activate THC","Drying process","Trimming buds","Removing seeds"],c:0},
+    {q:"Indica is known for making you feel...?",a:["Relaxed","Energized","Focused","Anxious"],c:0},
+    {q:"What terpene gives cannabis its piney smell?",a:["Pinene","Myrcene","Caryophyllene","Terpinolene"],c:0},
+    {q:"What is the entourage effect?",a:["Compounds working together","VIP treatment","Crowd high","Tolerance buildup"],c:0},
+    {q:"Which cannabinoid is non-psychoactive?",a:["CBD","THC","THCV","Delta-8"],c:0},
+    {q:"What temperature (F) does THC vaporize?",a:["315-392","100-200","500-600","200-250"],c:0},
+    {q:"What is a landrace strain?",a:["Original wild strain","Lab hybrid","GMO cannabis","Indoor variety"],c:0},
+    {q:"What is trichome?",a:["Crystal resin gland","Root hair","Leaf vein","Seed coating"],c:0},
+    {q:"What country has the longest cannabis history?",a:["China","USA","Jamaica","Netherlands"],c:0},
+    {q:"What is rosin?",a:["Heat-pressed extract","Edible oil","Rolling paper","Fertilizer"],c:0},
+    {q:"What is a phenotype in cannabis?",a:["Physical trait expression","Smell category","THC level","Grow method"],c:0},
+    {q:"Which cannabinoid may suppress appetite?",a:["THCV","CBN","CBD","CBG"],c:0},
+  ];
+
+  const ST_DEATH_MSGS = [
+    "ELIMINATED! Your brain needed more THC... or less",
+    "WRONG! The grim reaper puffs on your soul",
+    "DEAD! Even a goldfish would know that one",
+    "ELIMINATED! Your third eye was clearly closed",
+    "RIP! That answer was rougher than shake",
+    "GONE! You just got trimmed from the game",
+    "WRONG! Pack it up, you're done",
+    "ELIMINATED! Not even a blinker could save you",
+  ];
+
+  const ST_SURVIVE_MSGS = [
+    "CORRECT! You live to puff another round!",
+    "RIGHT! Your cannabis IQ is showing",
+    "SURVIVED! The reaper passes you by... this time",
+    "CORRECT! That big brain energy though",
+    "YES! Knowledge is power, and power is THC",
+    "NAILED IT! You're built different",
+  ];
+
+  const startSurvivalTrivia = () => {
+    const avatarList = [];
+    const emojis = ["\uD83D\uDE24","\uD83D\uDE0E","\uD83E\uDD74","\uD83E\uDD29","\uD83D\uDE08","\uD83D\uDC7D","\uD83E\uDD16","\uD83D\uDC7B","\uD83D\uDC38","\uD83C\uDF1A","\uD83E\uDD8A","\uD83D\uDC80","\uD83E\uDDE0","\uD83D\uDC51","\uD83D\uDD25","\uD83D\uDCA8","\uD83C\uDF3F","\uD83C\uDF55","\uD83C\uDFAE","\uD83C\uDFB5"];
+    for(let i=0;i<100;i++) avatarList.push({id:i,emoji:emojis[i%emojis.length],alive:true,name:"Player_"+(100+i)});
+    avatarList[42] = {id:42,emoji:"\uD83C\uDF1F",alive:true,name:"You",isYou:true};
+    setStAvatars(avatarList);
+    setStPlayers(100);
+    setStRound(0);
+    setStStreak(0);
+    setStEliminated(false);
+    setStAnswer(null);
+    setStCorrect(null);
+    setStFinalMode(false);
+    setStComment("");
+    setStPhase("intro");
+    playFx("crowd");
+    setCommentary("100 players enter... only 1 survives!");
+    setTimeout(()=>{
+      setStComment("SURVIVAL TRIVIA");
+      setTimeout(()=>{
+        setStComment("Wrong answer = INSTANT DEATH");
+        setTimeout(()=>{
+          setStComment("Last one standing WINS");
+          setTimeout(()=>stNextQuestion(0, 100, avatarList),1500);
+        },1500);
+      },1500);
+    },500);
+  };
+
+  const stNextQuestion = (roundNum, playersLeft, avatars) => {
+    if(playersLeft <= 1 || roundNum >= ST_QUESTIONS.length) {
+      setStPhase("winner");
+      setStComment("WINNER WINNER! You survived all rounds!");
+      playFx("crowd");
+      triggerFlash("goal");
+      setCoins(c=>c+500);
+      notify("SURVIVOR! +500 coins!",C.gold);
+      return;
+    }
+    const isFinal = playersLeft <= 3;
+    setStFinalMode(isFinal);
+    const timerDur = isFinal ? 8 : 15;
+    const q = ST_QUESTIONS[roundNum % ST_QUESTIONS.length];
+    const indices = [0,1,2,3];
+    for(let i=indices.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[indices[i],indices[j]]=[indices[j],indices[i]];}
+    const shuffled = indices.map(i=>q.a[i]);
+    const correctIdx = indices.indexOf(q.c);
+    setStQuestion({text:q.q,answers:shuffled,correctIdx:correctIdx});
+    setStAnswer(null);
+    setStCorrect(null);
+    setStRound(roundNum+1);
+    setStTimer(timerDur);
+    setStPhase("question");
+    setStComment(isFinal ? "FINAL 3 SHOWDOWN! 8 SECONDS!" : "Round "+(roundNum+1)+" - "+playersLeft+" alive");
+    setCommentary(isFinal ? "FINAL SHOWDOWN! Only "+playersLeft+" remain!" : playersLeft+" players remaining...");
+    if(stTimerRef.current) clearInterval(stTimerRef.current);
+    let t = timerDur;
+    stTimerRef.current = setInterval(()=>{
+      t--;
+      setStTimer(t);
+      if(t<=0){
+        clearInterval(stTimerRef.current);
+        stTimerRef.current=null;
+        setStAnswer(-1);
+        stRevealAnswer(roundNum, -1, correctIdx, playersLeft, avatars);
+      }
+    },1000);
+  };
+
+  const stSelectAnswer = (idx) => {
+    if(stAnswer !== null) return;
+    setStAnswer(idx);
+    if(stTimerRef.current){clearInterval(stTimerRef.current);stTimerRef.current=null;}
+    stRevealAnswer(stRound-1, idx, stQuestion.correctIdx, stPlayers, stAvatars);
+  };
+
+  const stRevealAnswer = (roundNum, playerAnswer, correctIdx, playersLeft, avatars) => {
+    setStCorrect(correctIdx);
+    setStPhase("reveal");
+    const isCorrect = playerAnswer === correctIdx;
+    const elimRate = Math.min(0.35, 0.10 + roundNum * 0.02);
+    let newAvatars = avatars.map(a=>{
+      if(!a.alive) return a;
+      if(a.isYou) return {...a, alive: isCorrect};
+      return {...a, alive: Math.random() > elimRate};
+    });
+    const aliveCount = newAvatars.filter(a=>a.alive).length;
+    if(aliveCount < 2 && isCorrect) {
+      let revived = 0;
+      newAvatars = newAvatars.map(a=>{
+        if(!a.alive && !a.isYou && revived < 2){revived++;return {...a,alive:true};}
+        return a;
+      });
+    }
+    const newAlive = newAvatars.filter(a=>a.alive).length;
+    const eliminated = playersLeft - newAlive;
+    setStAvatars(newAvatars);
+    setStPlayers(newAlive);
+
+    if(isCorrect) {
+      setStStreak(s=>s+1);
+      const msg = ST_SURVIVE_MSGS[Math.floor(Math.random()*ST_SURVIVE_MSGS.length)];
+      setStComment(msg);
+      playFx("goal");
+      setCommentary(eliminated+" players eliminated! "+newAlive+" remain.");
+      const streakBonus = (stStreak+1) >= 5 ? 50 : (stStreak+1) >= 3 ? 25 : 10;
+      setCoins(c=>c+streakBonus);
+      notify("Correct! +"+streakBonus+" coins",C.green);
+    } else {
+      setStEliminated(true);
+      setStStreak(0);
+      const msg = ST_DEATH_MSGS[Math.floor(Math.random()*ST_DEATH_MSGS.length)];
+      setStComment(msg);
+      playFx("error");
+      triggerFlash("miss");
+      setCommentary("YOU HAVE BEEN ELIMINATED!");
+    }
+
+    setTimeout(()=>{
+      if(!isCorrect) {
+        setStPhase("eliminated");
+        return;
+      }
+      if(newAlive <= 1) {
+        setStPhase("winner");
+        setStComment("YOU ARE THE LAST ONE STANDING!");
+        playFx("crowd");
+        triggerFlash("goal");
+        setCoins(c=>c+500);
+        notify("SOLE SURVIVOR! +500 coins!",C.gold);
+        return;
+      }
+      stNextQuestion(roundNum+1, newAlive, newAvatars);
+    }, 2500);
+  };
+
+  const stEndGame = () => {
+    if(stTimerRef.current){clearInterval(stTimerRef.current);stTimerRef.current=null;}
+    setStPhase(null);
+    setGameActive(null);
+  };
+
+  // ===============================================================
+  // PUFF CLOCK -- Full Game Engine
+  // ===============================================================
+  const PC_TARGETS = [2.00, 3.50, 1.75, 4.20, 0];
+  const PC_ROUND_NAMES = ["Round 1: The Warm-Up","Round 2: Getting Tricky","Round 3: Precision Mode","Round 4: THE 4.20 ROUND","Round 5: SURPRISE"];
+
+  const PC_COMEDY = [
+    "Your internal clock is vibing differently right now",
+    "THC messing with your perception of time!",
+    "Einstein said time is relative... he was clearly high",
+    "Your brain cells are counting in slow motion",
+    "That was either 2 seconds or 2 hours, who knows",
+    "Time flies when you're having puffs!",
+    "Your temporal lobe called in sick today",
+    "Somewhere a clock is laughing at you right now",
+  ];
+
+  const startPuffClock = () => {
+    setPcRound(0);
+    setPcResults([]);
+    setPcPuffTime(0);
+    setPcHolding(false);
+    setPcPerfect420(false);
+    setPcComment("");
+    setPcPhase("intro");
+    playFx("crowd");
+    setCommentary("Puff Clock! Precision is everything!");
+    const names = ["CloudTimer","PrecisionPuff","4.20_King","NanoSecond","TimeWarp","ChronoBlaze","ClockMaster","TickTock420"];
+    const lb = names.map((n,i)=>({name:n,emoji:SPECTATOR_EMOJIS[i%SPECTATOR_EMOJIS.length],totalError:+(Math.random()*2+0.1).toFixed(2),rank:i+1}));
+    lb.sort((a,b)=>a.totalError-b.totalError);
+    lb.forEach((p,i)=>p.rank=i+1);
+    setPcLeaderboard(lb);
+
+    setTimeout(()=>{
+      setPcComment("Puff for EXACTLY the target time!");
+      setTimeout(()=>{
+        setPcComment("Closest to the target wins!");
+        setTimeout(()=>pcStartRound(0),1500);
+      },1500);
+    },500);
+  };
+
+  const pcStartRound = (roundNum) => {
+    if(roundNum >= 5) {
+      pcShowFinalResults();
+      return;
+    }
+    let target = PC_TARGETS[roundNum];
+    if(target === 0) target = +(1.0 + Math.random()*3.5).toFixed(2);
+    setPcTarget(target);
+    setPcRound(roundNum+1);
+    setPcPuffTime(0);
+    setPcHolding(false);
+    setPcComment(PC_ROUND_NAMES[roundNum]);
+    setPcPhase("target");
+    setCommentary("Target: "+target.toFixed(2)+" seconds!");
+    setTimeout(()=>{
+      setPcPhase("puffing");
+      setPcComment("PUFF NOW! Hold for "+target.toFixed(2)+"s!");
+    },3000);
+  };
+
+  const pcStartPuff = () => {
+    if(pcHolding || pcPhase !== "puffing") return;
+    setPcHolding(true);
+    pcPuffStart.current = Date.now();
+    setPcPuffTime(0);
+    if(pcPuffInterval.current) clearInterval(pcPuffInterval.current);
+    pcPuffInterval.current = setInterval(()=>{
+      const elapsed = (Date.now() - pcPuffStart.current) / 1000;
+      setPcPuffTime(elapsed);
+      if(elapsed >= 6.0) pcStopPuff();
+    },50);
+  };
+
+  const pcStopPuff = () => {
+    if(!pcHolding) return;
+    setPcHolding(false);
+    if(pcPuffInterval.current){clearInterval(pcPuffInterval.current);pcPuffInterval.current=null;}
+    const elapsed = +(((Date.now() - pcPuffStart.current) / 1000)).toFixed(2);
+    const clampedElapsed = Math.min(elapsed, 6.0);
+    setPcPuffTime(clampedElapsed);
+    const error = +(Math.abs(clampedElapsed - pcTarget)).toFixed(2);
+    const roundResult = {round:pcRound,target:pcTarget,actual:clampedElapsed,error:error};
+
+    let perfect = false;
+    if(pcTarget === 4.20 && error <= 0.05) {
+      perfect = true;
+      setPcPerfect420(true);
+      setCoins(c=>c+420);
+      notify("PERFECT 4.20! +420 coins!",C.gold);
+      triggerFlash("goal");
+      playFx("crowd");
+    }
+
+    setPcResults(prev=>[...prev,roundResult]);
+    setPcPhase("reveal");
+
+    const errorComment = error <= 0.05 ? "PERFECT! Are you a robot?!" :
+      error <= 0.15 ? "SO CLOSE! Almost superhuman precision!" :
+      error <= 0.30 ? "Not bad! Your internal clock is pretty solid." :
+      error <= 0.50 ? "Decent! "+PC_COMEDY[Math.floor(Math.random()*PC_COMEDY.length)] :
+      error <= 1.0 ? "Off by "+error.toFixed(2)+"s... "+PC_COMEDY[Math.floor(Math.random()*PC_COMEDY.length)] :
+      "You puffed "+clampedElapsed.toFixed(2)+"s... target was "+pcTarget.toFixed(2)+"s. Are you even trying?!";
+
+    setPcComment(perfect ? "4.20 PERFECTION! LEGENDARY!" : errorComment);
+    setCommentary("You: "+clampedElapsed.toFixed(2)+"s | Target: "+pcTarget.toFixed(2)+"s | Error: "+error.toFixed(2)+"s");
+
+    if(!perfect) {
+      const coins = error <= 0.10 ? 100 : error <= 0.25 ? 50 : error <= 0.50 ? 25 : error <= 1.0 ? 10 : 5;
+      setCoins(c=>c+coins);
+      notify("+"+coins+" coins (error: "+error.toFixed(2)+"s)",error<=0.25?C.green:C.gold);
+    }
+
+    setPcLeaderboard(prev=>{
+      const totalErr = [...pcResults,roundResult].reduce((s,r)=>s+r.error,0);
+      const updated = prev.filter(p=>p.name!=="You");
+      updated.push({name:"You",emoji:"\uD83C\uDF1F",totalError:+totalErr.toFixed(2),rank:0});
+      updated.sort((a,b)=>a.totalError-b.totalError);
+      updated.forEach((p,i)=>p.rank=i+1);
+      return updated.slice(0,10);
+    });
+
+    setTimeout(()=>pcStartRound(pcRound),3500);
+  };
+
+  const pcShowFinalResults = () => {
+    setPcPhase("result");
+    const totalError = pcResults.reduce((s,r)=>s+r.error,0);
+    const avgError = pcResults.length > 0 ? totalError / pcResults.length : 0;
+    const rank = pcLeaderboard.find(p=>p.name==="You");
+    const comment = avgError <= 0.15 ? "CHRONOMASTER! Your timing is INHUMAN!" :
+      avgError <= 0.30 ? "Impressive precision! Your internal clock is solid." :
+      avgError <= 0.60 ? "Not bad! THC only slightly warped your time perception." :
+      "Your sense of time is... unique. Very unique.";
+    setPcComment(comment);
+    setCommentary("Final rank: #"+(rank?rank.rank:"?")+" | Avg error: "+avgError.toFixed(2)+"s");
+    playFx("crowd");
+    if(rank && rank.rank <= 3) {
+      triggerFlash("goal");
+      setCoins(c=>c+200);
+      notify("TOP 3 FINISH! +200 bonus coins!",C.gold);
+    }
+  };
+
+  const pcEndGame = () => {
+    if(pcPuffInterval.current){clearInterval(pcPuffInterval.current);pcPuffInterval.current=null;}
+    if(pcTimerRef.current){clearInterval(pcTimerRef.current);pcTimerRef.current=null;}
+    setPcPhase(null);
     setGameActive(null);
   };
 
@@ -10050,6 +10680,256 @@ export default function MoodLabArena() {
         );
       }
 
+
+      // ── Survival Trivia ──
+      if(gameActive.id==="survivaltrivia" && stPhase) {
+        const isIntro = stPhase==="intro";
+        const isQuestion = stPhase==="question";
+        const isReveal = stPhase==="reveal";
+        const isEliminated = stPhase==="eliminated";
+        const isWinner = stPhase==="winner";
+        const timerPct = stFinalMode ? (stTimer/8)*100 : (stTimer/15)*100;
+        const timerColor = stTimer<=3 ? C.red : stTimer<=5 ? C.orange : C.text;
+        return (
+          <div style={{...overlayStyle,background:"rgba(15,0,0,0.97)"}}>
+            {overlayBack(stEndGame)}
+            <div style={{flex:1,display:"flex",flexDirection:"column",padding:16,paddingTop:56}}>
+              {/* Header */}
+              <div style={{textAlign:"center",marginBottom:12}}>
+                <div style={{fontSize:14,fontWeight:900,color:C.red,letterSpacing:2,textTransform:"uppercase"}}>
+                  {stFinalMode ? "\uD83D\uDC80 FINAL SHOWDOWN \uD83D\uDC80" : "\uD83D\uDC80 SURVIVAL TRIVIA \uD83D\uDC80"}
+                </div>
+                <div style={{fontSize:11,color:C.text3,marginTop:4}}>
+                  Round {stRound} | {stPlayers} alive | Streak: {stStreak}
+                </div>
+              </div>
+
+              {/* Death counter bar */}
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"6px 12px",borderRadius:8,background:"rgba(255,68,68,0.08)",border:"1px solid rgba(255,68,68,0.15)",marginBottom:12}}>
+                <div style={{fontSize:11,color:C.red,fontWeight:700}}>{100-stPlayers} eliminated</div>
+                <div style={{fontSize:11,color:C.green,fontWeight:700}}>{stPlayers} alive</div>
+              </div>
+
+              {/* Avatar grid */}
+              <div style={{display:"flex",flexWrap:"wrap",gap:2,justifyContent:"center",marginBottom:12,maxHeight:80,overflow:"hidden"}}>
+                {stAvatars.slice(0,50).map((a,i)=>(
+                  <div key={i} style={{fontSize:10,opacity:a.alive?1:0.15,filter:a.alive?"none":"grayscale(1)",transition:"all 0.5s",transform:a.isYou?"scale(1.3)":"scale(1)",textShadow:a.isYou?"0 0 6px "+C.gold:"none"}}>{a.emoji}</div>
+                ))}
+              </div>
+
+              {/* Timer */}
+              {(isQuestion) && (
+                <div style={{textAlign:"center",marginBottom:8}}>
+                  <div style={{fontSize:36,fontWeight:900,color:timerColor,fontFamily:"monospace",textShadow:stTimer<=3?"0 0 20px "+C.red:"none"}}>
+                    {stTimer}
+                  </div>
+                  <div style={{height:4,borderRadius:2,background:"rgba(255,255,255,0.06)",marginTop:4,overflow:"hidden"}}>
+                    <div style={{height:"100%",width:timerPct+"%",background:stTimer<=3?C.red:stTimer<=5?C.orange:C.green,borderRadius:2,transition:"width 1s linear"}}/>
+                  </div>
+                </div>
+              )}
+
+              {/* Question */}
+              {stQuestion && (isQuestion || isReveal) && (
+                <div style={{textAlign:"center",marginBottom:16}}>
+                  <div style={{fontSize:16,fontWeight:800,color:C.text,marginBottom:16,lineHeight:1.4,padding:"0 8px"}}>{stQuestion.text}</div>
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+                    {stQuestion.answers.map((ans,i)=>{
+                      const isSelected = stAnswer===i;
+                      const isCorrectAns = stCorrect===i;
+                      const bg = isReveal ? (isCorrectAns ? "rgba(52,211,153,0.2)" : (isSelected && !isCorrectAns) ? "rgba(255,68,68,0.2)" : "rgba(255,255,255,0.03)") : (isSelected ? "rgba(0,229,255,0.15)" : "rgba(255,255,255,0.03)");
+                      const border = isReveal ? (isCorrectAns ? "1px solid rgba(52,211,153,0.4)" : (isSelected && !isCorrectAns) ? "1px solid rgba(255,68,68,0.4)" : "1px solid rgba(255,255,255,0.06)") : (isSelected ? "1px solid rgba(0,229,255,0.3)" : "1px solid rgba(255,255,255,0.06)");
+                      return (
+                        <div key={i} onClick={()=>isQuestion && stSelectAnswer(i)}
+                          style={{padding:"12px 10px",borderRadius:10,cursor:isQuestion?"pointer":"default",background:bg,border:border,fontSize:13,fontWeight:700,color:isReveal?(isCorrectAns?C.green:(isSelected&&!isCorrectAns)?C.red:C.text3):C.text,transition:"all 0.3s"}}>
+                          {isReveal && isCorrectAns && "\u2713 "}{isReveal && isSelected && !isCorrectAns && "\u2717 "}{ans}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Comment */}
+              <div style={{textAlign:"center",fontSize:13,fontWeight:700,color:stEliminated?C.red:C.gold,marginBottom:12,minHeight:20}}>{stComment}</div>
+
+              {/* Intro overlay */}
+              {isIntro && (
+                <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column"}}>
+                  <div style={{fontSize:48,marginBottom:12}}>{"\uD83D\uDC80"}</div>
+                  <div style={{fontSize:22,fontWeight:900,color:C.red}}>{stComment}</div>
+                  <div style={{fontSize:12,color:C.text3,marginTop:8}}>100 PLAYERS ENTERED</div>
+                </div>
+              )}
+
+              {/* Eliminated screen */}
+              {isEliminated && (
+                <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column"}}>
+                  <div style={{fontSize:64,marginBottom:12}}>{"\uD83D\uDC80"}</div>
+                  <div style={{fontSize:22,fontWeight:900,color:C.red}}>YOU ARE DEAD</div>
+                  <div style={{fontSize:13,color:C.text3,marginTop:8}}>Survived {stRound} rounds | Streak: {stStreak}</div>
+                  <div style={{display:"flex",gap:10,marginTop:20}}>
+                    <div onClick={()=>{stEndGame();startSurvivalTrivia();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:C.red+"15",border:"1px solid "+C.red+"30",fontSize:13,fontWeight:800,color:C.red}}>Try Again</div>
+                    <div onClick={stEndGame} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:C.text3+"10",border:"1px solid "+C.text3+"20",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
+                  </div>
+                </div>
+              )}
+
+              {/* Winner screen */}
+              {isWinner && (
+                <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column"}}>
+                  <div style={{fontSize:64,marginBottom:12}}>{"\uD83D\uDC51"}</div>
+                  <div style={{fontSize:22,fontWeight:900,color:C.gold}}>SOLE SURVIVOR!</div>
+                  <div style={{fontSize:13,color:C.text3,marginTop:8}}>You outlasted {100-stPlayers} players | {stStreak} streak</div>
+                  <div style={{display:"flex",gap:10,marginTop:20}}>
+                    <div onClick={()=>{stEndGame();startSurvivalTrivia();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:C.gold+"15",border:"1px solid "+C.gold+"30",fontSize:13,fontWeight:800,color:C.gold}}>Play Again</div>
+                    <div onClick={stEndGame} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:C.text3+"10",border:"1px solid "+C.text3+"20",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      }
+
+      // ── Puff Clock ──
+      if(gameActive.id==="puffclock" && pcPhase) {
+        const isIntro = pcPhase==="intro";
+        const isTarget = pcPhase==="target";
+        const isPuffing = pcPhase==="puffing";
+        const isReveal = pcPhase==="reveal";
+        const isResult = pcPhase==="result";
+        const puffPct = Math.min((pcPuffTime/6.0)*100, 100);
+        const targetPct = (pcTarget/6.0)*100;
+        return (
+          <div style={{...overlayStyle,background:"rgba(0,5,20,0.97)"}}>
+            {overlayBack(pcEndGame)}
+            <div style={{flex:1,display:"flex",flexDirection:"column",padding:16,paddingTop:56}}>
+              {/* Header */}
+              <div style={{textAlign:"center",marginBottom:12}}>
+                <div style={{fontSize:14,fontWeight:900,color:C.cyan,letterSpacing:2,textTransform:"uppercase"}}>
+                  {"\u23F1\uFE0F"} PUFF CLOCK {"\u23F1\uFE0F"}
+                </div>
+                <div style={{fontSize:11,color:C.text3,marginTop:4}}>
+                  Round {pcRound}/5 {pcPerfect420 ? "| \uD83C\uDF1F 4.20 ACHIEVED!" : ""}
+                </div>
+              </div>
+
+              {/* Intro */}
+              {isIntro && (
+                <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column"}}>
+                  <div style={{fontSize:48,marginBottom:12}}>{"\u23F1\uFE0F"}</div>
+                  <div style={{fontSize:22,fontWeight:900,color:C.cyan}}>{pcComment}</div>
+                  <div style={{fontSize:12,color:C.text3,marginTop:8}}>5 rounds of precision puffing</div>
+                </div>
+              )}
+
+              {/* Target display */}
+              {isTarget && (
+                <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column"}}>
+                  <div style={{fontSize:12,color:C.text3,marginBottom:8,textTransform:"uppercase",letterSpacing:2}}>{pcComment}</div>
+                  <div style={{fontSize:14,color:C.text2,marginBottom:12}}>TARGET TIME:</div>
+                  <div style={{fontSize:56,fontWeight:900,color:pcTarget===4.20?C.gold:C.cyan,fontFamily:"monospace",textShadow:"0 0 30px "+(pcTarget===4.20?C.gold:C.cyan)+"60"}}>
+                    {pcTarget.toFixed(2)}s
+                  </div>
+                  {pcTarget===4.20 && <div style={{fontSize:13,color:C.gold,marginTop:8,fontWeight:700}}>THE SACRED NUMBER! Hit it for 420 coins!</div>}
+                  <div style={{fontSize:11,color:C.text3,marginTop:12}}>Get ready to puff...</div>
+                </div>
+              )}
+
+              {/* Puffing phase */}
+              {isPuffing && (
+                <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
+                  <div style={{fontSize:12,color:C.cyan,marginBottom:16,fontWeight:700}}>{pcComment}</div>
+                  {/* Stopwatch display */}
+                  <div style={{fontSize:52,fontWeight:900,color:pcHolding?C.cyan:C.text3,fontFamily:"monospace",marginBottom:20,textShadow:pcHolding?"0 0 20px "+C.cyan+"60":"none"}}>
+                    {pcPuffTime.toFixed(2)}s
+                  </div>
+                  {/* Timeline bar */}
+                  <div style={{width:"100%",maxWidth:300,height:30,borderRadius:15,background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.08)",position:"relative",overflow:"hidden",marginBottom:20}}>
+                    {/* Target line */}
+                    <div style={{position:"absolute",left:targetPct+"%",top:0,bottom:0,width:2,background:C.gold,zIndex:2,boxShadow:"0 0 8px "+C.gold}}/>
+                    <div style={{position:"absolute",left:(targetPct-1)+"%",top:-18,fontSize:9,color:C.gold,fontWeight:700}}>TARGET</div>
+                    {/* Puff fill */}
+                    <div style={{height:"100%",width:puffPct+"%",background:"linear-gradient(90deg,"+C.cyan+"40,"+C.cyan+")",borderRadius:15,transition:pcHolding?"none":"width 0.1s"}}/>
+                  </div>
+                  {/* Puff button */}
+                  <div
+                    onMouseDown={pcStartPuff} onMouseUp={pcStopPuff} onMouseLeave={pcStopPuff}
+                    onTouchStart={(e)=>{e.preventDefault();pcStartPuff();}} onTouchEnd={(e)=>{e.preventDefault();pcStopPuff();}}
+                    style={{width:100,height:100,borderRadius:50,background:pcHolding?"radial-gradient(circle,"+C.cyan+","+C.cyan+"40)":"rgba(0,229,255,0.08)",border:"2px solid "+(pcHolding?C.cyan:C.cyan+"40"),display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",transition:"all 0.15s",transform:pcHolding?"scale(1.1)":"scale(1)",boxShadow:pcHolding?"0 0 30px "+C.cyan+"40":"none"}}>
+                    <div style={{fontSize:pcHolding?28:14,fontWeight:900,color:pcHolding?"#000":C.cyan}}>{pcHolding?"\uD83D\uDCA8":"HOLD"}</div>
+                  </div>
+                  <div style={{fontSize:10,color:C.text3,marginTop:12}}>{pcHolding?"Release when you think you've hit the target!":"Press and HOLD to puff"}</div>
+                </div>
+              )}
+
+              {/* Reveal */}
+              {isReveal && (
+                <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
+                  <div style={{display:"flex",gap:20,marginBottom:16}}>
+                    <div style={{textAlign:"center"}}>
+                      <div style={{fontSize:11,color:C.text3}}>YOUR PUFF</div>
+                      <div style={{fontSize:28,fontWeight:900,color:C.cyan,fontFamily:"monospace"}}>{pcPuffTime.toFixed(2)}s</div>
+                    </div>
+                    <div style={{textAlign:"center"}}>
+                      <div style={{fontSize:11,color:C.text3}}>TARGET</div>
+                      <div style={{fontSize:28,fontWeight:900,color:C.gold,fontFamily:"monospace"}}>{pcTarget.toFixed(2)}s</div>
+                    </div>
+                  </div>
+                  <div style={{fontSize:13,fontWeight:700,color:Math.abs(pcPuffTime-pcTarget)<=0.15?C.green:Math.abs(pcPuffTime-pcTarget)<=0.5?C.gold:C.red,marginBottom:8}}>
+                    {Math.abs(pcPuffTime-pcTarget)<=0.05?"\u00B10.05s PERFECT!":"\u00B1"+Math.abs(pcPuffTime-pcTarget).toFixed(2)+"s off"}
+                  </div>
+                  <div style={{fontSize:12,color:C.text2,textAlign:"center",maxWidth:280,marginBottom:12}}>{pcComment}</div>
+                  {/* Timeline visual */}
+                  <div style={{width:"100%",maxWidth:300,height:20,borderRadius:10,background:"rgba(255,255,255,0.04)",position:"relative",overflow:"visible",marginBottom:16}}>
+                    <div style={{position:"absolute",left:targetPct+"%",top:-4,bottom:-4,width:2,background:C.gold,zIndex:2}}/>
+                    <div style={{position:"absolute",left:puffPct+"%",top:-4,bottom:-4,width:2,background:C.cyan,zIndex:2}}/>
+                  </div>
+                </div>
+              )}
+
+              {/* Final results */}
+              {isResult && (
+                <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",paddingTop:20}}>
+                  <div style={{fontSize:18,fontWeight:900,color:C.cyan,marginBottom:16}}>FINAL RESULTS</div>
+                  {/* Round results */}
+                  <div style={{width:"100%",marginBottom:16}}>
+                    {pcResults.map((r,i)=>(
+                      <div key={i} style={{display:"flex",justifyContent:"space-between",padding:"6px 12px",borderRadius:8,background:"rgba(255,255,255,0.03)",marginBottom:4,alignItems:"center"}}>
+                        <div style={{fontSize:11,color:C.text3}}>R{r.round}</div>
+                        <div style={{fontSize:11,color:C.text2}}>Target: {r.target.toFixed(2)}s</div>
+                        <div style={{fontSize:11,color:C.cyan}}>You: {r.actual.toFixed(2)}s</div>
+                        <div style={{fontSize:11,fontWeight:700,color:r.error<=0.15?C.green:r.error<=0.5?C.gold:C.red}}>{"\u00B1"}{r.error.toFixed(2)}s</div>
+                      </div>
+                    ))}
+                  </div>
+                  {/* Leaderboard */}
+                  <div style={{width:"100%",marginBottom:16}}>
+                    <div style={{fontSize:12,fontWeight:700,color:C.text2,marginBottom:8}}>LEADERBOARD</div>
+                    {pcLeaderboard.slice(0,8).map((p,i)=>(
+                      <div key={i} style={{display:"flex",justifyContent:"space-between",padding:"5px 10px",borderRadius:6,background:p.name==="You"?"rgba(0,229,255,0.08)":"rgba(255,255,255,0.02)",marginBottom:2,border:p.name==="You"?"1px solid rgba(0,229,255,0.2)":"1px solid transparent"}}>
+                        <div style={{fontSize:11,color:p.name==="You"?C.cyan:C.text3}}>#{p.rank} {p.emoji} {p.name}</div>
+                        <div style={{fontSize:11,color:p.name==="You"?C.cyan:C.text3,fontFamily:"monospace"}}>{"\u00B1"}{p.totalError.toFixed(2)}s total</div>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{fontSize:13,fontWeight:700,color:C.cyan,marginBottom:8,textAlign:"center"}}>{pcComment}</div>
+                  {pcPerfect420 && <div style={{fontSize:13,fontWeight:800,color:C.gold,marginBottom:8}}>{"\uD83C\uDF1F"} 4.20 ACHIEVEMENT UNLOCKED! {"\uD83C\uDF1F"}</div>}
+                  <div style={{display:"flex",gap:10,marginTop:8}}>
+                    <div onClick={()=>{pcEndGame();startPuffClock();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:C.cyan+"15",border:"1px solid "+C.cyan+"30",fontSize:13,fontWeight:800,color:C.cyan}}>Play Again</div>
+                    <div onClick={pcEndGame} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:C.text3+"10",border:"1px solid "+C.text3+"20",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
+                  </div>
+                </div>
+              )}
+
+              {/* Commentary */}
+              <div style={{textAlign:"center",fontSize:11,color:C.text3,fontStyle:"italic",padding:"8px 0"}}>{commentary}</div>
+            </div>
+          </div>
+        );
+      }
+
       // Generic game
       return (
         <div style={overlayStyle}>
@@ -12469,26 +13349,122 @@ export default function MoodLabArena() {
     );
   };
 
-  // Spin & Win
+  // ═══ SPIN & WIN — FULL GAME SHOW ═══
   const renderSpin = () => {
     if(!selectedGame || selectedGame.id!=="spinwin") return null;
-    const segs=["100🪙","50✨","200🪙","🏅","JACKPOT","↻","⚡","150🪙"];
+    if(!swPhase) return null;
+
+    const segAngle = 360 / 12;
+    const conicStops = SW_SEGMENTS.map((seg, i) => {
+      return seg.color + "30 " + (i * segAngle) + "deg " + ((i + 1) * segAngle) + "deg";
+    }).join(", ");
+
     return (
       <div style={overlayStyle}>
-        <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
-          <div style={{fontSize:10,fontWeight:800,color:C.gold,letterSpacing:2,marginBottom:24}}>🎰 SPIN & WIN</div>
-          <div style={{position:"relative",width:240,height:240,marginBottom:24}}>
-            <div style={{position:"absolute",top:-14,left:"50%",transform:"translateX(-50%)",fontSize:22,zIndex:2,filter:`drop-shadow(0 0 6px ${C.gold}60)`}}>▼</div>
-            <div style={{
-              width:240,height:240,borderRadius:"50%",border:`3px solid ${C.gold}30`,
-              transform:`rotate(${spinAngle}deg)`,transition:spinning?"transform 3.5s cubic-bezier(0.17,0.67,0.12,0.99)":"none",
-              background:`conic-gradient(${segs.map((s,i)=>`${[C.gold,C.cyan,C.pink,C.purple,C.red,C.text3,C.orange,C.lime][i]}25 ${i*45}deg ${(i+1)*45}deg`).join(",")})`,
-            }}>
-              {segs.map((s,i)=>(<div key={i} style={{position:"absolute",top:"50%",left:"50%",transform:`rotate(${i*45+22}deg) translateY(-82px)`,transformOrigin:"0 0",fontSize:10,fontWeight:800,color:C.text,whiteSpace:"nowrap"}}>{s}</div>))}
+        {swShowBust && <div style={{position:"absolute",inset:0,background:"rgba(255,0,0,0.25)",zIndex:5,animation:"fadeIn 0.1s ease",pointerEvents:"none"}} />}
+        {swShowJackpot && <div style={{position:"absolute",inset:0,background:"rgba(255,217,61,0.15)",zIndex:5,animation:"fadeIn 0.1s ease",pointerEvents:"none"}} />}
+
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 20px",borderBottom:"1px solid " + C.border}}>
+          <div onClick={() => { setSelectedGame(null); setSwPhase(null); if(swTickRef.current) clearInterval(swTickRef.current); }} style={{fontSize:12,color:C.text3,cursor:"pointer",fontWeight:700}}>{"<"} Back</div>
+          <div style={{fontSize:10,fontWeight:800,color:C.gold,letterSpacing:2}}>{swBonusRound ? "🌟 BONUS ROUND 🌟" : "🎰 SPIN & WIN"}</div>
+          <div style={{fontSize:11,fontWeight:800,color:C.cyan}}>{"🪙"} {swTotalWon}</div>
+        </div>
+
+        <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"0 20px",animation:swShowJackpot?"shake 0.5s ease":"none"}}>
+
+          {swPhase === "intro" && (
+            <div style={{textAlign:"center",animation:"fadeIn 0.5s ease"}}>
+              <div style={{fontSize:60,marginBottom:16,animation:"pulse 0.8s infinite"}}>{"🎰"}</div>
+              <div style={{fontSize:24,fontWeight:900,color:C.gold,marginBottom:8}}>SPIN & WIN</div>
+              <div style={{fontSize:13,color:C.text2,marginBottom:4}}>The Game Show!</div>
+              <div style={{fontSize:11,color:C.text3}}>3 spins. Big prizes. Don't go BUST!</div>
             </div>
-          </div>
-          {spinResult && <div style={{fontSize:18,fontWeight:900,color:C.gold,marginBottom:16}}>🎉 {spinResult.t}</div>}
-          <div onClick={()=>{if(!spinning)puffLockIn(doSpin);}} style={{padding:"12px 28px",borderRadius:12,cursor:spinning?"default":"pointer",background:spinning?`${C.text3}08`:`${C.gold}15`,border:`1px solid ${spinning?C.text3+"15":C.gold+"30"}`,color:spinning?C.text3:C.gold,fontSize:14,fontWeight:800}}>{spinning?"Spinning...":"💨 Puff to Spin!"}</div>
+          )}
+
+          {(swPhase === "ready" || swPhase === "spinning" || swPhase === "result") && (
+            <>
+              <div style={{display:"flex",gap:8,marginBottom:16}}>
+                {Array.from({length: swBonusRound ? 1 : 3}).map((_, i) => (
+                  <div key={i} style={{
+                    width:32,height:32,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",
+                    fontSize:12,fontWeight:900,
+                    background: i < swRound ? (C.gold + "25") : (i === swRound && swPhase !== "result" ? (C.cyan + "20") : "rgba(255,255,255,0.04)"),
+                    border: "1px solid " + (i < swRound ? C.gold + "40" : (i === swRound ? C.cyan + "30" : C.border)),
+                    color: i < swRound ? C.gold : (i === swRound ? C.cyan : C.text3),
+                  }}>{i < swRound ? "✓" : (i + 1)}</div>
+                ))}
+                {swBonusRound && <div style={{fontSize:10,fontWeight:800,color:C.gold,alignSelf:"center",marginLeft:4}}>2x PRIZES!</div>}
+              </div>
+
+              <div style={{position:"relative",width:260,height:260,marginBottom:20}}>
+                <div style={{position:"absolute",top:-18,left:"50%",transform:"translateX(-50%)",zIndex:3,width:0,height:0,borderLeft:"12px solid transparent",borderRight:"12px solid transparent",borderTop:"22px solid " + C.gold,filter:"drop-shadow(0 2px 6px rgba(255,217,61,0.5))"}} />
+                <div style={{position:"absolute",inset:-4,borderRadius:"50%",border:"2px solid " + (swSpinning ? C.gold + "60" : C.gold + "25"),boxShadow:swSpinning ? ("0 0 30px " + C.gold + "30, inset 0 0 20px " + C.gold + "10") : "none",transition:"all 0.5s ease"}} />
+                <div style={{
+                  width:260,height:260,borderRadius:"50%",overflow:"hidden",position:"relative",
+                  border:"3px solid " + C.gold + "40",
+                  transform:"rotate(" + swAngle + "deg)",
+                  transition:swSpinning ? "transform " + Math.min(2.5 + 1.5, 6) + "s cubic-bezier(0.15, 0.65, 0.08, 1.0)" : "none",
+                  background:"conic-gradient(" + conicStops + ")",
+                  boxShadow:"inset 0 0 40px rgba(0,0,0,0.4)",
+                }}>
+                  {SW_SEGMENTS.map((seg, i) => {
+                    const angle = i * segAngle + segAngle / 2;
+                    return (
+                      <div key={i} style={{
+                        position:"absolute",top:"50%",left:"50%",
+                        transform:"rotate(" + angle + "deg) translateY(-95px)",
+                        transformOrigin:"0 0",
+                        fontSize:seg.label === "JACKPOT" ? 7 : (seg.label === "BUST" ? 8 : 10),
+                        fontWeight:900,
+                        color:seg.label === "BUST" ? "#ff6666" : (seg.label === "JACKPOT" ? C.gold : C.text),
+                        whiteSpace:"nowrap",textShadow:"0 1px 3px rgba(0,0,0,0.8)",
+                        letterSpacing:seg.label === "JACKPOT" ? 1 : 0,
+                      }}>{seg.emoji} {seg.label}</div>
+                    );
+                  })}
+                  <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:50,height:50,borderRadius:"50%",background:"radial-gradient(circle, #1a1a3a, #0a0a20)",border:"2px solid " + C.gold + "50",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,boxShadow:"0 0 15px rgba(0,0,0,0.6)"}}>{swSpinning ? "🌀" : "🎰"}</div>
+                </div>
+              </div>
+
+              {swPhase === "result" && swPrize && (
+                <div style={{textAlign:"center",marginBottom:16,animation:"fadeIn 0.3s ease",padding:"12px 24px",borderRadius:16,background:swPrize.label === "BUST" ? "rgba(255,68,68,0.12)" : (swPrize.label === "JACKPOT" ? "rgba(255,217,61,0.15)" : "rgba(0,229,255,0.08)"),border:"1px solid " + (swPrize.label === "BUST" ? C.red + "30" : (swPrize.label === "JACKPOT" ? C.gold + "40" : swPrize.color + "25"))}}>
+                  <div style={{fontSize:swPrize.label === "JACKPOT" ? 48 : 36,marginBottom:6,animation:swPrize.label === "JACKPOT" ? "pulse 0.4s infinite" : (swPrize.label === "BUST" ? "shake 0.3s ease" : "none")}}>{swPrize.emoji}</div>
+                  <div style={{fontSize:swPrize.label === "JACKPOT" ? 22 : 18,fontWeight:900,color:swPrize.label === "BUST" ? C.red : (swPrize.label === "JACKPOT" ? C.gold : swPrize.color)}}>{swPrize.label === "BUST" ? "BUST! -" + Math.abs(swPrize.actualValue) : (swPrize.label === "JACKPOT" ? "JACKPOT! +" + swPrize.actualValue : "+" + swPrize.actualValue + " coins")}</div>
+                  {swBonusRound && swPrize.label !== "BUST" && <div style={{fontSize:10,fontWeight:700,color:C.gold,marginTop:4}}>2x BONUS APPLIED!</div>}
+                </div>
+              )}
+
+              <div style={{fontSize:12,fontWeight:700,color:C.text2,marginBottom:12}}>Total Won: <span style={{color:C.gold,fontWeight:900}}>{swTotalWon}</span> coins</div>
+
+              {swPhase === "ready" && (
+                <div onClick={() => { if(!swSpinning) puffLockIn(swDoSpin); }} style={{padding:"14px 36px",borderRadius:14,cursor:"pointer",background:C.gold + "15",border:"1px solid " + C.gold + "35",color:C.gold,fontSize:15,fontWeight:900,animation:"pulse 1.5s infinite",textAlign:"center"}}>{"💨"} PUFF TO SPIN! ({swBonusRound ? "BONUS" : (swRound + 1) + "/3"})</div>
+              )}
+              {swSpinning && <div style={{fontSize:13,fontWeight:800,color:C.cyan,animation:"pulse 0.4s infinite"}}>{"🌀"} Spinning...</div>}
+            </>
+          )}
+
+          {swPhase === "bonus" && (
+            <div style={{textAlign:"center",animation:"fadeIn 0.5s ease"}}>
+              <div style={{fontSize:60,marginBottom:12,animation:"pulse 0.6s infinite"}}>{"🌟"}</div>
+              <div style={{fontSize:22,fontWeight:900,color:C.gold,marginBottom:8}}>BONUS ROUND!</div>
+              <div style={{fontSize:13,color:C.text2,marginBottom:4}}>You won {swTotalWon} coins — over 500!</div>
+              <div style={{fontSize:14,fontWeight:800,color:C.cyan,marginBottom:20}}>All prizes DOUBLED for one final spin!</div>
+              <div onClick={() => { setSwPhase("ready"); }} style={{padding:"14px 36px",borderRadius:14,cursor:"pointer",background:C.gold + "20",border:"1px solid " + C.gold + "40",color:C.gold,fontSize:15,fontWeight:900,animation:"pulse 1.2s infinite"}}>{"💨"} LET'S GO!</div>
+            </div>
+          )}
+
+          {swPhase === "complete" && (
+            <div style={{textAlign:"center",animation:"fadeIn 0.5s ease"}}>
+              <div style={{fontSize:60,marginBottom:12}}>{swTotalWon >= 500 ? "🏆" : (swTotalWon > 0 ? "🎉" : "😔")}</div>
+              <div style={{fontSize:22,fontWeight:900,color:swTotalWon >= 500 ? C.gold : (swTotalWon > 0 ? C.cyan : C.text3),marginBottom:8}}>{swTotalWon >= 500 ? "BIG WINNER!" : (swTotalWon > 0 ? "Nice Run!" : "Better Luck Next Time")}</div>
+              <div style={{fontSize:16,fontWeight:800,color:C.gold,marginBottom:4}}>Total: {swTotalWon} coins</div>
+              <div style={{fontSize:11,color:C.text3,marginBottom:24}}>{swBonusRound ? "Bonus round completed!" : (swTotalWon > 300 ? "So close to the bonus round!" : "Spin again for another shot!")}</div>
+              <div style={{display:"flex",gap:12,justifyContent:"center"}}>
+                <div onClick={() => swStartGame()} style={{padding:"12px 28px",borderRadius:12,cursor:"pointer",background:C.gold + "15",border:"1px solid " + C.gold + "30",color:C.gold,fontSize:13,fontWeight:800}}>{"🔄"} Play Again</div>
+                <div onClick={() => { setSelectedGame(null); setSwPhase(null); }} style={{padding:"12px 28px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid " + C.border,color:C.text3,fontSize:13,fontWeight:800}}>Exit</div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );
