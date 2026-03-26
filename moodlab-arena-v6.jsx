@@ -6582,10 +6582,22 @@ export default function MoodLabArena() {
 
   const renderStage = () => {
     const showIdx = Math.floor(Date.now()/120000) % SHOW_GAMES.length;
+    const secondLiveIdx = (showIdx + 4) % SHOW_GAMES.length;
     const liveShow = SHOW_GAMES[showIdx];
-    const upcomingShows = [...SHOW_GAMES.slice(showIdx+1), ...SHOW_GAMES.slice(0,showIdx)].slice(0,6);
-    const stageStats = {watched:vcRound+3, correct:vcScore>0?Math.floor(vcScore/100):7, coinsWon:vcScore+420};
+    const liveShow2 = SHOW_GAMES[secondLiveIdx];
+    const liveShows = [liveShow, liveShow2];
+    const upcomingShows = SHOW_GAMES.filter((_,i)=>i!==showIdx&&i!==secondLiveIdx).slice(0,4);
+    const stageStats = {watched:vcRound+23, correct:vcScore>0?Math.floor(vcScore/100)+89:89, coinsWon:vcScore+3200, bestShow:"Survival Trivia", bestRound:12, puffBest:"0.08"};
     const nowViewers = 1247 + Math.floor(Math.random()*100);
+    const nowViewers2 = 634 + Math.floor(Math.random()*80);
+    const totalPrize = 12500;
+    const prizeBreakdown = [{name:"Vibe Check",coins:5000},{name:"Survival",coins:3000},{name:"Spin & Win",coins:2500},{name:"Puff Clock",coins:2000}];
+    const highlights = [
+      {emoji:"💀",text:"47 players eliminated in Round 3 of Survival Trivia!",color:C.purple},
+      {emoji:"🎧",text:"BeatMaster hit PERFECT on all 3 songs in Beat Drop!",color:C.pink},
+      {emoji:"🎰",text:"JACKPOT! PuffQueen won 1,000 coins on Spin & Win!",color:C.gold},
+      {emoji:"⏱️",text:"TimeLord hit exactly 4.20s in Puff Clock! 420 coins!",color:C.orange},
+    ];
     const launchShow = (g) => {
       if(g.id==="vibecheck") vcStartGame();
       else if(g.id==="spinwin"){setSelectedGame(g);swStartGame();}
@@ -6601,104 +6613,214 @@ export default function MoodLabArena() {
     };
     return (
     <div style={{position:"relative"}}>
-      {/* Stage lights effect */}
-      <div style={{position:"absolute",top:-60,left:"50%",transform:"translateX(-50%)",width:400,height:300,pointerEvents:"none",
-        background:`radial-gradient(ellipse at 30% 0%, ${C.purple}18, transparent 50%), radial-gradient(ellipse at 70% 0%, ${C.pink}15, transparent 50%), radial-gradient(ellipse at 50% 10%, ${C.gold}10, transparent 60%)`
+      {/* ═══ STAGE SPOTLIGHT EFFECTS ═══ */}
+      <div style={{position:"absolute",top:-80,left:"50%",transform:"translateX(-50%)",width:500,height:400,pointerEvents:"none",
+        background:`radial-gradient(ellipse at 25% 0%, ${C.purple}20, transparent 45%), radial-gradient(ellipse at 75% 0%, ${C.pink}18, transparent 45%), radial-gradient(ellipse at 50% 5%, ${C.gold}12, transparent 55%)`
       }}/>
-      <div style={{position:"absolute",top:0,left:0,right:0,height:200,pointerEvents:"none",overflow:"hidden"}}>
-        <div style={{position:"absolute",top:-80,width:120,height:300,background:`linear-gradient(90deg, transparent, ${C.gold}06, transparent)`,transform:"rotate(15deg)",animation:"spotlightSweep 6s ease-in-out infinite"}}/>
+      {/* Sweeping spotlight beams */}
+      <div style={{position:"absolute",top:0,left:0,right:0,height:300,pointerEvents:"none",overflow:"hidden"}}>
+        <div style={{position:"absolute",top:-100,left:"10%",width:80,height:400,background:`linear-gradient(180deg, ${C.purple}10, transparent)`,transform:"rotate(12deg)",animation:"spotlightSweep 6s ease-in-out infinite"}}/>
+        <div style={{position:"absolute",top:-100,right:"15%",width:60,height:350,background:`linear-gradient(180deg, ${C.pink}08, transparent)`,transform:"rotate(-10deg)",animation:"spotlightSweep 8s ease-in-out infinite reverse"}}/>
+        <div style={{position:"absolute",top:-60,left:"45%",width:100,height:300,background:`linear-gradient(180deg, ${C.gold}06, transparent)`,transform:"rotate(3deg)",animation:"spotlightSweep 10s ease-in-out infinite 2s"}}/>
       </div>
-      {renderZoneHeader("stage")}
-      <div style={{padding:"0 14px"}}>
+      {/* Floating music note emojis */}
+      {["🎵","🎶","🎵","🎶","🎵"].map((n,i)=>(
+        <div key={"note"+i} style={{position:"absolute",left:`${15+i*18}%`,top:60+i*30,fontSize:10+i%3*2,opacity:0.12+i*0.02,pointerEvents:"none",animation:`floatUp ${4+i}s ease-in-out infinite ${i*0.8}s`}}>{n}</div>
+      ))}
 
-        {/* ═══ NOW SHOWING — Hero Card (rotates) ═══ */}
-        <div onClick={()=>launchShow(liveShow)} style={{
-          position:"relative",overflow:"hidden",borderRadius:20,padding:"24px 18px",marginBottom:14,cursor:"pointer",
-          background:`radial-gradient(ellipse at 20% 30%, ${liveShow.color}18, transparent 60%), radial-gradient(ellipse at 80% 70%, ${C.purple}12, transparent 50%), linear-gradient(135deg, ${C.bg2}, ${C.bg3})`,
-          border:`1.5px solid ${liveShow.color}25`,boxShadow:`0 0 30px ${liveShow.color}08, inset 0 1px 0 rgba(255,255,255,0.05)`,
-        }}>
-          <div style={{position:"absolute",top:14,right:14,display:"flex",alignItems:"center",gap:5,padding:"4px 10px",borderRadius:6,background:`${C.red}20`,border:`1px solid ${C.red}40`,boxShadow:`0 0 12px ${C.red}30`}}>
-            <div style={{width:7,height:7,borderRadius:"50%",background:C.red,boxShadow:`0 0 8px ${C.red}`,animation:"pulse 1.5s infinite"}}/>
-            <span style={{fontSize:10,fontWeight:900,color:C.red,letterSpacing:1.5}}>LIVE</span>
+      {/* ═══ 1. ZONE HERO — Stage Entrance ═══ */}
+      {renderZoneHeader("stage")}
+      <div style={{padding:"0 14px",position:"relative",zIndex:1}}>
+        {/* Live shows + count strip */}
+        <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginBottom:14,padding:"8px 14px",borderRadius:10,
+          background:`linear-gradient(135deg, ${C.purple}10, ${C.pink}08)`,border:`1px solid ${C.purple}18`}}>
+          <span style={{fontSize:11,fontWeight:900,color:C.purple,letterSpacing:1}}>{SHOW_GAMES.length} LIVE SHOWS</span>
+          <span style={{fontSize:10,color:C.text3}}>|</span>
+          <div style={{display:"flex",alignItems:"center",gap:4}}>
+            <div style={{width:6,height:6,borderRadius:"50%",background:C.red,animation:"pulse 1.5s infinite"}}/>
+            <span style={{fontSize:11,fontWeight:900,color:C.red}}>2 ON NOW</span>
           </div>
-          <div style={{fontSize:9,fontWeight:700,color:C.pink,letterSpacing:2,marginBottom:8}}>NOW SHOWING</div>
-          <div style={{display:"flex",alignItems:"center",gap:14,marginBottom:12}}>
-            <div style={{width:52,height:52,borderRadius:14,display:"flex",alignItems:"center",justifyContent:"center",fontSize:28,
-              background:`radial-gradient(circle, ${liveShow.color}20, ${liveShow.color}05)`,border:`1.5px solid ${liveShow.color}30`,
-              boxShadow:`0 0 16px ${liveShow.color}15`,filter:`drop-shadow(0 0 8px ${liveShow.color}40)`
-            }}>{liveShow.emoji}</div>
-            <div style={{flex:1}}>
-              <div style={{fontSize:20,fontWeight:900,color:C.text,lineHeight:1.2}}>{liveShow.name}</div>
-              <div style={{display:"flex",alignItems:"center",gap:8,marginTop:4}}>
-                <span style={{fontSize:11,color:C.text2}}>🎤 MC Host</span>
-                <span style={{fontSize:10,color:C.text3}}>|</span>
-                <span style={{fontSize:11,color:C.pink}}>👁 {nowViewers.toLocaleString()} watching</span>
+        </div>
+
+        {/* ═══ 2. ON AIR — Currently Live Shows ═══ */}
+        <div style={{marginBottom:16}}>
+          <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:10}}>
+            <div style={{width:8,height:8,borderRadius:"50%",background:C.red,boxShadow:`0 0 10px ${C.red}`,animation:"pulse 1.5s infinite"}}/>
+            <span style={{fontSize:11,fontWeight:900,color:C.red,letterSpacing:2}}>ON AIR</span>
+          </div>
+
+          {/* Primary live show — large hero card */}
+          <div onClick={()=>launchShow(liveShow)} style={{
+            position:"relative",overflow:"hidden",borderRadius:20,padding:"22px 18px",marginBottom:10,cursor:"pointer",
+            background:`radial-gradient(ellipse at 20% 30%, ${liveShow.color}15, transparent 55%), radial-gradient(ellipse at 85% 70%, ${C.purple}10, transparent 50%), linear-gradient(135deg, ${C.bg2}, ${C.bg3})`,
+            border:`1.5px solid ${C.red}20`,boxShadow:`0 0 30px ${C.red}06, 0 0 60px ${liveShow.color}04, inset 0 1px 0 rgba(255,255,255,0.05)`,
+          }}>
+            {/* LIVE badge */}
+            <div style={{position:"absolute",top:14,right:14,display:"flex",alignItems:"center",gap:5,padding:"4px 12px",borderRadius:6,background:`${C.red}22`,border:`1px solid ${C.red}40`,boxShadow:`0 0 16px ${C.red}30`}}>
+              <div style={{width:7,height:7,borderRadius:"50%",background:C.red,boxShadow:`0 0 8px ${C.red}`,animation:"pulse 1.5s infinite"}}/>
+              <span style={{fontSize:10,fontWeight:900,color:C.red,letterSpacing:1.5}}>LIVE</span>
+            </div>
+            {/* Show theme glow */}
+            <div style={{position:"absolute",bottom:-20,right:-20,width:120,height:120,borderRadius:"50%",background:`radial-gradient(circle, ${liveShow.color}10, transparent 70%)`,pointerEvents:"none"}}/>
+            <div style={{display:"flex",alignItems:"center",gap:14,marginBottom:12}}>
+              <div style={{width:56,height:56,borderRadius:16,display:"flex",alignItems:"center",justifyContent:"center",fontSize:30,
+                background:`radial-gradient(circle, ${liveShow.color}22, ${liveShow.color}06)`,border:`2px solid ${liveShow.color}35`,
+                boxShadow:`0 0 20px ${liveShow.color}18`,filter:`drop-shadow(0 0 10px ${liveShow.color}50)`
+              }}>{liveShow.emoji}</div>
+              <div style={{flex:1}}>
+                <div style={{fontSize:20,fontWeight:900,color:C.text,lineHeight:1.2}}>{liveShow.name}</div>
+                <div style={{fontSize:11,color:C.pink,marginTop:4,lineHeight:1.3}}>🎤 MC Tuan is hosting {liveShow.name} with {nowViewers.toLocaleString()} viewers!</div>
               </div>
             </div>
-          </div>
-          <div style={{fontSize:12,color:C.text3,marginBottom:14,lineHeight:1.4}}>{liveShow.desc}</div>
-          <div style={{display:"flex",alignItems:"center",gap:8}}>
-            <div style={{flex:1,padding:"10px 0",borderRadius:12,textAlign:"center",
-              background:`linear-gradient(135deg, ${C.pink}20, ${C.purple}15)`,border:`1px solid ${C.pink}30`,
-              boxShadow:`0 0 16px ${C.pink}10`
-            }}>
-              <span style={{fontSize:13,fontWeight:900,color:C.pink,letterSpacing:1}}>JOIN NOW</span>
+            <div style={{display:"flex",alignItems:"center",gap:6,marginTop:4}}>
+              <div style={{display:"flex",alignItems:"center",gap:4}}>
+                <div style={{width:24,height:24,borderRadius:"50%",background:`linear-gradient(135deg, ${C.pink}, ${C.purple})`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:12}}>🎤</div>
+                <span style={{fontSize:10,fontWeight:700,color:C.text2}}>MC Tuan</span>
+              </div>
+              <span style={{fontSize:9,color:C.text3}}>|</span>
+              <span style={{fontSize:10,color:C.pink,fontWeight:700}}>👁 {nowViewers.toLocaleString()} watching</span>
+              <span style={{fontSize:9,color:C.text3}}>|</span>
+              <span style={{fontSize:9,fontWeight:700,color:liveShow.color,padding:"2px 6px",borderRadius:4,background:`${liveShow.color}12`}}>{liveShow.type}</span>
             </div>
-            <div style={{padding:"10px 14px",borderRadius:12,background:`${C.text3}08`,border:`1px solid ${C.border}`}}>
-              <span style={{fontSize:11,color:C.text2}}>👥 {liveShow.players}</span>
+            {/* JOIN LIVE button */}
+            <div style={{marginTop:14,padding:"12px 0",borderRadius:14,textAlign:"center",cursor:"pointer",
+              background:`linear-gradient(135deg, ${C.pink}25, ${C.purple}18)`,border:`1px solid ${C.pink}35`,
+              boxShadow:`0 0 20px ${C.pink}12, 0 0 40px ${C.pink}06`,animation:"pulse 3s ease-in-out infinite"
+            }}>
+              <span style={{fontSize:14,fontWeight:900,color:C.pink,letterSpacing:1.5}}>JOIN LIVE</span>
+            </div>
+          </div>
+
+          {/* Secondary live show — compact card */}
+          <div onClick={()=>launchShow(liveShow2)} style={{
+            position:"relative",overflow:"hidden",borderRadius:16,padding:"14px 16px",cursor:"pointer",
+            background:`radial-gradient(ellipse at 30% 50%, ${liveShow2.color}10, transparent 60%), linear-gradient(135deg, ${C.bg2}, ${C.bg3})`,
+            border:`1.5px solid ${C.red}15`,boxShadow:`0 0 20px ${C.red}04`,
+          }}>
+            <div style={{display:"flex",alignItems:"center",gap:12}}>
+              <div style={{width:42,height:42,borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,
+                background:`radial-gradient(circle, ${liveShow2.color}18, ${liveShow2.color}05)`,border:`1.5px solid ${liveShow2.color}25`,
+                filter:`drop-shadow(0 0 8px ${liveShow2.color}35)`
+              }}>{liveShow2.emoji}</div>
+              <div style={{flex:1}}>
+                <div style={{display:"flex",alignItems:"center",gap:6}}>
+                  <span style={{fontSize:14,fontWeight:800,color:C.text}}>{liveShow2.name}</span>
+                  <div style={{display:"flex",alignItems:"center",gap:3,padding:"2px 7px",borderRadius:4,background:`${C.red}18`,border:`1px solid ${C.red}30`}}>
+                    <div style={{width:5,height:5,borderRadius:"50%",background:C.red,animation:"pulse 1.5s infinite"}}/>
+                    <span style={{fontSize:8,fontWeight:900,color:C.red}}>LIVE</span>
+                  </div>
+                </div>
+                <div style={{fontSize:10,color:C.text2,marginTop:3}}>🎤 MC Host | 👁 {nowViewers2.toLocaleString()} watching</div>
+              </div>
+              <div style={{padding:"8px 14px",borderRadius:10,background:`linear-gradient(135deg, ${C.pink}18, ${C.purple}12)`,border:`1px solid ${C.pink}25`}}>
+                <span style={{fontSize:11,fontWeight:800,color:C.pink}}>JOIN</span>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* ═══ SHOW SCHEDULE — Multiple countdowns ═══ */}
-        <div style={{marginBottom:14}}>
+        {/* ═══ 3. COMING UP NEXT — Schedule Strip ═══ */}
+        <div style={{marginBottom:16}}>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
-            <div style={{fontSize:11,fontWeight:800,color:C.text,letterSpacing:1}}>SHOW SCHEDULE</div>
-            <div style={{fontSize:9,color:C.text3}}>Scroll ></div>
+            <div style={{display:"flex",alignItems:"center",gap:6}}>
+              <span style={{fontSize:13}}>⏰</span>
+              <span style={{fontSize:11,fontWeight:900,color:C.text,letterSpacing:1}}>COMING UP NEXT</span>
+            </div>
+            <div style={{fontSize:9,color:C.text3,fontWeight:600}}>Scroll ></div>
           </div>
           <div style={{display:"flex",gap:10,overflowX:"auto",paddingBottom:6,WebkitOverflowScrolling:"touch",scrollbarWidth:"none"}}>
             {upcomingShows.map((g,i)=>{
-              const mins = [8,18,32,47,65,80][i]||30;
+              const mins = [3,12,28,55][i]||30;
+              const urgColor = mins<10?C.green:mins<30?C.orange:C.text3;
+              const isUrgent = mins<10;
               return (
                 <div key={g.id} onClick={()=>{playFx("select");launchShow(g);}} style={{
-                  minWidth:140,padding:"14px 12px",borderRadius:14,cursor:"pointer",flexShrink:0,
+                  minWidth:130,padding:"14px 12px",borderRadius:14,cursor:"pointer",flexShrink:0,
                   background:`radial-gradient(ellipse at 50% 0%, ${g.color}08, ${C.bg2} 70%)`,
-                  border:`1px solid ${g.color}12`,transition:"all 0.3s",
+                  border:`1px solid ${g.color}15`,transition:"all 0.3s",
                 }}>
                   <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
-                    <div style={{fontSize:22,filter:`drop-shadow(0 0 6px ${g.color}40)`}}>{g.emoji}</div>
-                    <div style={{padding:"3px 7px",borderRadius:5,background:mins<20?`${C.green}12`:`${C.orange}12`,border:`1px solid ${mins<20?C.green:C.orange}20`}}>
-                      <span style={{fontSize:8,fontWeight:800,color:mins<20?C.green:C.orange}}>{mins}m</span>
+                    <div style={{fontSize:24,filter:`drop-shadow(0 0 6px ${g.color}40)`}}>{g.emoji}</div>
+                    <div style={{padding:"3px 8px",borderRadius:6,background:`${urgColor}15`,border:`1px solid ${urgColor}25`,
+                      ...(isUrgent?{animation:"pulse 2s infinite",boxShadow:`0 0 8px ${urgColor}20`}:{})
+                    }}>
+                      <span style={{fontSize:9,fontWeight:900,color:urgColor}}>{isUrgent?"Starts in ":"in "}{mins} min</span>
                     </div>
                   </div>
-                  <div style={{fontSize:12,fontWeight:800,color:C.text,marginBottom:3}}>{g.name}</div>
-                  <div style={{display:"flex",gap:3,flexWrap:"wrap"}}>
-                    <span style={{fontSize:8,fontWeight:700,color:g.color,padding:"2px 5px",borderRadius:3,background:`${g.color}10`}}>{g.type}</span>
-                    <span style={{fontSize:8,color:C.text3,padding:"2px 5px",borderRadius:3,background:`${C.text3}06`}}>👥 {g.players}</span>
-                  </div>
+                  <div style={{fontSize:12,fontWeight:800,color:C.text,marginBottom:4}}>{g.name}</div>
+                  <span style={{fontSize:8,fontWeight:700,color:g.color,padding:"2px 6px",borderRadius:4,background:`${g.color}10`}}>{g.type}</span>
                 </div>
               );
             })}
           </div>
         </div>
 
-        {/* ═══ ALL SHOWS — 2 Column Grid with type badges ═══ */}
-        <div style={{marginBottom:14}}>
+        {/* ═══ 4. TONIGHT'S PRIZE POOL ═══ */}
+        <div style={{marginBottom:16,padding:"18px 16px",borderRadius:18,position:"relative",overflow:"hidden",
+          background:`linear-gradient(135deg, ${C.gold}08, ${C.orange}05, ${C.bg2})`,
+          border:`1.5px solid ${C.gold}20`,boxShadow:`0 0 30px ${C.gold}06`,backdropFilter:"blur(12px)"
+        }}>
+          <div style={{position:"absolute",top:-30,right:-30,width:100,height:100,borderRadius:"50%",background:`radial-gradient(circle, ${C.gold}10, transparent 70%)`,pointerEvents:"none"}}/>
+          <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
+            <span style={{fontSize:22}}>🏆</span>
+            <div>
+              <div style={{fontSize:11,fontWeight:900,color:C.gold,letterSpacing:2}}>TONIGHT'S PRIZE POOL</div>
+              <div style={{fontSize:22,fontWeight:900,color:C.gold,filter:`drop-shadow(0 0 8px ${C.gold}40)`,marginTop:2}}>{totalPrize.toLocaleString()} coins</div>
+            </div>
+          </div>
+          <div style={{fontSize:10,color:C.text2,marginBottom:10}}>🏆 {totalPrize.toLocaleString()} coins up for grabs tonight!</div>
+          <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+            {prizeBreakdown.map((p,i)=>(
+              <div key={i} style={{padding:"5px 10px",borderRadius:8,background:`${C.gold}08`,border:`1px solid ${C.gold}12`}}>
+                <span style={{fontSize:9,fontWeight:700,color:C.gold}}>{p.name}: {p.coins.toLocaleString()}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* ═══ 5. SHOW HIGHLIGHTS — Best Moments ═══ */}
+        <div style={{marginBottom:16}}>
+          <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:10}}>
+            <span style={{fontSize:13}}>🌟</span>
+            <span style={{fontSize:11,fontWeight:900,color:C.text,letterSpacing:1}}>SHOW HIGHLIGHTS</span>
+          </div>
+          <div style={{fontSize:10,color:C.text3,marginBottom:10}}>Recent highlights from the Stage</div>
+          <div style={{display:"flex",flexDirection:"column",gap:6}}>
+            {highlights.map((h,i)=>(
+              <div key={i} style={{padding:"12px 14px",borderRadius:14,display:"flex",alignItems:"center",gap:10,
+                background:`linear-gradient(135deg, ${h.color}06, ${C.bg2})`,border:`1px solid ${h.color}12`,
+                backdropFilter:"blur(8px)",animation:`fadeIn 0.3s ease ${i*0.08}s both`
+              }}>
+                <span style={{fontSize:18,flexShrink:0}}>{h.emoji}</span>
+                <span style={{fontSize:11,fontWeight:600,color:C.text,lineHeight:1.35}}>{h.text}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* ═══ 6. ALL SHOWS — Complete 2-Column Grid ═══ */}
+        <div style={{marginBottom:16}}>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
-            <div style={{fontSize:11,fontWeight:800,color:C.text,letterSpacing:1}}>ALL SHOWS</div>
+            <div style={{display:"flex",alignItems:"center",gap:6}}>
+              <span style={{fontSize:13}}>🎮</span>
+              <span style={{fontSize:11,fontWeight:900,color:C.text,letterSpacing:1}}>ALL SHOWS</span>
+            </div>
             <div style={{fontSize:9,color:C.gold,fontWeight:700}}>{SHOW_GAMES.length} shows</div>
           </div>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-            {SHOW_GAMES.map((g,i)=>(
+            {SHOW_GAMES.map((g,i)=>{
+              const isLive = g.id===liveShow.id || g.id===liveShow2.id;
+              return (
               <div key={g.id} onClick={()=>{playFx("select");launchShow(g);}} style={{
                 padding:"12px 10px",borderRadius:14,cursor:"pointer",position:"relative",overflow:"hidden",
                 background:`radial-gradient(ellipse at 50% 0%, ${g.color}06, ${C.bg2} 70%)`,
-                border:`1px solid ${g.color}10`,transition:"all 0.3s",
+                border:`1.5px solid ${isLive?C.red:g.color}${isLive?"20":"10"}`,transition:"all 0.3s",
+                boxShadow:isLive?`0 0 16px ${C.red}10, 0 0 30px ${C.red}05`:"none",
                 animation:`fadeIn 0.3s ease ${i*0.04}s both`,
               }}>
-                {g.id===liveShow.id && <div style={{position:"absolute",top:6,right:6,display:"flex",alignItems:"center",gap:3}}>
+                {isLive && <div style={{position:"absolute",top:6,right:6,display:"flex",alignItems:"center",gap:3,padding:"2px 6px",borderRadius:4,background:`${C.red}18`,border:`1px solid ${C.red}30`}}>
                   <div style={{width:4,height:4,borderRadius:"50%",background:C.red,animation:"pulse 1.5s infinite"}}/>
-                  <span style={{fontSize:7,fontWeight:700,color:C.red}}>LIVE</span>
+                  <span style={{fontSize:7,fontWeight:900,color:C.red}}>LIVE</span>
                 </div>}
                 <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
                   <div style={{width:36,height:36,borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,
@@ -6707,33 +6829,56 @@ export default function MoodLabArena() {
                   }}>{g.emoji}</div>
                   <div style={{flex:1,minWidth:0}}>
                     <div style={{fontSize:11,fontWeight:800,color:C.text,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{g.name}</div>
-                    <div style={{fontSize:8,color:C.text3,marginTop:1}}>👥 {g.players}</div>
+                    <div style={{fontSize:8,color:C.text3,marginTop:1}}>{isLive?"🔴 Live Now":"⏰ "+g.time}</div>
                   </div>
                 </div>
                 <div style={{display:"flex",gap:3,flexWrap:"wrap"}}>
                   <span style={{fontSize:8,fontWeight:700,color:g.color,padding:"2px 5px",borderRadius:3,background:`${g.color}10`}}>{g.type}</span>
-                  <span style={{fontSize:8,color:C.text3,padding:"2px 5px",borderRadius:3,background:`${C.text3}06`}}>⏱ {g.time}</span>
+                  <span style={{fontSize:8,color:C.text3,padding:"2px 5px",borderRadius:3,background:`${C.text3}06`}}>👥 {g.players}</span>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
-        {/* ═══ STAGE STATS ═══ */}
-        <div style={{display:"flex",gap:6,marginBottom:14}}>
-          {[
-            {label:"Shows Watched",val:stageStats.watched,icon:"📺",color:C.cyan},
-            {label:"Correct Answers",val:stageStats.correct,icon:"✅",color:C.green},
-            {label:"Coins Won",val:stageStats.coinsWon,icon:"🪙",color:C.gold},
-          ].map((s,i)=>(
-            <div key={i} style={{flex:1,padding:"10px 6px",borderRadius:12,textAlign:"center",
-              background:`${s.color}06`,border:`1px solid ${s.color}12`,
-            }}>
-              <div style={{fontSize:16,marginBottom:2}}>{s.icon}</div>
-              <div style={{fontSize:14,fontWeight:900,color:s.color}}>{s.val}</div>
-              <div style={{fontSize:7,color:C.text3,fontWeight:600,marginTop:1}}>{s.label}</div>
+        {/* ═══ 7. YOUR STAGE STATS ═══ */}
+        <div style={{marginBottom:14}}>
+          <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:10}}>
+            <span style={{fontSize:13}}>📊</span>
+            <span style={{fontSize:11,fontWeight:900,color:C.text,letterSpacing:1}}>YOUR STAGE STATS</span>
+          </div>
+          {/* Main stats row */}
+          <div style={{display:"flex",gap:6,marginBottom:8}}>
+            {[
+              {label:"Shows Watched",val:stageStats.watched,icon:"📺",color:C.cyan},
+              {label:"Correct Answers",val:stageStats.correct,icon:"✅",color:C.green},
+              {label:"Coins Won",val:stageStats.coinsWon.toLocaleString(),icon:"🪙",color:C.gold},
+            ].map((s,i)=>(
+              <div key={i} style={{flex:1,padding:"10px 6px",borderRadius:12,textAlign:"center",
+                background:`${s.color}06`,border:`1px solid ${s.color}12`,
+              }}>
+                <div style={{fontSize:16,marginBottom:2}}>{s.icon}</div>
+                <div style={{fontSize:14,fontWeight:900,color:s.color}}>{s.val}</div>
+                <div style={{fontSize:7,color:C.text3,fontWeight:600,marginTop:1}}>{s.label}</div>
+              </div>
+            ))}
+          </div>
+          {/* Best records */}
+          <div style={{display:"flex",gap:6}}>
+            <div style={{flex:1,padding:"10px 12px",borderRadius:12,
+              background:`${C.purple}06`,border:`1px solid ${C.purple}12`}}>
+              <div style={{fontSize:8,color:C.text3,fontWeight:600,marginBottom:3}}>Best Show</div>
+              <div style={{fontSize:11,fontWeight:800,color:C.purple}}>🏆 {stageStats.bestShow}</div>
+              <div style={{fontSize:9,color:C.text2,marginTop:2}}>Survived to Round {stageStats.bestRound}</div>
             </div>
-          ))}
+            <div style={{flex:1,padding:"10px 12px",borderRadius:12,
+              background:`${C.orange}06`,border:`1px solid ${C.orange}12`}}>
+              <div style={{fontSize:8,color:C.text3,fontWeight:600,marginBottom:3}}>Puff Clock Best</div>
+              <div style={{fontSize:11,fontWeight:800,color:C.orange}}>⏱️ +/-{stageStats.puffBest}s</div>
+              <div style={{fontSize:9,color:C.text2,marginTop:2}}>Personal record</div>
+            </div>
+          </div>
         </div>
 
       </div>
@@ -16940,6 +17085,7 @@ export default function MoodLabArena() {
 
       <style>{`
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+        @keyframes spotlightSweep{0%{transform:translateX(-100%) rotate(15deg)}50%{transform:translateX(400%) rotate(15deg)}100%{transform:translateX(-100%) rotate(15deg)}}
         @keyframes breathe{0%,100%{opacity:1;transform:scale(1) translateX(-50%)}50%{opacity:.7;transform:scale(1.05) translateX(-50%)}}
         @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
         @keyframes sheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
