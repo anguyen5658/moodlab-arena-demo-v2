@@ -4497,7 +4497,10 @@ export default function MoodLabArena() {
     setWcTournament({group: groupLetter, teams: groupTeams, standings, groupMatches: matches});
     setWcMatchday(0);
 
-    setTimeout(() => setWcDrawAnim(false), 3000);
+    setTimeout(() => {
+      setWcDrawAnim(false);
+      setTimeout(() => setWcPhase("group_stage"), 1000);
+    }, 3000);
   };
 
   const wcConfirmDevice = (inputId) => {
