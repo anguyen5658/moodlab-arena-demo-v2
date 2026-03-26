@@ -1051,6 +1051,41 @@ export default function MoodLabArena() {
   const [htTriviaAnswer, setHtTriviaAnswer] = useState(null);
   const htTimerRef = useRef(null);
   const htTugRef = useRef(null);
+
+  // ── Beat Drop (Stage Game) ──
+  const [bdPhase, setBdPhase] = useState(null);
+  const [bdRound, setBdRound] = useState(0);
+  const [bdBuilding, setBdBuilding] = useState(false);
+  const [bdDropped, setBdDropped] = useState(false);
+  const [bdHolding, setBdHolding] = useState(false);
+  const [bdHoldStart, setBdHoldStart] = useState(0);
+  const [bdDropTime, setBdDropTime] = useState(0);
+  const [bdScore, setBdScore] = useState(0);
+  const [bdReleaseTime, setBdReleaseTime] = useState(null);
+  const [bdBeatIntensity, setBdBeatIntensity] = useState(0);
+  const [bdRoundScores, setBdRoundScores] = useState([]);
+  const [bdRoundLabel, setBdRoundLabel] = useState("");
+  const [bdFakeDropped, setBdFakeDropped] = useState(false);
+  const bdBuildInterval = useRef(null);
+  const bdAudioCtx = useRef(null);
+  const bdOscillator = useRef(null);
+  const bdGainNode = useRef(null);
+  const bdDropTimer = useRef(null);
+  const bdHoldInterval = useRef(null);
+
+  // ── Puff Limbo (Stage Game) ──
+  const [plPhase, setPlPhase] = useState(null);
+  const [plTarget, setPlTarget] = useState(3.0);
+  const [plRound, setPlRound] = useState(0);
+  const [plHolding, setPlHolding] = useState(false);
+  const [plPuffTime, setPlPuffTime] = useState(0);
+  const [plSurvived, setPlSurvived] = useState(true);
+  const [plPlayers, setPlPlayers] = useState(20);
+  const [plEliminatedList, setPlEliminatedList] = useState([]);
+  const [plRoundResults, setPlRoundResults] = useState([]);
+  const plPuffInterval = useRef(null);
+  const plHoldStart = useRef(0);
+
   // ── Derived ──
   const wcDays = Math.max(0, Math.floor((new Date("2026-06-11") - new Date()) / 86400000));
   const playersNow = 1247 + (tick % 13) * 7;
@@ -7223,6 +7258,325 @@ export default function MoodLabArena() {
     setGameActive(null);
   };
 
+
+  // ══════════════════════════════════════════════════════
+  // BEAT DROP -- Music Timing Game Engine
+  // ══════════════════════════════════════════════════════
+  const BD_SONGS = [
+    { name: "Neon Rise", buildTime: 8000, fakeAt: null, color: "#FF69B4" },
+    { name: "Phantom Drop", buildTime: 12000, fakeAt: 6000, color: "#A855F7" },
+    { name: "Chaos Theory", buildTime: null, color: "#FF4D8D" },
+  ];
+
+  const bdStopAudio = () => {
+    try {
+      if (bdOscillator.current) { bdOscillator.current.stop(); bdOscillator.current.disconnect(); bdOscillator.current = null; }
+      if (bdGainNode.current) { bdGainNode.current.disconnect(); bdGainNode.current = null; }
+      if (bdAudioCtx.current) { bdAudioCtx.current.close(); bdAudioCtx.current = null; }
+    } catch(e) {}
+  };
+
+  const bdPlayBuildAudio = (duration) => {
+    bdStopAudio();
+    try {
+      const ac = new (window.AudioContext || window.webkitAudioContext)();
+      bdAudioCtx.current = ac;
+      const osc = ac.createOscillator();
+      const gain = ac.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(200, ac.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(800, ac.currentTime + duration / 1000);
+      gain.gain.setValueAtTime(0.05, ac.currentTime);
+      gain.gain.linearRampToValueAtTime(0.15, ac.currentTime + duration / 1000);
+      osc.connect(gain);
+      gain.connect(ac.destination);
+      osc.start();
+      bdOscillator.current = osc;
+      bdGainNode.current = gain;
+    } catch(e) {}
+  };
+
+  const bdPlayDropSound = () => {
+    try {
+      const ac = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ac.createOscillator();
+      const gain = ac.createGain();
+      osc.type = "sawtooth";
+      osc.frequency.setValueAtTime(100, ac.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(40, ac.currentTime + 0.5);
+      gain.gain.setValueAtTime(0.25, ac.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ac.currentTime + 0.6);
+      osc.connect(gain);
+      gain.connect(ac.destination);
+      osc.start();
+      osc.stop(ac.currentTime + 0.6);
+    } catch(e) {}
+  };
+
+  const bdCleanup = () => {
+    bdStopAudio();
+    if (bdBuildInterval.current) { clearInterval(bdBuildInterval.current); bdBuildInterval.current = null; }
+    if (bdDropTimer.current) { clearTimeout(bdDropTimer.current); bdDropTimer.current = null; }
+    if (bdHoldInterval.current) { clearInterval(bdHoldInterval.current); bdHoldInterval.current = null; }
+    if (window._bdActive) { window._bdActive.v = false; window._bdActive = null; }
+    setBdPhase(null);
+    setGameActive(null);
+  };
+
+  const startBeatDrop = () => {
+    const guard = { v: true };
+    window._bdActive = guard;
+    setBdRound(0);
+    setBdScore(0);
+    setBdRoundScores([]);
+    setBdPhase("intro");
+    setCommentary("Welcome to BEAT DROP! Hold your puff... release ON the beat!");
+    playFx("crowd");
+    setTimeout(() => {
+      if (!guard.v) return;
+      bdStartRound(0, guard);
+    }, 2000);
+  };
+
+  const bdStartRound = (roundNum, guard) => {
+    if (!guard.v) return;
+    const song = BD_SONGS[roundNum];
+    const buildTime = song.buildTime || (5000 + Math.random() * 10000);
+    setBdRound(roundNum);
+    setBdBuilding(true);
+    setBdDropped(false);
+    setBdHolding(false);
+    setBdHoldStart(0);
+    setBdDropTime(0);
+    setBdReleaseTime(null);
+    setBdBeatIntensity(0);
+    setBdRoundLabel("");
+    setBdFakeDropped(false);
+    setBdPhase("building");
+    setCommentary("Song " + (roundNum + 1) + ": " + song.name + " -- BUILDING...");
+    bdPlayBuildAudio(buildTime);
+    const startT = Date.now();
+    bdBuildInterval.current = setInterval(() => {
+      if (!guard.v) return;
+      const elapsed = Date.now() - startT;
+      const progress = Math.min(elapsed / buildTime, 1);
+      setBdBeatIntensity(progress);
+    }, 50);
+    if (song.fakeAt) {
+      setTimeout(() => {
+        if (!guard.v) return;
+        setBdFakeDropped(true);
+        triggerShake();
+        setCommentary("PSYCH! That was a FAKE drop!");
+        setTimeout(() => { if (guard.v) setBdFakeDropped(false); }, 800);
+      }, song.fakeAt);
+    }
+    bdDropTimer.current = setTimeout(() => {
+      if (!guard.v) return;
+      if (bdBuildInterval.current) { clearInterval(bdBuildInterval.current); bdBuildInterval.current = null; }
+      bdStopAudio();
+      setBdBuilding(false);
+      setBdDropped(true);
+      setBdDropTime(Date.now());
+      setBdBeatIntensity(1);
+      setBdPhase("dropped");
+      bdPlayDropSound();
+      triggerFlash("goal");
+      triggerShake();
+      playFx("crowd");
+      setCommentary("DROP! RELEASE NOW!");
+      setTimeout(() => {
+        if (!guard.v) return;
+        if (!bdReleaseTime) {
+          bdScoreRound(roundNum, null, Date.now(), guard);
+        }
+      }, 3000);
+    }, buildTime);
+  };
+
+  const bdStartHold = () => {
+    if (bdPhase !== "building" && bdPhase !== "dropped") return;
+    if (bdHolding) return;
+    setBdHolding(true);
+    setBdHoldStart(Date.now());
+  };
+
+  const bdReleaseHold = () => {
+    if (!bdHolding) return;
+    setBdHolding(false);
+    const releaseT = Date.now();
+    setBdReleaseTime(releaseT);
+    if (!bdDropped) {
+      setBdRoundLabel("EARLY");
+      setCommentary("Too soon! The beat hadn't dropped yet...");
+      playFx("error");
+      bdScoreRound(bdRound, releaseT, null, window._bdActive);
+    } else {
+      bdScoreRound(bdRound, releaseT, bdDropTime, window._bdActive);
+    }
+  };
+
+  const bdScoreRound = (roundNum, releaseT, dropT, guard) => {
+    if (!guard || !guard.v) return;
+    let pts = 0;
+    let label = "";
+    const holdDuration = bdHoldStart > 0 ? (releaseT || Date.now()) - bdHoldStart : 0;
+    const isBlinker = holdDuration >= 5000;
+    if (!releaseT || !dropT) {
+      if (!dropT && releaseT) { pts = 0; label = "EARLY -- Too soon!"; }
+      else { pts = 10; label = "LATE -- The party's over bro"; }
+    } else {
+      const diff = Math.abs(releaseT - dropT) / 1000;
+      if (diff <= 0.2) { pts = 100; label = "PERFECT -- ON THE BEAT!"; playFx("goal"); triggerFlash("goal"); spawnConfetti(40, [C.pink, C.purple, C.gold]); }
+      else if (diff <= 0.5) { pts = 75; label = "GREAT"; playFx("success"); }
+      else if (diff <= 1.0) { pts = 50; label = "GOOD"; playFx("select"); }
+      else if (releaseT > dropT) { pts = 10; label = "LATE -- The party's over bro"; playFx("save"); }
+      else { pts = 0; label = "EARLY -- Too soon!"; playFx("error"); }
+    }
+    if (isBlinker && pts >= 50) { pts += 50; label += " + BLINKER LEGENDARY!"; playFx("crowd"); }
+    setBdRoundLabel(label);
+    setBdPhase("round_result");
+    setBdScore(prev => prev + pts);
+    setBdRoundScores(prev => [...prev, { round: roundNum + 1, pts, label }]);
+    setCommentary(label + " (+" + pts + " pts)");
+    const scoreForFinal = bdScore + pts;
+    setTimeout(() => {
+      if (!guard.v) return;
+      if (roundNum < 2) { bdStartRound(roundNum + 1, guard); }
+      else {
+        setBdPhase("final");
+        const bonus = scoreForFinal >= 250 ? 100 : scoreForFinal >= 150 ? 50 : 20;
+        setCoins(c => c + bonus);
+        setCommentary("BEAT DROP COMPLETE! +" + bonus + " coins!");
+        if (scoreForFinal >= 250) { spawnConfetti(60, [C.pink, C.purple, C.gold, C.cyan]); playFx("win"); }
+        else playFx("success");
+      }
+    }, 2500);
+  };
+
+  // ══════════════════════════════════════════════════════
+  // PUFF LIMBO -- Endurance Challenge Game Engine
+  // ══════════════════════════════════════════════════════
+  const PL_TARGETS = [3.0, 3.5, 4.0, 4.2, 4.5, 4.7, 5.0];
+  const PL_NAMES = ["CloudChaser99","BlinkerBetty","THC_Tony","VapeLord69","DabQueen","PuffDaddy_Jr","SmokeRing_Steve","HazeDaze","KushKing","FogMachine","MistWalker","NebulaNick","GreenGoblin","SkyHighSam","TokeToken","LitLenny","BubbleBoi","RipTide","SeshGremlin","GlassHouse"];
+
+  const plCleanup = () => {
+    if (plPuffInterval.current) { clearInterval(plPuffInterval.current); plPuffInterval.current = null; }
+    if (window._plActive) { window._plActive.v = false; window._plActive = null; }
+    setPlPhase(null);
+    setGameActive(null);
+  };
+
+  const startPuffLimbo = () => {
+    const guard = { v: true };
+    window._plActive = guard;
+    setPlRound(0);
+    setPlTarget(PL_TARGETS[0]);
+    setPlPlayers(20);
+    setPlSurvived(true);
+    setPlPuffTime(0);
+    setPlHolding(false);
+    setPlEliminatedList([]);
+    setPlRoundResults([]);
+    setPlPhase("intro");
+    setCommentary("Welcome to PUFF LIMBO! Can you survive the blinker threshold?");
+    playFx("crowd");
+    setTimeout(() => {
+      if (!guard.v) return;
+      plStartRound(0, 20, guard);
+    }, 2500);
+  };
+
+  const plStartRound = (roundNum, players, guard) => {
+    if (!guard.v) return;
+    const target = PL_TARGETS[roundNum];
+    setPlRound(roundNum);
+    setPlTarget(target);
+    setPlPuffTime(0);
+    setPlHolding(false);
+    setPlSurvived(true);
+    setPlPhase("ready");
+    const dangerMsg = target >= 4.5 ? " -- you can feel the blinker calling your name" : target >= 4.0 ? " -- getting serious now" : "";
+    setCommentary("Round " + (roundNum + 1) + ": Hold for " + target.toFixed(1) + "s" + dangerMsg);
+    if (target >= 4.5) playFx("charge");
+  };
+
+  const plStartPuff = () => {
+    if (plPhase !== "ready") return;
+    if (plHolding) return;
+    setPlHolding(true);
+    setPlPuffTime(0);
+    plHoldStart.current = Date.now();
+    setPlPhase("puffing");
+    plPuffInterval.current = setInterval(() => {
+      const elapsed = (Date.now() - plHoldStart.current) / 1000;
+      setPlPuffTime(elapsed);
+      if (elapsed >= 6.0) { plReleasePuff(); }
+    }, 50);
+  };
+
+  const plReleasePuff = () => {
+    if (!plHolding && plPhase !== "puffing") return;
+    if (plPuffInterval.current) { clearInterval(plPuffInterval.current); plPuffInterval.current = null; }
+    setPlHolding(false);
+    const elapsed = (Date.now() - plHoldStart.current) / 1000;
+    setPlPuffTime(elapsed);
+    const guard = window._plActive;
+    if (!guard || !guard.v) return;
+    const target = PL_TARGETS[plRound];
+    const survived = elapsed >= target;
+    const isBlinker = elapsed >= 5.0;
+    let eliminatedCount = 0;
+    const failChance = target >= 4.5 ? 0.5 : target >= 4.0 ? 0.35 : 0.2;
+    const currentPlayers = plPlayers;
+    for (let i = 0; i < currentPlayers - 1; i++) { if (Math.random() < failChance) eliminatedCount++; }
+    const newPlayers = Math.max(1, currentPlayers - eliminatedCount - (survived ? 0 : 1));
+    const newEliminated = [];
+    for (let i = 0; i < eliminatedCount; i++) { newEliminated.push(PL_NAMES[Math.floor(Math.random() * PL_NAMES.length)]); }
+    setPlPlayers(survived ? newPlayers + 1 : newPlayers);
+    if (!survived) {
+      setPlSurvived(false);
+      setPlPhase("eliminated");
+      setCommentary("ELIMINATED at " + elapsed.toFixed(2) + "s! Needed " + target.toFixed(1) + "s");
+      playFx("error");
+      triggerShake();
+    } else {
+      setPlSurvived(true);
+      setPlPhase("result");
+      setPlEliminatedList(prev => [...prev, ...newEliminated]);
+      setPlRoundResults(prev => [...prev, { round: plRound + 1, target, time: elapsed, survived: true }]);
+      if (isBlinker) {
+        setCommentary("BLINKER HOLD! " + elapsed.toFixed(2) + "s -- ABSOLUTE LEGEND!");
+        playFx("goal"); triggerFlash("goal"); spawnConfetti(50, [C.orange, C.red, C.gold]);
+      } else {
+        setCommentary("SURVIVED! " + elapsed.toFixed(2) + "s (needed " + target.toFixed(1) + "s)");
+        playFx("success");
+      }
+      if (eliminatedCount > 0) {
+        setTimeout(() => { if (!guard.v) return; setCommentary(eliminatedCount + " players eliminated! " + (newPlayers + 1) + " remain"); }, 1500);
+      }
+    }
+    setTimeout(() => {
+      if (!guard.v) return;
+      if (!survived) {
+        const bonus = plRound >= 5 ? 60 : plRound >= 3 ? 30 : 10;
+        setCoins(c => c + bonus);
+        setPlPhase("final");
+        setCommentary("Puff Limbo over! Made it to round " + (plRound + 1) + " -- +" + bonus + " coins");
+        playFx(plRound >= 3 ? "success" : "save");
+      } else if (plRound >= 6) {
+        setPlPhase("champion");
+        setCoins(c => c + 150);
+        setCommentary("PUFF LIMBO CHAMPION! Survived the 5.0s BLINKER round! +150 coins!");
+        spawnConfetti(80, [C.gold, C.orange, C.red, C.pink]);
+        playFx("win");
+        setTimeout(() => { if (!guard.v) return; setPlPhase("final"); }, 3000);
+      } else {
+        plStartRound(plRound + 1, newPlayers + 1, guard);
+      }
+    }, 2500);
+  };
+
   const overlayBack = (onClose) => (
     <button type="button" data-back="true" onClick={()=>{cleanupAllGames();onClose();}}
       style={{position:"absolute",top:12,left:12,zIndex:9999,width:40,height:40,borderRadius:20,
@@ -10930,6 +11284,326 @@ export default function MoodLabArena() {
         );
       }
 
+
+      // ═══════════════════════════════════════════════════
+      // BEAT DROP -- Music Timing Game
+      // ═══════════════════════════════════════════════════
+      if(gameActive.id==="beatdrop" && bdPhase) {
+        const isIntro = bdPhase==="intro";
+        const isBuilding = bdPhase==="building";
+        const isDropped = bdPhase==="dropped";
+        const isRoundResult = bdPhase==="round_result";
+        const isFinal = bdPhase==="final";
+        const holdTime = bdHolding && bdHoldStart > 0 ? (Date.now() - bdHoldStart) / 1000 : 0;
+        const song = BD_SONGS[bdRound] || BD_SONGS[0];
+        return (
+          <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden",display:"flex",flexDirection:"column",alignItems:"center",
+            animation:screenShake?"shake 0.4s ease":"none"}}
+            onMouseDown={(e)=>{if(e.target.closest('[data-back]'))return;bdStartHold();}}
+            onMouseUp={(e)=>{if(e.target.closest('[data-back]'))return;bdReleaseHold();}}
+            onTouchStart={(e)=>{if(e.target.closest('[data-back]'))return;e.preventDefault();bdStartHold();}}
+            onTouchEnd={(e)=>{if(e.target.closest('[data-back]'))return;e.preventDefault();bdReleaseHold();}}>
+            {/* Concert background */}
+            <div style={{position:"absolute",inset:0,background:`linear-gradient(180deg, #1a0525 0%, #2d0a3e 25%, #1a0030 50%, #0d0020 75%, #050510 100%)`,zIndex:0}}/>
+            {/* Pulsing glow based on beat intensity */}
+            <div style={{position:"absolute",top:"20%",left:"50%",transform:"translateX(-50%)",width:300+bdBeatIntensity*200,height:300+bdBeatIntensity*200,borderRadius:"50%",
+              background:`radial-gradient(circle, ${C.pink}${Math.floor(bdBeatIntensity*25).toString(16).padStart(2,"0")} 0%, ${C.purple}${Math.floor(bdBeatIntensity*15).toString(16).padStart(2,"0")} 40%, transparent 70%)`,
+              pointerEvents:"none",zIndex:1,transition:"all 0.1s",opacity:isDropped?1:bdBeatIntensity}}/>
+            {/* Fake drop flash */}
+            {bdFakeDropped && <div style={{position:"absolute",inset:0,background:`${C.purple}30`,zIndex:2,animation:"fadeIn 0.1s ease",pointerEvents:"none"}}/>}
+            {/* Drop flash */}
+            {isDropped && <div style={{position:"absolute",inset:0,background:`${C.pink}20`,zIndex:2,pointerEvents:"none",animation:"fadeIn 0.1s ease"}}/>}
+            {/* Screen flash */}
+            {screenFlash && <div style={{position:"absolute",inset:0,background:screenFlash==="goal"?`${C.gold}25`:`${C.red}20`,zIndex:99,pointerEvents:"none"}}/>}
+            {/* Vignette */}
+            <div style={{position:"absolute",inset:0,background:"radial-gradient(circle at 50% 50%, transparent 40%, rgba(0,0,0,0.6) 100%)",zIndex:3,pointerEvents:"none"}}/>
+            {overlayBack(bdCleanup)}
+            <div style={{position:"relative",zIndex:10,display:"flex",flexDirection:"column",alignItems:"center",width:"100%",maxWidth:380,padding:"60px 20px 30px",flex:1}}>
+              {/* Header */}
+              <div style={{fontSize:14,fontWeight:900,color:C.pink,letterSpacing:3,marginBottom:4}}>BEAT DROP</div>
+              <div style={{fontSize:10,color:C.text3,marginBottom:16}}>Song {bdRound+1}/3: {song.name}</div>
+              {/* Score */}
+              <div style={{display:"flex",gap:20,marginBottom:20}}>
+                <div style={{textAlign:"center"}}>
+                  <div style={{fontSize:9,color:C.text3}}>SCORE</div>
+                  <div style={{fontSize:24,fontWeight:900,color:C.gold}}>{bdScore}</div>
+                </div>
+                <div style={{textAlign:"center"}}>
+                  <div style={{fontSize:9,color:C.text3}}>ROUND</div>
+                  <div style={{fontSize:24,fontWeight:900,color:C.pink}}>{bdRound+1}/3</div>
+                </div>
+              </div>
+
+              {/* Waveform Visualization */}
+              {(isBuilding || isDropped) && (
+                <div style={{width:"100%",height:120,display:"flex",alignItems:"flex-end",justifyContent:"center",gap:3,marginBottom:20}}>
+                  {Array.from({length:20}).map((_,i) => {
+                    const barHeight = isDropped ? 80+Math.random()*40 : (10 + bdBeatIntensity * 80 * (0.5 + 0.5 * Math.sin(i * 0.8 + Date.now() * 0.005)));
+                    const barColor = isDropped ? C.gold : `hsl(${300 + i * 3}, 80%, ${50 + bdBeatIntensity * 30}%)`;
+                    return <div key={i} style={{width:8,borderRadius:4,transition:"height 0.1s",
+                      height:barHeight,background:barColor,opacity:0.6+bdBeatIntensity*0.4,
+                      boxShadow:isDropped?`0 0 10px ${C.gold}60`:bdBeatIntensity>0.7?`0 0 6px ${C.pink}40`:"none"
+                    }}/>;
+                  })}
+                </div>
+              )}
+
+              {/* Building text */}
+              {isBuilding && !bdFakeDropped && (
+                <div style={{textAlign:"center",marginBottom:16,animation:"pulse 1s infinite"}}>
+                  <div style={{fontSize:20,fontWeight:900,color:bdBeatIntensity>0.8?C.gold:C.purple}}>
+                    {bdBeatIntensity > 0.9 ? "ALMOST..." : bdBeatIntensity > 0.6 ? "BUILDING..." : "Wait for it..."}
+                  </div>
+                  <div style={{fontSize:11,color:C.text2,marginTop:4}}>Hold your puff... release ON the drop</div>
+                </div>
+              )}
+
+              {/* Fake drop warning */}
+              {bdFakeDropped && (
+                <div style={{textAlign:"center",marginBottom:16}}>
+                  <div style={{fontSize:22,fontWeight:900,color:C.purple,animation:"shake 0.3s ease"}}>PSYCH!</div>
+                  <div style={{fontSize:11,color:C.text2}}>That was a FAKE drop! Keep holding!</div>
+                </div>
+              )}
+
+              {/* Drop indicator */}
+              {isDropped && (
+                <div style={{textAlign:"center",marginBottom:16,animation:"pulse 0.3s ease"}}>
+                  <div style={{fontSize:36,fontWeight:900,color:C.gold,textShadow:`0 0 30px ${C.gold}80`}}>DROP!</div>
+                  <div style={{fontSize:14,fontWeight:800,color:C.pink}}>RELEASE NOW!</div>
+                </div>
+              )}
+
+              {/* Hold indicator */}
+              {bdHolding && (
+                <div style={{width:"80%",height:12,borderRadius:6,background:`${C.text3}15`,marginBottom:12,overflow:"hidden"}}>
+                  <div style={{height:"100%",borderRadius:6,transition:"width 0.1s",
+                    width:Math.min(100, holdTime * 20) + "%",
+                    background:holdTime>=5?`linear-gradient(90deg, ${C.gold}, ${C.red})`:`linear-gradient(90deg, ${C.pink}, ${C.purple})`
+                  }}/>
+                </div>
+              )}
+              {bdHolding && <div style={{fontSize:10,color:C.pink,marginBottom:8}}>Holding... {holdTime.toFixed(1)}s {holdTime>=5?"BLINKER!":""}</div>}
+
+              {/* Intro */}
+              {isIntro && (
+                <div style={{textAlign:"center",animation:"fadeIn 0.5s ease"}}>
+                  <div style={{fontSize:48,marginBottom:12}}>&#127911;</div>
+                  <div style={{fontSize:22,fontWeight:900,color:C.text,marginBottom:8}}>BEAT DROP</div>
+                  <div style={{fontSize:12,color:C.text2,maxWidth:260,lineHeight:1.5}}>
+                    Hold your puff during the build-up. Release exactly when the beat drops. 3 songs, 3 chances.
+                  </div>
+                </div>
+              )}
+
+              {/* Round result */}
+              {isRoundResult && (
+                <div style={{textAlign:"center",animation:"fadeIn 0.3s ease"}}>
+                  <div style={{fontSize:22,fontWeight:900,color:bdRoundLabel.includes("PERFECT")?C.gold:bdRoundLabel.includes("GREAT")?C.green:bdRoundLabel.includes("EARLY")?C.red:C.text2,
+                    textShadow:bdRoundLabel.includes("PERFECT")?`0 0 20px ${C.gold}60`:"none"}}>{bdRoundLabel}</div>
+                  <div style={{fontSize:14,color:C.text2,marginTop:8}}>+{bdRoundScores[bdRoundScores.length-1]?.pts || 0} pts</div>
+                </div>
+              )}
+
+              {/* Final results */}
+              {isFinal && (
+                <div style={{textAlign:"center",animation:"fadeIn 0.5s ease"}}>
+                  <div style={{fontSize:32,fontWeight:900,color:C.gold,marginBottom:8}}>SHOW COMPLETE!</div>
+                  <div style={{fontSize:48,fontWeight:900,color:C.pink,marginBottom:12}}>{bdScore}</div>
+                  <div style={{fontSize:11,color:C.text3,marginBottom:16}}>Total Score</div>
+                  {bdRoundScores.map((r,i)=>(
+                    <div key={i} style={{display:"flex",justifyContent:"space-between",padding:"6px 20px",marginBottom:4,borderRadius:8,background:`${C.pink}08`}}>
+                      <span style={{fontSize:11,color:C.text2}}>Song {r.round}</span>
+                      <span style={{fontSize:11,fontWeight:800,color:r.pts>=100?C.gold:r.pts>=50?C.green:C.text3}}>+{r.pts}</span>
+                    </div>
+                  ))}
+                  <div style={{display:"flex",gap:10,justifyContent:"center",marginTop:20}}>
+                    <div onClick={(e)=>{e.stopPropagation();bdCleanup();startBeatDrop();setGameActive({id:"beatdrop",name:"Beat Drop",emoji:"\uD83C\uDFA7",color:C.pink});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.pink}15`,border:`1px solid ${C.pink}30`,fontSize:13,fontWeight:800,color:C.pink}}>&#127911; Again</div>
+                    <div onClick={(e)=>{e.stopPropagation();bdCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.text3}10`,border:`1px solid ${C.text3}20`,fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
+                  </div>
+                </div>
+              )}
+
+              {/* Puff instruction */}
+              {(isBuilding || isDropped) && !bdHolding && (
+                <div style={{position:"absolute",bottom:40,left:0,right:0,textAlign:"center"}}>
+                  <div style={{fontSize:12,color:C.text3,animation:"pulse 2s infinite"}}>Hold anywhere to puff</div>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      }
+
+      // ═══════════════════════════════════════════════════
+      // PUFF LIMBO -- Endurance Challenge
+      // ═══════════════════════════════════════════════════
+      if(gameActive.id==="pufflimbo" && plPhase) {
+        const isIntro = plPhase==="intro";
+        const isReady = plPhase==="ready";
+        const isPuffing = plPhase==="puffing";
+        const isResult = plPhase==="result";
+        const isEliminated = plPhase==="eliminated";
+        const isChampion = plPhase==="champion";
+        const isFinal = plPhase==="final";
+        const targetPct = plTarget / 5.5 * 100;
+        const puffPct = Math.min(plPuffTime / 5.5 * 100, 100);
+        const dangerZone = plTarget >= 4.5;
+        const extremeDanger = plTarget >= 4.7;
+        return (
+          <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden",display:"flex",flexDirection:"column",alignItems:"center",
+            animation:screenShake?"shake 0.4s ease":"none"}}
+            onMouseDown={(e)=>{if(e.target.closest('[data-back]'))return;plStartPuff();}}
+            onMouseUp={(e)=>{if(e.target.closest('[data-back]'))return;plReleasePuff();}}
+            onTouchStart={(e)=>{if(e.target.closest('[data-back]'))return;e.preventDefault();plStartPuff();}}
+            onTouchEnd={(e)=>{if(e.target.closest('[data-back]'))return;e.preventDefault();plReleasePuff();}}>
+            {/* Circus/fire background */}
+            <div style={{position:"absolute",inset:0,background:dangerZone?
+              `linear-gradient(180deg, #2a0a00 0%, #3d1500 25%, #2a0800 50%, #1a0500 75%, #0a0200 100%)`:
+              `linear-gradient(180deg, #1a0a00 0%, #2d1200 25%, #1a0800 50%, #0d0400 75%, #050200 100%)`,zIndex:0}}/>
+            {/* Danger glow */}
+            {dangerZone && <div style={{position:"absolute",top:0,left:0,right:0,bottom:0,background:`radial-gradient(circle at 50% 60%, ${C.red}15, transparent 60%)`,zIndex:1,pointerEvents:"none",animation:"pulse 1s infinite"}}/>}
+            {/* Screen flash */}
+            {screenFlash && <div style={{position:"absolute",inset:0,background:screenFlash==="goal"?`${C.gold}25`:`${C.red}20`,zIndex:99,pointerEvents:"none"}}/>}
+            {overlayBack(plCleanup)}
+            <div style={{position:"relative",zIndex:10,display:"flex",flexDirection:"column",alignItems:"center",width:"100%",maxWidth:380,padding:"60px 20px 30px",flex:1}}>
+              {/* Header */}
+              <div style={{fontSize:14,fontWeight:900,color:C.orange,letterSpacing:3,marginBottom:4}}>PUFF LIMBO</div>
+              <div style={{display:"flex",gap:16,marginBottom:12}}>
+                <div style={{textAlign:"center"}}>
+                  <div style={{fontSize:9,color:C.text3}}>ROUND</div>
+                  <div style={{fontSize:18,fontWeight:900,color:C.orange}}>{plRound+1}/7</div>
+                </div>
+                <div style={{textAlign:"center"}}>
+                  <div style={{fontSize:9,color:C.text3}}>TARGET</div>
+                  <div style={{fontSize:18,fontWeight:900,color:dangerZone?C.red:C.gold}}>{plTarget.toFixed(1)}s</div>
+                </div>
+                <div style={{textAlign:"center"}}>
+                  <div style={{fontSize:9,color:C.text3}}>PLAYERS</div>
+                  <div style={{fontSize:18,fontWeight:900,color:C.text}}>{plPlayers}</div>
+                </div>
+              </div>
+
+              {/* Limbo bar visualization */}
+              {(isReady || isPuffing || isResult || isEliminated) && (
+                <div style={{width:"100%",height:200,position:"relative",marginBottom:20,border:`1px solid ${C.orange}15`,borderRadius:16,overflow:"hidden",background:`${C.orange}04`}}>
+                  {/* Target line (limbo bar) */}
+                  <div style={{position:"absolute",bottom:targetPct+"%",left:0,right:0,height:3,
+                    background:dangerZone?`linear-gradient(90deg, ${C.red}, ${C.orange}, ${C.red})`:C.orange,
+                    boxShadow:`0 0 10px ${dangerZone?C.red:C.orange}60`,zIndex:2}}>
+                    <div style={{position:"absolute",right:8,top:-14,fontSize:9,fontWeight:800,color:dangerZone?C.red:C.orange}}>{plTarget.toFixed(1)}s</div>
+                  </div>
+                  {/* Danger zone above 4.5s */}
+                  {dangerZone && <div style={{position:"absolute",bottom:targetPct+"%",left:0,right:0,top:0,background:`${C.red}08`,borderBottom:`1px dashed ${C.red}30`}}/>}
+                  {/* Blinker threshold line at 5.0s */}
+                  <div style={{position:"absolute",bottom:(5.0/5.5*100)+"%",left:0,right:0,height:2,background:`${C.red}40`,borderTop:`1px dashed ${C.red}50`}}>
+                    <div style={{position:"absolute",right:8,top:-14,fontSize:8,fontWeight:800,color:C.red}}>BLINKER 5.0s</div>
+                  </div>
+                  {/* Your puff bar */}
+                  <div style={{position:"absolute",bottom:0,left:"35%",width:"30%",
+                    height:puffPct+"%",borderRadius:"8px 8px 0 0",transition:isPuffing?"height 0.05s":"height 0.3s",
+                    background:plPuffTime>=5?`linear-gradient(180deg, ${C.red}, ${C.orange})`:plPuffTime>=plTarget?`linear-gradient(180deg, ${C.green}, ${C.gold})`:`linear-gradient(180deg, ${C.orange}, ${C.gold})`,
+                    boxShadow:plPuffTime>=plTarget?`0 0 20px ${C.green}40`:plPuffTime>=4.5?`0 0 20px ${C.red}40`:`0 0 10px ${C.orange}20`,
+                    zIndex:3
+                  }}>
+                    <div style={{position:"absolute",top:4,left:0,right:0,textAlign:"center",fontSize:11,fontWeight:900,color:"#fff"}}>{plPuffTime.toFixed(1)}s</div>
+                  </div>
+                </div>
+              )}
+
+              {/* Status text */}
+              {isReady && (
+                <div style={{textAlign:"center",animation:"fadeIn 0.3s ease"}}>
+                  <div style={{fontSize:18,fontWeight:900,color:dangerZone?C.red:C.orange,marginBottom:4}}>
+                    {extremeDanger?"DANGER ZONE!":dangerZone?"Getting Dangerous...":"Round "+(plRound+1)}
+                  </div>
+                  <div style={{fontSize:12,color:C.text2,marginBottom:8}}>Hold for at least {plTarget.toFixed(1)} seconds</div>
+                  {dangerZone && <div style={{fontSize:11,color:C.red,fontStyle:"italic",animation:"pulse 1.5s infinite"}}>
+                    {plTarget >= 4.7 ? "The blinker is RIGHT THERE..." : "You can feel the blinker calling your name"}
+                  </div>}
+                  <div style={{fontSize:12,color:C.text3,marginTop:12,animation:"pulse 2s infinite"}}>Hold anywhere to puff</div>
+                </div>
+              )}
+
+              {isPuffing && (
+                <div style={{textAlign:"center"}}>
+                  <div style={{fontSize:28,fontWeight:900,color:plPuffTime>=plTarget?C.green:plPuffTime>=4.5?C.red:C.orange}}>
+                    {plPuffTime.toFixed(1)}s
+                  </div>
+                  <div style={{fontSize:11,color:plPuffTime>=plTarget?C.green:C.text2,marginTop:4}}>
+                    {plPuffTime>=5?"BLINKER TERRITORY!":plPuffTime>=plTarget?"TARGET REACHED! Release anytime":"Keep holding..."}
+                  </div>
+                </div>
+              )}
+
+              {/* Intro */}
+              {isIntro && (
+                <div style={{textAlign:"center",animation:"fadeIn 0.5s ease"}}>
+                  <div style={{fontSize:48,marginBottom:12}}>&#127914;</div>
+                  <div style={{fontSize:22,fontWeight:900,color:C.text,marginBottom:8}}>PUFF LIMBO</div>
+                  <div style={{fontSize:12,color:C.text2,maxWidth:260,lineHeight:1.5}}>
+                    Each round the target gets longer. Hold your puff to survive. Can you make it to the BLINKER round?
+                  </div>
+                  <div style={{fontSize:11,color:C.orange,marginTop:12}}>20 players entering...</div>
+                </div>
+              )}
+
+              {/* Round result - survived */}
+              {isResult && (
+                <div style={{textAlign:"center",animation:"fadeIn 0.3s ease"}}>
+                  <div style={{fontSize:24,fontWeight:900,color:C.green,marginBottom:4}}>SURVIVED!</div>
+                  <div style={{fontSize:14,color:C.text2}}>{plPuffTime.toFixed(2)}s (needed {plTarget.toFixed(1)}s)</div>
+                  {plPuffTime >= 5 && <div style={{fontSize:12,fontWeight:800,color:C.gold,marginTop:8,animation:"pulse 0.5s infinite"}}>BLINKER HOLD!</div>}
+                  <div style={{fontSize:11,color:C.text3,marginTop:8}}>Next round loading...</div>
+                </div>
+              )}
+
+              {/* Eliminated */}
+              {isEliminated && (
+                <div style={{textAlign:"center",animation:"fadeIn 0.3s ease"}}>
+                  <div style={{fontSize:36,marginBottom:8}}>&#128128;</div>
+                  <div style={{fontSize:24,fontWeight:900,color:C.red,marginBottom:4}}>ELIMINATED!</div>
+                  <div style={{fontSize:14,color:C.text2}}>{plPuffTime.toFixed(2)}s -- needed {plTarget.toFixed(1)}s</div>
+                  <div style={{fontSize:11,color:C.text3,marginTop:8}}>So close...</div>
+                </div>
+              )}
+
+              {/* Champion */}
+              {isChampion && (
+                <div style={{textAlign:"center",animation:"fadeIn 0.5s ease"}}>
+                  <div style={{fontSize:48,marginBottom:8}}>&#127942;</div>
+                  <div style={{fontSize:28,fontWeight:900,color:C.gold,textShadow:`0 0 30px ${C.gold}60`,marginBottom:8}}>PUFF LIMBO CHAMPION!</div>
+                  <div style={{fontSize:14,color:C.text2}}>You survived the 5.0s BLINKER round!</div>
+                  <div style={{fontSize:16,fontWeight:800,color:C.gold,marginTop:8}}>+150 coins!</div>
+                </div>
+              )}
+
+              {/* Final results */}
+              {isFinal && (
+                <div style={{textAlign:"center",animation:"fadeIn 0.5s ease",width:"100%"}}>
+                  <div style={{fontSize:24,fontWeight:900,color:plRound>=6?C.gold:C.orange,marginBottom:12}}>
+                    {plRound>=6?"CHAMPION!":"Game Over"}
+                  </div>
+                  <div style={{fontSize:12,color:C.text2,marginBottom:16}}>
+                    Made it to Round {plRound+1} of 7 | {plPlayers} players survived
+                  </div>
+                  {plRoundResults.map((r,i)=>(
+                    <div key={i} style={{display:"flex",justifyContent:"space-between",padding:"6px 20px",marginBottom:4,borderRadius:8,background:`${C.orange}08`}}>
+                      <span style={{fontSize:11,color:C.text2}}>R{r.round}: {r.target.toFixed(1)}s target</span>
+                      <span style={{fontSize:11,fontWeight:800,color:C.green}}>{r.time.toFixed(2)}s</span>
+                    </div>
+                  ))}
+                  <div style={{display:"flex",gap:10,justifyContent:"center",marginTop:20}}>
+                    <div onClick={(e)=>{e.stopPropagation();plCleanup();startPuffLimbo();setGameActive({id:"pufflimbo",name:"Puff Limbo",emoji:"\uD83C\uDFAA",color:C.orange});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.orange}15`,border:`1px solid ${C.orange}30`,fontSize:13,fontWeight:800,color:C.orange}}>&#127914; Again</div>
+                    <div onClick={(e)=>{e.stopPropagation();plCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.text3}10`,border:`1px solid ${C.text3}20`,fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      }
+
       // Generic game
       return (
         <div style={overlayStyle}>
@@ -13292,58 +13966,304 @@ export default function MoodLabArena() {
     return null;
   };
 
-  // Vibe Check
+  // Vibe Check V2 - Full Game Show
+  const vcStartGame = () => {
+    setShowVibeCheck(true);
+    setVcPhase("intro");
+    setVcPlayers(100);
+    setVcRound(0);
+    setVcEliminated(false);
+    setVcCorrectStreak(0);
+    setVcScore(0);
+    setVcQ(0);
+    setVcAnswered(false);
+    setVcTimer(10);
+    setVcPuffAnswer(null);
+    setTimeout(()=>{ setVcPhase("question"); setVcTimer(10); }, 3000);
+  };
+
+  const vcAnswerQuestion = (ansIdx) => {
+    if(vcAnswered || vcEliminated) return;
+    if(vcTimerRef.current){ clearInterval(vcTimerRef.current); vcTimerRef.current=null; }
+    setVcAnswered(true);
+    setVcPuffAnswer(ansIdx);
+    const qq = VC_QUESTIONS_V2[vcRound];
+    const isCorrect = ansIdx === qq.correct;
+    if(isCorrect){
+      setVcScore(s=>s+100+(vcTimer*10));
+      setVcCorrectStreak(s=>s+1);
+      setVcStreak(s=>s+1);
+    } else {
+      setVcCorrectStreak(0);
+      setVcStreak(0);
+      if(!vcEliminated){ setVcEliminated(true); }
+    }
+    setTimeout(()=>{
+      setVcPhase("reveal");
+      const dropAmt = Math.floor(Math.random()*15)+5;
+      setVcPlayers(p=>Math.max(3, p-dropAmt));
+    }, 500);
+  };
+
+  useEffect(()=>{
+    if(vcPhase==="question" && showVibeCheck && !vcAnswered){
+      vcTimerRef.current = setInterval(()=>{
+        setVcTimer(t=>{
+          if(t<=1){
+            clearInterval(vcTimerRef.current);
+            vcTimerRef.current=null;
+            return 0;
+          }
+          return t-1;
+        });
+      },1000);
+      return ()=>{ if(vcTimerRef.current){clearInterval(vcTimerRef.current);vcTimerRef.current=null;} };
+    }
+  },[vcPhase, vcRound, showVibeCheck, vcAnswered]);
+
+  const vcNextQuestion = () => {
+    if(vcRound+1 >= VC_QUESTIONS_V2.length || vcPlayers <= 3){
+      setVcPhase("result");
+      return;
+    }
+    setVcRound(r=>r+1);
+    setVcQ(q=>q+1);
+    setVcAnswered(false);
+    setVcPuffAnswer(null);
+    setVcTimer(10);
+    setVcPhase("question");
+  };
+
+  const MC_COMMENTS = [
+    "Oh that was SPICY!",
+    "The crowd goes WILD!",
+    "Can you feel the TENSION?!",
+    "That one caught some people OFF GUARD!",
+    "We're losing players FAST!",
+    "Only the REAL ones are left!",
+    "This is getting INTENSE!",
+    "Who's gonna survive this round?!",
+  ];
+
   const renderVibeCheck = () => {
     if(!showVibeCheck) return null;
-    const q = VC_QUESTIONS[vcQ];
+    const q = VC_QUESTIONS_V2[vcRound] || VC_QUESTIONS_V2[0];
+    const timerPct = (vcTimer/10)*100;
+    const timerColor = vcTimer > 6 ? C.green : vcTimer > 3 ? C.orange : C.red;
+    const nowViewers = 1247 + Math.floor(Math.random()*100);
+
     return (
-      <div style={overlayStyle}>
-        <div style={{padding:"60px 20px 20px",flex:1}}>
-          <div style={{textAlign:"center",marginBottom:24}}>
-            <div style={{fontSize:10,fontWeight:800,color:C.gold,letterSpacing:2}}>🧠 VIBE CHECK — WC EDITION</div>
-            <div style={{display:"flex",justifyContent:"center",gap:16,marginTop:10}}>
-              <span style={{fontSize:12,color:C.text2}}>Q{vcQ+1}/{VC_QUESTIONS.length}</span>
-              <span style={{fontSize:12,color:C.gold,fontWeight:700}}>🪙 {vcScore}</span>
-              <span style={{fontSize:12,color:C.orange,fontWeight:700}}>🔥 {vcStreak}</span>
+      <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,
+        background:`radial-gradient(ellipse at 50% 0%, ${C.purple}20, transparent 50%), radial-gradient(ellipse at 30% 80%, ${C.pink}10, transparent 50%), rgba(5,5,16,0.97)`,
+        backdropFilter:"blur(16px)",display:"flex",flexDirection:"column",overflowY:"auto",
+      }}>
+        {/* Stage lights at top */}
+        <div style={{position:"absolute",top:0,left:0,right:0,height:120,pointerEvents:"none",
+          background:`radial-gradient(ellipse at 20% 0%, ${C.purple}15, transparent 40%), radial-gradient(ellipse at 50% 0%, ${C.gold}08, transparent 30%), radial-gradient(ellipse at 80% 0%, ${C.pink}12, transparent 40%)`
+        }}/>
+
+        {/* Top bar */}
+        <div style={{padding:"50px 16px 10px",display:"flex",justifyContent:"space-between",alignItems:"center",position:"relative",zIndex:2}}>
+          <div style={{display:"flex",alignItems:"center",gap:8}}>
+            <div style={{display:"flex",alignItems:"center",gap:4,padding:"4px 10px",borderRadius:6,background:`${C.red}20`,border:`1px solid ${C.red}40`}}>
+              <div style={{width:6,height:6,borderRadius:"50%",background:C.red,animation:"pulse 1.5s infinite"}}/>
+              <span style={{fontSize:9,fontWeight:900,color:C.red}}>LIVE</span>
             </div>
+            <span style={{fontSize:10,color:C.text3}}>👁 {nowViewers.toLocaleString()}</span>
           </div>
-          {q ? (
-            <div style={{animation:"fadeIn 0.3s ease"}}>
-              <div style={{fontSize:17,fontWeight:800,color:C.text,textAlign:"center",lineHeight:1.4,marginBottom:24,padding:"0 8px"}}>{q.q}</div>
+          <div style={{display:"flex",gap:10}}>
+            <span style={{fontSize:11,color:C.gold,fontWeight:700}}>🪙 {vcScore}</span>
+            {vcCorrectStreak>=2 && <span style={{fontSize:11,color:C.orange,fontWeight:700}}>🔥 {vcCorrectStreak}</span>}
+          </div>
+        </div>
+
+        {/* Player count bar */}
+        <div style={{padding:"0 16px 8px",display:"flex",alignItems:"center",gap:8}}>
+          <div style={{fontSize:9,fontWeight:700,color:C.text3}}>PLAYERS</div>
+          <div style={{flex:1,height:4,borderRadius:2,background:`${C.text3}15`,overflow:"hidden"}}>
+            <div style={{height:"100%",width:`${vcPlayers}%`,borderRadius:2,background:`linear-gradient(90deg, ${C.pink}, ${C.purple})`,transition:"width 0.8s ease"}}/>
+          </div>
+          <div style={{fontSize:10,fontWeight:800,color:C.pink}}>{vcPlayers}</div>
+        </div>
+
+        <div style={{flex:1,padding:"0 16px",display:"flex",flexDirection:"column"}}>
+
+          {/* INTRO PHASE */}
+          {vcPhase==="intro" && (
+            <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",animation:"fadeIn 0.5s ease"}}>
+              <div style={{fontSize:50,marginBottom:16,filter:`drop-shadow(0 0 20px ${C.gold}40)`,animation:"pulse 1.5s infinite"}}>🧠</div>
+              <div style={{fontSize:28,fontWeight:900,color:C.gold,letterSpacing:3,marginBottom:8}}>VIBE CHECK!</div>
+              <div style={{fontSize:14,color:C.text2,marginBottom:20}}>The Ultimate Trivia Game Show</div>
+              <div style={{display:"flex",alignItems:"center",gap:8,padding:"10px 20px",borderRadius:12,background:`${C.pink}10`,border:`1px solid ${C.pink}20`,marginBottom:16}}>
+                <span style={{fontSize:22}}>🎤</span>
+                <span style={{fontSize:14,fontWeight:700,color:C.pink}}>MC Host is LIVE</span>
+              </div>
+              <div style={{fontSize:18,fontWeight:800,color:C.text,animation:"pulse 2s infinite"}}>{vcPlayers} PLAYERS ENTERED!</div>
+              <div style={{fontSize:11,color:C.text3,marginTop:8}}>Get ready... starting soon!</div>
+            </div>
+          )}
+
+          {/* QUESTION PHASE */}
+          {vcPhase==="question" && (
+            <div style={{flex:1,display:"flex",flexDirection:"column",animation:"fadeIn 0.3s ease"}}>
+              {/* Timer circle */}
+              <div style={{display:"flex",justifyContent:"center",marginBottom:16,marginTop:8}}>
+                <div style={{position:"relative",width:56,height:56}}>
+                  <svg width="56" height="56" style={{transform:"rotate(-90deg)"}}>
+                    <circle cx="28" cy="28" r="24" fill="none" stroke={`${C.text3}15`} strokeWidth="4"/>
+                    <circle cx="28" cy="28" r="24" fill="none" stroke={timerColor} strokeWidth="4"
+                      strokeDasharray={`${timerPct*1.508} 999`} strokeLinecap="round"
+                      style={{transition:"stroke-dasharray 0.3s linear"}}
+                    />
+                  </svg>
+                  <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",
+                    fontSize:20,fontWeight:900,color:timerColor
+                  }}>{vcTimer}</div>
+                </div>
+              </div>
+
+              {/* Category badge */}
+              <div style={{textAlign:"center",marginBottom:10}}>
+                <span style={{fontSize:9,fontWeight:700,color:C.purple,padding:"3px 10px",borderRadius:6,background:`${C.purple}12`,letterSpacing:1}}>
+                  Q{vcRound+1}/{VC_QUESTIONS_V2.length} · {q.cat}
+                </span>
+              </div>
+
+              {/* Question */}
+              <div style={{fontSize:19,fontWeight:800,color:C.text,textAlign:"center",lineHeight:1.4,marginBottom:20,padding:"0 4px"}}>{q.q}</div>
+
+              {/* Answer options */}
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
                 {q.opts.map((o,i)=>{
-                  const isCorrect = i===q.correct;
-                  const answered = vcAnswered;
-                  let bg = `${C.text3}06`;
-                  let border = C.border;
-                  let color = C.text;
-                  if(answered && isCorrect){ bg=`${C.green}12`;border=`${C.green}40`;color=C.green; }
-                  else if(answered && !isCorrect){ bg=`${C.red}06`;border=`${C.red}20`;color=C.red; }
+                  const letters = ["A","B","C","D"];
+                  const optColors = [C.cyan, C.orange, C.green, C.pink];
                   return (
-                    <div key={i} onClick={()=>{
-                      if(vcAnswered) return;
-                      setVcAnswered(true);
-                      if(isCorrect){setVcScore(s=>s+100);setVcStreak(s=>s+1);notify("+100! 🎉",C.green);}
-                      else{setVcStreak(0);notify("Wrong! 😢",C.red);}
-                      setTimeout(()=>{if(vcQ<VC_QUESTIONS.length-1){setVcQ(q=>q+1);setVcAnswered(false);}else{notify(`Game Over! Score: ${vcScore+(isCorrect?100:0)}`,C.gold);}},1500);
-                    }} style={{
-                      padding:"16px",borderRadius:14,cursor:answered?"default":"pointer",textAlign:"center",
-                      background:bg,border:`1.5px solid ${border}`,transition:"all 0.3s",
+                    <div key={i} onClick={()=>vcAnswerQuestion(i)} style={{
+                      padding:"14px 10px",borderRadius:14,cursor:"pointer",textAlign:"center",position:"relative",
+                      background:`${optColors[i]}06`,border:`1.5px solid ${optColors[i]}20`,
+                      transition:"all 0.2s",transform:vcPuffAnswer===i?"scale(0.96)":"scale(1)",
                     }}>
-                      <div style={{fontSize:10,fontWeight:700,color:C.text3,marginBottom:4}}>{String.fromCharCode(65+i)}</div>
-                      <div style={{fontSize:14,fontWeight:700,color}}>{o}</div>
+                      <div style={{position:"absolute",top:6,left:8,width:20,height:20,borderRadius:6,display:"flex",alignItems:"center",justifyContent:"center",
+                        background:`${optColors[i]}15`,fontSize:10,fontWeight:900,color:optColors[i]
+                      }}>{letters[i]}</div>
+                      <div style={{fontSize:13,fontWeight:700,color:C.text,marginTop:4}}>{o}</div>
                     </div>
                   );
                 })}
               </div>
-            </div>
-          ) : (
-            <div style={{textAlign:"center",marginTop:40}}>
-              <div style={{fontSize:40,marginBottom:12}}>🏆</div>
-              <div style={{fontSize:22,fontWeight:900,color:C.gold}}>Game Complete!</div>
-              <div style={{fontSize:14,color:C.text2,marginTop:6}}>Score: {vcScore} · Best Streak: {vcStreak}</div>
+
+              {/* Puff-to-answer hint */}
+              <div style={{textAlign:"center",marginTop:12}}>
+                <div style={{fontSize:8,color:C.text3,letterSpacing:1}}>TAP=A · SHORT PUFF=B · MED PUFF=C · LONG PUFF=D</div>
+              </div>
             </div>
           )}
+
+          {/* REVEAL PHASE */}
+          {vcPhase==="reveal" && (
+            <div style={{flex:1,display:"flex",flexDirection:"column",animation:"fadeIn 0.3s ease"}}>
+              {vcEliminated && (
+                <div style={{textAlign:"center",padding:"20px",marginBottom:16,borderRadius:16,
+                  background:`${C.red}10`,border:`1px solid ${C.red}25`,
+                }}>
+                  <div style={{fontSize:36,marginBottom:6}}>💀</div>
+                  <div style={{fontSize:18,fontWeight:900,color:C.red}}>ELIMINATED!</div>
+                  <div style={{fontSize:11,color:C.text3,marginTop:4}}>You can still watch as a ghost 👻</div>
+                </div>
+              )}
+
+              {!vcEliminated && (
+                <div style={{textAlign:"center",padding:"20px",marginBottom:16,borderRadius:16,
+                  background:`${C.green}08`,border:`1px solid ${C.green}20`,
+                }}>
+                  <div style={{fontSize:36,marginBottom:6}}>✅</div>
+                  <div style={{fontSize:18,fontWeight:900,color:C.green}}>CORRECT!</div>
+                  <div style={{fontSize:12,color:C.text2,marginTop:4}}>+{100+(vcTimer*10)} points{vcCorrectStreak>=3?" 🔥 STREAK BONUS!":""}</div>
+                </div>
+              )}
+
+              {/* Answer breakdown */}
+              <div style={{marginBottom:16}}>
+                <div style={{fontSize:10,fontWeight:700,color:C.text3,marginBottom:8,letterSpacing:1}}>ANSWER BREAKDOWN</div>
+                {q.opts.map((o,i)=>{
+                  const isCorrect = i===q.correct;
+                  const pct = isCorrect ? 35+Math.floor(Math.random()*25) : 5+Math.floor(Math.random()*20);
+                  return (
+                    <div key={i} style={{marginBottom:6}}>
+                      <div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}>
+                        <span style={{fontSize:11,fontWeight:isCorrect?800:600,color:isCorrect?C.green:C.text3}}>
+                          {String.fromCharCode(65+i)}. {o} {isCorrect?"✅":""}
+                        </span>
+                        <span style={{fontSize:10,color:isCorrect?C.green:C.text3}}>{pct}%</span>
+                      </div>
+                      <div style={{height:4,borderRadius:2,background:`${C.text3}10`,overflow:"hidden"}}>
+                        <div style={{height:"100%",width:`${pct}%`,borderRadius:2,background:isCorrect?C.green:`${C.text3}30`,transition:"width 0.6s ease"}}/>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* MC Commentary */}
+              <div style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",borderRadius:12,background:`${C.gold}06`,border:`1px solid ${C.gold}12`,marginBottom:16}}>
+                <span style={{fontSize:20}}>🎤</span>
+                <div>
+                  <div style={{fontSize:9,fontWeight:700,color:C.gold}}>MC HOST</div>
+                  <div style={{fontSize:12,color:C.text,fontStyle:"italic"}}>"{MC_COMMENTS[vcRound % MC_COMMENTS.length]}"</div>
+                </div>
+              </div>
+
+              {/* Next button */}
+              <div onClick={vcNextQuestion} style={{
+                padding:"14px 0",borderRadius:14,textAlign:"center",cursor:"pointer",
+                background:`linear-gradient(135deg, ${C.purple}20, ${C.pink}15)`,border:`1px solid ${C.purple}30`,
+                boxShadow:`0 0 16px ${C.purple}10`,
+              }}>
+                <span style={{fontSize:14,fontWeight:900,color:C.purple}}>{vcRound+1>=VC_QUESTIONS_V2.length||vcPlayers<=3?"SEE RESULTS":"NEXT QUESTION →"}</span>
+              </div>
+            </div>
+          )}
+
+          {/* RESULT PHASE */}
+          {vcPhase==="result" && (
+            <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",animation:"fadeIn 0.5s ease"}}>
+              <div style={{fontSize:50,marginBottom:12}}>{vcEliminated?"👻":"🏆"}</div>
+              <div style={{fontSize:26,fontWeight:900,color:vcEliminated?C.text2:C.gold,marginBottom:6}}>
+                {vcEliminated?"GAME OVER":"CHAMPION!"}
+              </div>
+              <div style={{fontSize:14,color:C.text2,marginBottom:20}}>
+                {vcEliminated?`Eliminated at Q${vcRound+1}`:`Survived ${vcRound+1} rounds!`}
+              </div>
+
+              <div style={{display:"flex",gap:20,marginBottom:24}}>
+                {[
+                  {label:"Score",val:vcScore,icon:"🪙",color:C.gold},
+                  {label:"Streak",val:vcCorrectStreak,icon:"🔥",color:C.orange},
+                  {label:"Rounds",val:vcRound+1,icon:"🧠",color:C.purple},
+                ].map((s,i)=>(
+                  <div key={i} style={{textAlign:"center"}}>
+                    <div style={{fontSize:20,marginBottom:2}}>{s.icon}</div>
+                    <div style={{fontSize:20,fontWeight:900,color:s.color}}>{s.val}</div>
+                    <div style={{fontSize:9,color:C.text3}}>{s.label}</div>
+                  </div>
+                ))}
+              </div>
+
+              {!vcEliminated && vcPlayers<=3 && (
+                <div style={{padding:"12px 24px",borderRadius:12,background:`${C.gold}10`,border:`1px solid ${C.gold}25`,marginBottom:16}}>
+                  <div style={{fontSize:12,fontWeight:800,color:C.gold,textAlign:"center"}}>TOP 3 FINISH! +500 BONUS COINS 🎉</div>
+                </div>
+              )}
+
+              <div onClick={()=>{setShowVibeCheck(false);setVcPhase(null);setCoins(c=>c+vcScore);}} style={{
+                padding:"14px 40px",borderRadius:14,cursor:"pointer",
+                background:`linear-gradient(135deg, ${C.gold}20, ${C.orange}15)`,border:`1px solid ${C.gold}30`,
+              }}>
+                <span style={{fontSize:14,fontWeight:900,color:C.gold}}>COLLECT {vcScore} COINS</span>
+              </div>
+            </div>
+          )}
+
         </div>
       </div>
     );
