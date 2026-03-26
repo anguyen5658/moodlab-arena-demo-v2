@@ -6458,7 +6458,7 @@ export default function MoodLabArena() {
             <source src={ARENA_VIDEOS.hub} type="video/mp4"/>
           </video>
           {/* Cali Clear logo — inside the ceiling panel area */}
-          <div style={{position:"absolute",top:"26%",left:"50%",transform:"translate(-50%,-50%)",pointerEvents:"none"}}>
+          <div style={{position:"absolute",top:"20%",left:"50%",transform:"translate(-50%,-50%)",pointerEvents:"none",zIndex:1}}>
             {/* Outer glow pulse */}
             <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:120,height:80,borderRadius:"50%",background:`radial-gradient(ellipse, ${C.gold}15, transparent 65%)`,animation:"breathe 3s ease-in-out infinite"}}/>
             {/* Inner bright glow */}
