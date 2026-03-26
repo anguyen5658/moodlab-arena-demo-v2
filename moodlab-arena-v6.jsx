@@ -7181,34 +7181,34 @@ export default function MoodLabArena() {
         </div>
       </div>
 
-      {/* DAILY PICKS */}
-      <div style={{padding:"0 14px",marginBottom:12}}>
-        <div style={{padding:"12px 14px",borderRadius:14,background:"rgba(147,51,234,0.03)",border:"1px solid rgba(147,51,234,0.10)"}}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
-            <span style={{fontSize:10,fontWeight:800,color:"#9333EA",letterSpacing:2}}>DAILY PICKS</span>
-            <span style={{fontSize:8,fontWeight:700,color:C.gold,padding:"3px 8px",borderRadius:100,background:`${C.gold}12`,border:`1px solid ${C.gold}25`}}>🔥 7 day streak | 3x multiplier</span>
+      {/* DAILY PICKS — compact strip */}
+      <div style={{padding:"0 14px",marginBottom:10}}>
+        <div onClick={()=>{setGameActive({id:"dailypicks",name:"Daily Picks",emoji:"📅",color:"#F97316"});startDailyPicks();}} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 12px",borderRadius:12,cursor:"pointer",background:"rgba(147,51,234,0.04)",border:"1px solid rgba(147,51,234,0.12)"}}>
+          <span style={{fontSize:14}}>📅</span>
+          <div style={{flex:1}}>
+            <span style={{fontSize:10,fontWeight:800,color:"#9333EA"}}>3 PICKS TODAY</span>
+            <span style={{fontSize:8,color:C.text3,marginLeft:6}}>🌅 🌤 🌙</span>
           </div>
-          {[
-            {icon:"🌅",name:"Morning Pick",cat:"sports",time:"Closes in 2h 30m",open:true},
-            {icon:"☀️",name:"Afternoon Pick",cat:"cannabis",time:"Closes in 6h 15m",open:true},
-            {icon:"🌙",name:"Night Pick",cat:"culture",time:"Closes in 12h 45m",open:true},
-          ].map((p,i)=>(
-            <div key={i} onClick={()=>{setGameActive({id:"dailypicks",name:"Daily Picks",emoji:"📅",color:"#F97316"});startDailyPicks();}} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 0",cursor:"pointer",borderTop:i>0?`1px solid ${C.border}`:"none"}}>
-              <span style={{fontSize:20}}>{p.icon}</span>
-              <div style={{flex:1}}>
-                <div style={{fontSize:12,fontWeight:700,color:C.text}}>{p.name}</div>
-                <div style={{fontSize:9,color:C.text3}}>{p.cat}</div>
-              </div>
-              <span style={{fontSize:9,fontWeight:700,color:p.open?C.green:C.text3,padding:"3px 8px",borderRadius:6,background:p.open?`${C.green}10`:`${C.text3}08`,border:`1px solid ${p.open?C.green+"20":C.text3+"10"}`}}>{p.time}</span>
-            </div>
-          ))}
+          <span style={{fontSize:8,fontWeight:700,color:C.gold,padding:"2px 8px",borderRadius:100,background:`${C.gold}10`,border:`1px solid ${C.gold}20`}}>🔥 7-day · 3x</span>
         </div>
       </div>
 
       <div style={{padding:"0 14px",position:"relative",zIndex:1}}>
 
-        {/* PREDICTION GAMES GRID (PRIMARY) */}
-        <div style={{marginBottom:4}}>
+        {/* TAB BAR — TOP */}
+        <div style={{display:"flex",borderBottom:"1px solid rgba(147,51,234,0.15)",marginBottom:10}}>
+          {["games","trending","stats","history"].map(t=>(
+            <div key={t} onClick={()=>setOracleHubTab(t)} style={{
+              flex:1,padding:"8px 0",textAlign:"center",cursor:"pointer",
+              fontSize:9,fontWeight:oracleHubTab===t?800:600,
+              color:oracleHubTab===t?"#9333EA":C.text3,
+              borderBottom:oracleHubTab===t?"2px solid #9333EA":"2px solid transparent",
+            }}>{t.charAt(0).toUpperCase()+t.slice(1)}</div>
+          ))}
+        </div>
+
+        {/* PREDICTION GAMES GRID */}
+        {oracleHubTab==="games" && <div style={{marginBottom:4}}>
           <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:10}}>
             <span style={{fontSize:13}}>🎮</span>
             <span style={{fontSize:11,fontWeight:900,color:C.text,letterSpacing:1.5}}>PREDICTION GAMES</span>
@@ -7231,19 +7231,9 @@ export default function MoodLabArena() {
               </div>
             ))}
           </div>
-        </div>
+        </div>}
 
-        {/* TAB BAR */}
-        <div style={{display:"flex",borderBottom:"1px solid rgba(147,51,234,0.15)",marginTop:12,marginBottom:8}}>
-          {["games","trending","stats","history"].map(t=>(
-            <div key={t} onClick={()=>setOracleHubTab(t)} style={{
-              flex:1,padding:"8px 0",textAlign:"center",cursor:"pointer",
-              fontSize:9,fontWeight:oracleHubTab===t?800:600,
-              color:oracleHubTab===t?"#9333EA":C.text3,
-              borderBottom:oracleHubTab===t?"2px solid #9333EA":"2px solid transparent",
-            }}>{t.charAt(0).toUpperCase()+t.slice(1)}</div>
-          ))}
-        </div>
+
 
         {/* Trending tab */}
         {oracleHubTab==="trending" && (
