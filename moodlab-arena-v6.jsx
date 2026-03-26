@@ -14620,6 +14620,286 @@ export default function MoodLabArena() {
         );
       }
 
+      // ═══════════════════════════════════════════════════════════════
+      // PUFF SLOTS -- Render
+      // ═══════════════════════════════════════════════════════════════
+      if(gameActive.id==="puffslots" && slotsPhase) {
+        const isReady=slotsPhase==="ready";const isSpin=slotsPhase==="spinning";const isRes=slotsPhase==="result";const isComp=slotsPhase==="complete";
+        return (
+          <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden",display:"flex",flexDirection:"column"}}
+            onMouseDown={slotsHandlePuff} onMouseUp={slotsHandlePuffEnd} onTouchStart={(e)=>{e.preventDefault();slotsHandlePuff();}} onTouchEnd={(e)=>{e.preventDefault();slotsHandlePuffEnd();}}>
+            <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg, #0a0a1a 0%, #1a0a2e 40%, #0d0d20 100%)"}}/>
+            <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse at 50% 40%, rgba(255,215,0,0.08), transparent 60%)",pointerEvents:"none"}}/>
+            {confettiParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size*0.6,background:p.color,borderRadius:1,transform:`rotate(${p.rot}deg)`,zIndex:210,pointerEvents:"none",animation:"confettiFall 1.5s ease-out forwards"}}/>))}
+            {overlayBack(slotsCleanup)}
+            {renderGameChatPanel("PUFF SLOTS")}
+            <div style={{display:"flex",flexDirection:"column",alignItems:"center",maxWidth:380,width:"100%",padding:"50px 16px 20px",gap:8,zIndex:10,flex:1,margin:"0 auto"}}>
+              <div style={{fontSize:18,fontWeight:900,letterSpacing:4,background:"linear-gradient(135deg, #FFD700, #FF6B00)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>PUFF SLOTS</div>
+              <div style={{display:"flex",gap:16,marginBottom:4}}>
+                <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.gold}}>{slotsScore}</div><div style={{fontSize:8,color:C.text3}}>COINS</div></div>
+                <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.text2}}>{slotsRound+1}/8</div><div style={{fontSize:8,color:C.text3}}>SPIN</div></div>
+                {slotsBonusRound&&<div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.purple}}>2x</div><div style={{fontSize:8,color:C.text3}}>BONUS</div></div>}
+              </div>
+              {slotsPhase==="intro"&&(<div style={{textAlign:"center",animation:"fadeIn 0.5s ease"}}><div style={{fontSize:48,marginBottom:8}}>🎰</div><div style={{fontSize:20,fontWeight:900,color:"#FFD700",letterSpacing:3}}>PUFF SLOTS</div><div style={{fontSize:11,color:C.text3,marginTop:8}}>Hold to spin! Blinker (4.5s+) = BONUS ROUND</div></div>)}
+              {(isReady||isSpin||isRes)&&(<div style={{width:"100%",textAlign:"center"}}>
+                <div style={{padding:20,borderRadius:20,border:"3px solid #FFD70050",background:"linear-gradient(180deg, rgba(255,215,0,0.08), rgba(0,0,0,0.4))",boxShadow:"0 0 40px rgba(255,215,0,0.15), inset 0 0 30px rgba(255,215,0,0.05)",margin:"0 auto",maxWidth:300}}>
+                  <div style={{fontSize:12,fontWeight:800,color:C.gold,marginBottom:12,letterSpacing:3}}>CASINO ROYALE</div>
+                  <div style={{display:"flex",justifyContent:"center",gap:8,marginBottom:16}}>
+                    {slotsReels.map((sym,i)=>(
+                      <div key={i} style={{width:70,height:80,borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",fontSize:40,
+                        background:"linear-gradient(180deg, rgba(0,0,0,0.6), rgba(20,10,30,0.8))",border:"2px solid rgba(255,215,0,0.3)",
+                        boxShadow:sym!=="❓"?"0 0 15px rgba(255,215,0,0.2)":"none",
+                        animation:isSpin?`pulse 0.3s infinite ${i*0.1}s`:"none",transition:"all 0.3s"}}>
+                        {sym}
+                      </div>
+                    ))}
+                  </div>
+                  {isRes&&slotsWin>0&&(<div style={{fontSize:24,fontWeight:900,color:C.gold,animation:"pulse 1s infinite",marginBottom:8}}>WIN +{slotsWin}{slotsBonusRound?" (2x BONUS!)":""}</div>)}
+                  {isRes&&slotsWin===0&&(<div style={{fontSize:16,fontWeight:700,color:C.text3,marginBottom:8}}>No match</div>)}
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:4,marginTop:8}}>
+                    {SLOTS_SYMBOLS.map(s=>(<div key={s} style={{fontSize:8,color:C.text3,padding:"2px 4px",borderRadius:4,background:"rgba(255,255,255,0.03)"}}>{s}{s}{s} = {SLOTS_PAYOUTS[s]}</div>))}
+                  </div>
+                </div>
+                {isReady&&(<div style={{marginTop:16,fontSize:14,fontWeight:800,color:C.gold,animation:"pulse 1.5s infinite"}}>HOLD TO SPIN!</div>)}
+                {isSpin&&(<div style={{marginTop:16,fontSize:14,fontWeight:800,color:C.cyan,animation:"pulse 0.5s infinite"}}>SPINNING... RELEASE TO STOP</div>)}
+              </div>)}
+              {slotsHistory.length>0&&(<div style={{display:"flex",gap:4,flexWrap:"wrap",justifyContent:"center",marginTop:8}}>
+                {slotsHistory.map((h,i)=>(<div key={i} style={{fontSize:10,padding:"2px 6px",borderRadius:6,background:h.win>0?"rgba(34,197,94,0.10)":"rgba(255,255,255,0.03)",border:h.win>0?"1px solid rgba(34,197,94,0.20)":"1px solid rgba(255,255,255,0.06)",color:h.win>0?C.green:C.text3}}>{h.reels.join("")}{h.win>0?" +"+h.win:""}</div>))}
+              </div>)}
+              {isComp&&(<div style={{textAlign:"center",animation:"fadeIn 0.4s ease"}}>
+                <div style={{fontSize:48,marginBottom:8}}>🎰</div>
+                <div style={{fontSize:24,fontWeight:900,color:C.gold,marginBottom:8}}>ALL SPINS COMPLETE</div>
+                <div style={{fontSize:18,fontWeight:800,color:C.text}}>Total Won: {slotsScore} coins</div>
+                <div style={{display:"flex",gap:10,justifyContent:"center",marginTop:16}}>
+                  <div onClick={(e)=>{e.stopPropagation();slotsCleanup();startPuffSlots();setGameActive({id:"puffslots",name:"Puff Slots",emoji:"🎰",color:"#FFD700"});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,215,0,0.15)",border:"1px solid rgba(255,215,0,0.30)",fontSize:13,fontWeight:800,color:"#FFD700"}}>Play Again</div>
+                  <div onClick={(e)=>{e.stopPropagation();slotsCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
+                </div>
+              </div>)}
+              <div style={{fontSize:11,color:C.text3,fontStyle:"italic",marginTop:8}}>{commentary}</div>
+            </div>
+          </div>
+        );
+      }
+
+      // ═══════════════════════════════════════════════════════════════
+      // PUFF BLACKJACK -- Render
+      // ═══════════════════════════════════════════════════════════════
+      if(gameActive.id==="puffblackjack" && bjPhase) {
+        const renderCard = (c,hidden) => (
+          <div style={{width:48,height:68,borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",
+            background:hidden?"linear-gradient(135deg, #1a3a5c, #0a1a30)":"linear-gradient(180deg, #fafafa, #e0e0e0)",
+            border:hidden?"2px solid #2a5a8c":"2px solid #ccc",boxShadow:"0 2px 8px rgba(0,0,0,0.3)",fontSize:hidden?20:12,fontWeight:800,
+            color:hidden?"#4a8abf":(c.suit==="♥️"||c.suit==="♦️")?"#dc2626":"#1a1a1a"}}>
+            {hidden?"🂠":c.display}
+          </div>
+        );
+        const isPlayerTurn=bjPhase==="player_turn";const isDealerTurn=bjPhase==="dealer_turn";const isResult=bjPhase==="result";const isComp=bjPhase==="complete";
+        return (
+          <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden",display:"flex",flexDirection:"column"}}
+            onMouseDown={bjHandlePuff} onMouseUp={bjHandlePuffEnd} onTouchStart={(e)=>{e.preventDefault();bjHandlePuff();}} onTouchEnd={(e)=>{e.preventDefault();bjHandlePuffEnd();}}>
+            <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg, #0a1e0a 0%, #0d3d0d 40%, #0a2a0a 100%)"}}/>
+            <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse at 50% 50%, rgba(34,197,94,0.06), transparent 60%)",pointerEvents:"none"}}/>
+            {confettiParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size*0.6,background:p.color,borderRadius:1,transform:`rotate(${p.rot}deg)`,zIndex:210,pointerEvents:"none",animation:"confettiFall 1.5s ease-out forwards"}}/>))}
+            {overlayBack(bjCleanup)}
+            {renderGameChatPanel("PUFF BLACKJACK")}
+            <div style={{display:"flex",flexDirection:"column",alignItems:"center",maxWidth:380,width:"100%",padding:"50px 16px 20px",gap:8,zIndex:10,flex:1,margin:"0 auto"}}>
+              <div style={{fontSize:18,fontWeight:900,letterSpacing:4,background:"linear-gradient(135deg, #22C55E, #10B981)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>PUFF BLACKJACK</div>
+              <div style={{display:"flex",gap:16,marginBottom:4}}>
+                <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.gold}}>{bjScore}</div><div style={{fontSize:8,color:C.text3}}>COINS</div></div>
+                <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.text2}}>{bjRound+1}/7</div><div style={{fontSize:8,color:C.text3}}>HAND</div></div>
+                <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.cyan}}>Bet:{bjBet}</div><div style={{fontSize:8,color:C.text3}}>WAGER</div></div>
+              </div>
+              {bjPhase==="intro"&&(<div style={{textAlign:"center",animation:"fadeIn 0.5s ease"}}><div style={{fontSize:48,marginBottom:8}}>🃏</div><div style={{fontSize:20,fontWeight:900,color:"#22C55E",letterSpacing:3}}>BLACKJACK</div><div style={{fontSize:11,color:C.text3,marginTop:8}}>Short puff = HIT | Long puff = STAND | Blinker = DOUBLE DOWN</div></div>)}
+              {(bjPhase==="dealing"||isPlayerTurn||isDealerTurn||isResult)&&(<div style={{width:"100%"}}>
+                <div style={{textAlign:"center",marginBottom:16}}>
+                  <div style={{fontSize:10,fontWeight:700,color:C.text3,marginBottom:4}}>DEALER {(isDealerTurn||isResult)?"("+bjDealerTotal+")":""}</div>
+                  <div style={{display:"flex",justifyContent:"center",gap:6}}>
+                    {bjDealerHand.map((c,i)=>(<div key={i}>{renderCard(c,i===1&&bjPhase==="dealing"||i===1&&isPlayerTurn)}</div>))}
+                  </div>
+                </div>
+                <div style={{textAlign:"center",margin:"8px 0",fontSize:12,fontWeight:800,color:C.gold}}>
+                  {isResult&&bjResult==="win"?"YOU WIN!":isResult&&bjResult==="blackjack"?"BLACKJACK!":isResult&&bjResult==="lose"?"DEALER WINS":isResult&&bjResult==="bust"?"BUST!":isResult&&bjResult==="push"?"PUSH":"VS"}
+                </div>
+                <div style={{textAlign:"center",marginBottom:12}}>
+                  <div style={{fontSize:10,fontWeight:700,color:C.cyan,marginBottom:4}}>YOU ({bjPlayerTotal})</div>
+                  <div style={{display:"flex",justifyContent:"center",gap:6}}>
+                    {bjPlayerHand.map((c,i)=>(<div key={i}>{renderCard(c,false)}</div>))}
+                  </div>
+                </div>
+                {isPlayerTurn&&(<div style={{textAlign:"center",marginTop:8}}>
+                  <div style={{display:"flex",gap:8,justifyContent:"center"}}>
+                    <div style={{padding:"6px 14px",borderRadius:8,background:"rgba(34,197,94,0.10)",border:"1px solid rgba(34,197,94,0.20)"}}><div style={{fontSize:11,fontWeight:700,color:C.green}}>HIT</div><div style={{fontSize:7,color:C.text3}}>&lt;1.5s</div></div>
+                    <div style={{padding:"6px 14px",borderRadius:8,background:"rgba(239,68,68,0.10)",border:"1px solid rgba(239,68,68,0.20)"}}><div style={{fontSize:11,fontWeight:700,color:C.red}}>STAND</div><div style={{fontSize:7,color:C.text3}}>&gt;1.5s</div></div>
+                    <div style={{padding:"6px 14px",borderRadius:8,background:"rgba(147,51,234,0.10)",border:"1px solid rgba(147,51,234,0.20)"}}><div style={{fontSize:11,fontWeight:700,color:C.purple}}>DOUBLE</div><div style={{fontSize:7,color:C.text3}}>4.5s+</div></div>
+                  </div>
+                  <div style={{fontSize:12,fontWeight:700,color:C.gold,marginTop:10,animation:"pulse 1.5s infinite"}}>HOLD TO PUFF!</div>
+                </div>)}
+                {isResult&&(<div style={{textAlign:"center",marginTop:8}}>
+                  <div style={{fontSize:16,fontWeight:800,color:bjResult==="win"||bjResult==="blackjack"?C.gold:bjResult==="push"?C.cyan:C.red}}>
+                    {bjResult==="win"||bjResult==="blackjack"?"+"+bjBet*(bjResult==="blackjack"?2.5:2)+" coins":bjResult==="push"?"Bet returned":"-"+bjBet+" coins"}
+                  </div>
+                </div>)}
+              </div>)}
+              {isComp&&(<div style={{textAlign:"center",animation:"fadeIn 0.4s ease"}}>
+                <div style={{fontSize:48,marginBottom:8}}>🃏</div>
+                <div style={{fontSize:24,fontWeight:900,color:C.gold,marginBottom:8}}>SESSION COMPLETE</div>
+                <div style={{fontSize:18,fontWeight:800,color:C.text}}>Total Won: {bjScore} coins</div>
+                <div style={{display:"flex",gap:10,justifyContent:"center",marginTop:16}}>
+                  <div onClick={(e)=>{e.stopPropagation();bjCleanup();startPuffBlackjack();setGameActive({id:"puffblackjack",name:"Puff Blackjack",emoji:"🃏",color:"#22C55E"});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(34,197,94,0.15)",border:"1px solid rgba(34,197,94,0.30)",fontSize:13,fontWeight:800,color:"#22C55E"}}>Play Again</div>
+                  <div onClick={(e)=>{e.stopPropagation();bjCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
+                </div>
+              </div>)}
+              <div style={{fontSize:11,color:C.text3,fontStyle:"italic",marginTop:8}}>{commentary}</div>
+            </div>
+          </div>
+        );
+      }
+
+      // ═══════════════════════════════════════════════════════════════
+      // COIN FLIP -- Render
+      // ═══════════════════════════════════════════════════════════════
+      if(gameActive.id==="coinflip" && cfPhase) {
+        const isBet=cfPhase==="betting";const isPuff=cfPhase==="puffing";const isFlip=cfPhase==="flipping";const isRes=cfPhase==="result";const isComp=cfPhase==="complete";
+        return (
+          <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden",display:"flex",flexDirection:"column"}}
+            onMouseDown={cfHandlePuff} onMouseUp={cfHandlePuffEnd} onTouchStart={(e)=>{e.preventDefault();cfHandlePuff();}} onTouchEnd={(e)=>{e.preventDefault();cfHandlePuffEnd();}}>
+            <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg, #1a1500 0%, #2a1f00 40%, #0a0800 100%)"}}/>
+            <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse at 50% 40%, rgba(245,158,11,0.10), transparent 60%)",pointerEvents:"none"}}/>
+            {confettiParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size*0.6,background:p.color,borderRadius:1,transform:`rotate(${p.rot}deg)`,zIndex:210,pointerEvents:"none",animation:"confettiFall 1.5s ease-out forwards"}}/>))}
+            {overlayBack(cfCleanup)}
+            {renderGameChatPanel("COIN FLIP")}
+            <div style={{display:"flex",flexDirection:"column",alignItems:"center",maxWidth:380,width:"100%",padding:"50px 16px 20px",gap:8,zIndex:10,flex:1,margin:"0 auto"}}>
+              <div style={{fontSize:18,fontWeight:900,letterSpacing:4,background:"linear-gradient(135deg, #F59E0B, #D97706)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>COIN FLIP</div>
+              <div style={{display:"flex",gap:16,marginBottom:4}}>
+                <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.gold}}>{cfScore}</div><div style={{fontSize:8,color:C.text3}}>COINS</div></div>
+                <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.text2}}>{cfRound+1}/8</div><div style={{fontSize:8,color:C.text3}}>FLIP</div></div>
+                <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.orange}}>{cfStreak}</div><div style={{fontSize:8,color:C.text3}}>STREAK</div></div>
+              </div>
+              {cfPhase==="intro"&&(<div style={{textAlign:"center",animation:"fadeIn 0.5s ease"}}><div style={{fontSize:48,marginBottom:8}}>🪙</div><div style={{fontSize:20,fontWeight:900,color:"#F59E0B",letterSpacing:3}}>COIN FLIP</div><div style={{fontSize:11,color:C.text3,marginTop:8}}>Pick a side, puff your confidence, win big!</div></div>)}
+              {isBet&&(<div style={{textAlign:"center",animation:"fadeIn 0.4s ease"}}>
+                <div style={{fontSize:60,marginBottom:12}}>🪙</div>
+                <div style={{fontSize:16,fontWeight:800,color:C.text,marginBottom:16}}>Pick your side!</div>
+                <div style={{display:"flex",gap:16,justifyContent:"center"}}>
+                  <div onClick={(e)=>{e.stopPropagation();cfPickSide("heads");}} style={{padding:"16px 28px",borderRadius:16,cursor:"pointer",background:"rgba(245,158,11,0.10)",border:"2px solid rgba(245,158,11,0.30)",textAlign:"center"}}>
+                    <div style={{fontSize:28,marginBottom:4}}>👑</div>
+                    <div style={{fontSize:14,fontWeight:800,color:"#F59E0B"}}>HEADS</div>
+                  </div>
+                  <div onClick={(e)=>{e.stopPropagation();cfPickSide("tails");}} style={{padding:"16px 28px",borderRadius:16,cursor:"pointer",background:"rgba(168,85,247,0.10)",border:"2px solid rgba(168,85,247,0.30)",textAlign:"center"}}>
+                    <div style={{fontSize:28,marginBottom:4}}>🌿</div>
+                    <div style={{fontSize:14,fontWeight:800,color:"#A855F7"}}>TAILS</div>
+                  </div>
+                </div>
+              </div>)}
+              {isPuff&&(<div style={{textAlign:"center",animation:"fadeIn 0.4s ease"}}>
+                <div style={{fontSize:48,marginBottom:8}}>{cfChoice==="heads"?"👑":"🌿"}</div>
+                <div style={{fontSize:16,fontWeight:800,color:C.text,marginBottom:8}}>You picked: {cfChoice.toUpperCase()}</div>
+                <div style={{display:"flex",gap:6,justifyContent:"center",flexWrap:"wrap",marginBottom:12}}>
+                  <div style={{padding:"4px 10px",borderRadius:8,background:"rgba(34,197,94,0.10)",border:"1px solid rgba(34,197,94,0.20)"}}><div style={{fontSize:9,fontWeight:700,color:C.green}}>TAP: 1x</div></div>
+                  <div style={{padding:"4px 10px",borderRadius:8,background:"rgba(59,130,246,0.10)",border:"1px solid rgba(59,130,246,0.20)"}}><div style={{fontSize:9,fontWeight:700,color:C.blue}}>SHORT: 1.5x</div></div>
+                  <div style={{padding:"4px 10px",borderRadius:8,background:"rgba(245,158,11,0.10)",border:"1px solid rgba(245,158,11,0.20)"}}><div style={{fontSize:9,fontWeight:700,color:"#F59E0B"}}>MED: 2x</div></div>
+                  <div style={{padding:"4px 10px",borderRadius:8,background:"rgba(239,68,68,0.10)",border:"1px solid rgba(239,68,68,0.20)"}}><div style={{fontSize:9,fontWeight:700,color:C.red}}>LONG: 3x</div></div>
+                  <div style={{padding:"4px 10px",borderRadius:8,background:"rgba(147,51,234,0.10)",border:"1px solid rgba(147,51,234,0.20)"}}><div style={{fontSize:9,fontWeight:700,color:C.purple}}>BLINKER: 5x</div></div>
+                </div>
+                <div style={{fontSize:14,fontWeight:800,color:C.gold,animation:"pulse 1.5s infinite"}}>HOLD TO SET CONFIDENCE!</div>
+                {cfPuffing&&<div style={{fontSize:12,fontWeight:700,color:C.cyan,marginTop:8,animation:"pulse 0.5s infinite"}}>PUFFING...</div>}
+              </div>)}
+              {(isFlip||isRes)&&(<div style={{textAlign:"center"}}>
+                <div style={{fontSize:72,marginBottom:12,transition:"all 0.5s",animation:isFlip?"spin 1.5s linear":"none"}}>
+                  {isFlip?"🪙":cfResult==="heads"?"👑":"🌿"}
+                </div>
+                {isRes&&(<div>
+                  <div style={{fontSize:22,fontWeight:900,color:cfResult===cfChoice?C.gold:C.red,marginBottom:4}}>{cfResult===cfChoice?"YOU WIN!":"YOU LOSE!"}</div>
+                  <div style={{fontSize:14,color:C.text2}}>It was {cfResult.toUpperCase()}{cfPuffConfidence>1?" at "+cfPuffConfidence+"x":""}</div>
+                  {cfResult===cfChoice&&<div style={{fontSize:16,fontWeight:800,color:C.gold,marginTop:4}}>+{Math.floor(cfBet*cfPuffConfidence)} coins!</div>}
+                  {cfResult!==cfChoice&&cfPuffConfidence>=5&&<div style={{fontSize:12,fontWeight:700,color:C.red,marginTop:4}}>Blinker penalty: -{cfBet*2}</div>}
+                </div>)}
+              </div>)}
+              {isComp&&(<div style={{textAlign:"center",animation:"fadeIn 0.4s ease"}}>
+                <div style={{fontSize:48,marginBottom:8}}>🪙</div>
+                <div style={{fontSize:24,fontWeight:900,color:C.gold,marginBottom:8}}>ALL FLIPS COMPLETE</div>
+                <div style={{fontSize:18,fontWeight:800,color:C.text}}>Total Won: {cfScore} coins</div>
+                <div style={{fontSize:13,color:C.orange,marginTop:4}}>Best Streak: {cfStreak}</div>
+                <div style={{display:"flex",gap:10,justifyContent:"center",marginTop:16}}>
+                  <div onClick={(e)=>{e.stopPropagation();cfCleanup();startCoinFlip();setGameActive({id:"coinflip",name:"Coin Flip",emoji:"🪙",color:"#F59E0B"});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(245,158,11,0.15)",border:"1px solid rgba(245,158,11,0.30)",fontSize:13,fontWeight:800,color:"#F59E0B"}}>Play Again</div>
+                  <div onClick={(e)=>{e.stopPropagation();cfCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
+                </div>
+              </div>)}
+              <div style={{fontSize:11,color:C.text3,fontStyle:"italic",marginTop:8}}>{commentary}</div>
+            </div>
+          </div>
+        );
+      }
+
+      // ═══════════════════════════════════════════════════════════════
+      // CRAPS & CLOUDS -- Render
+      // ═══════════════════════════════════════════════════════════════
+      if(gameActive.id==="crapsnclouds" && crapsPhase) {
+        const DICE_FACES = {1:"⚀",2:"⚁",3:"⚂",4:"⚃",5:"⚄",6:"⚅"};
+        const isRoll=crapsPhase==="rolling";const isRes=crapsPhase==="result";const isComp=crapsPhase==="complete";
+        return (
+          <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden",display:"flex",flexDirection:"column"}}
+            onMouseDown={crapsHandlePuff} onMouseUp={crapsHandlePuffEnd} onTouchStart={(e)=>{e.preventDefault();crapsHandlePuff();}} onTouchEnd={(e)=>{e.preventDefault();crapsHandlePuffEnd();}}>
+            <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg, #0a1e0a 0%, #1a3a1a 40%, #0d2a0d 100%)"}}/>
+            <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse at 50% 40%, rgba(239,68,68,0.06), transparent 60%)",pointerEvents:"none"}}/>
+            {confettiParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size*0.6,background:p.color,borderRadius:1,transform:`rotate(${p.rot}deg)`,zIndex:210,pointerEvents:"none",animation:"confettiFall 1.5s ease-out forwards"}}/>))}
+            {overlayBack(crapsCleanup)}
+            {renderGameChatPanel("CRAPS & CLOUDS")}
+            <div style={{display:"flex",flexDirection:"column",alignItems:"center",maxWidth:380,width:"100%",padding:"50px 16px 20px",gap:8,zIndex:10,flex:1,margin:"0 auto"}}>
+              <div style={{fontSize:18,fontWeight:900,letterSpacing:4,background:"linear-gradient(135deg, #EF4444, #DC2626)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>CRAPS & CLOUDS</div>
+              <div style={{display:"flex",gap:16,marginBottom:4}}>
+                <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.gold}}>{crapsScore}</div><div style={{fontSize:8,color:C.text3}}>COINS</div></div>
+                <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.text2}}>{crapsRound+1}/8</div><div style={{fontSize:8,color:C.text3}}>ROLL</div></div>
+                {crapsPoint&&<div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.cyan}}>Point:{crapsPoint}</div><div style={{fontSize:8,color:C.text3}}>TARGET</div></div>}
+                {crapsHotDice&&<div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.red}}>HOT</div><div style={{fontSize:8,color:C.text3}}>+50%</div></div>}
+              </div>
+              {crapsPhase==="intro"&&(<div style={{textAlign:"center",animation:"fadeIn 0.5s ease"}}><div style={{fontSize:48,marginBottom:8}}>🎲</div><div style={{fontSize:20,fontWeight:900,color:"#EF4444",letterSpacing:3}}>CRAPS & CLOUDS</div><div style={{fontSize:11,color:C.text3,marginTop:8}}>Puff duration controls your roll! Blinker = HOT DICE!</div></div>)}
+              {(isRoll||isRes)&&(<div style={{width:"100%",textAlign:"center"}}>
+                <div style={{padding:20,borderRadius:20,border:"3px solid rgba(239,68,68,0.30)",background:"linear-gradient(180deg, rgba(34,100,34,0.3), rgba(10,40,10,0.5))",boxShadow:"0 0 30px rgba(239,68,68,0.10)",margin:"0 auto",maxWidth:300}}>
+                  <div style={{fontSize:11,fontWeight:800,color:crapsPoint?C.cyan:C.gold,marginBottom:12,letterSpacing:2}}>{crapsPoint?"POINT PHASE: Hit "+crapsPoint+" to WIN!":"COME-OUT ROLL"}</div>
+                  <div style={{display:"flex",justifyContent:"center",gap:16,marginBottom:16}}>
+                    {crapsDice.map((d,i)=>(
+                      <div key={i} style={{width:64,height:64,borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",fontSize:36,
+                        background:"linear-gradient(135deg, #fafafa, #e8e8e8)",border:"2px solid #ccc",boxShadow:"0 4px 12px rgba(0,0,0,0.3)",
+                        color:"#1a1a1a",fontWeight:900,
+                        animation:crapsRolling?`pulse 0.2s infinite ${i*0.1}s`:"none",transition:"all 0.3s"}}>
+                        {DICE_FACES[d]||d}
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{fontSize:20,fontWeight:900,color:C.text}}>Total: {crapsDice[0]+crapsDice[1]}</div>
+                  {crapsHotDice&&<div style={{fontSize:12,fontWeight:700,color:C.red,marginTop:4,animation:"pulse 1s infinite"}}>HOT DICE ACTIVE! +50% payout</div>}
+                  {isRes&&(<div style={{marginTop:12}}>
+                    <div style={{fontSize:22,fontWeight:900,color:crapsResult==="win"?C.gold:C.red}}>{crapsResult==="win"?"YOU WIN!":"CRAPS OUT!"}</div>
+                    {crapsResult==="win"&&<div style={{fontSize:14,fontWeight:700,color:C.gold}}>+{crapsHotDice?Math.floor(crapsBet*1.5):crapsBet} coins</div>}
+                  </div>)}
+                </div>
+                {isRoll&&!crapsRolling&&(<div style={{marginTop:12}}>
+                  <div style={{display:"flex",gap:4,justifyContent:"center",flexWrap:"wrap"}}>
+                    <div style={{padding:"3px 8px",borderRadius:6,background:"rgba(255,255,255,0.04)",fontSize:8,color:C.text3}}>Tap:2-3</div>
+                    <div style={{padding:"3px 8px",borderRadius:6,background:"rgba(255,255,255,0.04)",fontSize:8,color:C.text3}}>Short:4-5</div>
+                    <div style={{padding:"3px 8px",borderRadius:6,background:"rgba(34,197,94,0.10)",fontSize:8,color:C.green}}>Med:6-8</div>
+                    <div style={{padding:"3px 8px",borderRadius:6,background:"rgba(255,255,255,0.04)",fontSize:8,color:C.text3}}>Long:9-10</div>
+                    <div style={{padding:"3px 8px",borderRadius:6,background:"rgba(255,255,255,0.04)",fontSize:8,color:C.text3}}>Max:11-12</div>
+                  </div>
+                  <div style={{fontSize:14,fontWeight:800,color:C.gold,marginTop:10,animation:"pulse 1.5s infinite"}}>HOLD TO ROLL!</div>
+                </div>)}
+                {isRoll&&crapsRolling&&(<div style={{marginTop:12,fontSize:14,fontWeight:800,color:C.cyan,animation:"pulse 0.5s infinite"}}>ROLLING... RELEASE!</div>)}
+              </div>)}
+              {isComp&&(<div style={{textAlign:"center",animation:"fadeIn 0.4s ease"}}>
+                <div style={{fontSize:48,marginBottom:8}}>🎲</div>
+                <div style={{fontSize:24,fontWeight:900,color:C.gold,marginBottom:8}}>ALL ROLLS COMPLETE</div>
+                <div style={{fontSize:18,fontWeight:800,color:C.text}}>Total Won: {crapsScore} coins</div>
+                <div style={{display:"flex",gap:10,justifyContent:"center",marginTop:16}}>
+                  <div onClick={(e)=>{e.stopPropagation();crapsCleanup();startCrapsNClouds();setGameActive({id:"crapsnclouds",name:"Craps & Clouds",emoji:"🎲",color:"#EF4444"});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(239,68,68,0.15)",border:"1px solid rgba(239,68,68,0.30)",fontSize:13,fontWeight:800,color:"#EF4444"}}>Play Again</div>
+                  <div onClick={(e)=>{e.stopPropagation();crapsCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
+                </div>
+              </div>)}
+              <div style={{fontSize:11,color:C.text3,fontStyle:"italic",marginTop:8}}>{commentary}</div>
+            </div>
+          </div>
+        );
+      }
+
       // Generic game
       return (
         <div style={overlayStyle}>
