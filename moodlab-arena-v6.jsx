@@ -6376,12 +6376,9 @@ export default function MoodLabArena() {
           <span style={{fontSize:14,color:C.text2}}>←</span>
           <span style={{fontSize:11,fontWeight:600,color:C.text2}}>Lobby</span>
         </div>
-        <div style={{display:"flex",alignItems:"center",gap:10}}>
-          <div style={{fontSize:32,filter:`drop-shadow(0 0 12px ${z.primary}50)`}}>{z.icon}</div>
-          <div>
-            <div style={{fontSize:20,fontWeight:900,color:z.primary,letterSpacing:-0.3}}>{z.name}</div>
-            <div style={{fontSize:10,color:C.text3,letterSpacing:2,fontWeight:600}}>{taglines[zKey]||z.sub}</div>
-          </div>
+        <div style={{display:"flex",alignItems:"center",gap:8}}>
+          <div style={{fontSize:24,filter:`drop-shadow(0 0 10px ${z.primary}50)`}}>{z.icon}</div>
+          <div style={{fontSize:10,color:z.primary,letterSpacing:2,fontWeight:700}}>{taglines[zKey]||z.sub}</div>
         </div>
       </div>
     );
@@ -6454,12 +6451,8 @@ export default function MoodLabArena() {
 
       {renderZoneHeader("arcade")}
 
-      {/* Neon ARCADE title + live counter */}
-      <div style={{padding:"0 14px",marginTop:-8,marginBottom:14,textAlign:"center"}}>
-        <div style={{fontSize:28,fontWeight:900,color:C.cyan,letterSpacing:4,
-          textShadow:`0 0 20px ${C.cyan}80, 0 0 40px ${C.cyan}40, 0 0 60px ${C.cyan}20`,
-          animation:"pulse 3s ease-in-out infinite",
-        }}>ARCADE</div>
+      {/* Live counter strip */}
+      <div style={{padding:"0 14px",marginBottom:14,textAlign:"center"}}>
         <div style={{display:"inline-flex",alignItems:"center",gap:8,marginTop:6,padding:"4px 14px",borderRadius:20,
           background:`${C.cyan}08`,border:`1px solid ${C.cyan}15`,
         }}>
