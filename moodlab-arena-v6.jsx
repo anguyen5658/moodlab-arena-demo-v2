@@ -6453,8 +6453,8 @@ export default function MoodLabArena() {
         {walkOverlay}
 
         {/* ═══ BACKGROUND VIDEO (falls back to image poster) ═══ */}
-        <div style={{position:"absolute",inset:0,width:"100%",height:"100%",zIndex:0}}>
-          <video autoPlay loop muted playsInline poster={ARENA_IMAGES.hub} style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"center 40%",transform:"scale(0.85)",transformOrigin:"center center"}}>
+        <div style={{position:"absolute",inset:"-2% -10%",width:"120%",height:"104%",zIndex:0}}>
+          <video autoPlay loop muted playsInline poster={ARENA_IMAGES.hub} style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"center"}}>
             <source src={ARENA_VIDEOS.hub} type="video/mp4"/>
           </video>
           {/* Cali Clear logo — right above the World Cup arch */}
