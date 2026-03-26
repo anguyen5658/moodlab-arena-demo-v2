@@ -6503,31 +6503,38 @@ export default function MoodLabArena() {
         </div>
       </div>
 
-      <div style={{padding:"0 14px"}}>
+      {/* ======= QUICK FEED BAR ======= */}
+      <div style={{padding:"0 14px",marginBottom:8}}>
+        <div style={{display:"flex",alignItems:"center",gap:6,padding:"5px 12px",borderRadius:100,
+          background:`${C.cyan}06`,border:`1px solid ${C.cyan}10`}}>
+          <div style={{width:4,height:4,borderRadius:"50%",background:C.green,animation:"pulse 1.5s infinite"}}/>
+          <span style={{fontSize:9,color:C.text2,fontWeight:600,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{["🔥 Wild West trending · 720 playing","🏆 Outlaw Circuit Round 2 starting","⚡ Hot Potato lobby FULL 8/8","🎯 CloudChaser won 500 coins!"][Math.floor(tick/3)%4]}</span>
+        </div>
+      </div>
 
-        {/* ======= FEATURED HOT GAME - Compact Hero ======= */}
-        <div onClick={()=>{playFx("select");setSelectedGame(featuredGame);}} style={{
-          display:"flex",alignItems:"center",gap:12,padding:"10px 14px",borderRadius:14,cursor:"pointer",marginBottom:12,
-          background:`radial-gradient(ellipse at 20% 50%, ${featuredGame.color}12, ${C.bg2} 70%)`,
-          border:`1px solid ${featuredGame.color}25`,
-        }}>
-          <div style={{width:36,height:36,borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,
-            background:`radial-gradient(circle, ${featuredGame.color}20, ${featuredGame.color}06)`,border:`1px solid ${featuredGame.color}30`,flexShrink:0,
-          }}>{featuredGame.emoji}</div>
-          <div style={{flex:1,minWidth:0}}>
-            <div style={{display:"flex",alignItems:"center",gap:6}}>
-              <span style={{fontSize:7,fontWeight:900,color:C.red,padding:"1px 5px",borderRadius:3,background:`${C.red}15`}}>🔥 HOT</span>
-              <span style={{fontSize:12,fontWeight:800,color:C.text}}>{featuredGame.name}</span>
-            </div>
-            <div style={{fontSize:9,color:C.green,fontWeight:600,marginTop:2}}>
-              <span style={{display:"inline-block",width:5,height:5,borderRadius:"50%",background:C.green,marginRight:3,verticalAlign:"middle"}}/>
-              {playerCounts[featuredGame.id]||120} playing · {totalPlaying.toLocaleString()} total online
-            </div>
+      {/* ======= STAT STRIP ======= */}
+      <div style={{padding:"0 14px",marginBottom:8}}>
+        <div style={{display:"flex",gap:6}}>
+          <div style={{flex:1,padding:"6px 0",borderRadius:8,textAlign:"center",background:`${C.cyan}06`,border:`1px solid ${C.cyan}12`}}>
+            <div style={{fontSize:14,fontWeight:900,color:C.cyan}}>{myStats.gamesPlayed}</div>
+            <div style={{fontSize:6,color:C.text3,fontWeight:600}}>Played</div>
           </div>
-          <div style={{padding:"6px 14px",borderRadius:10,background:`linear-gradient(135deg, ${featuredGame.color}25, ${C.cyan}15)`,border:`1px solid ${featuredGame.color}35`}}>
-            <span style={{fontSize:11,fontWeight:900,color:C.text}}>PLAY</span>
+          <div style={{flex:1,padding:"6px 0",borderRadius:8,textAlign:"center",background:`${C.green}06`,border:`1px solid ${C.green}12`}}>
+            <div style={{fontSize:14,fontWeight:900,color:C.green}}>{myStats.winRate}%</div>
+            <div style={{fontSize:6,color:C.text3,fontWeight:600}}>Win Rate</div>
+          </div>
+          <div style={{flex:1,padding:"6px 0",borderRadius:8,textAlign:"center",background:`${C.gold}06`,border:`1px solid ${C.gold}12`}}>
+            <div style={{fontSize:14,fontWeight:900,color:C.gold}}>{myStats.coinsWon.toLocaleString()}</div>
+            <div style={{fontSize:6,color:C.text3,fontWeight:600}}>Coins</div>
+          </div>
+          <div style={{flex:1,padding:"6px 0",borderRadius:8,textAlign:"center",background:`${C.orange}06`,border:`1px solid ${C.orange}12`}}>
+            <div style={{fontSize:14,fontWeight:900,color:C.orange}}>🔥{myStats.streak}</div>
+            <div style={{fontSize:6,color:C.text3,fontWeight:600}}>Streak</div>
           </div>
         </div>
+      </div>
+
+      <div style={{padding:"0 14px"}}>
 
         {/* ======= TAB BAR — TOP ======= */}
         <div style={{display:"flex",borderBottom:`1px solid ${C.border}`,marginBottom:10}}>
@@ -6549,25 +6556,6 @@ export default function MoodLabArena() {
               <span style={{fontSize:11,fontWeight:900,color:C.text,letterSpacing:1.5}}>ALL GAMES</span>
             </div>
             <span style={{fontSize:9,color:C.text3}}>{PLAY_GAMES.length} games</span>
-          </div>
-          {/* Compact stats strip */}
-          <div style={{display:"flex",gap:6,marginBottom:10}}>
-            <div style={{flex:1,padding:"6px 0",borderRadius:8,textAlign:"center",background:`${C.cyan}06`,border:`1px solid ${C.cyan}12`}}>
-              <div style={{fontSize:14,fontWeight:900,color:C.cyan}}>{myStats.gamesPlayed}</div>
-              <div style={{fontSize:6,color:C.text3,fontWeight:600}}>Played</div>
-            </div>
-            <div style={{flex:1,padding:"6px 0",borderRadius:8,textAlign:"center",background:`${C.green}06`,border:`1px solid ${C.green}12`}}>
-              <div style={{fontSize:14,fontWeight:900,color:C.green}}>{myStats.winRate}%</div>
-              <div style={{fontSize:6,color:C.text3,fontWeight:600}}>Win Rate</div>
-            </div>
-            <div style={{flex:1,padding:"6px 0",borderRadius:8,textAlign:"center",background:`${C.gold}06`,border:`1px solid ${C.gold}12`}}>
-              <div style={{fontSize:14,fontWeight:900,color:C.gold}}>{myStats.coinsWon.toLocaleString()}</div>
-              <div style={{fontSize:6,color:C.text3,fontWeight:600}}>Coins</div>
-            </div>
-            <div style={{flex:1,padding:"6px 0",borderRadius:8,textAlign:"center",background:`${C.orange}06`,border:`1px solid ${C.orange}12`}}>
-              <div style={{fontSize:14,fontWeight:900,color:C.orange}}>🔥{myStats.streak}</div>
-              <div style={{fontSize:6,color:C.text3,fontWeight:600}}>Streak</div>
-            </div>
           </div>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
             {smartSorted.map((g,i)=>{
@@ -6742,7 +6730,7 @@ export default function MoodLabArena() {
       <div style={{padding:"0 14px",position:"relative",zIndex:1}}>
 
         {/* 1. THEATER MARQUEE */}
-        <div style={{position:"relative",padding:"14px 16px",borderRadius:16,marginBottom:10,overflow:"hidden",cursor:"pointer",
+        <div style={{position:"relative",padding:"10px 14px",borderRadius:16,marginBottom:8,overflow:"hidden",cursor:"pointer",
           background:`linear-gradient(135deg, rgba(255,217,61,0.06), rgba(251,146,60,0.04), rgba(255,217,61,0.06))`,
           border:`2px solid ${C.gold}20`,boxShadow:`0 0 20px ${C.gold}08, inset 0 0 30px ${C.gold}04`,
         }} onClick={()=>launchShowFromHub(liveShow)}>
@@ -6770,7 +6758,36 @@ export default function MoodLabArena() {
           </div>
         </div>
 
-        {/* 2. ALL SHOWS — 2-column grid */}
+        {/* 2. QUICK FEED BAR */}
+        <div style={{padding:"6px 12px",borderRadius:100,marginBottom:8,
+          background:`${infoItems[infoIdx].color}06`,border:`1px solid ${infoItems[infoIdx].color}10`,
+          transition:"all 0.5s ease",display:"flex",alignItems:"center",gap:6,
+        }}>
+          <div style={{width:4,height:4,borderRadius:"50%",background:C.green,animation:"pulse 1.5s infinite"}}/>
+          <span style={{fontSize:9,fontWeight:600,color:infoItems[infoIdx].color,transition:"opacity 0.3s"}}>{infoItems[infoIdx].text}</span>
+        </div>
+
+        {/* 3. STAT STRIP */}
+        <div style={{display:"flex",gap:6,marginBottom:8}}>
+          <div style={{flex:1,padding:"6px 0",borderRadius:8,textAlign:"center",background:`${C.gold}06`,border:`1px solid ${C.gold}12`}}>
+            <div style={{fontSize:14,fontWeight:900,color:C.gold}}>23</div>
+            <div style={{fontSize:6,color:C.text3}}>Shows</div>
+          </div>
+          <div style={{flex:1,padding:"6px 0",borderRadius:8,textAlign:"center",background:`${C.green}06`,border:`1px solid ${C.green}12`}}>
+            <div style={{fontSize:14,fontWeight:900,color:C.green}}>12</div>
+            <div style={{fontSize:6,color:C.text3}}>Wins</div>
+          </div>
+          <div style={{flex:1,padding:"6px 0",borderRadius:8,textAlign:"center",background:`${C.cyan}06`,border:`1px solid ${C.cyan}12`}}>
+            <div style={{fontSize:14,fontWeight:900,color:C.cyan}}>3,200</div>
+            <div style={{fontSize:6,color:C.text3}}>Coins</div>
+          </div>
+          <div style={{flex:1,padding:"6px 0",borderRadius:8,textAlign:"center",background:`${C.red}06`,border:`1px solid ${C.red}12`}}>
+            <div style={{fontSize:14,fontWeight:900,color:C.red}}>4x</div>
+            <div style={{fontSize:6,color:C.text3}}>Roles</div>
+          </div>
+        </div>
+
+        {/* 4. ALL SHOWS — 2-column grid */}
         <div style={{marginBottom:8}}>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
             {SHOW_GAMES.map((g,i)=>{
@@ -6792,26 +6809,6 @@ export default function MoodLabArena() {
                 </div>
               );
             })}
-          </div>
-        </div>
-
-        {/* 3. INFO STRIP */}
-        <div style={{padding:"6px 12px",borderRadius:8,marginBottom:8,textAlign:"center",
-          background:`${infoItems[infoIdx].color}06`,border:`1px solid ${infoItems[infoIdx].color}12`,
-          transition:"all 0.5s ease",
-        }}>
-          <div style={{fontSize:10,fontWeight:700,color:infoItems[infoIdx].color,transition:"opacity 0.3s"}}>{infoItems[infoIdx].text}</div>
-        </div>
-
-        {/* 4. YOUR BACKSTAGE PASS */}
-        <div style={{display:"flex",alignItems:"center",gap:12,padding:"8px 14px",borderRadius:12,
-          background:"rgba(255,255,255,0.02)",border:`1px solid ${C.glassBorder}`,backdropFilter:"blur(8px)",
-        }}>
-          <span style={{fontSize:12}}>{"🎟️"}</span>
-          <div style={{flex:1,display:"flex",alignItems:"center",gap:10,flexWrap:"wrap"}}>
-            <span style={{fontSize:9,fontWeight:700,color:C.text}}>Shows: <span style={{color:C.gold}}>23</span></span>
-            <span style={{fontSize:9,fontWeight:700,color:C.text}}>Wins: <span style={{color:C.green}}>12</span></span>
-            <span style={{fontSize:9,fontWeight:700,color:C.text}}>Role: <span style={{color:C.cyan}}>Contestant 4x</span> <span style={{color:C.text3}}>|</span> <span style={{color:C.purple}}>Judge 2x</span></span>
           </div>
         </div>
 
@@ -7151,25 +7148,24 @@ export default function MoodLabArena() {
       <div style={{position:"absolute",top:-40,left:"50%",transform:"translateX(-50%)",width:300,height:200,borderRadius:"50%",background:"radial-gradient(circle, rgba(147,51,234,0.12), transparent 70%)",pointerEvents:"none"}}/>
       {renderZoneHeader("oracle")}
 
-      {/* YOUR ORACLE STATS */}
-      <div style={{padding:"0 14px",marginBottom:12}}>
-        <div style={{padding:"14px",borderRadius:16,background:"linear-gradient(135deg, rgba(147,51,234,0.08), rgba(255,215,0,0.04))",
-          border:"1px solid rgba(147,51,234,0.20)",backdropFilter:"blur(8px)"}}>
-          <div style={{fontSize:10,fontWeight:800,color:"#9333EA",letterSpacing:2,marginBottom:10}}>YOUR ORACLE STATS</div>
-          <div style={{display:"flex",justifyContent:"space-between",gap:4}}>
-            {[
-              {icon:"🔮",val:"147",label:"Predictions",color:C.purple||"#9333EA"},
-              {icon:"🎯",val:"78%",label:"Accuracy",color:C.green},
-              {icon:"⚡",val:"7 🔥",label:"Streak",color:C.orange||"#F97316"},
-              {icon:"🏆",val:"15",label:"Best",color:C.gold},
-              {icon:"🌙",val:"+4,200",label:"Coins Won",color:C.lime},
-            ].map((s,i)=>(
-              <div key={i} style={{textAlign:"center",flex:1}}>
-                <div style={{fontSize:12,marginBottom:2}}>{s.icon}</div>
-                <div style={{fontSize:14,fontWeight:900,color:s.color}}>{s.val}</div>
-                <div style={{fontSize:7,color:C.text3,marginTop:1}}>{s.label}</div>
-              </div>
-            ))}
+      {/* STAT STRIP */}
+      <div style={{padding:"0 14px",marginBottom:8}}>
+        <div style={{display:"flex",gap:6}}>
+          <div style={{flex:1,padding:"6px 0",borderRadius:8,textAlign:"center",background:"rgba(147,51,234,0.06)",border:"1px solid rgba(147,51,234,0.12)"}}>
+            <div style={{fontSize:14,fontWeight:900,color:"#9333EA"}}>147</div>
+            <div style={{fontSize:6,color:C.text3}}>Predictions</div>
+          </div>
+          <div style={{flex:1,padding:"6px 0",borderRadius:8,textAlign:"center",background:`${C.green}06`,border:`1px solid ${C.green}12`}}>
+            <div style={{fontSize:14,fontWeight:900,color:C.green}}>78%</div>
+            <div style={{fontSize:6,color:C.text3}}>Accuracy</div>
+          </div>
+          <div style={{flex:1,padding:"6px 0",borderRadius:8,textAlign:"center",background:`${C.orange}06`,border:`1px solid ${C.orange}12`}}>
+            <div style={{fontSize:14,fontWeight:900,color:C.orange}}>🔥7</div>
+            <div style={{fontSize:6,color:C.text3}}>Streak</div>
+          </div>
+          <div style={{flex:1,padding:"6px 0",borderRadius:8,textAlign:"center",background:`${C.gold}06`,border:`1px solid ${C.gold}12`}}>
+            <div style={{fontSize:14,fontWeight:900,color:C.gold}}>+4.2K</div>
+            <div style={{fontSize:6,color:C.text3}}>Coins</div>
           </div>
         </div>
       </div>
@@ -7333,6 +7329,38 @@ export default function MoodLabArena() {
         </div>
         <div style={{height:1,marginTop:12,background:`linear-gradient(90deg, transparent, ${C.gold}20, ${C.gold}35, ${C.gold}20, transparent)`}}/>
       </div>
+
+      {/* ═══ QUICK FEED BAR ═══ */}
+      <div style={{padding:"0 14px",marginBottom:8}}>
+        <div style={{display:"flex",alignItems:"center",gap:6,padding:"5px 12px",borderRadius:100,
+          background:`${C.gold}06`,border:`1px solid ${C.gold}10`}}>
+          <div style={{width:4,height:4,borderRadius:"50%",background:C.green,animation:"pulse 1.5s infinite"}}/>
+          <span style={{fontSize:9,color:C.text2,fontWeight:600}}>{(WALL_ACTIVITY[Math.floor(tick/3)%WALL_ACTIVITY.length]||{text:"Arena is buzzing!"}).text}</span>
+        </div>
+      </div>
+
+      {/* ═══ STAT STRIP ═══ */}
+      <div style={{padding:"0 14px",marginBottom:8}}>
+        <div style={{display:"flex",gap:6}}>
+          <div style={{flex:1,padding:"6px 0",borderRadius:8,textAlign:"center",background:`${C.cyan}06`,border:`1px solid ${C.cyan}12`}}>
+            <div style={{fontSize:14,fontWeight:900,color:C.cyan}}>#3</div>
+            <div style={{fontSize:6,color:C.text3}}>Your Rank</div>
+          </div>
+          <div style={{flex:1,padding:"6px 0",borderRadius:8,textAlign:"center",background:`${C.gold}06`,border:`1px solid ${C.gold}12`}}>
+            <div style={{fontSize:14,fontWeight:900,color:C.gold}}>8</div>
+            <div style={{fontSize:6,color:C.text3}}>Records</div>
+          </div>
+          <div style={{flex:1,padding:"6px 0",borderRadius:8,textAlign:"center",background:`${C.green}06`,border:`1px solid ${C.green}12`}}>
+            <div style={{fontSize:14,fontWeight:900,color:C.green}}>7/12</div>
+            <div style={{fontSize:6,color:C.text3}}>Achievements</div>
+          </div>
+          <div style={{flex:1,padding:"6px 0",borderRadius:8,textAlign:"center",background:`${C.orange}06`,border:`1px solid ${C.orange}12`}}>
+            <div style={{fontSize:14,fontWeight:900,color:C.orange}}>4,200</div>
+            <div style={{fontSize:6,color:C.text3}}>Season Pts</div>
+          </div>
+        </div>
+      </div>
+
       <div style={{padding:"0 14px"}}>
 
         {/* ═══ CHAMPIONS — Compact ═══ */}
