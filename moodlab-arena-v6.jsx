@@ -166,6 +166,30 @@ const ORACLE_GAMES = [
   { id:"dailypicks", name:"Daily Picks", emoji:"📅", players:"1", time:"2-3m", type:"Daily", color:"#F97316", desc:"3 daily predictions with streak multipliers.", inputs:["puff"] },
 ];
 
+const ORACLE_WC_MATCHES = [
+  {id:1, home:"USA", homeFlag:"🇺🇸", away:"Mexico", awayFlag:"🇲🇽", time:"Tonight 9PM", group:"A", hot:true, predictions:{home:45,draw:28,away:27}},
+  {id:2, home:"Brazil", homeFlag:"🇧🇷", away:"Germany", awayFlag:"🇩🇪", time:"Tomorrow 3AM", group:"B", predictions:{home:52,draw:22,away:26}},
+  {id:3, home:"France", homeFlag:"🇫🇷", away:"Argentina", awayFlag:"🇦🇷", time:"Tomorrow 9PM", group:"C", hot:true, predictions:{home:38,draw:25,away:37}},
+  {id:4, home:"England", homeFlag:"🏴󠁧󠁢󠁥󠁮󠁧󠁿", away:"Spain", awayFlag:"🇪🇸", time:"Wed 6PM", group:"D", predictions:{home:35,draw:30,away:35}},
+  {id:5, home:"Japan", homeFlag:"🇯🇵", away:"Netherlands", awayFlag:"🇳🇱", time:"Wed 9PM", group:"E", predictions:{home:28,draw:25,away:47}},
+  {id:6, home:"Vietnam", homeFlag:"🇻🇳", away:"Portugal", awayFlag:"🇵🇹", time:"Thu 3AM", group:"F", predictions:{home:15,draw:20,away:65}},
+];
+
+const ORACLE_WC_SPECIALS = [
+  {id:"winner", question:"Who wins the World Cup?", emoji:"🏆", topPick:"Brazil 🇧🇷", topPct:24, total:3847},
+  {id:"scorer", question:"Top Scorer?", emoji:"⚽", topPick:"Mbappé 🇫🇷", topPct:18, total:2103},
+  {id:"dark", question:"Dark Horse Team?", emoji:"🐴", topPick:"Japan 🇯🇵", topPct:15, total:1456},
+  {id:"group_death", question:"Group of Death?", emoji:"💀", topPick:"Group C", topPct:42, total:890},
+];
+
+const ORACLE_ARENA_PREDS = [
+  {question:"Who wins FK1 World Cup this round?", emoji:"⚽", topAnswer:"CloudChaser99", votes:204, color:C.cyan},
+  {question:"Will anyone survive Survival Trivia Round 15?", emoji:"💀", topAnswer:"31% say Yes", votes:312, color:C.red},
+  {question:"Highest Puff Clock accuracy this week?", emoji:"⏱️", topAnswer:"±0.02s", votes:89, color:C.orange},
+  {question:"Outlaw Circuit winner?", emoji:"🤠", topAnswer:"QuickDraw_420", votes:148, color:C.gold},
+  {question:"Most blinkers in Arena today?", emoji:"💨", topAnswer:"420+", votes:567, color:C.purple},
+];
+
 const CB_PREDICTIONS = [
   { q:"Will Bitcoin hit $100K this month?", cat:"crypto", emoji:"🪙" },
   { q:"Will a new cannabis strain go viral on TikTok this week?", cat:"cannabis", emoji:"🌿" },
@@ -7186,13 +7210,13 @@ export default function MoodLabArena() {
 
         {/* TAB BAR — TOP */}
         <div style={{display:"flex",borderBottom:"1px solid rgba(147,51,234,0.15)",marginBottom:10}}>
-          {["games","trending","stats","history"].map(t=>(
+          {["games","world_cup","arena","trending","history"].map(t=>(
             <div key={t} onClick={()=>setOracleHubTab(t)} style={{
               flex:1,padding:"8px 0",textAlign:"center",cursor:"pointer",
               fontSize:9,fontWeight:oracleHubTab===t?800:600,
               color:oracleHubTab===t?"#9333EA":C.text3,
               borderBottom:oracleHubTab===t?"2px solid #9333EA":"2px solid transparent",
-            }}>{t.charAt(0).toUpperCase()+t.slice(1)}</div>
+            }}>{t==="world_cup"?"World Cup":t.charAt(0).toUpperCase()+t.slice(1)}</div>
           ))}
         </div>
 
@@ -7222,7 +7246,75 @@ export default function MoodLabArena() {
           </div>
         </div>}
 
+        {/* World Cup tab */}
+        {oracleHubTab==="world_cup" && (
+          <div style={{marginBottom:4}}>
+            <div style={{fontSize:10,fontWeight:800,color:C.gold,letterSpacing:2,marginBottom:8}}>⚽ MATCH PREDICTIONS</div>
+            {ORACLE_WC_MATCHES.map((m,i)=>(
+              <div key={m.id} onClick={()=>{setGameActive({id:"matchpredictor",name:"Match Predictor",emoji:"📊",color:"#3B82F6"});startMatchPredictor();}} style={{
+                display:"flex",alignItems:"center",padding:"10px 12px",borderRadius:12,marginBottom:6,cursor:"pointer",
+                background:`${C.green}04`,border:`1px solid ${C.green}12`,
+              }}>
+                <div style={{flex:1}}>
+                  <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:3}}>
+                    <span style={{fontSize:14}}>{m.homeFlag}</span>
+                    <span style={{fontSize:11,fontWeight:700,color:C.text}}>{m.home}</span>
+                    <span style={{fontSize:9,color:C.text3}}>vs</span>
+                    <span style={{fontSize:11,fontWeight:700,color:C.text}}>{m.away}</span>
+                    <span style={{fontSize:14}}>{m.awayFlag}</span>
+                    {m.hot && <span style={{fontSize:6,fontWeight:900,color:C.red,padding:"1px 4px",borderRadius:3,background:`${C.red}15`}}>HOT</span>}
+                  </div>
+                  <div style={{display:"flex",alignItems:"center",gap:4,marginBottom:2}}>
+                    <span style={{fontSize:8,color:C.cyan,fontWeight:700}}>{m.predictions.home}%</span>
+                    <div style={{flex:1,height:4,borderRadius:2,background:`${C.text3}15`,overflow:"hidden",display:"flex"}}>
+                      <div style={{width:`${m.predictions.home}%`,background:C.cyan}}/>
+                      <div style={{width:`${m.predictions.draw}%`,background:C.gold}}/>
+                      <div style={{width:`${m.predictions.away}%`,background:C.red}}/>
+                    </div>
+                    <span style={{fontSize:8,color:C.red,fontWeight:700}}>{m.predictions.away}%</span>
+                  </div>
+                  <div style={{fontSize:7,color:C.text3}}>{m.time} · Group {m.group}</div>
+                </div>
+                <div style={{padding:"4px 10px",borderRadius:8,background:`${C.green}12`,border:`1px solid ${C.green}20`}}>
+                  <span style={{fontSize:8,fontWeight:800,color:C.green}}>PREDICT</span>
+                </div>
+              </div>
+            ))}
 
+            <div style={{fontSize:10,fontWeight:800,color:C.gold,letterSpacing:2,marginTop:12,marginBottom:8}}>🏆 TOURNAMENT PREDICTIONS</div>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
+              {ORACLE_WC_SPECIALS.map((s,i)=>(
+                <div key={s.id} style={{padding:"10px 8px",borderRadius:12,textAlign:"center",cursor:"pointer",
+                  background:`${C.gold}04`,border:`1px solid ${C.gold}12`}}>
+                  <div style={{fontSize:18,marginBottom:2}}>{s.emoji}</div>
+                  <div style={{fontSize:8,fontWeight:700,color:C.text,marginBottom:3}}>{s.question}</div>
+                  <div style={{fontSize:9,fontWeight:800,color:C.gold}}>{s.topPick}</div>
+                  <div style={{fontSize:7,color:C.text3}}>{s.topPct}% · {s.total} votes</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Arena tab */}
+        {oracleHubTab==="arena" && (
+          <div style={{marginBottom:4}}>
+            <div style={{fontSize:10,fontWeight:800,color:C.cyan,letterSpacing:2,marginBottom:8}}>🎮 ARENA PREDICTIONS</div>
+            {ORACLE_ARENA_PREDS.map((p,i)=>(
+              <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",borderRadius:12,marginBottom:6,
+                background:`${p.color}04`,border:`1px solid ${p.color}12`,cursor:"pointer"}}>
+                <span style={{fontSize:20}}>{p.emoji}</span>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:10,fontWeight:700,color:C.text}}>{p.question}</div>
+                  <div style={{fontSize:8,color:p.color,fontWeight:700,marginTop:2}}>Top: {p.topAnswer} · {p.votes} votes</div>
+                </div>
+                <div style={{padding:"4px 8px",borderRadius:6,background:`${p.color}12`,border:`1px solid ${p.color}20`}}>
+                  <span style={{fontSize:7,fontWeight:800,color:p.color}}>PREDICT</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Trending tab */}
         {oracleHubTab==="trending" && (
@@ -7244,21 +7336,6 @@ export default function MoodLabArena() {
                 </div>
               </div>
             ))}
-          </div>
-        )}
-
-        {/* Stats tab */}
-        {oracleHubTab==="stats" && (
-          <div style={{marginBottom:14,padding:"14px",borderRadius:14,background:"linear-gradient(135deg, rgba(147,51,234,0.08), rgba(255,215,0,0.04))",border:"1px solid rgba(147,51,234,0.18)"}}>
-            <div style={{display:"flex",justifyContent:"space-between",gap:4}}>
-              {oracleStats.map((s,i)=>(
-                <div key={i} style={{textAlign:"center",flex:1}}>
-                  <div style={{fontSize:12,marginBottom:2}}>{s.icon}</div>
-                  <div style={{fontSize:14,fontWeight:900,color:s.color}}>{s.val}</div>
-                  <div style={{fontSize:7,color:C.text3,marginTop:1}}>{s.label}</div>
-                </div>
-              ))}
-            </div>
           </div>
         )}
 
