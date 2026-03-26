@@ -26,8 +26,8 @@ const ARENA_VIDEOS = {
 
 // ── ZONE COLORS ──
 const Z = {
-  arcade: { primary:"#00E5FF", glow:"rgba(0,229,255,0.35)", dim:"rgba(0,229,255,0.08)", name:"The Arcade", icon:"🎮", sub:"8 Action Games" },
-  stage:  { primary:"#FFD93D", glow:"rgba(255,217,61,0.35)", dim:"rgba(255,217,61,0.08)", name:"The Stage", icon:"🎪", sub:"4 Live Shows" },
+  arcade: { primary:"#00E5FF", glow:"rgba(0,229,255,0.35)", dim:"rgba(0,229,255,0.08)", name:"The Arcade", icon:"🎮", sub:"12 Action Games" },
+  stage:  { primary:"#FFD93D", glow:"rgba(255,217,61,0.35)", dim:"rgba(255,217,61,0.08)", name:"The Stage", icon:"🎪", sub:"11 Live Shows" },
   oracle: { primary:"#C084FC", glow:"rgba(192,132,252,0.35)", dim:"rgba(192,132,252,0.08)", name:"The Oracle", icon:"🔮", sub:"6 Predict Types" },
   wall:   { primary:"#FB923C", glow:"rgba(251,146,60,0.35)", dim:"rgba(251,146,60,0.08)", name:"The Wall", icon:"🏆", sub:"Rankings & Glory" },
 };
@@ -138,8 +138,88 @@ const PLAY_GAMES = [
 const SHOW_GAMES = [
   { id:"vibecheck", name:"Vibe Check", emoji:"🧠", players:"1-100+", time:"5-15m", type:"Trivia", color:C.gold, desc:"Trivia Game Show. Host hỏi, contestants trả lời, audience vote.", live:true, inputs:["puff","tap"] },
   { id:"spinwin", name:"Spin & Win", emoji:"🎰", players:"1-50+", time:"2-5m", type:"Luck", color:C.pink, desc:"Vòng quay may mắn. Puff để spin. Addictive.", live:true, inputs:["puff","button"] },
-  { id:"higherlow", name:"Higher or Lower", emoji:"📊", players:"1-100+", time:"5-10m", type:"Knowledge", color:C.cyan, desc:"Đoán số tiếp theo cao hay thấp. Streak = thưởng lớn.", live:true, inputs:["puff","tap"] },
+  { id:"higherlower", name:"Higher or Lower", emoji:"📊", players:"1-100+", time:"5-10m", type:"Knowledge", color:C.cyan, desc:"Đoán số tiếp theo cao hay thấp. Streak = thưởng lớn.", live:true, inputs:["puff","tap"] },
   { id:"pricepuff", name:"The Price is Puff", emoji:"💰", players:"2-50+", time:"5-10m", type:"Knowledge", color:C.green, desc:"Đoán giá sản phẩm. Gần nhất thắng.", live:true, inputs:["puff","tap"] },
+  { id:"survivaltrivia", name:"Survival Trivia", emoji:"🏆", players:"2-100+", time:"5-15m", type:"Trivia", color:C.purple, desc:"Answer correctly or get eliminated. Last one standing wins!", live:true, inputs:["puff","tap"] },
+  { id:"puffclock", name:"Puff Clock", emoji:"⏱️", players:"1-50+", time:"3-8m", type:"Precision", color:C.orange, desc:"Stop the clock at the exact time. Precision puffing!", live:true, inputs:["puff","button"] },
+  { id:"simonpuffs", name:"Simon Puffs", emoji:"🔴", players:"1-50+", time:"3-8m", type:"Memory", color:C.red, desc:"Remember the pattern, repeat with puffs. Memory master!", live:true, inputs:["puff","button"] },
+  { id:"puffauction", name:"Puff Auction", emoji:"🔨", players:"2-50+", time:"3-8m", type:"Strategy", color:C.lime, desc:"Bid with your lungs! Biggest puff wins the auction.", live:true, inputs:["puff","button"] },
+  { id:"beatdrop", name:"Beat Drop", emoji:"🎧", players:"1-50+", time:"2-5m", type:"Music", color:C.pink, desc:"Feel the beat, drop at the right moment. Rhythm + timing!", live:true, inputs:["puff","button"] },
+  { id:"pufflimbo", name:"Puff Limbo", emoji:"🎪", players:"1-50+", time:"3-8m", type:"Endurance", color:C.orange, desc:"How low can you go? Precise puffs under the bar!", live:true, inputs:["puff","button"] },
+  { id:"puffderby", name:"Puff Derby", emoji:"🏇", players:"1-50+", time:"2-5m", type:"Racing", color:C.green, desc:"Pick a horse, puff to boost! Race to the finish line.", live:true, inputs:["puff","button"] },
+];
+
+const ORACLE_GAMES = [
+  { id:"crystalball", name:"Crystal Ball", emoji:"🔮", players:"1", time:"1-2m", type:"Prediction", color:"#9333EA", desc:"Yes/No universal predictions. Puff to decide destiny.", inputs:["puff"] },
+  { id:"strainbattle", name:"Strain Battle", emoji:"🌿", players:"1", time:"2-3m", type:"Vote", color:"#22C55E", desc:"Vote for the best strain in epic matchups.", inputs:["puff"] },
+  { id:"matchpredictor", name:"Match Predictor", emoji:"📊", players:"1", time:"1-2m", type:"Sports", color:"#3B82F6", desc:"Predict WC match outcomes. Win/Draw/Lose.", inputs:["puff"] },
+  { id:"dailypicks", name:"Daily Picks", emoji:"📅", players:"1", time:"2-3m", type:"Daily", color:"#F97316", desc:"3 daily predictions with streak multipliers.", inputs:["puff"] },
+];
+
+const CB_PREDICTIONS = [
+  { q:"Will Bitcoin hit $100K this month?", cat:"crypto", emoji:"🪙" },
+  { q:"Will a new cannabis strain go viral on TikTok this week?", cat:"cannabis", emoji:"🌿" },
+  { q:"Will Brazil win their next World Cup match?", cat:"sports", emoji:"⚽" },
+  { q:"Will Snoop Dogg drop a surprise album this year?", cat:"culture", emoji:"🎤" },
+  { q:"Will THC prices drop below $5/g in Colorado?", cat:"cannabis", emoji:"💰" },
+  { q:"Will the next FIFA game outsell the last one?", cat:"gaming", emoji:"🎮" },
+  { q:"Will a meme coin 10x this month?", cat:"crypto", emoji:"🚀" },
+  { q:"Will indica outsell sativa this quarter?", cat:"cannabis", emoji:"🌿" },
+  { q:"Will Argentina make it to the WC final?", cat:"sports", emoji:"🇦🇷" },
+  { q:"Will AI replace more than 10% of jobs this year?", cat:"culture", emoji:"🤖" },
+  { q:"Will edibles become legal in 3 more states?", cat:"cannabis", emoji:"🍫" },
+  { q:"Will the next Super Bowl break viewership records?", cat:"sports", emoji:"🏈" },
+  { q:"Will Drake drop a collab with a cannabis brand?", cat:"culture", emoji:"🎵" },
+  { q:"Will Ethereum flip Bitcoin in market cap?", cat:"crypto", emoji:"💎" },
+  { q:"Will the MLS become a top 5 global league?", cat:"sports", emoji:"⚽" },
+];
+
+const SB_STRAINS = [
+  { name:"OG Kush", emoji:"🌿", thc:23, type:"Hybrid", effects:"Relaxed, Euphoric, Happy", flavor:"Earthy, Pine, Woody" },
+  { name:"Blue Dream", emoji:"💙", thc:21, type:"Sativa", effects:"Creative, Euphoric, Uplifted", flavor:"Berry, Sweet, Herbal" },
+  { name:"Gorilla Glue", emoji:"🦍", thc:28, type:"Hybrid", effects:"Relaxed, Euphoric, Sleepy", flavor:"Diesel, Earthy, Pine" },
+  { name:"Girl Scout Cookies", emoji:"🍪", thc:25, type:"Hybrid", effects:"Happy, Euphoric, Relaxed", flavor:"Sweet, Earthy, Pungent" },
+  { name:"Sour Diesel", emoji:"⛽", thc:22, type:"Sativa", effects:"Energetic, Happy, Uplifted", flavor:"Diesel, Pungent, Earthy" },
+  { name:"Purple Haze", emoji:"💜", thc:20, type:"Sativa", effects:"Creative, Euphoric, Energetic", flavor:"Berry, Earthy, Sweet" },
+  { name:"Wedding Cake", emoji:"🎂", thc:27, type:"Indica", effects:"Relaxed, Happy, Euphoric", flavor:"Sweet, Vanilla, Earthy" },
+  { name:"Gelato", emoji:"🍨", thc:25, type:"Hybrid", effects:"Relaxed, Happy, Euphoric", flavor:"Sweet, Citrus, Fruity" },
+  { name:"Jack Herer", emoji:"🌲", thc:20, type:"Sativa", effects:"Creative, Energetic, Focused", flavor:"Pine, Earthy, Woody" },
+  { name:"Northern Lights", emoji:"🌌", thc:21, type:"Indica", effects:"Relaxed, Sleepy, Happy", flavor:"Earthy, Pine, Sweet" },
+  { name:"Pineapple Express", emoji:"🍍", thc:22, type:"Hybrid", effects:"Happy, Uplifted, Energetic", flavor:"Tropical, Pineapple, Citrus" },
+  { name:"White Widow", emoji:"🕸️", thc:20, type:"Hybrid", effects:"Euphoric, Energetic, Creative", flavor:"Earthy, Woody, Pungent" },
+  { name:"AK-47", emoji:"💥", thc:22, type:"Hybrid", effects:"Relaxed, Happy, Uplifted", flavor:"Earthy, Pungent, Floral" },
+  { name:"Granddaddy Purple", emoji:"🍇", thc:23, type:"Indica", effects:"Relaxed, Sleepy, Happy", flavor:"Grape, Berry, Sweet" },
+  { name:"Skywalker OG", emoji:"🌠", thc:26, type:"Indica", effects:"Relaxed, Sleepy, Happy", flavor:"Earthy, Pine, Diesel" },
+  { name:"Durban Poison", emoji:"☀️", thc:19, type:"Sativa", effects:"Energetic, Uplifted, Creative", flavor:"Sweet, Earthy, Pine" },
+];
+
+const MP_MATCHES = [
+  { id:"mp1", home:"🇧🇷 Brazil", away:"🇩🇪 Germany", time:"3:00 PM", pool:[65,20,15], group:"F" },
+  { id:"mp2", home:"🇫🇷 France", away:"🇦🇷 Argentina", time:"9:00 PM", pool:[40,25,35], group:"C" },
+  { id:"mp3", home:"🇺🇸 USA", away:"🇲🇽 Mexico", time:"6:00 PM", pool:[45,30,25], group:"A" },
+  { id:"mp4", home:"🇪🇸 Spain", away:"🇳🇱 Netherlands", time:"12:00 PM", pool:[50,28,22], group:"B" },
+  { id:"mp5", home:"🏴󠁧󠁢󠁥󠁮󠁧󠁿 England", away:"🇵🇹 Portugal", time:"3:00 AM", pool:[38,32,30], group:"D" },
+  { id:"mp6", home:"🇮🇹 Italy", away:"🇧🇪 Belgium", time:"6:00 AM", pool:[42,30,28], group:"E" },
+  { id:"mp7", home:"🇯🇵 Japan", away:"🇰🇷 South Korea", time:"9:00 AM", pool:[35,30,35], group:"G" },
+  { id:"mp8", home:"🇳🇬 Nigeria", away:"🇨🇲 Cameroon", time:"12:00 AM", pool:[40,35,25], group:"H" },
+];
+
+const DP_QUESTIONS = [
+  { q:"Will the top trending TikTok today be about food?", cat:"morning", emoji:"🌅", type:"yn" },
+  { q:"Will Gold price go up today?", cat:"morning", emoji:"🌅", type:"yn" },
+  { q:"Morning mood: Coffee or Green Tea?", cat:"morning", emoji:"🌅", type:"ab", a:"Coffee", b:"Green Tea" },
+  { q:"Will the most-streamed Spotify song today be hip-hop?", cat:"afternoon", emoji:"☀️", type:"yn" },
+  { q:"Afternoon sesh: Indica or Sativa?", cat:"afternoon", emoji:"☀️", type:"ab", a:"Indica", b:"Sativa" },
+  { q:"Will any crypto gain more than 5% today?", cat:"afternoon", emoji:"☀️", type:"yn" },
+  { q:"Will tonight's biggest sports upset actually happen?", cat:"night", emoji:"🌙", type:"yn" },
+  { q:"Night strain pick: Edibles or Flower?", cat:"night", emoji:"🌙", type:"ab", a:"Edibles", b:"Flower" },
+  { q:"Will a viral meme break 1M shares tonight?", cat:"night", emoji:"🌙", type:"yn" },
+  { q:"Will the late-night game go to overtime?", cat:"morning", emoji:"🌅", type:"yn" },
+  { q:"Best wake-and-bake: Joint or Vape?", cat:"morning", emoji:"🌅", type:"ab", a:"Joint", b:"Vape" },
+  { q:"Will the stock market close green today?", cat:"afternoon", emoji:"☀️", type:"yn" },
+  { q:"Will any team score 5+ goals in tonight's matches?", cat:"night", emoji:"🌙", type:"yn" },
+  { q:"Late night munchies: Pizza or Tacos?", cat:"night", emoji:"🌙", type:"ab", a:"Pizza", b:"Tacos" },
+  { q:"Will tomorrow's weather be better than today?", cat:"morning", emoji:"🌅", type:"yn" },
 ];
 
 const VC_QUESTIONS_V2 = [
@@ -1125,6 +1205,49 @@ export default function MoodLabArena() {
   const [hlRevealing, setHlRevealing] = useState(false); const [hlRound, setHlRound] = useState(0);
   const [hlRevealNum, setHlRevealNum] = useState(0); const [hlPuffStart, setHlPuffStart] = useState(null);
   const hlTimerRef = useRef(null); const hlUsedRef = useRef([]);
+
+  // ── Crystal Ball ──
+  const [cbPhase, setCbPhase] = useState(null); // null|"intro"|"question"|"puffing"|"reveal"|"result"
+  const [cbQuestion, setCbQuestion] = useState(null);
+  const [cbAnswer, setCbAnswer] = useState(null); // "yes"|"no"|"certain"
+  const [cbPuffing, setCbPuffing] = useState(false);
+  const [cbResult, setCbResult] = useState(null); // "correct"|"wrong"
+  const [cbStreak, setCbStreak] = useState(0);
+  const [cbRound, setCbRound] = useState(0);
+  const [cbScore, setCbScore] = useState(0);
+  const [cbUsed, setCbUsed] = useState([]);
+  const cbPuffStart = useRef(0);
+  const cbTimerRef = useRef(null);
+
+  // ── Strain Battle ──
+  const [sbPhase, setSbPhase] = useState(null); // null|"intro"|"matchup"|"puffing"|"results"|"complete"
+  const [sbMatchup, setSbMatchup] = useState(null); // [strainA, strainB]
+  const [sbVote, setSbVote] = useState(null); // "left"|"right"
+  const [sbResults, setSbResults] = useState(null); // {left:%, right:%}
+  const [sbRound, setSbRound] = useState(0);
+  const [sbScore, setSbScore] = useState(0);
+  const [sbMatchups, setSbMatchups] = useState([]);
+  const sbPuffStart = useRef(0);
+
+  // ── Match Predictor ──
+  const [mpPhase, setMpPhase] = useState(null); // null|"intro"|"match"|"puffing"|"prediction"|"result"|"complete"
+  const [mpMatch, setMpMatch] = useState(null);
+  const [mpPrediction, setMpPrediction] = useState(null); // "home"|"draw"|"away"
+  const [mpResults, setMpResults] = useState([]);
+  const [mpRound, setMpRound] = useState(0);
+  const [mpScore, setMpScore] = useState(0);
+  const [mpUsed, setMpUsed] = useState([]);
+  const mpPuffStart = useRef(0);
+
+  // ── Daily Picks ──
+  const [dpPhase, setDpPhase] = useState(null); // null|"intro"|"pick"|"puffing"|"reveal"|"summary"
+  const [dpPicks, setDpPicks] = useState([]); // 3 questions
+  const [dpAnswered, setDpAnswered] = useState([]); // answers for each
+  const [dpStreak, setDpStreak] = useState(0);
+  const [dpResults, setDpResults] = useState([]);
+  const [dpCurrentPick, setDpCurrentPick] = useState(0);
+  const [dpAnswer, setDpAnswer] = useState(null);
+  const dpPuffStart = useRef(0);
 
   // ── Derived ──
   const wcDays = Math.max(0, Math.floor((new Date("2026-06-11") - new Date()) / 86400000));
@@ -6134,194 +6257,163 @@ export default function MoodLabArena() {
     {label:"Funniest Blinker",value:"0.1s tap",emoji:"😂",color:C.pink,sub:"Ball didn't even move lmao"},
   ];
 
-  const renderArcade = () => (
+  const renderArcade = () => {
+    const hotGames = PLAY_GAMES.filter(g=>g.hot);
+    const featuredGame = hotGames[Math.floor(Date.now()/60000) % hotGames.length] || PLAY_GAMES[0];
+    const playerCounts = {finalkick:234,finalkick2:156,finalkick3:98,wildwest:189,russian:67,balloon:45,puffpong:89,rhythm:34,tugofwar:112,hotpotato:78,hooked:42,rps:56};
+    const totalPlaying = 856;
+    const arcadeTournaments = [
+      {name:"FK1 World Cup 2026",emoji:"🏆",game:"Final Kick",prize:"50K pts",color:C.gold,status:"OPEN",players:312},
+      {name:"The Outlaw Circuit",emoji:"🤠",game:"Wild West Duel",prize:"25K pts",color:C.orange,status:"OPEN",players:148},
+      {name:"Dojo Championship",emoji:"🥋",game:"Tug of War",prize:"15K pts",color:C.red,status:"STARTING",players:96},
+      {name:"Pong Masters",emoji:"🏓",game:"Puff Pong",prize:"10K pts",color:C.green,status:"OPEN",players:64},
+    ];
+    return (
     <div style={{position:"relative"}}>
-      <div style={{position:"absolute",top:-40,left:"50%",transform:"translateX(-50%)",width:300,height:200,borderRadius:"50%",background:`radial-gradient(circle, ${Z.arcade.glow.replace("0.35","0.1")}, transparent 70%)`,pointerEvents:"none"}}/>
+      {/* Arcade grid scan background */}
+      <div style={{position:"absolute",top:-40,left:0,right:0,height:300,pointerEvents:"none",overflow:"hidden",
+        background:`radial-gradient(ellipse at 50% 0%, ${C.cyan}12, transparent 60%)`,
+      }}>
+        <div style={{position:"absolute",top:0,left:0,right:0,bottom:0,
+          backgroundImage:`linear-gradient(${C.cyan}06 1px, transparent 1px), linear-gradient(90deg, ${C.cyan}06 1px, transparent 1px)`,
+          backgroundSize:"40px 40px",opacity:0.4,
+        }}/>
+      </div>
       {renderZoneHeader("arcade")}
+      <div style={{padding:"0 14px"}}>
 
-      {/* ═══ TAB BAR ═══ */}
-      <div style={{display:"flex",gap:0,margin:"0 14px 12px",borderRadius:12,overflow:"hidden",...GLASS_CLEAR}}>
-        {[{id:"games",label:"🎮 Games",count:PLAY_GAMES.length},{id:"minigames",label:"🎪 Mini",count:4},{id:"tournament",label:"⚽ Tourney",count:null},{id:"leaderboard",label:"🏆 Board",count:null}].map(t=>(
-          <div key={t.id} onClick={()=>{playFx("nav");setArcadeTab(t.id);}} style={{
-            flex:1,padding:"10px 0",textAlign:"center",cursor:"pointer",
-            background:arcadeTab===t.id?`${C.cyan}12`:"transparent",
-            borderBottom:arcadeTab===t.id?`2px solid ${C.cyan}`:`2px solid transparent`,
-            transition:"all 0.2s",
-          }}>
-            <div style={{fontSize:11,fontWeight:arcadeTab===t.id?800:600,color:arcadeTab===t.id?C.cyan:C.text3}}>
-              {t.label} {t.count!==null?<span style={{fontSize:8,opacity:0.7}}>({t.count})</span>:null}
+        {/* ═══ FEATURED GAME — Hero Card ═══ */}
+        <div onClick={()=>{playFx("select");setSelectedGame(featuredGame);}} style={{
+          position:"relative",overflow:"hidden",borderRadius:20,padding:"22px 18px",marginBottom:14,cursor:"pointer",
+          background:`radial-gradient(ellipse at 20% 30%, ${featuredGame.color}15, transparent 60%), radial-gradient(ellipse at 80% 70%, ${C.cyan}08, transparent 50%), linear-gradient(135deg, ${C.bg2}, ${C.bg3})`,
+          border:`1.5px solid ${featuredGame.color}25`,boxShadow:`0 0 30px ${featuredGame.color}10, inset 0 1px 0 rgba(255,255,255,0.05)`,
+        }}>
+          <div style={{position:"absolute",top:0,left:0,right:0,bottom:0,pointerEvents:"none",
+            background:`linear-gradient(135deg, transparent 30%, ${featuredGame.color}06 50%, transparent 70%)`,
+          }}/>
+          <div style={{position:"absolute",top:12,right:12,display:"flex",alignItems:"center",gap:5}}>
+            {featuredGame.hot && <span style={{fontSize:8,fontWeight:900,color:C.red,padding:"3px 8px",borderRadius:6,background:`${C.red}18`,border:`1px solid ${C.red}30`,animation:"pulse 2s infinite"}}>🔥 HOT</span>}
+          </div>
+          <div style={{fontSize:9,fontWeight:700,color:C.cyan,letterSpacing:2,marginBottom:8}}>FEATURED GAME</div>
+          <div style={{display:"flex",alignItems:"center",gap:14,marginBottom:10}}>
+            <div style={{width:56,height:56,borderRadius:16,display:"flex",alignItems:"center",justifyContent:"center",fontSize:32,
+              background:`radial-gradient(circle, ${featuredGame.color}20, ${featuredGame.color}05)`,border:`1.5px solid ${featuredGame.color}30`,
+              boxShadow:`0 0 20px ${featuredGame.color}20`,filter:`drop-shadow(0 0 10px ${featuredGame.color}50)`,
+            }}>{featuredGame.emoji}</div>
+            <div style={{flex:1}}>
+              <div style={{fontSize:20,fontWeight:900,color:C.text,lineHeight:1.2}}>{featuredGame.name}</div>
+              <div style={{fontSize:11,color:C.text3,marginTop:3}}>{featuredGame.desc}</div>
             </div>
           </div>
-        ))}
-      </div>
+          <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
+            <span style={{fontSize:9,fontWeight:700,color:featuredGame.color,padding:"3px 8px",borderRadius:6,...LG.tinted(featuredGame.color)}}>{featuredGame.type}</span>
+            <span style={{fontSize:9,color:C.text2}}>👥 {featuredGame.players}</span>
+            <span style={{fontSize:9,color:C.text2}}>⏱ {featuredGame.time}</span>
+            <span style={{fontSize:9,color:C.green,fontWeight:700,marginLeft:"auto"}}>🟢 {playerCounts[featuredGame.id]||120} playing</span>
+          </div>
+          <div style={{padding:"11px 0",borderRadius:12,textAlign:"center",
+            background:`linear-gradient(135deg, ${C.cyan}18, ${featuredGame.color}12)`,border:`1px solid ${C.cyan}30`,
+            boxShadow:`0 0 16px ${C.cyan}10`,
+          }}>
+            <span style={{fontSize:14,fontWeight:900,color:C.cyan,letterSpacing:1.5}}>PLAY NOW</span>
+          </div>
+        </div>
 
-      {/* ═══ GAMES TAB ═══ */}
-      {arcadeTab==="games" && (
-        <div style={{padding:"0 14px",animation:"fadeIn 0.3s ease"}}>
-          {PLAY_GAMES.map((g,i)=>(
-            <div key={g.id} onClick={()=>{playFx("select");setSelectedGame(g);}} style={{
-              display:"flex",alignItems:"center",gap:12,padding:"12px 14px",borderRadius:16,marginBottom:8,cursor:"pointer",
-              background:`linear-gradient(135deg, ${g.color}08, ${C.bg2} 70%)`,
-              border:`1px solid ${g.color}15`,
-              boxShadow:`0 2px 12px ${g.color}06`,
-              transition:"all 0.2s",animation:`fadeIn 0.3s ease ${i*0.05}s both`,
+        {/* ═══ ARCADE STATS — Compact Strip ═══ */}
+        <div style={{display:"flex",gap:6,marginBottom:14,overflowX:"auto",paddingBottom:4}}>
+          {[
+            {label:"Games Today",val:"3,847",icon:"🎮",color:C.cyan},
+            {label:"Active Players",val:totalPlaying.toString(),icon:"👥",color:C.green},
+            {label:"Coins Won",val:"42K",icon:"🪙",color:C.gold},
+            {label:"Top Game",val:"FK1",icon:"🔥",color:C.orange},
+          ].map((s,i)=>(
+            <div key={i} style={{flex:1,minWidth:70,padding:"8px 6px",borderRadius:12,textAlign:"center",
+              background:`${s.color}06`,border:`1px solid ${s.color}12`,
             }}>
-              <div style={{width:50,height:50,borderRadius:14,display:"flex",alignItems:"center",justifyContent:"center",fontSize:28,
-                background:`radial-gradient(circle, ${g.color}15, ${g.color}05)`,border:`1px solid ${g.color}20`,
-                flexShrink:0,filter:`drop-shadow(0 0 8px ${g.color}30)`,boxShadow:`0 0 16px ${g.color}10`}}>
-                {g.emoji}
-              </div>
-              <div style={{flex:1,minWidth:0}}>
-                <div style={{display:"flex",alignItems:"center",gap:6}}>
-                  <span style={{fontSize:14,fontWeight:800,color:C.text}}>{g.name}</span>
-                  {g.hot && <span style={{fontSize:7,fontWeight:800,color:C.red,padding:"1px 5px",borderRadius:4,background:`${C.red}15`,border:`1px solid ${C.red}20`,animation:"pulse 2s infinite"}}>🔥 HOT</span>}
-                </div>
-                <div style={{fontSize:10,color:C.text3,marginTop:2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{g.desc}</div>
-                <div style={{display:"flex",gap:4,marginTop:5}}>
-                  <span style={{fontSize:8,fontWeight:700,color:g.color,padding:"2px 7px",borderRadius:6,...LG.tinted(g.color)}}>{g.type}</span>
-                  <span style={{fontSize:8,fontWeight:600,color:C.text3,padding:"2px 7px",borderRadius:6,background:`${C.text3}06`}}>👥 {g.players}</span>
-                  <span style={{fontSize:8,fontWeight:600,color:C.text3,padding:"2px 7px",borderRadius:6,background:`${C.text3}06`}}>⏱ {g.time}</span>
-                </div>
-              </div>
-              <div style={{fontSize:16,color:`${g.color}40`,fontWeight:300}}>›</div>
+              <div style={{fontSize:14,marginBottom:2}}>{s.icon}</div>
+              <div style={{fontSize:13,fontWeight:900,color:s.color,fontFamily:"monospace"}}>{s.val}</div>
+              <div style={{fontSize:7,color:C.text3,fontWeight:600,marginTop:1}}>{s.label}</div>
             </div>
           ))}
-          {/* Active players */}
-          <div style={{padding:"10px 14px",borderRadius:14,marginBottom:8,...LG.tinted(C.cyan)}}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-              <div>
-                <div style={{fontSize:9,fontWeight:800,color:C.cyan}}>🟢 856 PLAYING NOW</div>
-                <div style={{fontSize:8,color:C.text3,marginTop:2}}>Wild West Duel trending · 234 active</div>
-              </div>
-              <div style={{fontSize:8,fontWeight:700,color:C.gold,padding:"3px 8px",borderRadius:6,...LG.tinted(C.gold)}}>🏆 3 Tournaments</div>
-            </div>
-          </div>
         </div>
-      )}
 
-      {/* ═══ MINI-GAMES TAB ═══ */}
-      {arcadeTab==="minigames" && (
-        <div style={{padding:"0 14px",animation:"fadeIn 0.3s ease"}}>
-          <div style={{fontSize:11,fontWeight:800,color:C.pink,letterSpacing:2,marginBottom:8}}>🎪 HALFTIME MINI-GAMES</div>
-          <div style={{fontSize:9,color:C.text3,marginBottom:12}}>Quick games to win coins between matches!</div>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10}}>
-            {[
-              {type:"roulette",emoji:"🎰",label:"Puff Roulette",desc:"Spin the wheel! Puff to stop.",color:C.gold,reward:"+50-500"},
-              {type:"tug",emoji:"🤝",label:"Crowd Tug",desc:"20s spam puff vs AI!",color:C.cyan,reward:"+50"},
-              {type:"lucky",emoji:"🍀",label:"Lucky Puff",desc:"Wait for signal, puff to win!",color:C.green,reward:"+100"},
-              {type:"trivia",emoji:"🧠",label:"Puff Trivia",desc:"Cannabis & game trivia!",color:C.purple,reward:"+75"},
-            ].map(g => (
-              <div key={g.type} onClick={()=>{playFx("select");startHalftime(g.type);}} style={{
-                padding:"14px 10px",borderRadius:14,textAlign:"center",cursor:"pointer",
-                ...GLASS_CARD,border:`1px solid ${g.color}20`,transition:"all 0.2s",
+        {/* ═══ GAME GRID — 2 columns, all 12 games ═══ */}
+        <div style={{marginBottom:14}}>
+          <div style={{fontSize:11,fontWeight:800,color:C.text,letterSpacing:1,marginBottom:10}}>ALL GAMES</div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+            {PLAY_GAMES.map((g,i)=>(
+              <div key={g.id} onClick={()=>{playFx("select");setSelectedGame(g);}} style={{
+                padding:"12px 10px",borderRadius:14,cursor:"pointer",position:"relative",overflow:"hidden",
+                background:`radial-gradient(ellipse at 50% 0%, ${g.color}08, ${C.bg2} 70%)`,
+                border:`1px solid ${g.color}12`,transition:"all 0.3s",
+                animation:`fadeIn 0.3s ease ${i*0.04}s both`,
               }}>
-                <div style={{fontSize:32,marginBottom:6,filter:`drop-shadow(0 0 8px ${g.color}40)`}}>{g.emoji}</div>
-                <div style={{fontSize:12,fontWeight:800,color:C.text,marginBottom:2}}>{g.label}</div>
-                <div style={{fontSize:8,color:C.text3,marginBottom:4}}>{g.desc}</div>
-                <div style={{fontSize:8,fontWeight:700,color:g.color}}>{g.reward} coins</div>
+                {g.hot && <div style={{position:"absolute",top:6,right:6,display:"flex",alignItems:"center",gap:2}}>
+                  <span style={{fontSize:7,fontWeight:800,color:C.red,padding:"1px 5px",borderRadius:4,background:`${C.red}15`,border:`1px solid ${C.red}20`,animation:"pulse 2s infinite"}}>🔥 HOT</span>
+                </div>}
+                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
+                  <div style={{width:38,height:38,borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,
+                    background:`radial-gradient(circle, ${g.color}15, ${g.color}05)`,border:`1px solid ${g.color}20`,
+                    filter:`drop-shadow(0 0 8px ${g.color}30)`,boxShadow:`0 0 12px ${g.color}10`,flexShrink:0,
+                  }}>{g.emoji}</div>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{fontSize:11,fontWeight:800,color:C.text,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{g.name}</div>
+                    <div style={{fontSize:8,color:C.text3,marginTop:1}}>👥 {g.players} · ⏱ {g.time}</div>
+                  </div>
+                </div>
+                <div style={{display:"flex",gap:3,flexWrap:"wrap"}}>
+                  <span style={{fontSize:8,fontWeight:700,color:g.color,padding:"2px 6px",borderRadius:4,background:`${g.color}10`}}>{g.type}</span>
+                  <span style={{fontSize:7,color:C.green,fontWeight:600,padding:"2px 6px",borderRadius:4,background:`${C.green}06`}}>🟢 {playerCounts[g.id]||30}</span>
+                </div>
               </div>
             ))}
           </div>
-          <div style={{height:20}}/>
         </div>
-      )}
 
-      {/* ═══ TOURNAMENT TAB ═══ */}
-      {arcadeTab==="tournament" && (
-        <div style={{padding:"0 14px",animation:"fadeIn 0.3s ease"}}>
-          {/* World Cup 2026 Card */}
-          <div onClick={()=>{playFx("select");setWcPhase("team_select");}} style={{
-            padding:"16px",borderRadius:16,cursor:"pointer",marginBottom:10,
-            background:`linear-gradient(135deg, ${C.gold}12, ${C.cyan}06, ${C.bg2})`,
-            border:`1px solid ${C.gold}25`,boxShadow:`0 0 20px ${C.gold}08`,
-          }}>
-            <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:8}}>
-              <span style={{fontSize:28}}>🏆</span>
-              <div>
-                <div style={{fontSize:14,fontWeight:900,color:C.gold}}>World Cup 2026</div>
-                <div style={{fontSize:9,color:C.text2}}>48 Teams · Group Stage + Knockout</div>
-              </div>
-              <div style={{marginLeft:"auto",fontSize:8,fontWeight:800,color:C.green,padding:"3px 8px",borderRadius:6,background:`${C.green}15`,border:`1px solid ${C.green}25`}}>OPEN</div>
-            </div>
-            <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:6}}>
-              <span style={{fontSize:7,padding:"2px 6px",borderRadius:4,background:`${C.gold}10`,color:C.gold,fontWeight:700}}>🥇 50K pts</span>
-              <span style={{fontSize:7,padding:"2px 6px",borderRadius:4,background:`rgba(192,192,192,0.1)`,color:"#C0C0C0",fontWeight:700}}>🥈 25K</span>
-              <span style={{fontSize:7,padding:"2px 6px",borderRadius:4,background:`rgba(205,127,50,0.1)`,color:"#CD7F32",fontWeight:700}}>🥉 10K</span>
-            </div>
-            <div style={{fontSize:8,color:C.text3}}>DEMO: Unlimited entries · Choose your nation</div>
+        {/* ═══ TOURNAMENTS — Horizontal Scroll ═══ */}
+        <div style={{marginBottom:14}}>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
+            <div style={{fontSize:11,fontWeight:800,color:C.gold,letterSpacing:1}}>🏆 TOURNAMENTS</div>
+            <div style={{fontSize:9,color:C.text3}}>Scroll ></div>
           </div>
-
-          {/* Join as Fan */}
-          <div onClick={()=>{playFx("select");setFanMode("team_select");}} style={{
-            padding:"12px 14px",borderRadius:14,cursor:"pointer",
-            background:`${C.cyan}06`,border:`1px solid ${C.cyan}15`,
-            display:"flex",alignItems:"center",gap:10,
-          }}>
-            <span style={{fontSize:20}}>👀</span>
-            <div>
-              <div style={{fontSize:11,fontWeight:700,color:C.cyan}}>Join as Fan</div>
-              <div style={{fontSize:8,color:C.text3}}>Watch live matches · Pick a side · Chat & react</div>
-            </div>
-            <div style={{marginLeft:"auto",fontSize:12,color:`${C.cyan}40`}}>›</div>
-          </div>
-
-          {/* Active/paused tournament */}
-          {wcTeam && wcTournament && (
-            <div style={{marginTop:10,padding:"12px 14px",borderRadius:12,
-              background:`${C.green}08`,border:`1px solid ${C.green}20`,
-            }}>
-              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:6}}>
-                <div>
-                  <div style={{fontSize:9,fontWeight:800,color:C.green}}>⏸️ TOURNAMENT PAUSED</div>
-                  <div style={{fontSize:8,color:C.text2,marginTop:2}}>{wcTeam.flag} {wcTeam.name} · {wcDeviceInput?INPUT_TYPES.find(t=>t.id===wcDeviceInput)?.icon:""} {wcDeviceInput||""}</div>
+          <div style={{display:"flex",gap:10,overflowX:"auto",paddingBottom:6,WebkitOverflowScrolling:"touch",scrollbarWidth:"none"}}>
+            {arcadeTournaments.map((t,i)=>(
+              <div key={i} onClick={()=>{playFx("select");if(i===0){setWcPhase("team_select");}else{notify(t.name+" — "+t.prize,t.color);}}} style={{
+                minWidth:160,padding:"14px 12px",borderRadius:14,cursor:"pointer",flexShrink:0,
+                background:`radial-gradient(ellipse at 50% 0%, ${t.color}10, ${C.bg2} 70%)`,
+                border:`1px solid ${t.color}15`,transition:"all 0.3s",
+              }}>
+                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
+                  <span style={{fontSize:22}}>{t.emoji}</span>
+                  <span style={{fontSize:7,fontWeight:800,color:t.status==="STARTING"?C.orange:C.green,padding:"2px 7px",borderRadius:4,background:`${t.status==="STARTING"?C.orange:C.green}12`,border:`1px solid ${t.status==="STARTING"?C.orange:C.green}25`}}>{t.status}</span>
                 </div>
-                <div style={{fontSize:16}}>{wcTeam.flag}</div>
-              </div>
-              <div style={{display:"flex",gap:6}}>
-                <div onClick={()=>{playFx("success");wcResumeTournament();}} style={{
-                  flex:2,padding:"8px 0",borderRadius:8,textAlign:"center",cursor:"pointer",
-                  background:`${C.green}15`,border:`1px solid ${C.green}30`,fontSize:10,fontWeight:800,color:C.green,
-                }}>▶ Continue</div>
-                <div onClick={()=>{playFx("tap");wcAbandonTournament();}} style={{
-                  flex:1,padding:"8px 0",borderRadius:8,textAlign:"center",cursor:"pointer",
-                  background:`${C.red}08`,border:`1px solid ${C.red}20`,fontSize:10,fontWeight:700,color:C.red,
-                }}>Abandon</div>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* ═══ LEADERBOARD TAB ═══ */}
-      {arcadeTab==="leaderboard" && (
-        <div style={{padding:"0 14px",animation:"fadeIn 0.3s ease"}}>
-          {/* Fun community stats */}
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6,marginBottom:12}}>
-            {FUN_STATS.map((s,i)=>(
-              <div key={i} style={{padding:"10px",borderRadius:12,...LG.tinted(s.color),animation:`fadeIn 0.3s ease ${i*0.1}s both`}}>
-                <div style={{display:"flex",alignItems:"center",gap:4,marginBottom:3}}>
-                  <span style={{fontSize:16}}>{s.emoji}</span>
-                  <span style={{fontSize:16,fontWeight:900,color:s.color}}>{s.value}</span>
+                <div style={{fontSize:12,fontWeight:800,color:C.text,marginBottom:2}}>{t.name}</div>
+                <div style={{fontSize:9,color:C.text3,marginBottom:6}}>{t.game} · {t.players} entered</div>
+                <div style={{display:"flex",gap:4}}>
+                  <span style={{fontSize:8,fontWeight:700,color:t.color,padding:"2px 6px",borderRadius:4,...LG.tinted(t.color)}}>🎁 {t.prize}</span>
                 </div>
-                <div style={{fontSize:8,fontWeight:700,color:C.text}}>{s.label}</div>
-                <div style={{fontSize:7,color:C.text3,marginTop:1,fontStyle:"italic"}}>{s.sub}</div>
+                <div style={{marginTop:8,padding:"6px 0",borderRadius:8,textAlign:"center",background:`${t.color}12`,border:`1px solid ${t.color}25`}}>
+                  <span style={{fontSize:10,fontWeight:800,color:t.color}}>ENTER</span>
+                </div>
               </div>
             ))}
           </div>
+        </div>
 
-          {/* Player rankings */}
-          <div style={{fontSize:10,fontWeight:800,color:C.gold,marginBottom:8}}>🏆 ARCADE HALL OF FAME</div>
-          {ARCADE_LEADERBOARD.map((p,i)=>(
+        {/* ═══ LEADERBOARD — Top 5 ═══ */}
+        <div style={{marginBottom:14}}>
+          <div style={{fontSize:11,fontWeight:800,color:C.gold,letterSpacing:1,marginBottom:8}}>🏆 HALL OF FAME</div>
+          {ARCADE_LEADERBOARD.slice(0,5).map((p,i)=>(
             <div key={i} style={{
-              display:"flex",alignItems:"center",gap:10,padding:"10px 12px",borderRadius:12,marginBottom:6,
-              background:p.you?`linear-gradient(135deg, ${C.cyan}10, ${C.cyan}04)`:`${C.bg2}`,
+              display:"flex",alignItems:"center",gap:10,padding:"10px 12px",borderRadius:12,marginBottom:5,
+              background:p.you?`linear-gradient(135deg, ${C.cyan}10, ${C.cyan}04)`:C.bg2,
               border:`1px solid ${p.you?C.cyan+"25":C.border}`,
               animation:`fadeIn 0.3s ease ${i*0.05}s both`,
             }}>
-              <div style={{width:24,fontSize:i<3?14:10,fontWeight:800,color:i<3?C.gold:C.text3,textAlign:"center"}}>
+              <div style={{width:22,fontSize:i<3?14:10,fontWeight:800,color:i<3?C.gold:C.text3,textAlign:"center"}}>
                 {i<3?["🥇","🥈","🥉"][i]:"#"+(i+1)}
               </div>
-              <span style={{fontSize:18}}>{p.emoji}</span>
+              <span style={{fontSize:16}}>{p.emoji}</span>
               <div style={{flex:1,minWidth:0}}>
                 <div style={{display:"flex",alignItems:"center",gap:4}}>
                   <span style={{fontSize:11,fontWeight:p.you?800:700,color:p.you?C.cyan:C.text}}>{p.name}</span>
@@ -6336,16 +6428,32 @@ export default function MoodLabArena() {
             </div>
           ))}
         </div>
-      )}
+
+      </div>
       <div style={{height:80}}/>
     </div>
-  );
+    );
+  };
 
   const renderStage = () => {
-    const liveShow = SHOW_GAMES[0];
-    const upcomingShows = SHOW_GAMES.slice(1,5);
+    const showIdx = Math.floor(Date.now()/120000) % SHOW_GAMES.length;
+    const liveShow = SHOW_GAMES[showIdx];
+    const upcomingShows = [...SHOW_GAMES.slice(showIdx+1), ...SHOW_GAMES.slice(0,showIdx)].slice(0,6);
     const stageStats = {watched:vcRound+3, correct:vcScore>0?Math.floor(vcScore/100):7, coinsWon:vcScore+420};
     const nowViewers = 1247 + Math.floor(Math.random()*100);
+    const launchShow = (g) => {
+      if(g.id==="vibecheck") vcStartGame();
+      else if(g.id==="spinwin"){setSelectedGame(g);swStartGame();}
+      else if(g.id==="beatdrop"){setGameActive({id:"beatdrop",name:"Beat Drop",emoji:"🎧",color:C.pink});startBeatDrop();}
+      else if(g.id==="pufflimbo"){setGameActive({id:"pufflimbo",name:"Puff Limbo",emoji:"🎪",color:C.orange});startPuffLimbo();}
+      else if(g.id==="puffderby"){setGameActive({id:"puffderby",name:"Puff Derby",emoji:"🏇",color:C.green});startPuffDerby();}
+      else if(g.id==="higherlower"){setGameActive({id:"higherlower",name:"Higher or Lower",emoji:"📊",color:C.cyan});startHigherLower();}
+      else if(g.id==="survivaltrivia"){setGameActive({id:"survivaltrivia",name:"Survival Trivia",emoji:"🏆",color:C.purple});startSurvivalTrivia();}
+      else if(g.id==="puffclock"){setGameActive({id:"puffclock",name:"Puff Clock",emoji:"⏱️",color:C.orange});startPuffClock();}
+      else if(g.id==="simonpuffs"){setGameActive({id:"simonpuffs",name:"Simon Puffs",emoji:"🔴",color:C.red});startSimonPuffs();}
+      else if(g.id==="puffauction"){setGameActive({id:"puffauction",name:"Puff Auction",emoji:"🔨",color:C.lime});startPuffAuction();}
+      else notify(g.name+" starting soon!",g.color);
+    };
     return (
     <div style={{position:"relative"}}>
       {/* Stage lights effect */}
@@ -6358,9 +6466,9 @@ export default function MoodLabArena() {
       {renderZoneHeader("stage")}
       <div style={{padding:"0 14px"}}>
 
-        {/* NOW SHOWING - Hero Card */}
-        <div onClick={()=>vcStartGame()} style={{
-          position:"relative",overflow:"hidden",borderRadius:20,padding:"24px 18px",marginBottom:16,cursor:"pointer",
+        {/* ═══ NOW SHOWING — Hero Card (rotates) ═══ */}
+        <div onClick={()=>launchShow(liveShow)} style={{
+          position:"relative",overflow:"hidden",borderRadius:20,padding:"24px 18px",marginBottom:14,cursor:"pointer",
           background:`radial-gradient(ellipse at 20% 30%, ${liveShow.color}18, transparent 60%), radial-gradient(ellipse at 80% 70%, ${C.purple}12, transparent 50%), linear-gradient(135deg, ${C.bg2}, ${C.bg3})`,
           border:`1.5px solid ${liveShow.color}25`,boxShadow:`0 0 30px ${liveShow.color}08, inset 0 1px 0 rgba(255,255,255,0.05)`,
         }}>
@@ -6397,88 +6505,497 @@ export default function MoodLabArena() {
           </div>
         </div>
 
-        {/* SHOW SCHEDULE - Horizontal Scroll */}
-        <div style={{marginBottom:16}}>
+        {/* ═══ SHOW SCHEDULE — Multiple countdowns ═══ */}
+        <div style={{marginBottom:14}}>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
             <div style={{fontSize:11,fontWeight:800,color:C.text,letterSpacing:1}}>SHOW SCHEDULE</div>
-            <div style={{fontSize:9,color:C.text3}}>Scroll for more ></div>
+            <div style={{fontSize:9,color:C.text3}}>Scroll ></div>
           </div>
           <div style={{display:"flex",gap:10,overflowX:"auto",paddingBottom:6,WebkitOverflowScrolling:"touch",scrollbarWidth:"none"}}>
             {upcomingShows.map((g,i)=>{
-              const mins = [12,34,58,90][i]||30;
+              const mins = [8,18,32,47,65,80][i]||30;
               return (
-                <div key={g.id} onClick={()=>notify(`${g.name} starts in ${mins} min!`,g.color)} style={{
+                <div key={g.id} onClick={()=>{playFx("select");launchShow(g);}} style={{
                   minWidth:140,padding:"14px 12px",borderRadius:14,cursor:"pointer",flexShrink:0,
                   background:`radial-gradient(ellipse at 50% 0%, ${g.color}08, ${C.bg2} 70%)`,
                   border:`1px solid ${g.color}12`,transition:"all 0.3s",
                 }}>
                   <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
                     <div style={{fontSize:22,filter:`drop-shadow(0 0 6px ${g.color}40)`}}>{g.emoji}</div>
-                    <div style={{padding:"3px 7px",borderRadius:5,background:`${C.orange}12`,border:`1px solid ${C.orange}20`}}>
-                      <span style={{fontSize:8,fontWeight:800,color:C.orange}}>{mins}m</span>
+                    <div style={{padding:"3px 7px",borderRadius:5,background:mins<20?`${C.green}12`:`${C.orange}12`,border:`1px solid ${mins<20?C.green:C.orange}20`}}>
+                      <span style={{fontSize:8,fontWeight:800,color:mins<20?C.green:C.orange}}>{mins}m</span>
                     </div>
                   </div>
-                  <div style={{fontSize:12,fontWeight:800,color:C.text,marginBottom:2}}>{g.name}</div>
-                  <div style={{fontSize:9,color:C.text3}}>{g.type} | {g.players}</div>
+                  <div style={{fontSize:12,fontWeight:800,color:C.text,marginBottom:3}}>{g.name}</div>
+                  <div style={{display:"flex",gap:3,flexWrap:"wrap"}}>
+                    <span style={{fontSize:8,fontWeight:700,color:g.color,padding:"2px 5px",borderRadius:3,background:`${g.color}10`}}>{g.type}</span>
+                    <span style={{fontSize:8,color:C.text3,padding:"2px 5px",borderRadius:3,background:`${C.text3}06`}}>👥 {g.players}</span>
+                  </div>
                 </div>
               );
             })}
           </div>
         </div>
 
-        {/* ALL SHOWS - 2 Column Grid */}
-        <div style={{marginBottom:16}}>
-          <div style={{fontSize:11,fontWeight:800,color:C.text,letterSpacing:1,marginBottom:10}}>ALL SHOWS</div>
+        {/* ═══ ALL SHOWS — 2 Column Grid with type badges ═══ */}
+        <div style={{marginBottom:14}}>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
+            <div style={{fontSize:11,fontWeight:800,color:C.text,letterSpacing:1}}>ALL SHOWS</div>
+            <div style={{fontSize:9,color:C.gold,fontWeight:700}}>{SHOW_GAMES.length} shows</div>
+          </div>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-            {SHOW_GAMES.map(g=>(
-              <div key={g.id} onClick={()=>{
-                if(g.id==="vibecheck")vcStartGame()
-                else if(g.id==="spinwin"){setSelectedGame(g);swStartGame();}
-                else if(g.id==="beatdrop"){setSelectedGame(g);startMatch(g,"ai");}
-                else if(g.id==="pufflimbo"){setSelectedGame(g);startMatch(g,"ai");}
-                else if(g.id==="puffderby"){setGameActive({id:"puffderby",name:"Puff Derby",emoji:"\uD83C\uDFC7",color:C.green});startPuffDerby();}
-                else if(g.id==="higherlower"){setGameActive({id:"higherlower",name:"Higher or Lower",emoji:"\uD83D\uDCCA",color:C.cyan});startHigherLower();}
-                else notify(`${g.name} starting soon!`,g.color);
-              }} style={{
+            {SHOW_GAMES.map((g,i)=>(
+              <div key={g.id} onClick={()=>{playFx("select");launchShow(g);}} style={{
                 padding:"12px 10px",borderRadius:14,cursor:"pointer",position:"relative",overflow:"hidden",
                 background:`radial-gradient(ellipse at 50% 0%, ${g.color}06, ${C.bg2} 70%)`,
                 border:`1px solid ${g.color}10`,transition:"all 0.3s",
+                animation:`fadeIn 0.3s ease ${i*0.04}s both`,
               }}>
-                {g.live && <div style={{position:"absolute",top:6,right:6,display:"flex",alignItems:"center",gap:3}}>
+                {g.id===liveShow.id && <div style={{position:"absolute",top:6,right:6,display:"flex",alignItems:"center",gap:3}}>
                   <div style={{width:4,height:4,borderRadius:"50%",background:C.red,animation:"pulse 1.5s infinite"}}/>
                   <span style={{fontSize:7,fontWeight:700,color:C.red}}>LIVE</span>
                 </div>}
                 <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
-                  <div style={{fontSize:22,filter:`drop-shadow(0 0 6px ${g.color}30)`}}>{g.emoji}</div>
+                  <div style={{width:36,height:36,borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,
+                    background:`radial-gradient(circle, ${g.color}15, ${g.color}05)`,border:`1px solid ${g.color}20`,
+                    filter:`drop-shadow(0 0 6px ${g.color}30)`,flexShrink:0,
+                  }}>{g.emoji}</div>
                   <div style={{flex:1,minWidth:0}}>
                     <div style={{fontSize:11,fontWeight:800,color:C.text,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{g.name}</div>
+                    <div style={{fontSize:8,color:C.text3,marginTop:1}}>👥 {g.players}</div>
                   </div>
                 </div>
                 <div style={{display:"flex",gap:3,flexWrap:"wrap"}}>
                   <span style={{fontSize:8,fontWeight:700,color:g.color,padding:"2px 5px",borderRadius:3,background:`${g.color}10`}}>{g.type}</span>
-                  <span style={{fontSize:8,color:C.text3,padding:"2px 5px",borderRadius:3,background:`${C.text3}06`}}>👥{g.players}</span>
+                  <span style={{fontSize:8,color:C.text3,padding:"2px 5px",borderRadius:3,background:`${C.text3}06`}}>⏱ {g.time}</span>
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* YOUR STAGE STATS */}
-        <div style={{borderRadius:16,padding:"14px",marginBottom:16,
-          background:`radial-gradient(ellipse at 50% 0%, ${C.purple}06, ${C.bg2} 60%)`,
-          border:`1px solid ${C.purple}12`,
-        }}>
-          <div style={{fontSize:11,fontWeight:800,color:C.purple,letterSpacing:1,marginBottom:10}}>YOUR STAGE STATS</div>
-          <div style={{display:"flex",justifyContent:"space-around"}}>
-            {[
-              {label:"Shows Watched",val:stageStats.watched,icon:"📺",color:C.cyan},
-              {label:"Correct Answers",val:stageStats.correct,icon:"✅",color:C.green},
-              {label:"Coins Won",val:stageStats.coinsWon,icon:"🪙",color:C.gold},
-            ].map((s,i)=>(
-              <div key={i} style={{textAlign:"center"}}>
-                <div style={{fontSize:18,marginBottom:2}}>{s.icon}</div>
-                <div style={{fontSize:16,fontWeight:900,color:s.color}}>{s.val}</div>
-                <div style={{fontSize:8,color:C.text3,marginTop:1}}>{s.label}</div>
+        {/* ═══ STAGE STATS ═══ */}
+        <div style={{display:"flex",gap:6,marginBottom:14}}>
+          {[
+            {label:"Shows Watched",val:stageStats.watched,icon:"📺",color:C.cyan},
+            {label:"Correct Answers",val:stageStats.correct,icon:"✅",color:C.green},
+            {label:"Coins Won",val:stageStats.coinsWon,icon:"🪙",color:C.gold},
+          ].map((s,i)=>(
+            <div key={i} style={{flex:1,padding:"10px 6px",borderRadius:12,textAlign:"center",
+              background:`${s.color}06`,border:`1px solid ${s.color}12`,
+            }}>
+              <div style={{fontSize:16,marginBottom:2}}>{s.icon}</div>
+              <div style={{fontSize:14,fontWeight:900,color:s.color}}>{s.val}</div>
+              <div style={{fontSize:7,color:C.text3,fontWeight:600,marginTop:1}}>{s.label}</div>
+            </div>
+          ))}
+        </div>
+
+      </div>
+      <div style={{height:80}}/>
+    </div>
+    );
+  };
+
+  // ═══════════════════════════════════════════════════════════════
+  // CRYSTAL BALL -- Oracle Prediction Game Engine
+  // ═══════════════════════════════════════════════════════════════
+  const startCrystalBall = () => {
+    const used = [];
+    const q = CB_PREDICTIONS[Math.floor(Math.random()*CB_PREDICTIONS.length)];
+    used.push(q.q);
+    setCbUsed(used);
+    setCbQuestion(q);
+    setCbAnswer(null);
+    setCbResult(null);
+    setCbRound(0);
+    setCbScore(0);
+    setCbStreak(0);
+    setCbPuffing(false);
+    setCbPhase("intro");
+    playFx("crowd");
+    setCommentary("The Crystal Ball awaits your predictions...");
+    setTimeout(()=>setCbPhase("question"),1500);
+  };
+  const cbHandlePuff = () => {
+    if(cbPhase!=="question") return;
+    setCbPuffing(true);
+    cbPuffStart.current = Date.now();
+  };
+  const cbHandlePuffEnd = () => {
+    if(!cbPuffing) return;
+    const dur = (Date.now() - cbPuffStart.current)/1000;
+    setCbPuffing(false);
+    let ans;
+    if(dur >= 3.0) { ans = "certain"; setCommentary("BLINKER! ABSOLUTELY CERTAIN! 3x if right, -2x if wrong!"); }
+    else if(dur >= 1.5) { ans = "yes"; setCommentary("You predict YES!"); }
+    else { ans = "no"; setCommentary("You predict NO!"); }
+    setCbAnswer(ans);
+    setCbPhase("reveal");
+    playFx("whistle");
+    triggerFlash("goal");
+    // Simulate result after 2s
+    setTimeout(()=>{
+      const correct = Math.random() > 0.45; // ~55% chance to be right
+      setCbResult(correct?"correct":"wrong");
+      if(correct) {
+        const pts = ans==="certain" ? 150 : 50;
+        setCbScore(s=>s+pts);
+        setCbStreak(s=>s+1);
+        setCoins(c=>c+pts);
+        playFx("crowd");
+        triggerConfetti();
+        setCommentary(ans==="certain"?"BLINKER BONUS! 3x COINS! The Oracle speaks through you!":"Correct! The Crystal Ball confirms your vision!");
+      } else {
+        const penalty = ans==="certain" ? -100 : 0;
+        setCbScore(s=>s+penalty);
+        if(penalty) setCoins(c=>Math.max(0,c+penalty));
+        setCbStreak(0);
+        setCommentary(ans==="certain"?"The Blinker backfired! -2x penalty!":"The Crystal Ball says otherwise...");
+      }
+      setCbPhase("result");
+    },2000);
+  };
+  const cbNextRound = () => {
+    const next = cbRound + 1;
+    if(next >= 5) { setCbPhase("complete"); return; }
+    let q;
+    do { q = CB_PREDICTIONS[Math.floor(Math.random()*CB_PREDICTIONS.length)]; } while(cbUsed.includes(q.q) && cbUsed.length < CB_PREDICTIONS.length);
+    setCbUsed(u=>[...u,q.q]);
+    setCbQuestion(q);
+    setCbAnswer(null);
+    setCbResult(null);
+    setCbRound(next);
+    setCbPhase("question");
+  };
+  const cbCleanup = () => {
+    setCbPhase(null);setCbQuestion(null);setCbAnswer(null);setCbResult(null);setCbStreak(0);setCbRound(0);setCbScore(0);setCbUsed([]);setCbPuffing(false);
+    setGameActive(null);
+  };
+
+  // ═══════════════════════════════════════════════════════════════
+  // STRAIN BATTLE -- Cannabis Strain Vote Game Engine
+  // ═══════════════════════════════════════════════════════════════
+  const startStrainBattle = () => {
+    const shuffled = [...SB_STRAINS].sort(()=>Math.random()-0.5);
+    const matchups = [];
+    for(let i=0;i<10;i+=2) matchups.push([shuffled[i],shuffled[i+1]]);
+    setSbMatchups(matchups);
+    setSbRound(0);
+    setSbScore(0);
+    setSbVote(null);
+    setSbResults(null);
+    setSbMatchup([matchups[0][0],matchups[0][1]]);
+    setSbPhase("intro");
+    playFx("crowd");
+    setCommentary("Strain Battle! Vote for the best strain!");
+    setTimeout(()=>setSbPhase("matchup"),1500);
+  };
+  const sbHandlePuff = () => {
+    if(sbPhase!=="matchup") return;
+    sbPuffStart.current = Date.now();
+  };
+  const sbHandlePuffEnd = () => {
+    if(sbPhase!=="matchup") return;
+    const dur = (Date.now() - sbPuffStart.current)/1000;
+    const vote = dur < 1.5 ? "left" : "right";
+    setSbVote(vote);
+    // Generate simulated vote results
+    const leftPct = 30 + Math.floor(Math.random()*40);
+    const rightPct = 100 - leftPct;
+    setSbResults({left:leftPct,right:rightPct});
+    setSbPhase("results");
+    playFx("tap");
+    const winner = vote==="left"?sbMatchup[0].name:sbMatchup[1].name;
+    setCommentary("You voted for "+winner+"! Let's see the results...");
+    const pts = (vote==="left" && leftPct>50) || (vote==="right" && rightPct>50) ? 30 : 10;
+    setSbScore(s=>s+pts);
+    setCoins(c=>c+pts);
+  };
+  const sbNextRound = () => {
+    const next = sbRound + 1;
+    if(next >= 5) { setSbPhase("complete"); return; }
+    setSbMatchup([sbMatchups[next][0],sbMatchups[next][1]]);
+    setSbVote(null);
+    setSbResults(null);
+    setSbRound(next);
+    setSbPhase("matchup");
+  };
+  const sbCleanup = () => {
+    setSbPhase(null);setSbMatchup(null);setSbVote(null);setSbResults(null);setSbRound(0);setSbScore(0);setSbMatchups([]);
+    setGameActive(null);
+  };
+
+  // ═══════════════════════════════════════════════════════════════
+  // MATCH PREDICTOR -- Sports Prediction Game Engine
+  // ═══════════════════════════════════════════════════════════════
+  const startMatchPredictor = () => {
+    const shuffled = [...MP_MATCHES].sort(()=>Math.random()-0.5);
+    setMpUsed(shuffled.slice(0,5).map(m=>m.id));
+    setMpMatch(shuffled[0]);
+    setMpPrediction(null);
+    setMpResults([]);
+    setMpRound(0);
+    setMpScore(0);
+    setMpPhase("intro");
+    playFx("crowd");
+    setCommentary("Match Predictor! Call the winner!");
+    setTimeout(()=>setMpPhase("match"),1500);
+  };
+  const mpHandlePuff = () => {
+    if(mpPhase!=="match") return;
+    mpPuffStart.current = Date.now();
+  };
+  const mpHandlePuffEnd = () => {
+    if(mpPhase!=="match") return;
+    const dur = (Date.now() - mpPuffStart.current)/1000;
+    let pred;
+    if(dur < 1.0) { pred = "home"; }
+    else if(dur < 2.5) { pred = "draw"; }
+    else { pred = "away"; }
+    setMpPrediction(pred);
+    setMpPhase("prediction");
+    playFx("whistle");
+    const label = pred==="home"?"Home Win":pred==="draw"?"Draw":"Away Win";
+    setCommentary("You predict: "+label+"!");
+    // Simulate result after 2s
+    setTimeout(()=>{
+      const r = Math.random();
+      const simResult = r < mpMatch.pool[0]/100 ? "home" : r < (mpMatch.pool[0]+mpMatch.pool[1])/100 ? "draw" : "away";
+      const correct = simResult === pred;
+      const pts = correct ? 100 : 0;
+      setMpResults(prev=>[...prev,{match:mpMatch,prediction:pred,result:simResult,correct}]);
+      setMpScore(s=>s+pts);
+      if(correct) { setCoins(c=>c+pts); triggerConfetti(); playFx("crowd"); setCommentary("Correct prediction! +100 coins!"); }
+      else { setCommentary("Not this time... the result was: "+(simResult==="home"?"Home Win":simResult==="draw"?"Draw":"Away Win")); }
+      setMpPhase("result");
+    },2000);
+  };
+  const mpNextRound = () => {
+    const next = mpRound + 1;
+    if(next >= 5) { setMpPhase("complete"); return; }
+    const shuffled = [...MP_MATCHES].sort(()=>Math.random()-0.5);
+    const nextMatch = shuffled.find(m=>!mpUsed.includes(m.id)) || shuffled[0];
+    setMpUsed(u=>[...u,nextMatch.id]);
+    setMpMatch(nextMatch);
+    setMpPrediction(null);
+    setMpRound(next);
+    setMpPhase("match");
+  };
+  const mpCleanup = () => {
+    setMpPhase(null);setMpMatch(null);setMpPrediction(null);setMpResults([]);setMpRound(0);setMpScore(0);setMpUsed([]);
+    setGameActive(null);
+  };
+
+  // ═══════════════════════════════════════════════════════════════
+  // DAILY PICKS -- Daily Prediction Streak Game Engine
+  // ═══════════════════════════════════════════════════════════════
+  const startDailyPicks = () => {
+    const shuffled = [...DP_QUESTIONS].sort(()=>Math.random()-0.5);
+    const picks = [
+      shuffled.find(q=>q.cat==="morning") || shuffled[0],
+      shuffled.find(q=>q.cat==="afternoon") || shuffled[1],
+      shuffled.find(q=>q.cat==="night") || shuffled[2],
+    ];
+    setDpPicks(picks);
+    setDpAnswered([]);
+    setDpResults([]);
+    setDpCurrentPick(0);
+    setDpAnswer(null);
+    setDpPhase("intro");
+    playFx("crowd");
+    setCommentary("Daily Picks! 3 predictions, build your streak!");
+    setTimeout(()=>setDpPhase("pick"),1500);
+  };
+  const dpHandlePuff = () => {
+    if(dpPhase!=="pick") return;
+    dpPuffStart.current = Date.now();
+  };
+  const dpHandlePuffEnd = () => {
+    if(dpPhase!=="pick") return;
+    const dur = (Date.now() - dpPuffStart.current)/1000;
+    const pick = dpPicks[dpCurrentPick];
+    let ans;
+    if(pick.type==="yn") { ans = dur < 1.5 ? "no" : "yes"; }
+    else { ans = dur < 1.5 ? pick.a : pick.b; }
+    setDpAnswer(ans);
+    setDpPhase("reveal");
+    playFx("tap");
+    // Simulate correctness
+    const correct = Math.random() > 0.4;
+    const mult = dpStreak >= 30 ? 10 : dpStreak >= 14 ? 5 : dpStreak >= 7 ? 3 : 1;
+    const pts = correct ? 50 * mult : 0;
+    setTimeout(()=>{
+      setDpResults(prev=>[...prev,{question:pick,answer:ans,correct,pts}]);
+      setDpAnswered(prev=>[...prev,ans]);
+      if(correct) {
+        setDpStreak(s=>s+1);
+        setCoins(c=>c+pts);
+        triggerConfetti();
+        setCommentary(mult>1?"Streak bonus! "+mult+"x multiplier! +"+pts+" coins!":"Correct! +"+pts+" coins!");
+      } else {
+        setDpStreak(0);
+        setCommentary("Not this time... streak reset!");
+      }
+      // Check if more picks
+      if(dpCurrentPick < 2) {
+        setTimeout(()=>{
+          setDpCurrentPick(c=>c+1);
+          setDpAnswer(null);
+          setDpPhase("pick");
+        },1500);
+      } else {
+        setTimeout(()=>setDpPhase("summary"),1500);
+      }
+    },1500);
+  };
+  const dpCleanup = () => {
+    setDpPhase(null);setDpPicks([]);setDpAnswered([]);setDpResults([]);setDpCurrentPick(0);setDpAnswer(null);
+    setGameActive(null);
+  };
+
+  const renderOracle = () => {
+    const oracleStats = [{label:"Predictions",val:"147",icon:"🔮",color:"#9333EA"},{label:"Accuracy",val:"78%",icon:"🎯",color:C.gold},{label:"Streak",val:"7 🔥",icon:"⚡",color:"#F97316"},{label:"Best",val:"15",icon:"🏆",color:C.cyan},{label:"Coins Won",val:"+4,200",icon:"🪙",color:C.lime}];
+    const trendingPreds = [
+      {text:"Brazil vs Germany",emoji:"⚽",count:847,split:[65,35],hot:true},
+      {text:"Gorilla Glue vs Blue Dream",emoji:"🌿",count:423,split:[58,42]},
+      {text:"FK1 WC Champion",emoji:"🎮",count:1204,split:[72,28],hot:true},
+      {text:"Bitcoin $100K by July?",emoji:"🪙",count:631,split:[55,45]},
+    ];
+    const oracleCategories = [
+      {name:"Sports",emoji:"⚽",desc:"WC + Major Leagues",color:"#3B82F6",count:234},
+      {name:"Cannabis",emoji:"🌿",desc:"Strains, Prices, Laws",color:"#22C55E",count:189},
+      {name:"Arena",emoji:"🎮",desc:"Game Predictions",color:"#9333EA",count:156},
+      {name:"Culture",emoji:"🌍",desc:"Pop Culture, Crypto",color:"#F97316",count:211},
+    ];
+    const oracleGamesList = [
+      {name:"Match Predictor",emoji:"📊",color:"#3B82F6",id:"matchpredictor"},
+      {name:"Daily Picks",emoji:"📅",color:"#F97316",id:"dailypicks"},
+      {name:"Strain Battle",emoji:"🌿",color:"#22C55E",id:"strainbattle"},
+      {name:"Crystal Ball",emoji:"🔮",color:"#9333EA",id:"crystalball"},
+      {name:"Score Predictor",emoji:"🎯",color:C.cyan,id:"scorepredictor"},
+      {name:"Arena Oracle",emoji:"🏆",color:C.gold,id:"arenaoracle"},
+      {name:"Price Prophet",emoji:"💰",color:C.lime,id:"priceprophet"},
+    ];
+    const oracleLB = [
+      {name:"OracleKing",acc:92,emoji:"👑",coins:12400,place:"🥇"},
+      {name:"PredictorPro",acc:87,emoji:"🔮",coins:9800,place:"🥈"},
+      {name:"CrystalVision",acc:84,emoji:"💎",coins:8200,place:"🥉"},
+      {name:"Steve",acc:78,emoji:"🌟",coins:4200,place:"4",isYou:true},
+      {name:"MysticSeer",acc:75,emoji:"🌙",coins:3600,place:"5"},
+    ];
+    return (
+    <div style={{position:"relative"}}>
+      {/* Starfield particles */}
+      {[...Array(20)].map((_,i)=>(
+        <div key={"star"+i} style={{position:"absolute",left:`${(i*17+7)%100}%`,top:`${(i*23+11)%400}px`,width:1+i%3,height:1+i%3,borderRadius:"50%",background:i%3===0?"#9333EA":"#FFD700",opacity:0.15+Math.random()*0.15,animation:`pulse ${2+i%3}s infinite ${i*0.3}s`,pointerEvents:"none",zIndex:0}}/>
+      ))}
+      <div style={{position:"absolute",top:-40,left:"50%",transform:"translateX(-50%)",width:300,height:200,borderRadius:"50%",background:"radial-gradient(circle, rgba(147,51,234,0.12), transparent 70%)",pointerEvents:"none"}}/>
+      {renderZoneHeader("oracle")}
+      <div style={{padding:"0 14px",position:"relative",zIndex:1}}>
+
+        {/* YOUR ORACLE STATS */}
+        <div style={{padding:"14px",borderRadius:16,marginBottom:16,background:"linear-gradient(135deg, rgba(147,51,234,0.08), rgba(255,215,0,0.04))",border:"1px solid rgba(147,51,234,0.20)",backdropFilter:"blur(8px)"}}>
+          <div style={{fontSize:10,fontWeight:800,color:"#9333EA",letterSpacing:2,marginBottom:10}}>YOUR ORACLE STATS</div>
+          <div style={{display:"flex",justifyContent:"space-between",gap:4}}>
+            {oracleStats.map((s,i)=>(
+              <div key={i} style={{textAlign:"center",flex:1}}>
+                <div style={{fontSize:12,marginBottom:2}}>{s.icon}</div>
+                <div style={{fontSize:14,fontWeight:900,color:s.color}}>{s.val}</div>
+                <div style={{fontSize:7,color:C.text3,marginTop:1}}>{s.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* DAILY PICKS */}
+        <div style={{padding:"14px",borderRadius:16,marginBottom:16,background:"linear-gradient(135deg, rgba(249,115,22,0.08), rgba(147,51,234,0.04))",border:"1px solid rgba(249,115,22,0.20)"}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+            <span style={{fontSize:10,fontWeight:800,color:"#F97316",letterSpacing:2}}>DAILY PICKS</span>
+            <span style={{fontSize:8,fontWeight:700,color:C.gold,padding:"2px 8px",borderRadius:6,background:"rgba(255,215,0,0.10)",border:"1px solid rgba(255,215,0,0.20)"}}>🔥 7 day streak | 3x multiplier</span>
+          </div>
+          {[{label:"Morning Pick",cat:"sports",emoji:"🌅",time:"2h 30m",color:"#F97316"},{label:"Afternoon Pick",cat:"cannabis",emoji:"☀️",time:"6h 15m",color:"#22C55E"},{label:"Night Pick",cat:"culture",emoji:"🌙",time:"12h 45m",color:"#9333EA"}].map((dp,i)=>(
+            <div key={i} onClick={()=>{setGameActive({id:"dailypicks",name:"Daily Picks",emoji:"📅",color:"#F97316"});startDailyPicks();}} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 10px",borderRadius:10,marginBottom:4,cursor:"pointer",background:"rgba(255,255,255,0.02)",border:"1px solid rgba(255,255,255,0.04)",transition:"all 0.2s"}}>
+              <span style={{fontSize:18}}>{dp.emoji}</span>
+              <div style={{flex:1}}>
+                <div style={{fontSize:11,fontWeight:700,color:C.text}}>{dp.label}</div>
+                <div style={{fontSize:8,color:C.text3}}>{dp.cat}</div>
+              </div>
+              <div style={{fontSize:8,fontWeight:700,color:dp.color,padding:"2px 6px",borderRadius:4,background:`${dp.color}12`}}>Closes in {dp.time}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* TRENDING PREDICTIONS */}
+        <div style={{marginBottom:16}}>
+          <div style={{fontSize:10,fontWeight:800,color:C.text,letterSpacing:2,marginBottom:10}}>🔥 TRENDING PREDICTIONS</div>
+          {trendingPreds.map((tp,i)=>(
+            <div key={i} style={{padding:"10px 12px",borderRadius:12,marginBottom:6,background:"rgba(147,51,234,0.04)",border:"1px solid rgba(147,51,234,0.10)",position:"relative"}}>
+              {tp.hot && <div style={{position:"absolute",top:6,right:8,fontSize:7,fontWeight:800,color:C.red,padding:"1px 4px",borderRadius:3,background:"rgba(255,50,50,0.12)"}}>HOT</div>}
+              <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
+                <span style={{fontSize:16}}>{tp.emoji}</span>
+                <span style={{fontSize:11,fontWeight:700,color:C.text,flex:1}}>{tp.text}</span>
+                <span style={{fontSize:9,color:C.text3}}>{tp.count.toLocaleString()} predictions</span>
+              </div>
+              <div style={{display:"flex",alignItems:"center",gap:6}}>
+                <span style={{fontSize:8,fontWeight:700,color:C.cyan}}>{tp.split[0]}%</span>
+                <div style={{flex:1,height:6,borderRadius:3,background:"rgba(255,255,255,0.06)",overflow:"hidden"}}>
+                  <div style={{width:`${tp.split[0]}%`,height:"100%",borderRadius:3,background:"linear-gradient(90deg, #9333EA, #FFD700)",transition:"width 0.5s"}}/>
+                </div>
+                <span style={{fontSize:8,fontWeight:700,color:"#F97316"}}>{tp.split[1]}%</span>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* CATEGORIES */}
+        <div style={{marginBottom:16}}>
+          <div style={{fontSize:10,fontWeight:800,color:C.text,letterSpacing:2,marginBottom:10}}>CATEGORIES</div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+            {oracleCategories.map((cat,i)=>(
+              <div key={i} onClick={()=>notify(cat.name+" predictions!",cat.color)} style={{padding:"14px 10px",borderRadius:14,cursor:"pointer",textAlign:"center",background:`${cat.color}06`,border:`1px solid ${cat.color}15`,transition:"all 0.3s"}}>
+                <div style={{fontSize:28,marginBottom:4,filter:`drop-shadow(0 0 8px ${cat.color}40)`}}>{cat.emoji}</div>
+                <div style={{fontSize:11,fontWeight:800,color:cat.color}}>{cat.name}</div>
+                <div style={{fontSize:8,color:C.text3,marginTop:2}}>{cat.desc}</div>
+                <div style={{fontSize:8,fontWeight:700,color:C.text3,marginTop:4}}>{cat.count} active</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* PREDICTION GAMES */}
+        <div style={{marginBottom:16}}>
+          <div style={{fontSize:10,fontWeight:800,color:C.text,letterSpacing:2,marginBottom:10}}>🎮 PREDICTION GAMES</div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+            {oracleGamesList.map((g,i)=>(
+              <div key={i} onClick={()=>{
+                if(g.id==="crystalball"){setGameActive({id:"crystalball",name:"Crystal Ball",emoji:"🔮",color:"#9333EA"});startCrystalBall();}
+                else if(g.id==="strainbattle"){setGameActive({id:"strainbattle",name:"Strain Battle",emoji:"🌿",color:"#22C55E"});startStrainBattle();}
+                else if(g.id==="matchpredictor"){setGameActive({id:"matchpredictor",name:"Match Predictor",emoji:"📊",color:"#3B82F6"});startMatchPredictor();}
+                else if(g.id==="dailypicks"){setGameActive({id:"dailypicks",name:"Daily Picks",emoji:"📅",color:"#F97316"});startDailyPicks();}
+                else notify(g.name+" coming soon!",g.color);
+              }} style={{padding:"12px 10px",borderRadius:14,cursor:"pointer",textAlign:"center",position:"relative",overflow:"hidden",background:`radial-gradient(ellipse at 50% 0%, ${g.color}08, rgba(255,255,255,0.01) 70%)`,border:`1px solid ${g.color}15`,transition:"all 0.3s"}}>
+                <div style={{fontSize:24,marginBottom:4,filter:`drop-shadow(0 0 8px ${g.color}50)`}}>{g.emoji}</div>
+                <div style={{fontSize:10,fontWeight:800,color:g.color}}>{g.name}</div>
+                {(g.id==="crystalball"||g.id==="strainbattle"||g.id==="matchpredictor"||g.id==="dailypicks") && <div style={{fontSize:7,fontWeight:700,color:C.lime,marginTop:2}}>PLAY NOW</div>}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* LEADERBOARD */}
+        <div style={{marginBottom:16}}>
+          <div style={{fontSize:10,fontWeight:800,color:C.text,letterSpacing:2,marginBottom:10}}>🏆 TOP ORACLES</div>
+          <div style={{borderRadius:14,overflow:"hidden",border:"1px solid rgba(147,51,234,0.15)",background:"rgba(147,51,234,0.03)"}}>
+            {oracleLB.map((p,i)=>(
+              <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",borderBottom:i<oracleLB.length-1?"1px solid rgba(255,255,255,0.04)":"none",background:p.isYou?"rgba(147,51,234,0.08)":"transparent"}}>
+                <div style={{width:24,height:24,borderRadius:7,display:"flex",alignItems:"center",justifyContent:"center",fontSize:typeof p.place==="string"&&p.place.length>1?13:11,fontWeight:800,color:i<3?[C.gold,"#C0C0C0","#CD7F32"][i]:C.text3,background:i<3?`${[C.gold,"#C0C0C0","#CD7F32"][i]}12`:"rgba(255,255,255,0.04)"}}>{p.place}</div>
+                <span style={{fontSize:16}}>{p.emoji}</span>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontSize:12,fontWeight:700,color:p.isYou?"#9333EA":C.text}}>{p.name}</div>
+                  <div style={{fontSize:8,color:C.text3}}>Accuracy: {p.acc}%</div>
+                </div>
+                <div style={{fontFamily:"'Courier New',monospace",fontSize:11,fontWeight:800,color:C.gold}}>+{(p.coins/1000).toFixed(1)}K</div>
               </div>
             ))}
           </div>
@@ -6489,83 +7006,6 @@ export default function MoodLabArena() {
     </div>
     );
   };
-  const renderOracle = () => (
-    <div style={{position:"relative"}}>
-      <div style={{position:"absolute",top:-40,left:"50%",transform:"translateX(-50%)",width:300,height:200,borderRadius:"50%",background:`radial-gradient(circle, ${Z.oracle.glow.replace("0.35","0.1")}, transparent 70%)`,pointerEvents:"none"}}/>
-      {renderZoneHeader("oracle")}
-      <div style={{padding:"0 14px"}}>
-        {/* Predict Types */}
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginBottom:16}}>
-          {PREDICT_TYPES.map(p=>(
-            <div key={p.id} onClick={()=>notify(`${p.name}`,p.color)} style={{
-              padding:"14px 8px",borderRadius:14,textAlign:"center",cursor:"pointer",
-              background:`${(p.color||C.purple)}06`,border:`1px solid ${(p.color||C.purple)}12`,transition:"all 0.3s",
-            }}>
-              <div style={{fontSize:24,marginBottom:4,filter:`drop-shadow(0 0 6px ${(p.color||C.purple)}40)`}}>{p.emoji}</div>
-              <div style={{fontSize:10,fontWeight:800,color:p.color||C.purple}}>{p.name}</div>
-              <div style={{fontSize:8,color:C.text3,marginTop:2}}>{p.desc}</div>
-            </div>
-          ))}
-        </div>
-
-        {/* Match Predictions */}
-        <div style={{fontSize:12,fontWeight:800,color:C.text,marginBottom:10}}>Today's Matches</div>
-        {MATCHES.map(m=>(
-          <div key={m.id} style={{
-            padding:"14px",borderRadius:14,marginBottom:10,
-            background:predictLocked[m.id]?`${C.lime}04`:C.bg2,
-            border:`1px solid ${predictLocked[m.id]?C.lime+"20":C.border}`,position:"relative",
-          }}>
-            {m.hot && <div style={{position:"absolute",top:8,right:10,padding:"2px 6px",borderRadius:3,background:`${C.red}15`,fontSize:8,fontWeight:800,color:C.red}}>🔥HOT</div>}
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
-              <span style={{fontSize:9,fontWeight:700,color:C.text3,padding:"2px 6px",borderRadius:3,background:`${C.text3}08`}}>Group {m.group}</span>
-              <span style={{fontSize:10,color:C.text3}}>{m.time}</span>
-            </div>
-            <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:10,marginBottom:10}}>
-              <span style={{fontSize:14,fontWeight:700,color:C.text,flex:1,textAlign:"right"}}>{m.home}</span>
-              <span style={{fontSize:10,color:C.text3,fontWeight:800}}>VS</span>
-              <span style={{fontSize:14,fontWeight:700,color:C.text,flex:1}}>{m.away}</span>
-            </div>
-            {predictLocked[m.id] ? (
-              <div style={{textAlign:"center",padding:"6px",borderRadius:8,background:`${C.lime}08`}}>
-                <span style={{fontSize:11,fontWeight:700,color:C.lime}}>✓ {predictLocked[m.id].pick} · {predictLocked[m.id].bet} coins</span>
-              </div>
-            ) : (
-              <div>
-                <div style={{display:"flex",gap:6,marginBottom:8}}>
-                  {["Home","Draw","Away"].map((o,j)=>(
-                    <div key={j} onClick={()=>{setSelectedMatch(m.id);setSelectedOutcome(j);}} style={{
-                      flex:1,padding:"7px 4px",borderRadius:8,textAlign:"center",cursor:"pointer",
-                      background:selectedMatch===m.id&&selectedOutcome===j?`${C.lime}12`:`${C.text3}05`,
-                      border:`1px solid ${selectedMatch===m.id&&selectedOutcome===j?C.lime+"35":C.border}`,transition:"all 0.2s",
-                    }}>
-                      <div style={{fontSize:10,fontWeight:600,color:selectedMatch===m.id&&selectedOutcome===j?C.lime:C.text2}}>{o}</div>
-                      <div style={{fontSize:13,fontWeight:800,color:selectedMatch===m.id&&selectedOutcome===j?C.lime:C.text,marginTop:1}}>×{m.odds[j]}</div>
-                    </div>
-                  ))}
-                </div>
-                {selectedMatch===m.id && selectedOutcome!==null && (
-                  <div style={{display:"flex",gap:6,alignItems:"center"}}>
-                    <div style={{flex:1,display:"flex",alignItems:"center",gap:4,background:`${C.text3}08`,borderRadius:8,padding:"6px 8px"}}>
-                      <span style={{fontSize:10,color:C.text3}}>🪙</span>
-                      <input type="number" value={betAmount} onChange={e=>setBetAmount(Math.max(10,+e.target.value))} style={{width:"100%",background:"transparent",border:"none",color:C.text,fontSize:13,fontWeight:700,outline:"none",fontFamily:"inherit"}}/>
-                    </div>
-                    <div onClick={()=>puffLockIn(()=>{
-                      setPredictLocked(p=>({...p,[m.id]:{pick:["Home","Draw","Away"][selectedOutcome],bet:betAmount}}));
-                      setCoins(c=>c-betAmount);setSelectedMatch(null);setSelectedOutcome(null);
-                    })} style={{padding:"8px 16px",borderRadius:8,cursor:"pointer",background:`${C.lime}15`,border:`1px solid ${C.lime}30`,fontSize:11,fontWeight:800,color:C.lime}}>
-                      💨 Lock In
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-      <div style={{height:80}}/>
-    </div>
-  );
 
   const renderWall = () => (
     <div style={{position:"relative"}}>
@@ -6673,6 +7113,10 @@ export default function MoodLabArena() {
       setMatchIntro(null);setCommentatorText("");setPuffBubbles([]);setAudienceBubbles([]);
       setConfettiParticles([]);setSmokeParticles([]);setLiveSpectators([]);setSpectatorTicker([]);setCrowdEnergy(0);setCrowdEruption(false);
       try{setWcPhase(null);setWcTeam(null);setWcTournament(null);setWcBracket(null);setWcFinalResult(null);}catch(e){}
+      setCbPhase(null);setCbQuestion(null);setCbAnswer(null);setCbResult(null);setCbPuffing(false);
+      setSbPhase(null);setSbMatchup(null);setSbVote(null);setSbResults(null);
+      setMpPhase(null);setMpMatch(null);setMpPrediction(null);
+      setDpPhase(null);setDpPicks([]);setDpAnswered([]);setDpResults([]);setDpAnswer(null);
     };
     // Show/hide the HTML back button
     const btn = document.getElementById('back-btn');
@@ -6753,6 +7197,8 @@ export default function MoodLabArena() {
     if(swTickRef.current){clearInterval(swTickRef.current);swTickRef.current=null;}
     // Vibe Check
     if(vcTimerRef.current){clearInterval(vcTimerRef.current);vcTimerRef.current=null;}
+    // Oracle Games (Crystal Ball, Strain Battle, Match Predictor, Daily Picks)
+    if(cbTimerRef.current){clearTimeout(cbTimerRef.current);cbTimerRef.current=null;}
     // Reset common state
     setDimLights(false); setScreenShake(false); setScreenFlash(null);
     setKickCharging(false); setIsFK2Mode(false); setIsFK3Mode(false);
@@ -12316,6 +12762,295 @@ export default function MoodLabArena() {
               {isW&&<div style={{textAlign:"center",marginTop:8}}><div style={{fontSize:24,fontWeight:900,color:C.red}}>WRONG!</div><div style={{fontSize:11,color:C.red}}>Streak broken!</div></div>}
               {isP&&!hlRevealing&&(<div style={{textAlign:"center",marginTop:8,width:"100%"}}><div style={{fontSize:10,color:C.text3,marginBottom:8}}>{hlPuffStart?<span style={{color:C.gold,fontWeight:700,animation:"pulse 0.5s infinite"}}>Hold for HIGHER...</span>:<span>Short puff = LOWER | Long puff = HIGHER</span>}</div><div style={{display:"flex",gap:10,justifyContent:"center"}}><div data-hl-btn="1" onClick={(e)=>{e.stopPropagation();if(!hlRevealing)hlGuess("lower");}} style={{flex:1,maxWidth:130,padding:"12px 8px",borderRadius:12,cursor:"pointer",textAlign:"center",background:C.red+"12",border:"1px solid "+C.red+"30"}}><div style={{fontSize:20,marginBottom:2}}>{"\u2B07\uFE0F"}</div><div style={{fontSize:12,fontWeight:800,color:C.red}}>LOWER</div><div style={{fontSize:8,color:C.text3}}>Short puff</div></div><div data-hl-btn="1" onClick={(e)=>{e.stopPropagation();if(!hlRevealing)hlGuess("higher");}} style={{flex:1,maxWidth:130,padding:"12px 8px",borderRadius:12,cursor:"pointer",textAlign:"center",background:C.green+"12",border:"1px solid "+C.green+"30"}}><div style={{fontSize:20,marginBottom:2}}>{"\u2B06\uFE0F"}</div><div style={{fontSize:12,fontWeight:800,color:C.green}}>HIGHER</div><div style={{fontSize:8,color:C.text3}}>Long puff</div></div></div></div>)}
               {isR&&(<div style={{textAlign:"center"}}><div style={{fontSize:48,marginBottom:8}}>{hlBestStreak>=7?"\uD83C\uDFC6":hlBestStreak>=5?"\uD83D\uDD25":hlBestStreak>=3?"\u2B50":"\uD83D\uDCCA"}</div><div style={{fontSize:26,fontWeight:900,color:hlScore>=100?C.gold:C.cyan,marginBottom:4}}>GAME OVER</div><div style={{fontSize:18,fontWeight:800,color:C.text,marginBottom:4}}>Score: {hlScore}</div><div style={{fontSize:13,color:C.text2,marginBottom:4}}>Best Streak: {hlBestStreak} {hlBestStreak>=5?"\uD83D\uDD25":""}</div><div style={{fontSize:14,fontWeight:700,color:C.gold,marginBottom:12}}>+{Math.max(10,Math.floor(hlScore/2))} coins</div><div style={{fontSize:11,color:C.text2,fontStyle:"italic",marginBottom:12}}>{commentary}</div><div style={{display:"flex",gap:10,justifyContent:"center"}}><div onClick={(e)=>{e.stopPropagation();hlCleanup();startHigherLower();setGameActive({id:"higherlower",name:"Higher or Lower",emoji:"\uD83D\uDCCA",color:C.cyan});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:C.cyan+"15",border:"1px solid "+C.cyan+"30",fontSize:13,fontWeight:800,color:C.cyan}}>Play Again</div><div onClick={(e)=>{e.stopPropagation();hlCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:C.text3+"10",border:"1px solid "+C.text3+"20",fontSize:13,fontWeight:800,color:C.text3}}>Done</div></div></div>)}
+            </div>
+          </div>
+        );
+      }
+
+      // ═══════════════════════════════════════════════════════════════
+      // CRYSTAL BALL -- Render
+      // ═══════════════════════════════════════════════════════════════
+      if(gameActive.id==="crystalball" && cbPhase) {
+        const isQ=cbPhase==="question";const isR=cbPhase==="reveal";const isRes=cbPhase==="result";const isComp=cbPhase==="complete";
+        return (
+          <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden",display:"flex",flexDirection:"column",animation:screenShake?"shake 0.4s ease":"none"}}
+            onMouseDown={cbHandlePuff} onMouseUp={cbHandlePuffEnd} onTouchStart={(e)=>{e.preventDefault();cbHandlePuff();}} onTouchEnd={(e)=>{e.preventDefault();cbHandlePuffEnd();}}>
+            <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg, #0a0520 0%, #1a0838 30%, #0d0625 60%, #06031a 100%)"}}/>
+            <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse at 50% 30%, rgba(147,51,234,0.15), transparent 60%)",pointerEvents:"none"}}/>
+            {[...Array(15)].map((_,i)=>(<div key={"cbp"+i} style={{position:"absolute",left:`${(i*19+7)%100}%`,top:`${(i*23+5)%100}%`,width:2+i%3,height:2+i%3,borderRadius:"50%",background:i%2?"#9333EA":"#FFD700",opacity:0.1+Math.random()*0.2,animation:`pulse ${2+i%3}s infinite ${i*0.2}s`,pointerEvents:"none"}}/>))}
+            {screenFlash&&<div style={{position:"absolute",inset:0,zIndex:200,pointerEvents:"none",opacity:0,background:"rgba(147,51,234,0.3)",animation:"flashOverlay 0.4s ease forwards"}}/>}
+            {confettiParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size*0.6,background:p.color,borderRadius:1,transform:`rotate(${p.rot}deg)`,zIndex:210,pointerEvents:"none",animation:"confettiFall 1.5s ease-out forwards"}}/>))}
+            {overlayBack(cbCleanup)}
+            {renderGameChatPanel("CRYSTAL BALL")}
+            <div style={{display:"flex",flexDirection:"column",alignItems:"center",maxWidth:380,width:"100%",padding:"50px 16px 20px",gap:8,zIndex:10,flex:1,margin:"0 auto"}}>
+              <div style={{fontSize:18,fontWeight:900,letterSpacing:4,background:"linear-gradient(135deg, #9333EA, #FFD700)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>CRYSTAL BALL</div>
+              <div style={{display:"flex",gap:16,marginBottom:4}}>
+                <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.gold}}>{cbScore}</div><div style={{fontSize:8,color:C.text3}}>SCORE</div></div>
+                <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:"#F97316"}}>{cbStreak}🔥</div><div style={{fontSize:8,color:C.text3}}>STREAK</div></div>
+                <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.text2}}>{cbRound+1}/5</div><div style={{fontSize:8,color:C.text3}}>ROUND</div></div>
+              </div>
+
+              {cbPhase==="intro"&&(<div style={{textAlign:"center",animation:"fadeIn 0.5s ease"}}><div style={{fontSize:64,marginBottom:12,animation:"gentleFloat 2s infinite",filter:"drop-shadow(0 0 20px rgba(147,51,234,0.6))"}}>🔮</div><div style={{fontSize:20,fontWeight:900,color:"#9333EA",letterSpacing:3}}>THE ORACLE AWAITS</div><div style={{fontSize:11,color:C.text3,marginTop:8}}>Short puff = NO | Long puff = YES | Blinker = CERTAIN (3x/−2x)</div></div>)}
+
+              {isQ&&cbQuestion&&(<div style={{textAlign:"center",width:"100%",animation:"fadeIn 0.4s ease"}}>
+                <div style={{fontSize:48,marginBottom:12,animation:cbPuffing?"countPulse 0.5s infinite":"gentleFloat 2s infinite",filter:cbPuffing?"drop-shadow(0 0 30px rgba(255,215,0,0.8))":"drop-shadow(0 0 15px rgba(147,51,234,0.5))"}}>🔮</div>
+                <div style={{padding:"2px 10px",borderRadius:6,background:"rgba(147,51,234,0.12)",display:"inline-block",marginBottom:8}}><span style={{fontSize:9,fontWeight:700,color:"#9333EA"}}>{cbQuestion.cat.toUpperCase()} {cbQuestion.emoji}</span></div>
+                <div style={{fontSize:16,fontWeight:800,color:C.text,lineHeight:1.4,maxWidth:300,margin:"0 auto",marginBottom:16}}>{cbQuestion.q}</div>
+                <div style={{display:"flex",gap:12,justifyContent:"center",marginBottom:12}}>
+                  <div style={{padding:"10px 24px",borderRadius:12,background:"rgba(239,68,68,0.10)",border:"1px solid rgba(239,68,68,0.25)"}}><div style={{fontSize:14,fontWeight:800,color:C.red}}>NO</div><div style={{fontSize:8,color:C.text3}}>Short (&lt;1.5s)</div></div>
+                  <div style={{padding:"10px 24px",borderRadius:12,background:"rgba(34,197,94,0.10)",border:"1px solid rgba(34,197,94,0.25)"}}><div style={{fontSize:14,fontWeight:800,color:C.green}}>YES</div><div style={{fontSize:8,color:C.text3}}>Long (&gt;1.5s)</div></div>
+                  <div style={{padding:"10px 24px",borderRadius:12,background:"rgba(255,215,0,0.10)",border:"1px solid rgba(255,215,0,0.25)"}}><div style={{fontSize:14,fontWeight:800,color:C.gold}}>CERTAIN</div><div style={{fontSize:8,color:C.text3}}>Blinker (&gt;3s)</div></div>
+                </div>
+                {cbPuffing&&<div style={{fontSize:13,fontWeight:800,color:C.gold,animation:"pulse 0.5s infinite"}}>PUFFING... hold for YES or Blinker!</div>}
+                {!cbPuffing&&<div style={{fontSize:11,color:C.text3}}>HOLD to puff your prediction</div>}
+              </div>)}
+
+              {isR&&(<div style={{textAlign:"center",animation:"fadeIn 0.4s ease"}}><div style={{fontSize:56,marginBottom:12,animation:"countPulse 0.8s infinite",filter:"drop-shadow(0 0 25px rgba(147,51,234,0.7))"}}>🔮</div><div style={{fontSize:20,fontWeight:900,color:cbAnswer==="certain"?C.gold:cbAnswer==="yes"?C.green:C.red,marginBottom:4}}>{cbAnswer==="certain"?"ABSOLUTELY CERTAIN!":cbAnswer==="yes"?"YES":"NO"}</div><div style={{fontSize:12,color:C.text3}}>The Crystal Ball is revealing...</div></div>)}
+
+              {isRes&&(<div style={{textAlign:"center",animation:"fadeIn 0.4s ease"}}>
+                <div style={{fontSize:48,marginBottom:8}}>{cbResult==="correct"?"✅":"❌"}</div>
+                <div style={{fontSize:24,fontWeight:900,color:cbResult==="correct"?C.green:C.red,marginBottom:4}}>{cbResult==="correct"?"CORRECT!":"WRONG!"}</div>
+                {cbResult==="correct"&&cbAnswer==="certain"&&<div style={{fontSize:14,fontWeight:800,color:C.gold,marginBottom:4}}>BLINKER BONUS! 3x coins! +150</div>}
+                {cbResult==="correct"&&cbAnswer!=="certain"&&<div style={{fontSize:14,fontWeight:800,color:C.green,marginBottom:4}}>+50 coins!</div>}
+                {cbResult==="wrong"&&cbAnswer==="certain"&&<div style={{fontSize:14,fontWeight:800,color:C.red,marginBottom:4}}>Blinker penalty! -100 coins</div>}
+                <div style={{fontSize:11,color:C.text2,fontStyle:"italic",marginBottom:12}}>{commentary}</div>
+                <div onClick={(e)=>{e.stopPropagation();cbNextRound();}} style={{padding:"10px 28px",borderRadius:12,cursor:"pointer",background:"rgba(147,51,234,0.15)",border:"1px solid rgba(147,51,234,0.30)",fontSize:13,fontWeight:800,color:"#9333EA",display:"inline-block"}}>Next Prediction</div>
+              </div>)}
+
+              {isComp&&(<div style={{textAlign:"center",animation:"fadeIn 0.4s ease"}}>
+                <div style={{fontSize:48,marginBottom:8}}>🔮</div>
+                <div style={{fontSize:24,fontWeight:900,color:C.gold,marginBottom:4}}>ORACLE SESSION COMPLETE</div>
+                <div style={{fontSize:18,fontWeight:800,color:C.text,marginBottom:4}}>Score: {cbScore}</div>
+                <div style={{fontSize:13,color:"#F97316"}}>Best Streak: {cbStreak} 🔥</div>
+                <div style={{fontSize:14,fontWeight:700,color:C.lime,marginTop:8}}>+{cbScore} coins earned</div>
+                <div style={{display:"flex",gap:10,justifyContent:"center",marginTop:16}}>
+                  <div onClick={(e)=>{e.stopPropagation();cbCleanup();startCrystalBall();setGameActive({id:"crystalball",name:"Crystal Ball",emoji:"🔮",color:"#9333EA"});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(147,51,234,0.15)",border:"1px solid rgba(147,51,234,0.30)",fontSize:13,fontWeight:800,color:"#9333EA"}}>Play Again</div>
+                  <div onClick={(e)=>{e.stopPropagation();cbCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
+                </div>
+              </div>)}
+            </div>
+          </div>
+        );
+      }
+
+      // ═══════════════════════════════════════════════════════════════
+      // STRAIN BATTLE -- Render
+      // ═══════════════════════════════════════════════════════════════
+      if(gameActive.id==="strainbattle" && sbPhase) {
+        const isM=sbPhase==="matchup";const isR=sbPhase==="results";const isComp=sbPhase==="complete";
+        return (
+          <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden",display:"flex",flexDirection:"column"}}
+            onMouseDown={sbHandlePuff} onMouseUp={sbHandlePuffEnd} onTouchStart={(e)=>{e.preventDefault();sbHandlePuff();}} onTouchEnd={(e)=>{e.preventDefault();sbHandlePuffEnd();}}>
+            <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg, #061a0d 0%, #0a2818 30%, #0d3318 60%, #061a0d 100%)"}}/>
+            <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse at 50% 30%, rgba(34,197,94,0.12), transparent 60%)",pointerEvents:"none"}}/>
+            {confettiParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size*0.6,background:p.color,borderRadius:1,transform:`rotate(${p.rot}deg)`,zIndex:210,pointerEvents:"none",animation:"confettiFall 1.5s ease-out forwards"}}/>))}
+            {overlayBack(sbCleanup)}
+            {renderGameChatPanel("STRAIN BATTLE")}
+            <div style={{display:"flex",flexDirection:"column",alignItems:"center",maxWidth:380,width:"100%",padding:"50px 16px 20px",gap:8,zIndex:10,flex:1,margin:"0 auto",overflowY:"auto"}}>
+              <div style={{fontSize:18,fontWeight:900,letterSpacing:4,background:"linear-gradient(135deg, #22C55E, #FFD700)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>STRAIN BATTLE</div>
+              <div style={{display:"flex",gap:16,marginBottom:4}}>
+                <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.gold}}>{sbScore}</div><div style={{fontSize:8,color:C.text3}}>SCORE</div></div>
+                <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.text2}}>{sbRound+1}/5</div><div style={{fontSize:8,color:C.text3}}>ROUND</div></div>
+              </div>
+
+              {sbPhase==="intro"&&(<div style={{textAlign:"center",animation:"fadeIn 0.5s ease"}}><div style={{fontSize:48,marginBottom:8}}>🌿</div><div style={{fontSize:20,fontWeight:900,color:"#22C55E",letterSpacing:3}}>STRAIN BATTLE</div><div style={{fontSize:11,color:C.text3,marginTop:8}}>Short puff = Left strain | Long puff = Right strain</div></div>)}
+
+              {isM&&sbMatchup&&(<div style={{width:"100%",animation:"fadeIn 0.4s ease"}}>
+                <div style={{display:"flex",gap:8,alignItems:"stretch"}}>
+                  {sbMatchup.map((strain,si)=>(
+                    <div key={si} style={{flex:1,padding:"14px 8px",borderRadius:16,textAlign:"center",background:si===0?"rgba(34,197,94,0.06)":"rgba(255,215,0,0.06)",border:`1px solid ${si===0?"rgba(34,197,94,0.20)":"rgba(255,215,0,0.20)"}`}}>
+                      <div style={{fontSize:32,marginBottom:4}}>{strain.emoji}</div>
+                      <div style={{fontSize:13,fontWeight:800,color:C.text,marginBottom:4}}>{strain.name}</div>
+                      <div style={{fontSize:9,fontWeight:700,color:strain.type==="Sativa"?C.green:strain.type==="Indica"?"#9333EA":C.gold,marginBottom:4,padding:"2px 6px",borderRadius:4,background:"rgba(255,255,255,0.04)",display:"inline-block"}}>{strain.type}</div>
+                      <div style={{width:"100%",height:6,borderRadius:3,background:"rgba(255,255,255,0.06)",marginBottom:4,overflow:"hidden"}}><div style={{width:`${(strain.thc/30)*100}%`,height:"100%",borderRadius:3,background:"linear-gradient(90deg, #22C55E, #FFD700)"}}/></div>
+                      <div style={{fontSize:9,fontWeight:700,color:C.gold}}>THC: {strain.thc}%</div>
+                      <div style={{fontSize:8,color:C.text3,marginTop:4}}>{strain.effects}</div>
+                      <div style={{fontSize:8,color:C.text3,marginTop:2}}>Flavor: {strain.flavor}</div>
+                    </div>
+                  ))}
+                </div>
+                <div style={{textAlign:"center",marginTop:12}}>
+                  <div style={{fontSize:11,color:C.text3}}>Short puff = <span style={{color:"#22C55E",fontWeight:700}}>{sbMatchup[0].name}</span> | Long puff = <span style={{color:C.gold,fontWeight:700}}>{sbMatchup[1].name}</span></div>
+                </div>
+              </div>)}
+
+              {isR&&sbMatchup&&(<div style={{width:"100%",textAlign:"center",animation:"fadeIn 0.4s ease"}}>
+                <div style={{fontSize:14,fontWeight:800,color:C.text,marginBottom:8}}>You voted: <span style={{color:sbVote==="left"?"#22C55E":C.gold}}>{sbVote==="left"?sbMatchup[0].name:sbMatchup[1].name}</span></div>
+                <div style={{display:"flex",gap:8,alignItems:"center",marginBottom:12}}>
+                  <div style={{flex:1,textAlign:"center"}}><div style={{fontSize:24,fontWeight:900,color:"#22C55E"}}>{sbResults.left}%</div><div style={{fontSize:10,color:C.text3}}>{sbMatchup[0].name}</div></div>
+                  <div style={{flex:2}}>
+                    <div style={{width:"100%",height:12,borderRadius:6,background:"rgba(255,255,255,0.06)",overflow:"hidden",display:"flex"}}>
+                      <div style={{width:`${sbResults.left}%`,height:"100%",background:"linear-gradient(90deg, #22C55E, #22C55EAA)",transition:"width 1s"}}/>
+                      <div style={{width:`${sbResults.right}%`,height:"100%",background:"linear-gradient(90deg, #FFD700AA, #FFD700)",transition:"width 1s"}}/>
+                    </div>
+                  </div>
+                  <div style={{flex:1,textAlign:"center"}}><div style={{fontSize:24,fontWeight:900,color:C.gold}}>{sbResults.right}%</div><div style={{fontSize:10,color:C.text3}}>{sbMatchup[1].name}</div></div>
+                </div>
+                <div style={{fontSize:11,color:C.text2,fontStyle:"italic",marginBottom:12}}>{commentary}</div>
+                <div onClick={(e)=>{e.stopPropagation();sbNextRound();}} style={{padding:"10px 28px",borderRadius:12,cursor:"pointer",background:"rgba(34,197,94,0.15)",border:"1px solid rgba(34,197,94,0.30)",fontSize:13,fontWeight:800,color:"#22C55E",display:"inline-block"}}>Next Matchup</div>
+              </div>)}
+
+              {isComp&&(<div style={{textAlign:"center",animation:"fadeIn 0.4s ease"}}>
+                <div style={{fontSize:48,marginBottom:8}}>🌿</div>
+                <div style={{fontSize:24,fontWeight:900,color:"#22C55E",marginBottom:4}}>BATTLE COMPLETE!</div>
+                <div style={{fontSize:18,fontWeight:800,color:C.text,marginBottom:4}}>Score: {sbScore}</div>
+                <div style={{fontSize:14,fontWeight:700,color:C.lime,marginTop:4}}>+{sbScore} coins earned</div>
+                <div style={{display:"flex",gap:10,justifyContent:"center",marginTop:16}}>
+                  <div onClick={(e)=>{e.stopPropagation();sbCleanup();startStrainBattle();setGameActive({id:"strainbattle",name:"Strain Battle",emoji:"🌿",color:"#22C55E"});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(34,197,94,0.15)",border:"1px solid rgba(34,197,94,0.30)",fontSize:13,fontWeight:800,color:"#22C55E"}}>Play Again</div>
+                  <div onClick={(e)=>{e.stopPropagation();sbCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
+                </div>
+              </div>)}
+            </div>
+          </div>
+        );
+      }
+
+      // ═══════════════════════════════════════════════════════════════
+      // MATCH PREDICTOR -- Render
+      // ═══════════════════════════════════════════════════════════════
+      if(gameActive.id==="matchpredictor" && mpPhase) {
+        const isMt=mpPhase==="match";const isPr=mpPhase==="prediction";const isRes=mpPhase==="result";const isComp=mpPhase==="complete";
+        return (
+          <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden",display:"flex",flexDirection:"column"}}
+            onMouseDown={mpHandlePuff} onMouseUp={mpHandlePuffEnd} onTouchStart={(e)=>{e.preventDefault();mpHandlePuff();}} onTouchEnd={(e)=>{e.preventDefault();mpHandlePuffEnd();}}>
+            <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg, #061020 0%, #0c1a38 30%, #102240 60%, #081830 100%)"}}/>
+            <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse at 50% 30%, rgba(59,130,246,0.12), transparent 60%)",pointerEvents:"none"}}/>
+            <div style={{position:"absolute",bottom:0,left:0,right:0,height:"15%",background:"linear-gradient(180deg, transparent, rgba(34,197,94,0.08))",pointerEvents:"none"}}/>
+            {confettiParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size*0.6,background:p.color,borderRadius:1,transform:`rotate(${p.rot}deg)`,zIndex:210,pointerEvents:"none",animation:"confettiFall 1.5s ease-out forwards"}}/>))}
+            {overlayBack(mpCleanup)}
+            {renderGameChatPanel("MATCH PREDICTOR")}
+            <div style={{display:"flex",flexDirection:"column",alignItems:"center",maxWidth:380,width:"100%",padding:"50px 16px 20px",gap:8,zIndex:10,flex:1,margin:"0 auto"}}>
+              <div style={{fontSize:18,fontWeight:900,letterSpacing:4,background:"linear-gradient(135deg, #3B82F6, #22C55E)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>MATCH PREDICTOR</div>
+              <div style={{display:"flex",gap:16,marginBottom:4}}>
+                <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.gold}}>{mpScore}</div><div style={{fontSize:8,color:C.text3}}>SCORE</div></div>
+                <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.text2}}>{mpRound+1}/5</div><div style={{fontSize:8,color:C.text3}}>MATCH</div></div>
+              </div>
+
+              {mpPhase==="intro"&&(<div style={{textAlign:"center",animation:"fadeIn 0.5s ease"}}><div style={{fontSize:48,marginBottom:8}}>📊</div><div style={{fontSize:20,fontWeight:900,color:"#3B82F6",letterSpacing:3}}>MATCH PREDICTOR</div><div style={{fontSize:11,color:C.text3,marginTop:8}}>Short = Home Win | Medium = Draw | Long = Away Win</div></div>)}
+
+              {isMt&&mpMatch&&(<div style={{width:"100%",textAlign:"center",animation:"fadeIn 0.4s ease"}}>
+                <div style={{padding:"2px 10px",borderRadius:6,background:"rgba(59,130,246,0.12)",display:"inline-block",marginBottom:8}}><span style={{fontSize:9,fontWeight:700,color:"#3B82F6"}}>Group {mpMatch.group} | {mpMatch.time}</span></div>
+                <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:12,marginBottom:12}}>
+                  <div style={{flex:1,textAlign:"center"}}><div style={{fontSize:22,fontWeight:800,color:C.text}}>{mpMatch.home}</div></div>
+                  <div style={{fontSize:14,fontWeight:900,color:C.text3}}>VS</div>
+                  <div style={{flex:1,textAlign:"center"}}><div style={{fontSize:22,fontWeight:800,color:C.text}}>{mpMatch.away}</div></div>
+                </div>
+                <div style={{fontSize:10,color:C.text3,marginBottom:8}}>Prediction pool:</div>
+                <div style={{display:"flex",gap:4,marginBottom:8}}>
+                  {["Home","Draw","Away"].map((o,j)=>(<div key={j} style={{flex:1,padding:"6px",borderRadius:8,textAlign:"center",background:"rgba(59,130,246,0.06)",border:"1px solid rgba(59,130,246,0.15)"}}>
+                    <div style={{fontSize:10,fontWeight:600,color:C.text2}}>{o}</div>
+                    <div style={{fontSize:14,fontWeight:800,color:"#3B82F6"}}>{mpMatch.pool[j]}%</div>
+                  </div>))}
+                </div>
+                <div style={{display:"flex",gap:8,justifyContent:"center",marginBottom:8}}>
+                  <div style={{padding:"8px 16px",borderRadius:10,background:"rgba(59,130,246,0.10)",border:"1px solid rgba(59,130,246,0.25)"}}><div style={{fontSize:11,fontWeight:700,color:"#3B82F6"}}>Home Win</div><div style={{fontSize:8,color:C.text3}}>Short (&lt;1s)</div></div>
+                  <div style={{padding:"8px 16px",borderRadius:10,background:"rgba(255,215,0,0.10)",border:"1px solid rgba(255,215,0,0.25)"}}><div style={{fontSize:11,fontWeight:700,color:C.gold}}>Draw</div><div style={{fontSize:8,color:C.text3}}>Medium (1-2.5s)</div></div>
+                  <div style={{padding:"8px 16px",borderRadius:10,background:"rgba(239,68,68,0.10)",border:"1px solid rgba(239,68,68,0.25)"}}><div style={{fontSize:11,fontWeight:700,color:C.red}}>Away Win</div><div style={{fontSize:8,color:C.text3}}>Long (&gt;2.5s)</div></div>
+                </div>
+                <div style={{fontSize:11,color:C.text3}}>HOLD to puff your prediction</div>
+              </div>)}
+
+              {isPr&&(<div style={{textAlign:"center",animation:"fadeIn 0.4s ease"}}><div style={{fontSize:48,marginBottom:8}}>📊</div><div style={{fontSize:20,fontWeight:900,color:mpPrediction==="home"?"#3B82F6":mpPrediction==="draw"?C.gold:C.red}}>{mpPrediction==="home"?"HOME WIN":mpPrediction==="draw"?"DRAW":"AWAY WIN"}</div><div style={{fontSize:12,color:C.text3,marginTop:4}}>Waiting for result...</div></div>)}
+
+              {isRes&&(<div style={{textAlign:"center",animation:"fadeIn 0.4s ease"}}>
+                <div style={{fontSize:48,marginBottom:8}}>{mpResults[mpResults.length-1]?.correct?"✅":"❌"}</div>
+                <div style={{fontSize:24,fontWeight:900,color:mpResults[mpResults.length-1]?.correct?C.green:C.red}}>{mpResults[mpResults.length-1]?.correct?"CORRECT!":"WRONG!"}</div>
+                {mpResults[mpResults.length-1]?.correct&&<div style={{fontSize:14,fontWeight:700,color:C.green,marginBottom:4}}>+100 coins!</div>}
+                <div style={{fontSize:11,color:C.text2,fontStyle:"italic",marginBottom:12}}>{commentary}</div>
+                <div onClick={(e)=>{e.stopPropagation();mpNextRound();}} style={{padding:"10px 28px",borderRadius:12,cursor:"pointer",background:"rgba(59,130,246,0.15)",border:"1px solid rgba(59,130,246,0.30)",fontSize:13,fontWeight:800,color:"#3B82F6",display:"inline-block"}}>Next Match</div>
+              </div>)}
+
+              {isComp&&(<div style={{textAlign:"center",animation:"fadeIn 0.4s ease"}}>
+                <div style={{fontSize:48,marginBottom:8}}>📊</div>
+                <div style={{fontSize:24,fontWeight:900,color:C.gold,marginBottom:4}}>ALL MATCHES PREDICTED</div>
+                <div style={{fontSize:18,fontWeight:800,color:C.text,marginBottom:4}}>Score: {mpScore}</div>
+                <div style={{fontSize:13,color:C.green}}>Correct: {mpResults.filter(r=>r.correct).length}/5</div>
+                <div style={{fontSize:14,fontWeight:700,color:C.lime,marginTop:4}}>+{mpScore} coins earned</div>
+                <div style={{display:"flex",gap:10,justifyContent:"center",marginTop:16}}>
+                  <div onClick={(e)=>{e.stopPropagation();mpCleanup();startMatchPredictor();setGameActive({id:"matchpredictor",name:"Match Predictor",emoji:"📊",color:"#3B82F6"});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(59,130,246,0.15)",border:"1px solid rgba(59,130,246,0.30)",fontSize:13,fontWeight:800,color:"#3B82F6"}}>Play Again</div>
+                  <div onClick={(e)=>{e.stopPropagation();mpCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
+                </div>
+              </div>)}
+            </div>
+          </div>
+        );
+      }
+
+      // ═══════════════════════════════════════════════════════════════
+      // DAILY PICKS -- Render
+      // ═══════════════════════════════════════════════════════════════
+      if(gameActive.id==="dailypicks" && dpPhase) {
+        const catColors = {morning:"#F97316",afternoon:"#3B82F6",night:"#9333EA"};
+        const catEmojis = {morning:"🌅",afternoon:"☀️",night:"🌙"};
+        const isP=dpPhase==="pick";const isRev=dpPhase==="reveal";const isSum=dpPhase==="summary";
+        const currentQ = dpPicks[dpCurrentPick];
+        const mult = dpStreak >= 30 ? 10 : dpStreak >= 14 ? 5 : dpStreak >= 7 ? 3 : 1;
+        return (
+          <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden",display:"flex",flexDirection:"column"}}
+            onMouseDown={dpHandlePuff} onMouseUp={dpHandlePuffEnd} onTouchStart={(e)=>{e.preventDefault();dpHandlePuff();}} onTouchEnd={(e)=>{e.preventDefault();dpHandlePuffEnd();}}>
+            <div style={{position:"absolute",inset:0,background:`linear-gradient(180deg, #1a0a04 0%, ${dpCurrentPick===0?"#2a1005":dpCurrentPick===1?"#0a1830":"#1a0830"} 50%, #0a0618 100%)`}}/>
+            <div style={{position:"absolute",inset:0,background:`radial-gradient(ellipse at 50% 30%, ${catColors[currentQ?.cat||"morning"]}15, transparent 60%)`,pointerEvents:"none"}}/>
+            {confettiParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size*0.6,background:p.color,borderRadius:1,transform:`rotate(${p.rot}deg)`,zIndex:210,pointerEvents:"none",animation:"confettiFall 1.5s ease-out forwards"}}/>))}
+            {overlayBack(dpCleanup)}
+            {renderGameChatPanel("DAILY PICKS")}
+            <div style={{display:"flex",flexDirection:"column",alignItems:"center",maxWidth:380,width:"100%",padding:"50px 16px 20px",gap:8,zIndex:10,flex:1,margin:"0 auto",overflowY:"auto"}}>
+              <div style={{fontSize:18,fontWeight:900,letterSpacing:4,background:"linear-gradient(135deg, #F97316, #9333EA)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>DAILY PICKS</div>
+              <div style={{display:"flex",gap:16,marginBottom:4}}>
+                <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:"#F97316"}}>{dpStreak}🔥</div><div style={{fontSize:8,color:C.text3}}>STREAK</div></div>
+                <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.gold}}>{mult}x</div><div style={{fontSize:8,color:C.text3}}>MULTIPLIER</div></div>
+                <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.text2}}>{dpCurrentPick+1}/3</div><div style={{fontSize:8,color:C.text3}}>PICK</div></div>
+              </div>
+              {/* Progress dots */}
+              <div style={{display:"flex",gap:8,marginBottom:8}}>
+                {[0,1,2].map(i=>(<div key={i} style={{width:10,height:10,borderRadius:"50%",background:i<dpCurrentPick?C.green:i===dpCurrentPick?catColors[dpPicks[i]?.cat||"morning"]:C.text3+"30",boxShadow:i===dpCurrentPick?`0 0 8px ${catColors[dpPicks[i]?.cat||"morning"]}60`:"none",transition:"all 0.3s"}}/>))}
+              </div>
+
+              {dpPhase==="intro"&&(<div style={{textAlign:"center",animation:"fadeIn 0.5s ease"}}><div style={{fontSize:48,marginBottom:8}}>📅</div><div style={{fontSize:20,fontWeight:900,color:"#F97316",letterSpacing:3}}>DAILY PICKS</div><div style={{fontSize:11,color:C.text3,marginTop:8}}>3 predictions | Build your streak | Earn multipliers</div><div style={{fontSize:9,color:C.gold,marginTop:4}}>7-day = 3x | 14-day = 5x | 30-day = 10x</div></div>)}
+
+              {isP&&currentQ&&(<div style={{width:"100%",textAlign:"center",animation:"fadeIn 0.4s ease"}}>
+                <div style={{fontSize:36,marginBottom:8}}>{catEmojis[currentQ.cat]}</div>
+                <div style={{padding:"2px 10px",borderRadius:6,background:`${catColors[currentQ.cat]}15`,display:"inline-block",marginBottom:8}}><span style={{fontSize:9,fontWeight:700,color:catColors[currentQ.cat]}}>{currentQ.cat.toUpperCase()} PICK</span></div>
+                <div style={{fontSize:16,fontWeight:800,color:C.text,lineHeight:1.4,maxWidth:300,margin:"0 auto",marginBottom:16}}>{currentQ.q}</div>
+                {currentQ.type==="yn"?(
+                  <div style={{display:"flex",gap:12,justifyContent:"center"}}>
+                    <div style={{padding:"10px 24px",borderRadius:12,background:"rgba(239,68,68,0.10)",border:"1px solid rgba(239,68,68,0.25)"}}><div style={{fontSize:14,fontWeight:800,color:C.red}}>NO</div><div style={{fontSize:8,color:C.text3}}>Short puff</div></div>
+                    <div style={{padding:"10px 24px",borderRadius:12,background:"rgba(34,197,94,0.10)",border:"1px solid rgba(34,197,94,0.25)"}}><div style={{fontSize:14,fontWeight:800,color:C.green}}>YES</div><div style={{fontSize:8,color:C.text3}}>Long puff</div></div>
+                  </div>
+                ):(
+                  <div style={{display:"flex",gap:12,justifyContent:"center"}}>
+                    <div style={{padding:"10px 24px",borderRadius:12,background:`${catColors[currentQ.cat]}10`,border:`1px solid ${catColors[currentQ.cat]}25`}}><div style={{fontSize:14,fontWeight:800,color:catColors[currentQ.cat]}}>{currentQ.a}</div><div style={{fontSize:8,color:C.text3}}>Short puff</div></div>
+                    <div style={{padding:"10px 24px",borderRadius:12,background:`${catColors[currentQ.cat]}10`,border:`1px solid ${catColors[currentQ.cat]}25`}}><div style={{fontSize:14,fontWeight:800,color:catColors[currentQ.cat]}}>{currentQ.b}</div><div style={{fontSize:8,color:C.text3}}>Long puff</div></div>
+                  </div>
+                )}
+                <div style={{fontSize:11,color:C.text3,marginTop:12}}>HOLD to puff your pick</div>
+              </div>)}
+
+              {isRev&&(<div style={{textAlign:"center",animation:"fadeIn 0.4s ease"}}>
+                <div style={{fontSize:36,marginBottom:8}}>{dpResults.length>0&&dpResults[dpResults.length-1].correct?"✅":"❌"}</div>
+                <div style={{fontSize:20,fontWeight:900,color:dpResults.length>0&&dpResults[dpResults.length-1].correct?C.green:C.red}}>{dpResults.length>0&&dpResults[dpResults.length-1].correct?"CORRECT!":"WRONG!"}</div>
+                <div style={{fontSize:13,color:C.text2,marginTop:4}}>You picked: <span style={{fontWeight:700,color:C.text}}>{dpAnswer}</span></div>
+                {dpResults.length>0&&dpResults[dpResults.length-1].correct&&<div style={{fontSize:14,fontWeight:700,color:C.gold,marginTop:4}}>+{dpResults[dpResults.length-1].pts} coins{mult>1?" ("+mult+"x multiplier!)":""}</div>}
+                <div style={{fontSize:11,color:C.text2,fontStyle:"italic",marginTop:8}}>{commentary}</div>
+              </div>)}
+
+              {isSum&&(<div style={{textAlign:"center",animation:"fadeIn 0.4s ease"}}>
+                <div style={{fontSize:48,marginBottom:8}}>📅</div>
+                <div style={{fontSize:24,fontWeight:900,color:C.gold,marginBottom:8}}>DAILY PICKS COMPLETE</div>
+                {dpResults.map((r,i)=>(
+                  <div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 12px",borderRadius:10,marginBottom:4,background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.06)"}}>
+                    <span style={{fontSize:16}}>{catEmojis[r.question.cat]}</span>
+                    <span style={{fontSize:11,color:C.text,flex:1,textAlign:"left"}}>{r.question.q.substring(0,35)}...</span>
+                    <span style={{fontSize:11,fontWeight:700,color:r.correct?C.green:C.red}}>{r.correct?"✅":"❌"}</span>
+                    {r.pts>0&&<span style={{fontSize:9,fontWeight:700,color:C.gold}}>+{r.pts}</span>}
+                  </div>
+                ))}
+                <div style={{fontSize:14,fontWeight:700,color:"#F97316",marginTop:8}}>Current Streak: {dpStreak} 🔥</div>
+                <div style={{fontSize:12,color:C.gold,marginTop:4}}>Total earned: +{dpResults.reduce((a,r)=>a+r.pts,0)} coins</div>
+                <div style={{display:"flex",gap:10,justifyContent:"center",marginTop:16}}>
+                  <div onClick={(e)=>{e.stopPropagation();dpCleanup();startDailyPicks();setGameActive({id:"dailypicks",name:"Daily Picks",emoji:"📅",color:"#F97316"});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(249,115,22,0.15)",border:"1px solid rgba(249,115,22,0.30)",fontSize:13,fontWeight:800,color:"#F97316"}}>Play Again</div>
+                  <div onClick={(e)=>{e.stopPropagation();dpCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
+                </div>
+              </div>)}
             </div>
           </div>
         );
