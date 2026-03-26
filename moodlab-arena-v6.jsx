@@ -6368,19 +6368,11 @@ export default function MoodLabArena() {
   // ── RENDER: ZONE DETAIL VIEWS ──
   // ═════════════════════════════════════════
   const renderZoneHeader = (zKey) => {
-    const z = Z[zKey];
     return (
-      <div style={{padding:"0 14px",marginBottom:16}}>
-        <div onClick={()=>{playFx("back");setZone(null);setSelectedGame(null);setArenaView("hub");}} style={{display:"inline-flex",alignItems:"center",gap:6,cursor:"pointer",marginBottom:12,padding:"6px 12px",borderRadius:8,background:`${C.text3}06`,border:`1px solid ${C.border}`}}>
+      <div style={{padding:"0 14px",marginBottom:8}}>
+        <div onClick={()=>{playFx("back");setZone(null);setSelectedGame(null);setArenaView("hub");}} style={{display:"inline-flex",alignItems:"center",gap:6,cursor:"pointer",padding:"6px 12px",borderRadius:8,background:`${C.text3}06`,border:`1px solid ${C.border}`}}>
           <span style={{fontSize:14,color:C.text2}}>←</span>
-          <span style={{fontSize:11,fontWeight:600,color:C.text2}}>Arena</span>
-        </div>
-        <div style={{display:"flex",alignItems:"center",gap:10}}>
-          <div style={{fontSize:32,filter:`drop-shadow(0 0 12px ${z.primary}50)`}}>{z.icon}</div>
-          <div>
-            <div style={{fontSize:20,fontWeight:900,color:z.primary,letterSpacing:-0.3}}>{z.name}</div>
-            <div style={{fontSize:11,color:C.text3}}>{z.sub}</div>
-          </div>
+          <span style={{fontSize:11,fontWeight:600,color:C.text2}}>Lobby</span>
         </div>
       </div>
     );
