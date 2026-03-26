@@ -5105,7 +5105,7 @@ export default function MoodLabArena() {
   const renderGlassButtons = () => (
     <div style={{position:"absolute",right:14,bottom:18,zIndex:15,display:"flex",flexDirection:"column",gap:8}}>
       {[
-        {icon:"💬",label:"Chat",action:()=>setChatPanel(!chatPanel),dot:true},
+        ,
       ].map((btn,i) => (
         <div key={i} onClick={btn.action} style={{
           width:42,height:42,borderRadius:14,display:"flex",alignItems:"center",justifyContent:"center",
@@ -5311,7 +5311,7 @@ export default function MoodLabArena() {
         </div>
 
         {/* ═══ BOTTOM HUD — compact welcome card, lets art dominate ═══ */}
-        <div style={{position:"absolute",bottom:chatPanel?248:62,left:10,right:10,zIndex:10,animation:"panelSlideUp 0.4s ease 0.15s both",transition:"bottom 0.3s ease"}}>
+        <div style={{position:"absolute",bottom:62,left:10,right:10,zIndex:10,animation:"panelSlideUp 0.4s ease 0.15s both",transition:"bottom 0.3s ease"}}>
           {/* Info card — minimal glass overlay */}
           <div style={{borderRadius:20,overflow:"hidden",marginBottom:8,...GLASS_CARD}}>
             <div style={{padding:"16px 18px 14px"}}>
@@ -6275,7 +6275,7 @@ export default function MoodLabArena() {
 
 
         {/* ═══ LIVE GAMES — above bottom nav, moves up when chat open ═══ */}
-        <div style={{position:"fixed",bottom:chatPanel?280:56,left:14,right:14,zIndex:45,transition:"bottom 0.3s ease",animation:"arenaFadeIn 0.7s ease 0.4s both"}}>
+        <div style={{position:"fixed",bottom:56,left:14,right:14,zIndex:45,transition:"bottom 0.3s ease",animation:"arenaFadeIn 0.7s ease 0.4s both"}}>
           <div style={{borderRadius:16,overflow:"hidden",cursor:"pointer",...GLASS_CARD}} onClick={() => {
             if (peNextCountdown === "NOW!" || (puffEventSchedule && puffEventSchedule.nextAt <= Date.now())) {
               startPuffEvent(puffEventSchedule.nextType);
@@ -17335,7 +17335,7 @@ export default function MoodLabArena() {
       </div>
 
       {/* Universal chat button — always visible, aligned with nav */}
-      <div onClick={()=>setChatPanel(!chatPanel)} style={{position:"fixed",bottom:18,right:14,zIndex:55,
+      <div onClick={()=>setChatPanel(!chatPanel)} style={{display:"none",position:"fixed",bottom:18,right:14,zIndex:55,
         width:42,height:42,borderRadius:14,display:"flex",alignItems:"center",justifyContent:"center",
         ...GLASS_CLEAR,cursor:"pointer",fontSize:16,
       }}>
@@ -17344,7 +17344,7 @@ export default function MoodLabArena() {
       </div>
 
       {/* Universal inline chat — above nav when toggled on */}
-      {chatPanel ? <div style={{position:"fixed",bottom:66,left:10,right:10,zIndex:54,maxWidth:410,margin:"0 auto",animation:"panelSlideUp 0.3s ease both"}}>
+      {chatPanel && gameActive ? <div style={{position:"fixed",bottom:66,left:10,right:10,zIndex:54,maxWidth:410,margin:"0 auto",animation:"panelSlideUp 0.3s ease both"}}>
         <div style={{borderRadius:18,overflow:"hidden",...GLASS_CARD}}>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"6px 12px",borderBottom:`1px solid ${C.border}`}}>
             <div style={{display:"flex",alignItems:"center",gap:5}}>
