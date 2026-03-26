@@ -6562,7 +6562,7 @@ export default function MoodLabArena() {
 
         {/* ======= TAB BAR — TOP ======= */}
         <div style={{display:"flex",borderBottom:`1px solid ${C.border}`,marginBottom:10}}>
-          {["games","tournaments","stats","activity"].map(t=>(
+          {["games","tournaments","activity"].map(t=>(
             <div key={t} onClick={()=>setArcadeHubTab(t)} style={{
               flex:1,padding:"8px 0",textAlign:"center",cursor:"pointer",
               fontSize:9,fontWeight:arcadeHubTab===t?800:600,
@@ -6650,39 +6650,7 @@ export default function MoodLabArena() {
           </div>
         )}
 
-        {/* Stats tab */}
-        {arcadeHubTab==="stats" && (
-          <div style={{marginBottom:14,padding:"14px",borderRadius:14,background:`${C.cyan}04`,border:`1px solid ${C.cyan}12`}}>
-            <div style={{display:"flex",gap:8,marginBottom:10}}>
-              {[
-                {label:"Games Played",val:myStats.gamesPlayed,color:C.cyan},
-                {label:"Win Rate",val:myStats.winRate+"%",color:C.green},
-                {label:"Coins Won",val:myStats.coinsWon.toLocaleString(),color:C.gold},
-              ].map((s,i)=>(
-                <div key={i} style={{flex:1,textAlign:"center",padding:"8px 4px",borderRadius:10,background:`${s.color}06`,border:`1px solid ${s.color}10`}}>
-                  <div style={{fontSize:16,fontWeight:900,color:s.color,fontFamily:"monospace"}}>{s.val}</div>
-                  <div style={{fontSize:7,color:C.text3,fontWeight:600,marginTop:2}}>{s.label}</div>
-                </div>
-              ))}
-            </div>
-            <div style={{display:"flex",gap:8}}>
-              <div style={{flex:1,display:"flex",alignItems:"center",gap:6,padding:"6px 8px",borderRadius:8,background:`${C.text3}06`}}>
-                <span style={{fontSize:14}}>{myStats.favGame.emoji}</span>
-                <div>
-                  <div style={{fontSize:7,color:C.text3}}>Favorite Game</div>
-                  <div style={{fontSize:9,fontWeight:700,color:C.text}}>{myStats.favGame.name}</div>
-                </div>
-              </div>
-              <div style={{flex:1,display:"flex",alignItems:"center",gap:6,padding:"6px 8px",borderRadius:8,background:`${C.orange}06`}}>
-                <span style={{fontSize:14}}>🔥</span>
-                <div>
-                  <div style={{fontSize:7,color:C.text3}}>Win Streak</div>
-                  <div style={{fontSize:9,fontWeight:700,color:C.orange}}>{myStats.streak} wins</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        
 
         {/* Activity tab */}
         {arcadeHubTab==="activity" && (
