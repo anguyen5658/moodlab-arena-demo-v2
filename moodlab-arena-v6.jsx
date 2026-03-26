@@ -7407,8 +7407,20 @@ export default function MoodLabArena() {
           </div>
         </div>
 
-        {/* ═══ BLOCK 3: MEGA LEADERBOARD ═══ */}
-        <div style={{marginBottom:20}}>
+        {/* ═══ TAB BAR — TOP ═══ */}
+        <div style={{display:"flex",borderBottom:`1px solid ${C.gold}15`,marginBottom:10}}>
+          {["rankings","records","achievements","social"].map(t=>(
+            <div key={t} onClick={()=>setWallHubTab(t)} style={{
+              flex:1,padding:"8px 0",textAlign:"center",cursor:"pointer",
+              fontSize:9,fontWeight:wallHubTab===t?800:600,
+              color:wallHubTab===t?C.gold:C.text3,
+              borderBottom:wallHubTab===t?`2px solid ${C.gold}`:"2px solid transparent",
+            }}>{t.charAt(0).toUpperCase()+t.slice(1)}</div>
+          ))}
+        </div>
+
+        {/* ═══ BLOCK 3: MEGA LEADERBOARD (Rankings tab) ═══ */}
+        {wallHubTab==="rankings" && <div style={{marginBottom:20}}>
           <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
             <span style={{fontSize:15}}>📊</span>
             <div>
@@ -7480,17 +7492,9 @@ export default function MoodLabArena() {
           </div>
         </div>
 
-        {/* ═══ TAB BAR ═══ */}
-        <div style={{display:"flex",borderBottom:`1px solid ${C.gold}15`,marginTop:4,marginBottom:8}}>
-          {["rankings","records","achievements","social"].map(t=>(
-            <div key={t} onClick={()=>setWallHubTab(t)} style={{
-              flex:1,padding:"8px 0",textAlign:"center",cursor:"pointer",
-              fontSize:9,fontWeight:wallHubTab===t?800:600,
-              color:wallHubTab===t?C.gold:C.text3,
-              borderBottom:wallHubTab===t?`2px solid ${C.gold}`:"2px solid transparent",
-            }}>{t.charAt(0).toUpperCase()+t.slice(1)}</div>
-          ))}
-        </div>
+
+
+        </div>}
 
         {/* Records tab */}
         {wallHubTab==="records" && (
