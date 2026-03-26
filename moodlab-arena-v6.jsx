@@ -6529,8 +6529,20 @@ export default function MoodLabArena() {
           </div>
         </div>
 
-        {/* ======= ALL GAMES - Smart 2-Column Grid (PRIMARY) ======= */}
-        <div style={{marginBottom:4}}>
+        {/* ======= TAB BAR — TOP ======= */}
+        <div style={{display:"flex",borderBottom:`1px solid ${C.border}`,marginBottom:10}}>
+          {["games","tournaments","stats","activity"].map(t=>(
+            <div key={t} onClick={()=>setArcadeHubTab(t)} style={{
+              flex:1,padding:"8px 0",textAlign:"center",cursor:"pointer",
+              fontSize:9,fontWeight:arcadeHubTab===t?800:600,
+              color:arcadeHubTab===t?C.cyan:C.text3,
+              borderBottom:arcadeHubTab===t?`2px solid ${C.cyan}`:"2px solid transparent",
+            }}>{t.charAt(0).toUpperCase()+t.slice(1)}</div>
+          ))}
+        </div>
+
+        {/* ======= ALL GAMES - Smart 2-Column Grid ======= */}
+        {arcadeHubTab==="games" && <div style={{marginBottom:4}}>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
             <div style={{display:"flex",alignItems:"center",gap:6}}>
               <span style={{fontSize:13}}>🎮</span>
@@ -6574,19 +6586,7 @@ export default function MoodLabArena() {
               );
             })}
           </div>
-        </div>
-
-        {/* ======= TAB BAR ======= */}
-        <div style={{display:"flex",borderBottom:`1px solid ${C.border}`,marginTop:12,marginBottom:8}}>
-          {["games","tournaments","stats","activity"].map(t=>(
-            <div key={t} onClick={()=>setArcadeHubTab(t)} style={{
-              flex:1,padding:"8px 0",textAlign:"center",cursor:"pointer",
-              fontSize:9,fontWeight:arcadeHubTab===t?800:600,
-              color:arcadeHubTab===t?C.cyan:C.text3,
-              borderBottom:arcadeHubTab===t?`2px solid ${C.cyan}`:"2px solid transparent",
-            }}>{t.charAt(0).toUpperCase()+t.slice(1)}</div>
-          ))}
-        </div>
+        </div>}
 
         {/* Tournaments tab */}
         {arcadeHubTab==="tournaments" && (
@@ -6679,17 +6679,26 @@ export default function MoodLabArena() {
   const renderStage = () => {
     const showIdx = Math.floor(Date.now()/120000) % SHOW_GAMES.length;
     const secondLiveIdx = (showIdx + 4) % SHOW_GAMES.length;
+    const thirdLiveIdx = (showIdx + 7) % SHOW_GAMES.length;
     const liveShow = SHOW_GAMES[showIdx];
     const liveShow2 = SHOW_GAMES[secondLiveIdx];
+    const liveShow3 = SHOW_GAMES[thirdLiveIdx];
     const nowViewers = 1247 + Math.floor(Math.random()*100);
-    const stageInfoIdx = Math.floor((tick/4) % 4);
-    const stageInfoCards = [
-      {text:"Next: 🎭 Simon Puffs in 8 min", color:C.gold},
-      {text:"Tonight: 🏆 12,500 coins up for grabs!", color:C.green},
-      {text:"Your Best: 💀 Survival Trivia Round 12", color:C.cyan},
-      {text:"Highlight: 🎰 JACKPOT on Spin & Win!", color:C.pink},
+    const infoIdx = Math.floor((tick/3) % 4);
+    const infoItems = [
+      {text:"Tonight: 12,500 coins up for grabs!", color:C.gold},
+      {text:"Next: Simon Puffs in 8m", color:C.cyan},
+      {text:"Your Best: Survival Trivia Round 12", color:C.green},
+      {text:"Highlight: JACKPOT on Spin & Win!", color:C.pink},
     ];
-    const launchShow = (g) => {
+    const onAirShows = SHOW_GAMES.filter(g=>g.id===liveShow.id||g.id===liveShow2.id||g.id===liveShow3.id);
+    const upcomingShows = SHOW_GAMES.filter(g=>!onAirShows.find(s=>s.id===g.id));
+    const launchShowFromHub = (g) => {
+      playFx("select");
+      assignStageRole(g);
+    };
+    const startShowGame = (g) => {
+      showMC("intro", {show:g.name});
       if(g.id==="vibecheck") vcStartGame();
       else if(g.id==="spinwin"){setSelectedGame(g);swStartGame();}
       else if(g.id==="beatdrop"){setGameActive({id:"beatdrop",name:"Beat Drop",emoji:"🎧",color:C.pink});startBeatDrop();}
@@ -6702,100 +6711,157 @@ export default function MoodLabArena() {
       else if(g.id==="puffauction"){setGameActive({id:"puffauction",name:"Puff Auction",emoji:"🔨",color:C.lime});startPuffAuction();}
       else notify(g.name+" starting soon!",g.color);
     };
+    const dotCycle = Math.floor(tick*2) % 24;
     return (
     <div style={{position:"relative"}}>
-      {/* Stage spotlight background */}
-      <div style={{position:"absolute",top:-80,left:"50%",transform:"translateX(-50%)",width:500,height:400,pointerEvents:"none",
-        background:`radial-gradient(ellipse at 25% 0%, ${C.purple}20, transparent 45%), radial-gradient(ellipse at 75% 0%, ${C.pink}18, transparent 45%), radial-gradient(ellipse at 50% 5%, ${C.gold}12, transparent 55%)`
+      {/* Warm amber theater lighting */}
+      <div style={{position:"absolute",top:-60,left:"50%",transform:"translateX(-50%)",width:500,height:350,pointerEvents:"none",
+        background:`radial-gradient(ellipse at 50% 0%, ${C.gold}14, transparent 50%), radial-gradient(ellipse at 30% 10%, ${C.orange}08, transparent 40%), radial-gradient(ellipse at 70% 10%, ${C.orange}08, transparent 40%)`
       }}/>
 
       {renderZoneHeader("stage")}
       <div style={{padding:"0 14px",position:"relative",zIndex:1}}>
 
-        {/* ═══ ON AIR — Compact live indicator ═══ */}
-        <div onClick={()=>launchShow(liveShow)} style={{
-          display:"flex",alignItems:"center",gap:10,padding:"10px 14px",borderRadius:14,cursor:"pointer",marginBottom:12,
-          background:`radial-gradient(ellipse at 20% 50%, ${C.red}08, ${C.bg2} 70%)`,
-          border:`1px solid ${C.red}20`,
-        }}>
-          <div style={{width:8,height:8,borderRadius:"50%",background:C.red,boxShadow:`0 0 10px ${C.red}`,animation:"pulse 1.5s infinite",flexShrink:0}}/>
-          <div style={{width:32,height:32,borderRadius:9,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,
-            background:`radial-gradient(circle, ${liveShow.color}18, ${liveShow.color}05)`,border:`1px solid ${liveShow.color}25`,flexShrink:0,
-          }}>{liveShow.emoji}</div>
-          <div style={{flex:1,minWidth:0}}>
-            <div style={{fontSize:12,fontWeight:800,color:C.text,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{liveShow.name}</div>
-            <div style={{fontSize:9,color:C.pink,fontWeight:600}}>👁 {nowViewers.toLocaleString()} watching</div>
-          </div>
-          <div style={{padding:"6px 14px",borderRadius:10,background:`linear-gradient(135deg, ${C.pink}22, ${C.purple}15)`,border:`1px solid ${C.pink}30`}}>
-            <span style={{fontSize:11,fontWeight:900,color:C.pink}}>JOIN</span>
+        {/* 1. THEATER MARQUEE */}
+        <div style={{position:"relative",padding:"14px 16px",borderRadius:16,marginBottom:10,overflow:"hidden",cursor:"pointer",
+          background:`linear-gradient(135deg, rgba(255,217,61,0.06), rgba(251,146,60,0.04), rgba(255,217,61,0.06))`,
+          border:`2px solid ${C.gold}20`,boxShadow:`0 0 20px ${C.gold}08, inset 0 0 30px ${C.gold}04`,
+        }} onClick={()=>launchShowFromHub(liveShow)}>
+          {[...Array(24)].map((_,i)=>{
+            const dist = ((i-dotCycle+24)%24);
+            const bright = dist<4 ? 1-dist*0.2 : 0.15;
+            const isTop = i<7; const isRight = i>=7&&i<13; const isBottom = i>=13&&i<19; const isLeft = i>=19;
+            return <div key={"md"+i} style={{position:"absolute",width:3,height:3,borderRadius:"50%",
+              background:C.gold,opacity:bright,zIndex:2,
+              top: isTop?-1: isRight?`${((i-7)/5)*100}%`: isBottom?"auto": `${((24-i)/5)*100}%`,
+              bottom: isBottom?-1:"auto",
+              left: isTop?`${(i/6)*100}%`: isLeft?-1: isBottom?`${((18-i)/5)*100}%`:"auto",
+              right: isRight?-1:"auto",
+            }}/>;
+          })}
+          <div style={{textAlign:"center"}}>
+            <div style={{fontSize:8,fontWeight:900,letterSpacing:3,color:C.gold,opacity:0.7,marginBottom:4,textTransform:"uppercase"}}>NOW SHOWING</div>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginBottom:4}}>
+              <span style={{fontSize:22}}>{liveShow.emoji}</span>
+              <span style={{fontSize:16,fontWeight:900,color:C.text,textShadow:`0 0 12px ${C.gold}30`}}>{liveShow.name}</span>
+              <span style={{padding:"2px 8px",borderRadius:4,fontSize:7,fontWeight:900,color:"#fff",
+                background:C.red,boxShadow:`0 0 8px ${C.red}60`,animation:"pulse 1.5s infinite"}}>LIVE</span>
+            </div>
+            <div style={{fontSize:9,color:C.gold,fontWeight:600,opacity:0.8}}>{"👥"} {nowViewers.toLocaleString()} in the audience</div>
           </div>
         </div>
 
-        {/* ═══ ALL SHOWS — 2-Column Grid (PRIMARY) ═══ */}
-        <div style={{marginBottom:4}}>
-          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
-            <div style={{display:"flex",alignItems:"center",gap:6}}>
-              <span style={{fontSize:13}}>🎮</span>
-              <span style={{fontSize:11,fontWeight:900,color:C.text,letterSpacing:1}}>ALL SHOWS</span>
-            </div>
-            <div style={{fontSize:9,color:C.gold,fontWeight:700}}>{SHOW_GAMES.length} shows</div>
+        {/* 2. SHOW GRID - Row 1: ON AIR */}
+        <div style={{marginBottom:6}}>
+          <div style={{display:"flex",alignItems:"center",gap:5,marginBottom:6}}>
+            <div style={{width:6,height:6,borderRadius:"50%",background:C.red,boxShadow:`0 0 6px ${C.red}`,animation:"pulse 1.5s infinite"}}/>
+            <span style={{fontSize:9,fontWeight:900,color:C.red,letterSpacing:1}}>ON AIR</span>
           </div>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-            {SHOW_GAMES.map((g,i)=>{
-              const isLive = g.id===liveShow.id || g.id===liveShow2.id;
-              return (
-              <div key={g.id} onClick={()=>{playFx("select");launchShow(g);}} style={{
-                padding:"12px 10px",borderRadius:14,cursor:"pointer",position:"relative",overflow:"hidden",
-                background:`radial-gradient(ellipse at 50% 0%, ${g.color}06, ${C.bg2} 70%)`,
-                border:`1.5px solid ${isLive?C.red:g.color}${isLive?"20":"10"}`,transition:"all 0.3s",
-                boxShadow:isLive?`0 0 16px ${C.red}10`:"none",
-                animation:`fadeIn 0.3s ease ${i*0.04}s both`,
+          <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:4,scrollbarWidth:"none"}}>
+            {onAirShows.map(g=>(
+              <div key={g.id} onClick={()=>launchShowFromHub(g)} style={{
+                minWidth:110,padding:"8px 10px",borderRadius:12,cursor:"pointer",flexShrink:0,
+                background:`radial-gradient(ellipse at 50% 0%, ${C.red}08, ${C.bg2})`,
+                border:`1.5px solid ${C.red}20`,boxShadow:`0 0 12px ${C.red}06`,
               }}>
-                {isLive && <div style={{position:"absolute",top:6,right:6,display:"flex",alignItems:"center",gap:3,padding:"2px 6px",borderRadius:4,background:`${C.red}18`,border:`1px solid ${C.red}30`}}>
-                  <div style={{width:4,height:4,borderRadius:"50%",background:C.red,animation:"pulse 1.5s infinite"}}/>
-                  <span style={{fontSize:7,fontWeight:900,color:C.red}}>LIVE</span>
-                </div>}
-                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
-                  <div style={{width:36,height:36,borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,
-                    background:`radial-gradient(circle, ${g.color}15, ${g.color}05)`,border:`1px solid ${g.color}20`,
-                    filter:`drop-shadow(0 0 6px ${g.color}30)`,flexShrink:0,
-                  }}>{g.emoji}</div>
+                <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:4}}>
+                  <span style={{fontSize:16}}>{g.emoji}</span>
                   <div style={{flex:1,minWidth:0}}>
-                    <div style={{fontSize:11,fontWeight:800,color:C.text,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{g.name}</div>
-                    <div style={{fontSize:8,color:C.text3,marginTop:1}}>{isLive?"🔴 Live Now":"⏰ "+g.time}</div>
+                    <div style={{fontSize:10,fontWeight:800,color:C.text,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{g.name}</div>
+                    <div style={{fontSize:7,color:C.red,fontWeight:700}}>LIVE NOW</div>
                   </div>
                 </div>
-                <div style={{display:"flex",gap:3,flexWrap:"wrap"}}>
-                  <span style={{fontSize:8,fontWeight:700,color:g.color,padding:"2px 5px",borderRadius:3,background:`${g.color}10`}}>{g.type}</span>
-                  <span style={{fontSize:8,color:C.text3,padding:"2px 5px",borderRadius:3,background:`${C.text3}06`}}>👥 {g.players}</span>
-                </div>
+                <span style={{fontSize:7,fontWeight:700,color:g.color,padding:"1px 5px",borderRadius:3,background:`${g.color}10`}}>{g.type}</span>
               </div>
-              );
-            })}
+            ))}
+          </div>
+        </div>
+        {/* Row 2: COMING UP */}
+        <div style={{marginBottom:8}}>
+          <div style={{display:"flex",alignItems:"center",gap:5,marginBottom:6}}>
+            <span style={{fontSize:9}}>{"⏰"}</span>
+            <span style={{fontSize:9,fontWeight:900,color:C.text2,letterSpacing:1}}>COMING UP</span>
+          </div>
+          <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:4,scrollbarWidth:"none"}}>
+            {upcomingShows.map(g=>(
+              <div key={g.id} onClick={()=>launchShowFromHub(g)} style={{
+                minWidth:110,padding:"8px 10px",borderRadius:12,cursor:"pointer",flexShrink:0,
+                background:`radial-gradient(ellipse at 50% 0%, ${g.color}04, ${C.bg2})`,
+                border:`1px solid ${g.color}10`,
+              }}>
+                <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:4}}>
+                  <span style={{fontSize:16}}>{g.emoji}</span>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{fontSize:10,fontWeight:800,color:C.text,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{g.name}</div>
+                    <div style={{fontSize:7,color:C.text3,fontWeight:600}}>{g.time}</div>
+                  </div>
+                </div>
+                <span style={{fontSize:7,fontWeight:700,color:g.color,padding:"1px 5px",borderRadius:3,background:`${g.color}10`}}>{g.type}</span>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* ═══ SWIPEABLE INFO CARDS — Auto-cycling strip ═══ */}
-        <div style={{marginTop:14,marginBottom:14,position:"relative",overflow:"hidden",borderRadius:12,
-          padding:"12px 16px",height:46,
-          background:`${stageInfoCards[stageInfoIdx].color}08`,border:`1px solid ${stageInfoCards[stageInfoIdx].color}15`,
+        {/* 3. INFO STRIP */}
+        <div style={{padding:"6px 12px",borderRadius:8,marginBottom:8,textAlign:"center",
+          background:`${infoItems[infoIdx].color}06`,border:`1px solid ${infoItems[infoIdx].color}12`,
           transition:"all 0.5s ease",
         }}>
-          <div style={{fontSize:11,fontWeight:700,color:stageInfoCards[stageInfoIdx].color,lineHeight:1.4,
-            transition:"opacity 0.3s ease",
-          }}>{stageInfoCards[stageInfoIdx].text}</div>
-          <div style={{display:"flex",gap:4,justifyContent:"center",marginTop:6}}>
-            {stageInfoCards.map((_,i)=>(
-              <div key={i} style={{width:5,height:5,borderRadius:"50%",
-                background:i===stageInfoIdx?stageInfoCards[stageInfoIdx].color:`${C.text3}30`,
-                transition:"all 0.3s",
-              }}/>
-            ))}
+          <div style={{fontSize:10,fontWeight:700,color:infoItems[infoIdx].color,transition:"opacity 0.3s"}}>{infoItems[infoIdx].text}</div>
+        </div>
+
+        {/* 4. YOUR BACKSTAGE PASS */}
+        <div style={{display:"flex",alignItems:"center",gap:12,padding:"8px 14px",borderRadius:12,
+          background:"rgba(255,255,255,0.02)",border:`1px solid ${C.glassBorder}`,backdropFilter:"blur(8px)",
+        }}>
+          <span style={{fontSize:12}}>{"🎟️"}</span>
+          <div style={{flex:1,display:"flex",alignItems:"center",gap:10,flexWrap:"wrap"}}>
+            <span style={{fontSize:9,fontWeight:700,color:C.text}}>Shows: <span style={{color:C.gold}}>23</span></span>
+            <span style={{fontSize:9,fontWeight:700,color:C.text}}>Wins: <span style={{color:C.green}}>12</span></span>
+            <span style={{fontSize:9,fontWeight:700,color:C.text}}>Role: <span style={{color:C.cyan}}>Contestant 4x</span> <span style={{color:C.text3}}>|</span> <span style={{color:C.purple}}>Judge 2x</span></span>
           </div>
         </div>
 
       </div>
       <div style={{height:80}}/>
+
+      {/* ROLE PROMPT OVERLAY */}
+      {rolePrompt && (
+        <div style={{position:"fixed",inset:0,zIndex:300,display:"flex",alignItems:"center",justifyContent:"center",
+          background:"rgba(5,5,16,0.9)",backdropFilter:"blur(12px)"}}>
+          <div style={{textAlign:"center",padding:24,maxWidth:300,animation:"fadeIn 0.3s ease"}}>
+            <div style={{fontSize:48,marginBottom:8}}>
+              {rolePrompt.role==="contestant"?"🎯":rolePrompt.role==="judge"?"👨‍⚖️":"👥"}
+            </div>
+            <div style={{fontSize:18,fontWeight:900,color:C.gold,marginBottom:4}}>
+              {rolePrompt.role==="contestant"?"YOU'RE THE CONTESTANT!":
+               rolePrompt.role==="judge"?"YOU'RE THE JUDGE!":"YOU'RE IN THE AUDIENCE!"}
+            </div>
+            <div style={{fontSize:14,fontWeight:700,color:C.text,marginBottom:4}}>{rolePrompt.show.emoji} {rolePrompt.show.name}</div>
+            <div style={{fontSize:11,color:C.text2,marginBottom:16}}>
+              {rolePrompt.role==="contestant"?"Step into the spotlight and play!":
+               rolePrompt.role==="judge"?"Score the performances!":"Watch, react, and cheer!"}
+            </div>
+            {rolePrompt.role==="contestant" ? (
+              <div style={{display:"flex",gap:8,justifyContent:"center"}}>
+                <div onClick={()=>{setStageRole("contestant");const g=rolePrompt.show;setRolePrompt(null);startShowGame(g);}}
+                  style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.gold}15`,border:`1px solid ${C.gold}40`,fontSize:13,fontWeight:800,color:C.gold}}>
+                  Accept! {"🎯"}
+                </div>
+                <div onClick={()=>{setStageRole("audience");const g=rolePrompt.show;setRolePrompt(null);startShowGame(g);}}
+                  style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.text3}08`,border:`1px solid ${C.text3}20`,fontSize:13,fontWeight:700,color:C.text3}}>
+                  Watch instead
+                </div>
+              </div>
+            ) : (
+              <div onClick={()=>{setStageRole(rolePrompt.role);const g=rolePrompt.show;setRolePrompt(null);startShowGame(g);}}
+                style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.cyan}15`,border:`1px solid ${C.cyan}40`,fontSize:13,fontWeight:800,color:C.cyan}}>
+                Let's Go! {"🎬"}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
     );
   };
