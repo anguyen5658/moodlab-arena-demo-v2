@@ -4475,7 +4475,7 @@ export default function MoodLabArena() {
     if(!wcTeam) return;
     playFx("success");
     // Show device selection before group draw
-    setWcPhase("device_select");
+    setWcDeviceInput(sessionInput||"puff");setWcPhase("group_draw");
   };
 
   const wcConfirmDevice = (inputId) => {
@@ -15293,7 +15293,7 @@ export default function MoodLabArena() {
             ))}
             {fanTeam && (
               <div style={{position:"sticky",bottom:0,padding:"10px 0",background:`linear-gradient(0deg, #06101E, transparent)`}}>
-                <div onClick={()=>{playFx("success");setFanMode("device_select");}} style={{
+                <div onClick={()=>{playFx("success");setFanDevice(sessionInput||"puff");setFanMode("watching");}} style={{
                   padding:"12px 0",borderRadius:14,textAlign:"center",cursor:"pointer",
                   background:`linear-gradient(135deg, ${C.cyan}40, ${C.gold}30)`,
                   border:`2px solid ${C.cyan}60`,backdropFilter:"blur(8px)",
@@ -15309,7 +15309,7 @@ export default function MoodLabArena() {
     }
 
     // ── FAN: Choose Device ──
-    if(fanMode === "device_select") {
+    if(fanMode === "device_select_DISABLED") {
       return (
         <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:110,overflow:"hidden",display:"flex",alignItems:"center",justifyContent:"center"}}>
           <div style={bgStyle}/>
@@ -15560,7 +15560,7 @@ export default function MoodLabArena() {
     }
 
     // ═══ DEVICE SELECTION FOR TOURNAMENT ═══
-    if(wcPhase === "device_select") {
+    if(wcPhase === "device_select_DISABLED") {
       return (
         <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:110,overflow:"hidden",display:"flex",alignItems:"center",justifyContent:"center"}}>
           <div style={{position:"absolute",inset:0,background:`
