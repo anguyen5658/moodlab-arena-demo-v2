@@ -271,6 +271,148 @@ const BADGES = [
   { name:"WC Champion", emoji:"🏆", earned:false },{ name:"Social", emoji:"🦋", earned:false },
 ];
 
+// ── WALL: MEGA LEADERBOARD DATA ──
+const WALL_LEADERBOARD = {
+  all:[
+    {name:"CloudChaser99",emoji:"😎",rank:"Diamond",value:4200,metric:"coins",trend:"up"},
+    {name:"PuffMaster420",emoji:"🤠",rank:"Platinum",value:3800,metric:"coins",trend:"up"},
+    {name:"THC_Tony",emoji:"😤",rank:"Gold",value:3200,metric:"coins",trend:"down"},
+    {name:"BlinkerBetty",emoji:"💀",rank:"Gold",value:3050,metric:"coins",trend:"up"},
+    {name:"PuffSensei",emoji:"🥋",rank:"Platinum",value:2900,metric:"coins",trend:"up"},
+    {name:"QuickDraw_420",emoji:"🔫",rank:"Diamond",value:2800,metric:"coins",trend:"down"},
+    {name:"OracleKing",emoji:"🔮",rank:"Gold",value:2650,metric:"coins",trend:"up"},
+    {name:"IronLungs",emoji:"🫁",rank:"Platinum",value:2500,metric:"coins",trend:"up"},
+    {name:"BeatMaster",emoji:"🎵",rank:"Silver",value:2350,metric:"coins",trend:"down"},
+    {name:"GentlePuffer",emoji:"🎈",rank:"Gold",value:2200,metric:"coins",trend:"up"},
+    {name:"TimeLord",emoji:"⏱️",rank:"Silver",value:2150,metric:"coins",trend:"down"},
+    {name:"You",emoji:"😎",rank:"Gold",value:2100,metric:"coins",trend:"up",isYou:true},
+    {name:"The420Master",emoji:"🌿",rank:"Silver",value:1950,metric:"coins",trend:"up"},
+    {name:"DabQueen",emoji:"👸",rank:"Bronze",value:1800,metric:"coins",trend:"down"},
+    {name:"PuffDaddy_Jr",emoji:"💨",rank:"Bronze",value:1650,metric:"coins",trend:"up"},
+  ],
+  arcade:[
+    {name:"PuffMaster420",emoji:"🤠",rank:"Diamond",value:89,metric:"wins",trend:"up"},
+    {name:"CloudChaser99",emoji:"😎",rank:"Platinum",value:82,metric:"wins",trend:"up"},
+    {name:"BlinkerBetty",emoji:"💀",rank:"Gold",value:76,metric:"wins",trend:"down"},
+    {name:"GentlePuffer",emoji:"🎈",rank:"Gold",value:71,metric:"wins",trend:"up"},
+    {name:"IronLungs",emoji:"🫁",rank:"Platinum",value:68,metric:"wins",trend:"up"},
+    {name:"THC_Tony",emoji:"😤",rank:"Silver",value:64,metric:"wins",trend:"down"},
+    {name:"BeatMaster",emoji:"🎵",rank:"Silver",value:59,metric:"wins",trend:"up"},
+    {name:"You",emoji:"😎",rank:"Gold",value:55,metric:"wins",trend:"up",isYou:true},
+    {name:"QuickDraw_420",emoji:"🔫",rank:"Gold",value:52,metric:"wins",trend:"down"},
+    {name:"TimeLord",emoji:"⏱️",rank:"Silver",value:48,metric:"wins",trend:"up"},
+    {name:"PuffSensei",emoji:"🥋",rank:"Bronze",value:44,metric:"wins",trend:"up"},
+    {name:"The420Master",emoji:"🌿",rank:"Bronze",value:41,metric:"wins",trend:"down"},
+    {name:"DabQueen",emoji:"👸",rank:"Bronze",value:38,metric:"wins",trend:"up"},
+    {name:"OracleKing",emoji:"🔮",rank:"Bronze",value:35,metric:"wins",trend:"down"},
+    {name:"PuffDaddy_Jr",emoji:"💨",rank:"Bronze",value:31,metric:"wins",trend:"up"},
+  ],
+  stage:[
+    {name:"PuffSensei",emoji:"🥋",rank:"Diamond",value:45,metric:"wins",trend:"up"},
+    {name:"BeatMaster",emoji:"🎵",rank:"Platinum",value:41,metric:"wins",trend:"up"},
+    {name:"CloudChaser99",emoji:"😎",rank:"Gold",value:38,metric:"wins",trend:"down"},
+    {name:"IronLungs",emoji:"🫁",rank:"Gold",value:35,metric:"wins",trend:"up"},
+    {name:"THC_Tony",emoji:"😤",rank:"Silver",value:32,metric:"wins",trend:"up"},
+    {name:"BlinkerBetty",emoji:"💀",rank:"Silver",value:29,metric:"wins",trend:"down"},
+    {name:"You",emoji:"😎",rank:"Gold",value:27,metric:"wins",trend:"up",isYou:true},
+    {name:"GentlePuffer",emoji:"🎈",rank:"Silver",value:25,metric:"wins",trend:"up"},
+    {name:"PuffMaster420",emoji:"🤠",rank:"Bronze",value:22,metric:"wins",trend:"down"},
+    {name:"QuickDraw_420",emoji:"🔫",rank:"Bronze",value:19,metric:"wins",trend:"up"},
+    {name:"OracleKing",emoji:"🔮",rank:"Bronze",value:17,metric:"wins",trend:"down"},
+    {name:"TimeLord",emoji:"⏱️",rank:"Bronze",value:15,metric:"wins",trend:"up"},
+    {name:"The420Master",emoji:"🌿",rank:"Bronze",value:13,metric:"wins",trend:"up"},
+    {name:"DabQueen",emoji:"👸",rank:"Bronze",value:11,metric:"wins",trend:"down"},
+    {name:"PuffDaddy_Jr",emoji:"💨",rank:"Bronze",value:9,metric:"wins",trend:"up"},
+  ],
+  oracle:[
+    {name:"OracleKing",emoji:"🔮",rank:"Diamond",value:92,metric:"winpct",trend:"up"},
+    {name:"CloudChaser99",emoji:"😎",rank:"Platinum",value:87,metric:"winpct",trend:"up"},
+    {name:"The420Master",emoji:"🌿",rank:"Gold",value:83,metric:"winpct",trend:"down"},
+    {name:"PuffSensei",emoji:"🥋",rank:"Gold",value:79,metric:"winpct",trend:"up"},
+    {name:"TimeLord",emoji:"⏱️",rank:"Silver",value:76,metric:"winpct",trend:"up"},
+    {name:"You",emoji:"😎",rank:"Gold",value:73,metric:"winpct",trend:"up",isYou:true},
+    {name:"DabQueen",emoji:"👸",rank:"Silver",value:70,metric:"winpct",trend:"down"},
+    {name:"THC_Tony",emoji:"😤",rank:"Silver",value:68,metric:"winpct",trend:"up"},
+    {name:"BlinkerBetty",emoji:"💀",rank:"Bronze",value:65,metric:"winpct",trend:"down"},
+    {name:"PuffMaster420",emoji:"🤠",rank:"Bronze",value:62,metric:"winpct",trend:"up"},
+    {name:"IronLungs",emoji:"🫁",rank:"Bronze",value:59,metric:"winpct",trend:"up"},
+    {name:"BeatMaster",emoji:"🎵",rank:"Bronze",value:56,metric:"winpct",trend:"down"},
+    {name:"GentlePuffer",emoji:"🎈",rank:"Bronze",value:53,metric:"winpct",trend:"up"},
+    {name:"QuickDraw_420",emoji:"🔫",rank:"Bronze",value:50,metric:"winpct",trend:"down"},
+    {name:"PuffDaddy_Jr",emoji:"💨",rank:"Bronze",value:47,metric:"winpct",trend:"up"},
+  ],
+  tournament:[
+    {name:"CloudChaser99",emoji:"😎",rank:"Diamond",value:12,metric:"wins",trend:"up"},
+    {name:"QuickDraw_420",emoji:"🔫",rank:"Platinum",value:10,metric:"wins",trend:"up"},
+    {name:"PuffSensei",emoji:"🥋",rank:"Platinum",value:9,metric:"wins",trend:"down"},
+    {name:"THC_Tony",emoji:"😤",rank:"Gold",value:8,metric:"wins",trend:"up"},
+    {name:"PuffMaster420",emoji:"🤠",rank:"Gold",value:7,metric:"wins",trend:"up"},
+    {name:"IronLungs",emoji:"🫁",rank:"Gold",value:6,metric:"wins",trend:"down"},
+    {name:"BlinkerBetty",emoji:"💀",rank:"Silver",value:5,metric:"wins",trend:"up"},
+    {name:"OracleKing",emoji:"🔮",rank:"Silver",value:5,metric:"wins",trend:"up"},
+    {name:"You",emoji:"😎",rank:"Silver",value:4,metric:"wins",trend:"up",isYou:true},
+    {name:"BeatMaster",emoji:"🎵",rank:"Silver",value:4,metric:"wins",trend:"down"},
+    {name:"GentlePuffer",emoji:"🎈",rank:"Bronze",value:3,metric:"wins",trend:"up"},
+    {name:"TimeLord",emoji:"⏱️",rank:"Bronze",value:3,metric:"wins",trend:"down"},
+    {name:"The420Master",emoji:"🌿",rank:"Bronze",value:2,metric:"wins",trend:"up"},
+    {name:"DabQueen",emoji:"👸",rank:"Bronze",value:2,metric:"wins",trend:"down"},
+    {name:"PuffDaddy_Jr",emoji:"💨",rank:"Bronze",value:1,metric:"wins",trend:"up"},
+  ],
+};
+const WALL_RECORDS = [
+  {emoji:"⚡",name:"Fastest Draw",value:"127ms",holder:"QuickDraw_420",today:false},
+  {emoji:"🫁",name:"Longest Puff Limbo",value:"Round 7",holder:"IronLungs",today:true},
+  {emoji:"🎵",name:"Highest Combo",value:"47x",holder:"BeatMaster",today:false},
+  {emoji:"🎈",name:"Most Survivals",value:"12",holder:"GentlePuffer",today:false},
+  {emoji:"⏱️",name:"Best Puff Clock",value:"\u00b10.02s",holder:"TimeLord",today:false},
+  {emoji:"🌿",name:"Perfect 4.20",value:"3 times",holder:"The420Master",today:true},
+  {emoji:"🔮",name:"Prediction Streak",value:"23 days",holder:"OracleKing",today:false},
+  {emoji:"💀",name:"Most Blinkers",value:"420",holder:"BlinkerBetty",today:false},
+];
+const WALL_ACTIVITY = [
+  {emoji:"😎",msg:"CloudChaser99 won FK1 World Cup! 🏆",time:"3m ago"},
+  {emoji:"😤",msg:"THC_Tony hit a blinker in Puff Limbo 💀",time:"7m ago"},
+  {emoji:"👸",msg:"PuffQueen predicted Brazil correctly 🔮",time:"12m ago"},
+  {emoji:"⏱️",msg:"BlinkerBetty set Puff Clock record ⏱️",time:"18m ago"},
+  {emoji:"💪",msg:"Team Iron Lungs won The Puff Games 💪",time:"25m ago"},
+  {emoji:"🤠",msg:"PuffMaster420 got a 15-game streak 🔥",time:"32m ago"},
+  {emoji:"🥋",msg:"PuffSensei cleared Dojo Grand Master 🏯",time:"41m ago"},
+  {emoji:"🔫",msg:"QuickDraw_420 set new fastest draw ⚡",time:"48m ago"},
+  {emoji:"🎵",msg:"BeatMaster hit 47x combo in Rhythm Puff 🎶",time:"55m ago"},
+  {emoji:"🌿",msg:"The420Master hit perfect 4.20 again 🌿",time:"1h ago"},
+  {emoji:"💀",msg:"BlinkerBetty reached 420 total blinkers 💀",time:"1.5h ago"},
+  {emoji:"🎈",msg:"GentlePuffer survived 12 rounds in BP 🎈",time:"2h ago"},
+];
+const WALL_ACHIEVEMENTS_RECENT = [
+  {player:"PuffMaster420",achievement:"Iron Lungs 🫁",time:"2m ago",emoji:"🤠"},
+  {player:"CloudChaser99",achievement:"Dragon Scroll 📜",time:"15m ago",emoji:"😎"},
+  {player:"THC_Tony",achievement:"Blinker King 💀",time:"28m ago",emoji:"😤"},
+  {player:"BeatMaster",achievement:"Rhythm God 🎵",time:"45m ago",emoji:"🎵"},
+  {player:"GentlePuffer",achievement:"Survivor 🎈",time:"1h ago",emoji:"🎈"},
+];
+const WALL_ACHIEVEMENTS_RARE = [
+  {name:"Living Legend",emoji:"⭐",pct:"0.3%"},
+  {name:"The 420",emoji:"🌿",pct:"1.2%"},
+  {name:"Iron Lungs",emoji:"🫁",pct:"2.1%"},
+];
+const WALL_FRIENDS = [
+  {name:"PuffMaster420",emoji:"🤠",rank:"Platinum",online:true,lastSeen:null},
+  {name:"THC_Tony",emoji:"😤",rank:"Gold",online:true,lastSeen:null},
+  {name:"BeatMaster",emoji:"🎵",rank:"Silver",online:false,lastSeen:"2h ago"},
+  {name:"GentlePuffer",emoji:"🎈",rank:"Gold",online:false,lastSeen:"5h ago"},
+  {name:"DabQueen",emoji:"👸",rank:"Bronze",online:true,lastSeen:null},
+];
+const WALL_OPPONENTS = [
+  {name:"IronLungs",emoji:"🫁",game:"Puff Limbo",result:"Lost"},
+  {name:"QuickDraw_420",emoji:"🔫",game:"Wild West Duel",result:"Won"},
+  {name:"OracleKing",emoji:"🔮",game:"Vibe Check",result:"Lost"},
+];
+const WALL_CHAMPIONS = [
+  {tournament:"FK1 WC Champion",player:"CloudChaser99",emoji:"🏆",flag:"🇧🇷",badge:"😎"},
+  {tournament:"Outlaw Circuit Sheriff",player:"QuickDraw_420",emoji:"🤠",flag:"🇺🇸",badge:"🔫"},
+  {tournament:"Dojo Grand Master",player:"PuffSensei",emoji:"🥋",flag:"🇯🇵",badge:"🥋"},
+];
+
 // ── SOCIAL: ACHIEVEMENTS ──
 const ACHIEVEMENTS = [
   {id:"first_puff", name:"First Puff", desc:"Puff for the first time", emoji:"💨", color:C.cyan, rare:false},
@@ -1017,6 +1159,9 @@ export default function MoodLabArena() {
   const [chatExpanded, setChatExpanded] = useState(false);
   const [lbTab, setLbTab] = useState("global");
   const [tournaments, setTournaments] = useState(TOURNAMENTS);
+  const [wallTab, setWallTab] = useState("all");
+  const [wallMetric, setWallMetric] = useState("coins");
+  const [wallGameFilter, setWallGameFilter] = useState(null);
   const chatRef = useRef(null);
 
   // ── Input Method ──
