@@ -6409,10 +6409,10 @@ export default function MoodLabArena() {
     const playerCounts = {finalkick:2100,finalkick2:356,finalkick3:198,wildwest:720,russian:167,balloon:145,puffpong:289,rhythm:134,tugofwar:312,hotpotato:890,hooked:410,rps:540};
     const totalPlaying = Object.values(playerCounts).reduce((a,b)=>a+b,0);
     const arcadeTournaments = [
-      {name:"FK1 World Cup 2026",emoji:"\u{1F3C6}",game:"Final Kick",prize:"50,000 coins",color:C.gold,status:"LIVE",players:312,round:"Round of 16",bracket:[8,4,2,1],currentRound:1},
-      {name:"The Outlaw Circuit",emoji:"\u{1F920}",game:"Wild West Duel",prize:"25,000 coins",color:C.orange,status:"OPEN",players:148,round:"Qualifying",bracket:[16,8,4,1],currentRound:0},
-      {name:"Dojo Championship",emoji:"\u{1F94B}",game:"Tug of War",prize:"15,000 coins",color:C.red,status:"STARTING",players:96,round:"Round 1",bracket:[8,4,2,1],currentRound:0},
-      {name:"Pong Masters",emoji:"\u{1F3D3}",game:"Puff Pong",prize:"10,000 coins",color:C.green,status:"OPEN",players:64,round:"Open Entry",bracket:[8,4,2,1],currentRound:0},
+      {name:"FK1 World Cup 2026",emoji:"🏆",game:"Final Kick",prize:"50,000 coins",color:C.gold,status:"LIVE",players:312,round:"Round of 16",bracket:[8,4,2,1],currentRound:1},
+      {name:"The Outlaw Circuit",emoji:"🤠",game:"Wild West Duel",prize:"25,000 coins",color:C.orange,status:"OPEN",players:148,round:"Qualifying",bracket:[16,8,4,1],currentRound:0},
+      {name:"Dojo Championship",emoji:"🥋",game:"Tug of War",prize:"15,000 coins",color:C.red,status:"STARTING",players:96,round:"Round 1",bracket:[8,4,2,1],currentRound:0},
+      {name:"Pong Masters",emoji:"🏓",game:"Puff Pong",prize:"10,000 coins",color:C.green,status:"OPEN",players:64,round:"Open Entry",bracket:[8,4,2,1],currentRound:0},
     ];
     const activeTourney = arcadeTournaments.find(t=>t.status==="LIVE") || arcadeTournaments[0];
     const trendingGames = [...PLAY_GAMES].sort((a,b)=>(playerCounts[b.id]||0)-(playerCounts[a.id]||0)).slice(0,5);
@@ -6423,13 +6423,13 @@ export default function MoodLabArena() {
     });
     const triedGames = ["finalkick","wildwest","puffpong","tugofwar","rps"];
     const recentActivity = [
-      {emoji:"\u{1F3C6}",text:"You won Final Kick vs SmokeBot! +80 coins",time:"5m ago",color:C.gold},
-      {emoji:"\u{1F3AF}",text:"CloudChaser99 just won 500 coins in Wild West!",time:"8m ago",color:C.orange},
-      {emoji:"\u23F1\uFE0F",text:"NeonQueen set a new Puff Clock record!",time:"12m ago",color:C.cyan},
-      {emoji:"\u{1F3C6}",text:"Tournament: Outlaw Circuit Round 2 starting!",time:"20m ago",color:C.red},
-      {emoji:"\u{1F4A3}",text:"Hot Potato lobby is FULL - 8/8 players!",time:"25m ago",color:C.orange},
+      {emoji:"🏆",text:"You won Final Kick vs SmokeBot! +80 coins",time:"5m ago",color:C.gold},
+      {emoji:"🎯",text:"CloudChaser99 just won 500 coins in Wild West!",time:"8m ago",color:C.orange},
+      {emoji:"⏱️",text:"NeonQueen set a new Puff Clock record!",time:"12m ago",color:C.cyan},
+      {emoji:"🏆",text:"Tournament: Outlaw Circuit Round 2 starting!",time:"20m ago",color:C.red},
+      {emoji:"💣",text:"Hot Potato lobby is FULL - 8/8 players!",time:"25m ago",color:C.orange},
     ];
-    const myStats = {gamesPlayed:47,winRate:62,coinsWon:4200,favGame:PLAY_GAMES[0],streak:5,bestRecord:"Puff Clock \u00B10.02s"};
+    const myStats = {gamesPlayed:47,winRate:62,coinsWon:4200,favGame:PLAY_GAMES[0],streak:5,bestRecord:"Puff Clock ±0.02s"};
 
     return (
     <div style={{position:"relative"}}>
@@ -6473,7 +6473,7 @@ export default function MoodLabArena() {
         {/* ======= HOT RIGHT NOW - Dynamic Featured Card ======= */}
         <div style={{marginBottom:16}}>
           <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:10}}>
-            <span style={{fontSize:13}}>{"\u{1F525}"}</span>
+            <span style={{fontSize:13}}>{"🔥"}</span>
             <span style={{fontSize:11,fontWeight:900,color:C.orange,letterSpacing:1.5}}>HOT RIGHT NOW</span>
           </div>
           <div onClick={()=>{playFx("select");setSelectedGame(featuredGame);}} style={{
@@ -6488,7 +6488,7 @@ export default function MoodLabArena() {
             <div style={{position:"absolute",top:12,right:12,display:"flex",alignItems:"center",gap:5,padding:"4px 10px",borderRadius:8,
               background:`${C.red}20`,border:`1px solid ${C.red}35`,boxShadow:`0 0 12px ${C.red}20`,animation:"pulse 2s infinite",
             }}>
-              <span style={{fontSize:9,fontWeight:900,color:C.red,letterSpacing:1}}>{"\u{1F525}"} HOT</span>
+              <span style={{fontSize:9,fontWeight:900,color:C.red,letterSpacing:1}}>{"🔥"} HOT</span>
             </div>
             <div style={{position:"absolute",bottom:14,right:16,display:"flex",gap:4}}>
               {hotGames.map((_,i)=>(
@@ -6525,15 +6525,15 @@ export default function MoodLabArena() {
         {/* ======= QUICK PLAY - Instant Action Strip ======= */}
         <div style={{marginBottom:16}}>
           <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:10}}>
-            <span style={{fontSize:13}}>{"\u26A1"}</span>
+            <span style={{fontSize:13}}>{"⚡"}</span>
             <span style={{fontSize:11,fontWeight:900,color:C.cyan,letterSpacing:1.5}}>QUICK PLAY</span>
             <span style={{fontSize:9,color:C.text3,marginLeft:4}}>Jump into a random game!</span>
           </div>
           <div style={{display:"flex",gap:8}}>
             {[
-              {label:"Random",icon:"\u{1F3B2}",sub:"~5s",color:C.cyan},
-              {label:"Fastest Queue",icon:"\u26A1",sub:"~2s",color:C.gold},
-              {label:"With Friends",icon:"\u{1F465}",sub:"Invite",color:C.pink},
+              {label:"Random",icon:"🎲",sub:"~5s",color:C.cyan},
+              {label:"Fastest Queue",icon:"⚡",sub:"~2s",color:C.gold},
+              {label:"With Friends",icon:"👥",sub:"Invite",color:C.pink},
             ].map((q,i)=>(
               <div key={i} onClick={()=>{playFx("select");const rg=PLAY_GAMES[Math.floor(Math.random()*PLAY_GAMES.length)];setSelectedGame(rg);notify("Joining "+rg.name+"!",q.color);}} style={{
                 flex:1,padding:"12px 8px",borderRadius:14,textAlign:"center",cursor:"pointer",
@@ -6552,7 +6552,7 @@ export default function MoodLabArena() {
         {/* ======= LIVE TOURNAMENT SPOTLIGHT ======= */}
         <div style={{marginBottom:16}}>
           <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:10}}>
-            <span style={{fontSize:13}}>{"\u{1F3C6}"}</span>
+            <span style={{fontSize:13}}>{"🏆"}</span>
             <span style={{fontSize:11,fontWeight:900,color:C.gold,letterSpacing:1.5}}>LIVE TOURNAMENT</span>
           </div>
           <div onClick={()=>{playFx("select");if(activeTourney.game==="Final Kick")setWcPhase("team_select");else notify(activeTourney.name+" - "+activeTourney.prize,activeTourney.color);}} style={{
@@ -6599,7 +6599,7 @@ export default function MoodLabArena() {
                     <div style={{fontSize:10,fontWeight:800,color:i<=activeTourney.currentRound?activeTourney.color:C.text3}}>{n}</div>
                     <div style={{fontSize:6,color:C.text3}}>{["R16","QF","SF","F"][i]||"R"+(i+1)}</div>
                   </div>
-                  {i<activeTourney.bracket.length-1 && <span style={{fontSize:8,color:C.text3}}>{"\u2192"}</span>}
+                  {i<activeTourney.bracket.length-1 && <span style={{fontSize:8,color:C.text3}}>{"→"}</span>}
                 </React.Fragment>
               ))}
             </div>
@@ -6621,7 +6621,7 @@ export default function MoodLabArena() {
                   <span style={{fontSize:7,fontWeight:800,color:t.status==="STARTING"?C.orange:C.green}}>{t.status}</span>
                 </div>
                 <div style={{fontSize:9,fontWeight:800,color:C.text}}>{t.name}</div>
-                <div style={{fontSize:8,color:t.color,fontWeight:700,marginTop:2}}>{"\u{1F381}"} {t.prize}</div>
+                <div style={{fontSize:8,color:t.color,fontWeight:700,marginTop:2}}>{"🎁"} {t.prize}</div>
               </div>
             ))}
           </div>
@@ -6630,7 +6630,7 @@ export default function MoodLabArena() {
         {/* ======= WHAT'S TRENDING - Popularity Chart ======= */}
         <div style={{marginBottom:16}}>
           <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:10}}>
-            <span style={{fontSize:13}}>{"\u{1F4CA}"}</span>
+            <span style={{fontSize:13}}>{"📊"}</span>
             <span style={{fontSize:11,fontWeight:900,color:C.text,letterSpacing:1.5}}>WHAT'S TRENDING</span>
           </div>
           <div style={{padding:"14px",borderRadius:16,background:`${C.cyan}04`,border:`1px solid ${C.cyan}10`,
@@ -6667,7 +6667,7 @@ export default function MoodLabArena() {
         <div style={{marginBottom:16}}>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
             <div style={{display:"flex",alignItems:"center",gap:6}}>
-              <span style={{fontSize:13}}>{"\u{1F3AE}"}</span>
+              <span style={{fontSize:13}}>{"🎮"}</span>
               <span style={{fontSize:11,fontWeight:900,color:C.text,letterSpacing:1.5}}>ALL GAMES</span>
             </div>
             <span style={{fontSize:9,color:C.text3}}>{PLAY_GAMES.length} games</span>
@@ -6684,7 +6684,7 @@ export default function MoodLabArena() {
                   animation:`fadeIn 0.3s ease ${i*0.04}s both`,
                 }}>
                   <div style={{position:"absolute",top:6,right:6,display:"flex",flexDirection:"column",gap:3,alignItems:"flex-end"}}>
-                    {g.hot && <span style={{fontSize:7,fontWeight:800,color:C.red,padding:"1px 6px",borderRadius:4,background:`${C.red}18`,border:`1px solid ${C.red}25`,animation:"pulse 2s infinite"}}>{"\u{1F525}"} HOT</span>}
+                    {g.hot && <span style={{fontSize:7,fontWeight:800,color:C.red,padding:"1px 6px",borderRadius:4,background:`${C.red}18`,border:`1px solid ${C.red}25`,animation:"pulse 2s infinite"}}>{"🔥"} HOT</span>}
                     {isNew && <span style={{fontSize:6,fontWeight:800,color:C.cyan,padding:"1px 5px",borderRadius:4,background:`${C.cyan}15`,border:`1px solid ${C.cyan}25`}}>NEW FOR YOU</span>}
                   </div>
                   <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
@@ -6694,7 +6694,7 @@ export default function MoodLabArena() {
                     }}>{g.emoji}</div>
                     <div style={{flex:1,minWidth:0}}>
                       <div style={{fontSize:11,fontWeight:800,color:C.text,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{g.name}</div>
-                      <div style={{fontSize:8,color:C.text3,marginTop:1}}>{"\u{1F465}"} {g.players} · {"\u23F1"} {g.time}</div>
+                      <div style={{fontSize:8,color:C.text3,marginTop:1}}>{"👥"} {g.players} · {"⏱"} {g.time}</div>
                     </div>
                   </div>
                   <div style={{display:"flex",gap:3,flexWrap:"wrap",alignItems:"center"}}>
@@ -6713,7 +6713,7 @@ export default function MoodLabArena() {
         {/* ======= YOUR ARCADE STATS ======= */}
         <div style={{marginBottom:16}}>
           <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:10}}>
-            <span style={{fontSize:13}}>{"\u{1F4B0}"}</span>
+            <span style={{fontSize:13}}>{"💰"}</span>
             <span style={{fontSize:11,fontWeight:900,color:C.gold,letterSpacing:1.5}}>YOUR ARCADE STATS</span>
           </div>
           <div style={{padding:"16px",borderRadius:16,
@@ -6741,7 +6741,7 @@ export default function MoodLabArena() {
                 </div>
               </div>
               <div style={{flex:1,display:"flex",alignItems:"center",gap:6,padding:"6px 8px",borderRadius:8,background:`${C.orange}06`}}>
-                <span style={{fontSize:14}}>{"\u{1F525}"}</span>
+                <span style={{fontSize:14}}>{"🔥"}</span>
                 <div>
                   <div style={{fontSize:7,color:C.text3}}>Win Streak</div>
                   <div style={{fontSize:9,fontWeight:700,color:C.orange}}>{myStats.streak} wins</div>
@@ -6754,7 +6754,7 @@ export default function MoodLabArena() {
         {/* ======= RECENT ACTIVITY ======= */}
         <div style={{marginBottom:14}}>
           <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:10}}>
-            <span style={{fontSize:13}}>{"\u{1F5E3}\uFE0F"}</span>
+            <span style={{fontSize:13}}>{"🗣️"}</span>
             <span style={{fontSize:11,fontWeight:900,color:C.text,letterSpacing:1.5}}>RECENT ACTIVITY</span>
           </div>
           <div style={{borderRadius:14,overflow:"hidden",border:`1px solid ${C.cyan}10`,
@@ -7501,8 +7501,8 @@ export default function MoodLabArena() {
 
   const renderWall = () => {
     const wallGlass = {borderRadius:14,background:"rgba(255,255,255,0.025)",border:`1px solid ${C.border}`,backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)"};
-    const wallGlassGold = {...wallGlass,border:`1px solid ${C.gold}20`,boxShadow:`0 0 20px ${C.gold}08`};
-    const rankColors = {Diamond:C.cyan,Platinum:"#E5E4E2",Gold:C.gold,Silver:"#C0C0C0",Bronze:"#CD7F32"};
+    const wallGlassGold = {...wallGlass,border:`1px solid ${C.gold}25`,boxShadow:`0 0 24px ${C.gold}10`};
+    const rankColors = {Diamond:C.cyan,Platinum:"#E5E4E2",Gold:C.gold,Silver:"#C0C0C0",Bronze:"#CD7F32",Legendary:"#FF6B35"};
     const lbData = WALL_LEADERBOARD[wallTab]||WALL_LEADERBOARD.all;
     const lbTop10 = lbData.slice(0,10);
     const youEntry = lbData.find(p=>p.isYou);
@@ -12644,7 +12644,7 @@ export default function MoodLabArena() {
               {/* Header */}
               <div style={{textAlign:"center",marginBottom:12}}>
                 <div style={{fontSize:14,fontWeight:900,color:C.cyan,letterSpacing:2,textTransform:"uppercase"}}>
-                  {"\u23F1\uFE0F"} PUFF CLOCK {"\u23F1\uFE0F"}
+                  {"⏱️"} PUFF CLOCK {"⏱️"}
                 </div>
                 <div style={{fontSize:11,color:C.text3,marginTop:4}}>
                   Round {pcRound}/5 {pcPerfect420 ? "| \uD83C\uDF1F 4.20 ACHIEVED!" : ""}
@@ -12654,7 +12654,7 @@ export default function MoodLabArena() {
               {/* Intro */}
               {isIntro && (
                 <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column"}}>
-                  <div style={{fontSize:48,marginBottom:12}}>{"\u23F1\uFE0F"}</div>
+                  <div style={{fontSize:48,marginBottom:12}}>{"⏱️"}</div>
                   <div style={{fontSize:22,fontWeight:900,color:C.cyan}}>{pcComment}</div>
                   <div style={{fontSize:12,color:C.text3,marginTop:8}}>5 rounds of precision puffing</div>
                 </div>
@@ -17287,6 +17287,7 @@ export default function MoodLabArena() {
 
       <style>{`
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+        @keyframes scanLine{0%{transform:translateY(-100%)}100%{transform:translateY(20000%)}}
         @keyframes spotlightSweep{0%{transform:translateX(-100%) rotate(15deg)}50%{transform:translateX(400%) rotate(15deg)}100%{transform:translateX(-100%) rotate(15deg)}}
         @keyframes breathe{0%,100%{opacity:1;transform:scale(1) translateX(-50%)}50%{opacity:.7;transform:scale(1.05) translateX(-50%)}}
         @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
