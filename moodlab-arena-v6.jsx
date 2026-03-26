@@ -5315,11 +5315,6 @@ export default function MoodLabArena() {
           {/* Info card — minimal glass overlay */}
           <div style={{borderRadius:20,overflow:"hidden",marginBottom:8,...GLASS_CARD}}>
             <div style={{padding:"16px 18px 14px"}}>
-              {/* Zone title + subtitle */}
-              <div style={{textAlign:"center",marginBottom:12}}>
-                <div style={{fontSize:22,fontWeight:900,color:z.primary,textShadow:`0 0 20px ${z.primary}40`,letterSpacing:0.5}}>{z.icon} {z.name}</div>
-                <div style={{fontSize:11,color:C.text3,marginTop:3,letterSpacing:0.5}}>{z.sub}</div>
-              </div>
               {/* Stat pills row */}
               <div style={{marginBottom:14}}>
                 {renderFocusContent(viewKey)}
