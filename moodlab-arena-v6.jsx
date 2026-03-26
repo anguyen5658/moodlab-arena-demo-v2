@@ -6529,17 +6529,6 @@ export default function MoodLabArena() {
           </div>
         </div>
 
-        {/* ======= TAB BAR ======= */}
-        <div style={{display:"flex",borderBottom:`1px solid ${C.border}`,marginTop:12,marginBottom:8}}>
-          {["games","tournaments","stats","activity"].map(t=>(
-            <div key={t} onClick={()=>setArcadeHubTab(t)} style={{
-              flex:1,padding:"8px 0",textAlign:"center",cursor:"pointer",
-              fontSize:9,fontWeight:arcadeHubTab===t?800:600,
-              color:arcadeHubTab===t?C.cyan:C.text3,
-              borderBottom:arcadeHubTab===t?`2px solid ${C.cyan}`:"2px solid transparent",
-            }}>{t.charAt(0).toUpperCase()+t.slice(1)}</div>
-
-
         {/* ======= ALL GAMES - Smart 2-Column Grid (PRIMARY) ======= */}
         <div style={{marginBottom:4}}>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
@@ -6587,7 +6576,16 @@ export default function MoodLabArena() {
           </div>
         </div>
 
-                  ))}
+        {/* ======= TAB BAR ======= */}
+        <div style={{display:"flex",borderBottom:`1px solid ${C.border}`,marginTop:12,marginBottom:8}}>
+          {["games","tournaments","stats","activity"].map(t=>(
+            <div key={t} onClick={()=>setArcadeHubTab(t)} style={{
+              flex:1,padding:"8px 0",textAlign:"center",cursor:"pointer",
+              fontSize:9,fontWeight:arcadeHubTab===t?800:600,
+              color:arcadeHubTab===t?C.cyan:C.text3,
+              borderBottom:arcadeHubTab===t?`2px solid ${C.cyan}`:"2px solid transparent",
+            }}>{t.charAt(0).toUpperCase()+t.slice(1)}</div>
+          ))}
         </div>
 
         {/* Tournaments tab */}
