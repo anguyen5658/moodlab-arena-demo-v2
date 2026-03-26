@@ -30,6 +30,7 @@ const Z = {
   stage:  { primary:"#FFD93D", glow:"rgba(255,217,61,0.35)", dim:"rgba(255,217,61,0.08)", name:"The Stage", icon:"🎪", sub:"11 Live Shows" },
   oracle: { primary:"#C084FC", glow:"rgba(192,132,252,0.35)", dim:"rgba(192,132,252,0.08)", name:"The Oracle", icon:"🔮", sub:"4 Prediction Games" },
   wall:   { primary:"#FB923C", glow:"rgba(251,146,60,0.35)", dim:"rgba(251,146,60,0.08)", name:"The Wall", icon:"🏆", sub:"Rankings & Glory" },
+  worldcup:{ primary:"#FFD93D", glow:"rgba(255,217,61,0.35)", dim:"rgba(255,217,61,0.08)", name:"World Cup 2026", icon:"⚽", sub:"Limited Event" },
 };
 
 const C = {
@@ -722,6 +723,48 @@ const WC_CONFEDERATIONS = [
 
 const WC_COOLDOWN_MS = 6 * 60 * 60 * 1000; // 6 hours
 
+// ── LIVE MATCH DATA (simulated real-time WC matches) ──
+const WC_LIVE_MATCHES = [
+  {
+    id: "live1",
+    home: {name:"USA", flag:"🇺🇸", score:1},
+    away: {name:"Mexico", flag:"🇲🇽", score:0},
+    minute: 67,
+    status: "LIVE",
+    events: [
+      {min:23, type:"goal", team:"home", player:"Pulisic", emoji:"⚽"},
+      {min:45, type:"halftime", emoji:"⏱️"},
+      {min:55, type:"yellow", team:"away", player:"Lozano", emoji:"🟡"},
+    ],
+    nextEvent: "Corner kick for Mexico",
+    viewers: 4247,
+  },
+  {
+    id: "live2",
+    home: {name:"Brazil", flag:"🇧🇷", score:2},
+    away: {name:"Germany", flag:"🇩🇪", score:2},
+    minute: 82,
+    status: "LIVE",
+    events: [
+      {min:12, type:"goal", team:"home", player:"Vinicius Jr", emoji:"⚽"},
+      {min:34, type:"goal", team:"away", player:"Musiala", emoji:"⚽"},
+      {min:45, type:"halftime", emoji:"⏱️"},
+      {min:56, type:"goal", team:"home", player:"Rodrygo", emoji:"⚽"},
+      {min:71, type:"goal", team:"away", player:"Wirtz", emoji:"⚽"},
+    ],
+    nextEvent: "Free kick for Brazil",
+    viewers: 8934,
+  },
+];
+
+// ── WC 2026 GROUP STANDINGS ──
+const WC_2026_GROUPS = {
+  A: [{team:"USA",flag:"🇺🇸",pts:6,gd:3},{team:"Mexico",flag:"🇲🇽",pts:4,gd:1},{team:"Canada",flag:"🇨🇦",pts:3,gd:0},{team:"Morocco",flag:"🇲🇦",pts:0,gd:-4}],
+  B: [{team:"Brazil",flag:"🇧🇷",pts:7,gd:5},{team:"Germany",flag:"🇩🇪",pts:5,gd:2},{team:"Japan",flag:"🇯🇵",pts:4,gd:1},{team:"Nigeria",flag:"🇳🇬",pts:0,gd:-8}],
+  C: [{team:"France",flag:"🇫🇷",pts:9,gd:7},{team:"Argentina",flag:"🇦🇷",pts:6,gd:4},{team:"Australia",flag:"🇦🇺",pts:3,gd:-2},{team:"Saudi Arabia",flag:"🇸🇦",pts:0,gd:-9}],
+  D: [{team:"England",flag:"🏴󠁧󠁢󠁥󠁮󠁧󠁿",pts:7,gd:4},{team:"Spain",flag:"🇪🇸",pts:6,gd:3},{team:"South Korea",flag:"🇰🇷",pts:3,gd:-1},{team:"Colombia",flag:"🇨🇴",pts:1,gd:-6}],
+};
+
 const VC_QUESTIONS = [
   { q:"World Cup 2026 tổ chức ở bao nhiêu thành phố?", opts:["12","14","16","20"], correct:2 },
   { q:"Đội nào vô địch World Cup nhiều nhất?", opts:["Đức","Argentina","Italy","Brazil"], correct:3 },
@@ -814,7 +857,7 @@ const TICKER_ITEMS = [
 export default function MoodLabArena() {
   // ── Navigation ──
   const [tab, setTab] = useState("arena");
-  const [zone, setZone] = useState(null); // null=hub, "arcade"|"stage"|"oracle"|"wall"
+  const [zone, setZone] = useState(null); // null=hub, "arcade"|"stage"|"oracle"|"wall"|"worldcup"
   const [liveTab, setLiveTab] = useState("now");
   const [meTab, setMeTab] = useState("stats");
 
@@ -1209,6 +1252,7 @@ export default function MoodLabArena() {
   const [arcadeHubTab, setArcadeHubTab] = useState("games");
   const [oracleHubTab, setOracleHubTab] = useState("games");
   const [wallHubTab, setWallHubTab] = useState("rankings");
+  const [wcHubTab, setWcHubTab] = useState("games");
   const chatRef = useRef(null);
 
   // ── Input Method ──
@@ -1314,6 +1358,9 @@ export default function MoodLabArena() {
   const [wcFinalResult, setWcFinalResult] = useState(null); // "gold"|"silver"|"bronze"|"fourth"|"group"
   const [wcViewTab, setWcViewTab] = useState("mygroup"); // "mygroup" | "allgroups" | "bracket"
   const [gameTournament, setGameTournament] = useState(null); // {gameId, team, round, bracket, results} for non-FK tournaments
+  const [wcLiveMatches, setWcLiveMatches] = useState(WC_LIVE_MATCHES); // live match feed
+  const [wcLivePrediction, setWcLivePrediction] = useState({}); // {matchId: "home"|"away"}
+  const [wcLiveTab, setWcLiveTab] = useState("live"); // "live"|"groups"|"bracket"
 
   // ── Synchronized Puff Events ──
   const [puffEvent, setPuffEvent] = useState(null); // null | {type:"countdown"|"blinker"|"chain"|"420", phase:"waiting"|"active"|"result", data:{}, timer:0}
@@ -4489,17 +4536,27 @@ export default function MoodLabArena() {
     const groupLetter = String.fromCharCode(65 + Math.floor(Math.random() * 12));
 
     const standings = groupTeams.map(t => ({...t, played:0, won:0, drawn:0, lost:0, gf:0, ga:0, pts:0}));
-    const matches = [
-      {home: groupTeams[0], away: groupTeams[1], played: false, homeScore:0, awayScore:0},
-      {home: groupTeams[2], away: groupTeams[3], played: false, homeScore:0, awayScore:0},
-      {home: groupTeams[0], away: groupTeams[2], played: false, homeScore:0, awayScore:0},
-    ];
-    setWcTournament({group: groupLetter, teams: groupTeams, standings, groupMatches: matches});
+    setWcTournament({
+      group: groupLetter,
+      teams: groupTeams,
+      standings,
+      matchday: 0,
+      groupMatches: [
+        { opp: groupOpps[0], played: false, result: null },
+        { opp: groupOpps[1], played: false, result: null },
+        { opp: groupOpps[2], played: false, result: null },
+      ],
+      knockoutRound: null,
+      knockoutOpps: [],
+      knockoutResults: [],
+    });
     setWcMatchday(0);
+    setWcCooldown(Date.now());
 
     setTimeout(() => {
       setWcDrawAnim(false);
-      setTimeout(() => setWcPhase("group_stage"), 1000);
+      setWcPhase("group_stage");
+      setWcViewTab("mygroup");
     }, 3000);
   };
 
@@ -5384,10 +5441,46 @@ export default function MoodLabArena() {
       </div>
     );
     if (viewKey === "worldcup") return (
-      <div style={{display:"flex",flexWrap:"wrap",gap:6,justifyContent:"center"}}>
-        <span style={pillStyle(C.pink)}>{wcDays} days to go</span>
-        <span style={pillStyle(C.cyan)}>48 teams</span>
-        <span style={pillStyle(C.gold)}>104 matches</span>
+      <div>
+        {/* Countdown to WC */}
+        <div style={{textAlign:"center",marginBottom:8}}>
+          <div style={{fontSize:20,fontWeight:900,color:C.gold,letterSpacing:2}}>WORLD CUP 2026</div>
+          <div style={{fontSize:10,color:C.text2,marginTop:2}}>June 11 — July 19 · USA · Mexico · Canada</div>
+        </div>
+        {/* Countdown pills */}
+        <div style={{display:"flex",gap:6,justifyContent:"center",marginBottom:8}}>
+          <div style={{padding:"6px 12px",borderRadius:10,textAlign:"center",background:`${C.gold}08`,border:`1px solid ${C.gold}15`}}>
+            <div style={{fontSize:16,fontWeight:900,color:C.gold}}>{wcDays}</div>
+            <div style={{fontSize:6,color:C.text3}}>DAYS</div>
+          </div>
+          <div style={{padding:"6px 12px",borderRadius:10,textAlign:"center",background:`${C.cyan}08`,border:`1px solid ${C.cyan}15`}}>
+            <div style={{fontSize:16,fontWeight:900,color:C.cyan}}>48</div>
+            <div style={{fontSize:6,color:C.text3}}>TEAMS</div>
+          </div>
+          <div style={{padding:"6px 12px",borderRadius:10,textAlign:"center",background:`${C.green}08`,border:`1px solid ${C.green}15`}}>
+            <div style={{fontSize:16,fontWeight:900,color:C.green}}>104</div>
+            <div style={{fontSize:6,color:C.text3}}>MATCHES</div>
+          </div>
+          <div style={{padding:"6px 12px",borderRadius:10,textAlign:"center",background:`${C.red}08`,border:`1px solid ${C.red}15`}}>
+            <div style={{fontSize:16,fontWeight:900,color:C.red}}>3</div>
+            <div style={{fontSize:6,color:C.text3}}>HOST NATIONS</div>
+          </div>
+        </div>
+        {/* Quick actions */}
+        <div style={{display:"flex",gap:6}}>
+          <div onClick={()=>{setZone("worldcup");setArenaView("worldcup");}} style={{flex:1,padding:"8px 6px",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.gold}08`,border:`1px solid ${C.gold}15`}}>
+            <div style={{fontSize:16}}>⚽</div>
+            <div style={{fontSize:8,fontWeight:700,color:C.gold}}>Play</div>
+          </div>
+          <div onClick={()=>{setZone("worldcup");setArenaView("worldcup");}} style={{flex:1,padding:"8px 6px",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}08`,border:`1px solid ${C.purple}15`}}>
+            <div style={{fontSize:16}}>🔮</div>
+            <div style={{fontSize:8,fontWeight:700,color:C.purple}}>Predict</div>
+          </div>
+          <div onClick={()=>{setZone("worldcup");setArenaView("worldcup");}} style={{flex:1,padding:"8px 6px",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.pink}08`,border:`1px solid ${C.pink}15`}}>
+            <div style={{fontSize:16}}>🎪</div>
+            <div style={{fontSize:8,fontWeight:700,color:C.pink}}>Shows</div>
+          </div>
+        </div>
       </div>
     );
     return null;
@@ -5395,10 +5488,10 @@ export default function MoodLabArena() {
 
   /* ── Zone Focus View (walked to a kiosk) ── */
   const renderZoneFocus = (viewKey) => {
-    const zoneMap = {arcade:Z.arcade,stage:Z.stage,oracle:Z.oracle,wall:Z.wall,worldcup:{primary:C.gold,name:"World Cup 2026",icon:"⚽",sub:"Limited Event"}};
+    const zoneMap = {arcade:Z.arcade,stage:Z.stage,oracle:Z.oracle,wall:Z.wall,worldcup:Z.worldcup};
     const z = zoneMap[viewKey];
     if (!z) return null;
-    const enterZone = viewKey === "worldcup" ? ()=>notify("World Cup hub coming soon!",C.gold) : ()=>{playFx("nav");setZone(viewKey);setArenaView("hub");};
+    const enterZone = viewKey === "worldcup" ? ()=>{playFx("nav");setZone("worldcup");setArenaView("worldcup");} : ()=>{playFx("nav");setZone(viewKey);setArenaView("hub");};
 
     return (
       <div style={{position:"fixed",inset:0,overflow:"hidden"}}>
@@ -6431,7 +6524,7 @@ export default function MoodLabArena() {
   // ═════════════════════════════════════════
   const renderZoneHeader = (zKey) => {
     const z = Z[zKey];
-    const taglines = {arcade:"PLAY · COMPETE · WIN",stage:"WATCH · PLAY · WIN",oracle:"PREDICT · BET · WIN",wall:"YOUR LEGACY · YOUR GLORY"};
+    const taglines = {arcade:"PLAY · COMPETE · WIN",stage:"WATCH · PLAY · WIN",oracle:"PREDICT · BET · WIN",wall:"YOUR LEGACY · YOUR GLORY",worldcup:"PLAY · PREDICT · CELEBRATE"};
     return (
       <div style={{padding:"0 14px",marginBottom:12}}>
         <div onClick={()=>{playFx("back");setZone(null);setSelectedGame(null);setArenaView("hub");}} style={{display:"inline-flex",alignItems:"center",gap:6,cursor:"pointer",marginBottom:10,padding:"6px 12px",borderRadius:8,background:`${C.text3}06`,border:`1px solid ${C.border}`}}>
@@ -7650,7 +7743,7 @@ export default function MoodLabArena() {
       setShowVibeCheck(false);setVcPhase(null);setVcEliminated(false);setVcCorrectStreak(0);setVcPuffAnswer(null);setVcTimer(10);if(vcTimerRef.current){clearInterval(vcTimerRef.current);vcTimerRef.current=null;}setDimLights(false);setScreenShake(false);setScreenFlash(null);setStageRole(null);setMcVisible(false);
       setMatchIntro(null);setCommentatorText("");setPuffBubbles([]);setAudienceBubbles([]);
       setConfettiParticles([]);setSmokeParticles([]);setLiveSpectators([]);setSpectatorTicker([]);setCrowdEnergy(0);setCrowdEruption(false);
-      try{setWcPhase(null);setWcTeam(null);setWcTournament(null);setWcBracket(null);setWcFinalResult(null);}catch(e){}
+      try{setWcPhase(null);setWcTeam(null);setWcTournament(null);setWcBracket(null);setWcFinalResult(null);setWcMatchday(0);setWcGroupResult(null);setWcDrawAnim(false);setWcDeviceInput(null);}catch(e){}
       setCbPhase(null);setCbQuestion(null);setCbAnswer(null);setCbResult(null);setCbPuffing(false);
       setSbPhase(null);setSbMatchup(null);setSbVote(null);setSbResults(null);
       setMpPhase(null);setMpMatch(null);setMpPrediction(null);
@@ -15447,6 +15540,267 @@ export default function MoodLabArena() {
     return null;
   };
 
+  // ═══════════════════════════════════════════════
+  // ██  WORLD CUP HUB — Live Matches + Groups  ██
+  // ═══════════════════════════════════════════════
+  const renderWorldCupHub = () => {
+    const liveMatches = wcLiveMatches;
+    const groups = WC_2026_GROUPS;
+    const hubTabs = [
+      {key:"live", label:"Live Matches", icon:"📡"},
+      {key:"groups", label:"Groups", icon:"📊"},
+      {key:"play", label:"Play WC", icon:"🏆"},
+    ];
+
+    const makePrediction = (matchId, pick) => {
+      playFx("select");
+      setWcLivePrediction(p => ({...p, [matchId]: pick}));
+      notify(`Prediction locked: ${pick === "home" ? "Home" : "Away"} scores next!`, C.gold);
+      setCoins(c => c + 5);
+    };
+
+    const puffReact = (matchId, emoji) => {
+      playFx("puff");
+      notify(`${emoji} Puff reaction sent!`, C.cyan);
+    };
+
+    return (
+      <div style={{padding:"48px 10px 20px"}}>
+        {/* Header */}
+        <div style={{textAlign:"center",marginBottom:14}}>
+          <div style={{fontSize:11,fontWeight:800,color:C.gold,letterSpacing:2,textShadow:`0 0 12px ${C.gold}40`}}>⚽ WORLD CUP 2026</div>
+          <div style={{fontSize:18,fontWeight:900,color:C.text,marginTop:2}}>Stadium Experience</div>
+          <div style={{fontSize:9,color:C.text3,marginTop:3}}>Live matches, predictions & group standings</div>
+        </div>
+
+        {/* Tab Bar */}
+        <div style={{display:"flex",gap:4,justifyContent:"center",marginBottom:14}}>
+          {hubTabs.map(t => (
+            <div key={t.key} onClick={()=>{playFx("nav");if(t.key==="play"){setWcPhase("team_select");setWcGameId("finalkick");return;}setWcLiveTab(t.key);}} style={{
+              padding:"6px 14px",borderRadius:20,cursor:"pointer",
+              background:wcLiveTab===t.key?`${C.gold}20`:"rgba(255,255,255,0.04)",
+              border:`1px solid ${wcLiveTab===t.key?C.gold+"40":C.border}`,
+              fontSize:10,fontWeight:wcLiveTab===t.key?800:600,
+              color:wcLiveTab===t.key?C.gold:C.text3,
+              transition:"all 0.2s ease",
+            }}>
+              {t.icon} {t.label}
+            </div>
+          ))}
+        </div>
+
+        {/* ── LIVE MATCHES TAB ── */}
+        {wcLiveTab === "live" && (
+          <div style={{display:"flex",flexDirection:"column",gap:10}}>
+            {liveMatches.map(match => {
+              const pred = wcLivePrediction[match.id];
+              return (
+                <div key={match.id} style={{
+                  borderRadius:16,overflow:"hidden",
+                  background:"linear-gradient(135deg, rgba(255,217,61,0.06) 0%, rgba(0,229,255,0.04) 100%)",
+                  border:`1px solid ${C.gold}30`,
+                  position:"relative",
+                }}>
+                  {/* LIVE badge + viewers */}
+                  <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"8px 12px 4px"}}>
+                    <div style={{display:"flex",alignItems:"center",gap:6}}>
+                      <div style={{padding:"2px 8px",borderRadius:6,background:"#FF3B30",fontSize:8,fontWeight:900,color:"#fff",animation:"pulse 1.5s infinite"}}>LIVE</div>
+                      <span style={{fontSize:9,fontWeight:700,color:C.gold}}>{match.minute}'</span>
+                    </div>
+                    <div style={{display:"flex",alignItems:"center",gap:4}}>
+                      <div style={{width:5,height:5,borderRadius:"50%",background:C.green,animation:"pulse 2s infinite"}}/>
+                      <span style={{fontSize:8,color:C.text3}}>{match.viewers.toLocaleString()} watching</span>
+                    </div>
+                  </div>
+
+                  {/* Score Display */}
+                  <div style={{display:"flex",alignItems:"center",justifyContent:"center",padding:"8px 16px",gap:12}}>
+                    <div style={{display:"flex",alignItems:"center",gap:6,flex:1,justifyContent:"flex-end"}}>
+                      <span style={{fontSize:12,fontWeight:800,color:C.text}}>{match.home.name}</span>
+                      <span style={{fontSize:22}}>{match.home.flag}</span>
+                    </div>
+                    <div style={{
+                      padding:"6px 16px",borderRadius:12,
+                      background:"rgba(255,217,61,0.1)",border:`1px solid ${C.gold}40`,
+                      display:"flex",alignItems:"center",gap:8,
+                    }}>
+                      <span style={{fontSize:22,fontWeight:900,color:C.gold}}>{match.home.score}</span>
+                      <span style={{fontSize:10,color:C.text3,fontWeight:700}}>-</span>
+                      <span style={{fontSize:22,fontWeight:900,color:C.gold}}>{match.away.score}</span>
+                    </div>
+                    <div style={{display:"flex",alignItems:"center",gap:6,flex:1}}>
+                      <span style={{fontSize:22}}>{match.away.flag}</span>
+                      <span style={{fontSize:12,fontWeight:800,color:C.text}}>{match.away.name}</span>
+                    </div>
+                  </div>
+
+                  {/* Event Timeline */}
+                  <div style={{padding:"4px 12px 6px",display:"flex",flexWrap:"wrap",gap:4,justifyContent:"center"}}>
+                    {match.events.map((ev, i) => (
+                      <div key={i} style={{
+                        display:"flex",alignItems:"center",gap:3,
+                        padding:"2px 7px",borderRadius:8,
+                        background:ev.type==="goal"?"rgba(255,217,61,0.12)":ev.type==="yellow"?"rgba(255,193,7,0.1)":"rgba(255,255,255,0.04)",
+                        border:`1px solid ${ev.type==="goal"?C.gold+"30":C.border}`,
+                      }}>
+                        <span style={{fontSize:9}}>{ev.emoji}</span>
+                        <span style={{fontSize:7,fontWeight:700,color:ev.type==="goal"?C.gold:C.text3}}>{ev.min}'</span>
+                        {ev.player && <span style={{fontSize:7,color:C.text3}}>{ev.player}</span>}
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Next Event Ticker */}
+                  <div style={{padding:"4px 12px",background:"rgba(0,229,255,0.04)",borderTop:`1px solid ${C.border}`}}>
+                    <div style={{fontSize:8,color:C.cyan,fontWeight:700,textAlign:"center"}}>
+                      ⏭ Next: {match.nextEvent}
+                    </div>
+                  </div>
+
+                  {/* Prediction Section */}
+                  <div style={{padding:"8px 12px",borderTop:`1px solid ${C.border}`,background:"rgba(255,255,255,0.02)"}}>
+                    <div style={{fontSize:8,fontWeight:700,color:C.text3,textAlign:"center",marginBottom:6}}>
+                      🔮 Next goal: Home or Away? PUFF to predict!
+                    </div>
+                    <div style={{display:"flex",gap:6,justifyContent:"center"}}>
+                      <div onClick={()=>!pred&&makePrediction(match.id,"home")} style={{
+                        flex:1,padding:"7px 0",borderRadius:10,textAlign:"center",cursor:pred?"default":"pointer",
+                        background:pred==="home"?`${C.green}20`:"rgba(255,255,255,0.04)",
+                        border:`1px solid ${pred==="home"?C.green:C.border}`,
+                        opacity:pred&&pred!=="home"?0.4:1,transition:"all 0.2s",
+                      }}>
+                        <div style={{fontSize:10,fontWeight:800,color:pred==="home"?C.green:C.text}}>{match.home.flag} {match.home.name}</div>
+                        {pred==="home" && <div style={{fontSize:7,color:C.green,marginTop:2}}>LOCKED IN</div>}
+                      </div>
+                      <div onClick={()=>!pred&&makePrediction(match.id,"away")} style={{
+                        flex:1,padding:"7px 0",borderRadius:10,textAlign:"center",cursor:pred?"default":"pointer",
+                        background:pred==="away"?`${C.cyan}20`:"rgba(255,255,255,0.04)",
+                        border:`1px solid ${pred==="away"?C.cyan:C.border}`,
+                        opacity:pred&&pred!=="away"?0.4:1,transition:"all 0.2s",
+                      }}>
+                        <div style={{fontSize:10,fontWeight:800,color:pred==="away"?C.cyan:C.text}}>{match.away.flag} {match.away.name}</div>
+                        {pred==="away" && <div style={{fontSize:7,color:C.cyan,marginTop:2}}>LOCKED IN</div>}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Puff React Bar */}
+                  <div style={{padding:"6px 12px 8px",borderTop:`1px solid ${C.border}`,display:"flex",gap:6,justifyContent:"center"}}>
+                    {["⚽","🔥","😱","👏","😤","🎉"].map(em => (
+                      <div key={em} onClick={()=>puffReact(match.id,em)} style={{
+                        fontSize:16,cursor:"pointer",padding:"3px 6px",borderRadius:8,
+                        background:"rgba(255,255,255,0.04)",border:`1px solid ${C.border}`,
+                        transition:"all 0.15s",
+                      }}>{em}</div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+
+            {/* Fan Chat Teaser */}
+            <div style={{
+              borderRadius:14,padding:"10px 14px",
+              background:"rgba(192,132,252,0.06)",border:`1px solid ${C.purple}25`,
+              textAlign:"center",
+            }}>
+              <div style={{fontSize:12,marginBottom:4}}>💬</div>
+              <div style={{fontSize:10,fontWeight:800,color:C.text}}>Match Chat</div>
+              <div style={{fontSize:8,color:C.text3,marginTop:2}}>Join {(liveMatches[0].viewers + liveMatches[1].viewers).toLocaleString()} fans watching live</div>
+              <div onClick={()=>notify("Match chat coming in next update!",C.purple)} style={{
+                marginTop:8,padding:"6px 20px",borderRadius:10,cursor:"pointer",
+                background:`${C.purple}20`,border:`1px solid ${C.purple}40`,
+                fontSize:9,fontWeight:700,color:C.purple,display:"inline-block",
+              }}>Enter Chat</div>
+            </div>
+
+            {/* Coin Earnings Info */}
+            <div style={{
+              borderRadius:14,padding:"10px 14px",
+              background:"rgba(255,217,61,0.04)",border:`1px solid ${C.gold}20`,
+              display:"flex",alignItems:"center",gap:10,
+            }}>
+              <span style={{fontSize:18}}>🪙</span>
+              <div>
+                <div style={{fontSize:9,fontWeight:800,color:C.gold}}>Earn Coins from Predictions</div>
+                <div style={{fontSize:8,color:C.text3,marginTop:1}}>+5 coins per prediction, +25 bonus if correct!</div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── GROUPS TAB ── */}
+        {wcLiveTab === "groups" && (
+          <div style={{display:"flex",flexDirection:"column",gap:10}}>
+            {Object.entries(groups).map(([letter, teams]) => (
+              <div key={letter} style={{
+                borderRadius:14,overflow:"hidden",
+                background:"rgba(255,255,255,0.03)",border:`1px solid ${C.border}`,
+              }}>
+                {/* Group Header */}
+                <div style={{
+                  padding:"6px 12px",
+                  background:"rgba(255,217,61,0.06)",borderBottom:`1px solid ${C.border}`,
+                  display:"flex",alignItems:"center",justifyContent:"space-between",
+                }}>
+                  <span style={{fontSize:10,fontWeight:900,color:C.gold}}>Group {letter}</span>
+                  <span style={{fontSize:7,color:C.text3}}>Pts | GD</span>
+                </div>
+
+                {/* Team Rows */}
+                {teams.map((t, idx) => {
+                  const qualified = idx < 2;
+                  const eliminated = idx >= 3 && t.pts < teams[1].pts;
+                  return (
+                    <div key={t.team} style={{
+                      display:"flex",alignItems:"center",padding:"5px 12px",
+                      borderBottom:idx<teams.length-1?`1px solid ${C.border}`:"none",
+                      background:qualified?"rgba(52,211,153,0.04)":"transparent",
+                      opacity:eliminated?0.45:1,
+                    }}>
+                      <span style={{fontSize:8,fontWeight:700,color:C.text3,width:14}}>{idx+1}</span>
+                      <span style={{fontSize:14,marginRight:6}}>{t.flag}</span>
+                      <span style={{fontSize:10,fontWeight:qualified?800:600,color:qualified?C.green:C.text,flex:1}}>{t.team}</span>
+                      <span style={{fontSize:10,fontWeight:800,color:C.gold,width:24,textAlign:"center"}}>{t.pts}</span>
+                      <span style={{fontSize:9,fontWeight:600,color:t.gd>0?C.green:t.gd<0?C.red:C.text3,width:28,textAlign:"right"}}>
+                        {t.gd>0?"+":""}{t.gd}
+                      </span>
+                      {qualified && <span style={{fontSize:7,color:C.green,marginLeft:6,fontWeight:700}}>Q</span>}
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
+
+            {/* Legend */}
+            <div style={{display:"flex",gap:12,justifyContent:"center",padding:"6px 0"}}>
+              <div style={{display:"flex",alignItems:"center",gap:4}}>
+                <div style={{width:6,height:6,borderRadius:2,background:C.green}}/>
+                <span style={{fontSize:7,color:C.text3}}>Qualified</span>
+              </div>
+              <div style={{display:"flex",alignItems:"center",gap:4}}>
+                <div style={{width:6,height:6,borderRadius:2,background:C.text3,opacity:0.4}}/>
+                <span style={{fontSize:7,color:C.text3}}>Eliminated</span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Back Button */}
+        <div style={{marginTop:16,textAlign:"center"}}>
+          <div onClick={()=>{playFx("nav");setZone(null);}} style={{
+            display:"inline-flex",alignItems:"center",gap:5,padding:"8px 20px",
+            borderRadius:12,cursor:"pointer",
+            background:"rgba(255,255,255,0.04)",border:`1px solid ${C.border}`,
+            fontSize:9,fontWeight:700,color:C.text3,
+          }}>
+            ← Back to Arena
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const renderWorldCup = () => {
     if(!wcPhase) return null;
     // Hide WC overlay when actively playing a match (game screen takes over)
@@ -17059,6 +17413,7 @@ export default function MoodLabArena() {
         {tab==="arena" && zone==="stage" && renderStage()}
         {tab==="arena" && zone==="oracle" && renderOracle()}
         {tab==="arena" && zone==="wall" && renderWall()}
+        {tab==="arena" && zone==="worldcup" && renderWorldCupHub()}
         {tab==="live" && renderLive()}
         {tab==="me" && renderMe()}
       </div>
