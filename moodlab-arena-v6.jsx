@@ -7730,7 +7730,10 @@ export default function MoodLabArena() {
       else if(g.id==="matchpredictor"){setGameActive({id:"matchpredictor",name:"Match Predictor",emoji:"📊",color:"#3B82F6"});startMatchPredictor();}
       else if(g.id==="dailypicks"){setGameActive({id:"dailypicks",name:"Daily Bets",emoji:"📅",color:"#F97316"});startDailyPicks();}
       else if(g.id==="spinwin"){setHalftimeGame({type:"roulette",phase:"intro"});}
-      else if(g.id==="coinflip"){setHalftimeGame({type:"lucky",phase:"intro"});}
+      else if(g.id==="puffslots"){setGameActive({id:"puffslots",name:"Puff Slots",emoji:"🎰",color:"#FFD700"});startPuffSlots();}
+      else if(g.id==="coinflip"){setGameActive({id:"coinflip",name:"Coin Flip",emoji:"🪙",color:"#F59E0B"});startCoinFlip();}
+      else if(g.id==="puffblackjack"){setGameActive({id:"puffblackjack",name:"Puff Blackjack",emoji:"🃏",color:"#22C55E"});startPuffBlackjack();}
+      else if(g.id==="crapsnclouds"){setGameActive({id:"crapsnclouds",name:"Craps & Clouds",emoji:"🎲",color:"#EF4444"});startCrapsNClouds();}
       else notify(g.name+" coming soon!",g.color);
     };
     return (
@@ -8036,7 +8039,7 @@ export default function MoodLabArena() {
     const wcLeaderboard = [
       {name:"CloudChaser99",emoji:"👑",stat:"23 wins",coins:8400,color:C.gold,badge:"🏆 Champion"},
       {name:"VibeKing",emoji:"😎",stat:"19 wins",coins:6200,color:C.cyan,badge:"⚽ Striker"},
-      {name:"NeonQueen",emoji:"👸",stat:"17 wins",coins:5800,color:C.purple,badge:"🔮 Oracle"},
+      {name:"NeonQueen",emoji:"👸",stat:"17 wins",coins:5800,color:C.purple,badge:"🎰 Casino"},
       {name:"Steve",emoji:"🌟",stat:"14 wins",coins:3200,color:C.green,badge:"🇧🇷 Fan",you:true},
       {name:"BlazedPanda",emoji:"🐼",stat:"12 wins",coins:2900,color:C.orange,badge:"🎯 Sniper"},
       {name:"PuffDaddy",emoji:"💨",stat:"10 wins",coins:2100,color:C.pink,badge:"💨 Lungs"},
