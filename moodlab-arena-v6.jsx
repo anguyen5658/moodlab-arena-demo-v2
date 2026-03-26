@@ -6559,7 +6559,7 @@ export default function MoodLabArena() {
               const isNew = !triedGames.includes(g.id);
               const count = playerCounts[g.id]||30;
               return (
-                <div key={g.id} onClick={()=>{playFx("select");setSelectedGame(g);}} style={{
+                <div key={g.id} onClick={()=>{playFx("select");setGameActive(null);setSelectedGame(g);}} style={{
                   padding:"12px 10px",borderRadius:14,cursor:"pointer",position:"relative",overflow:"hidden",
                   background:`radial-gradient(ellipse at 50% 0%, ${g.color}10, ${C.bg2} 70%)`,
                   border:`1px solid ${g.color}15`,transition:"all 0.3s",
