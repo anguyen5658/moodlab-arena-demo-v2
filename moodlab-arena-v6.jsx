@@ -182,12 +182,15 @@ const ORACLE_WC_SPECIALS = [
   {id:"group_death", question:"Group of Death?", emoji:"💀", topPick:"Group C", topPct:42, total:890},
 ];
 
-const ORACLE_ARENA_PREDS = [
-  {question:"Who wins FK1 World Cup this round?", emoji:"⚽", topAnswer:"CloudChaser99", votes:204, color:C.cyan},
-  {question:"Will anyone survive Survival Trivia Round 15?", emoji:"💀", topAnswer:"31% say Yes", votes:312, color:C.red},
-  {question:"Highest Puff Clock accuracy this week?", emoji:"⏱️", topAnswer:"±0.02s", votes:89, color:C.orange},
-  {question:"Outlaw Circuit winner?", emoji:"🤠", topAnswer:"QuickDraw_420", votes:148, color:C.gold},
-  {question:"Most blinkers in Arena today?", emoji:"💨", topAnswer:"420+", votes:567, color:C.purple},
+const ORACLE_FUN_PREDS = [
+  {question:"Will Bitcoin close above $100K this week?", emoji:"₿", topAnswer:"68% say Yes", votes:1247, color:C.gold},
+  {question:"Will Elon tweet about crypto today?", emoji:"🐦", topAnswer:"72% say Yes", votes:892, color:C.cyan},
+  {question:"Pineapple on pizza: Yes or No?", emoji:"🍕", topAnswer:"54% say YES", votes:2341, color:C.orange},
+  {question:"Will it rain in LA tomorrow?", emoji:"🌧️", topAnswer:"23% say Yes", votes:456, color:C.blue},
+  {question:"Is a hot dog a sandwich?", emoji:"🌭", topAnswer:"61% say NO", votes:1876, color:C.red},
+  {question:"Will the next viral meme be about cats?", emoji:"🐱", topAnswer:"45% say Yes", votes:743, color:C.pink},
+  {question:"Coffee or tea for productivity?", emoji:"☕", topAnswer:"71% Coffee", votes:1532, color:C.orange},
+  {question:"Will AI take over by 2030?", emoji:"🤖", topAnswer:"38% say Yes", votes:2104, color:C.purple},
 ];
 
 const CB_PREDICTIONS = [
@@ -7178,13 +7181,13 @@ export default function MoodLabArena() {
 
         {/* TAB BAR — TOP */}
         <div style={{display:"flex",borderBottom:"1px solid rgba(147,51,234,0.15)",marginBottom:10}}>
-          {["games","world_cup","arena","trending","history"].map(t=>(
+          {["games","world_cup","fun","trending","history"].map(t=>(
             <div key={t} onClick={()=>setOracleHubTab(t)} style={{
               flex:1,padding:"8px 0",textAlign:"center",cursor:"pointer",
               fontSize:9,fontWeight:oracleHubTab===t?800:600,
               color:oracleHubTab===t?"#9333EA":C.text3,
               borderBottom:oracleHubTab===t?"2px solid #9333EA":"2px solid transparent",
-            }}>{t==="world_cup"?"World Cup":t.charAt(0).toUpperCase()+t.slice(1)}</div>
+            }}>{t==="world_cup"?"World Cup":t==="fun"?"Just for Fun":t.charAt(0).toUpperCase()+t.slice(1)}</div>
           ))}
         </div>
 
@@ -7265,10 +7268,10 @@ export default function MoodLabArena() {
         )}
 
         {/* Arena tab */}
-        {oracleHubTab==="arena" && (
+        {oracleHubTab==="fun" && (
           <div style={{marginBottom:4}}>
-            <div style={{fontSize:10,fontWeight:800,color:C.cyan,letterSpacing:2,marginBottom:8}}>🎮 ARENA PREDICTIONS</div>
-            {ORACLE_ARENA_PREDS.map((p,i)=>(
+            <div style={{fontSize:10,fontWeight:800,color:C.cyan,letterSpacing:2,marginBottom:8}}>🎮 JUST FOR FUN</div>
+            {ORACLE_FUN_PREDS.map((p,i)=>(
               <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",borderRadius:12,marginBottom:6,
                 background:`${p.color}04`,border:`1px solid ${p.color}12`,cursor:"pointer"}}>
                 <span style={{fontSize:20}}>{p.emoji}</span>
