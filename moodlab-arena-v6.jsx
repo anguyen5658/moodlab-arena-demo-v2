@@ -1162,6 +1162,9 @@ export default function MoodLabArena() {
   const [wallTab, setWallTab] = useState("all");
   const [wallMetric, setWallMetric] = useState("coins");
   const [wallGameFilter, setWallGameFilter] = useState(null);
+  const [arcadeHubTab, setArcadeHubTab] = useState("games");
+  const [oracleHubTab, setOracleHubTab] = useState("games");
+  const [wallHubTab, setWallHubTab] = useState("rankings");
   const chatRef = useRef(null);
 
   // ── Input Method ──
@@ -1182,7 +1185,7 @@ export default function MoodLabArena() {
   const [optimizeProgress, setOptimizeProgress] = useState(0);
   const [optimizeStage, setOptimizeStage] = useState(0); // 0-4 stages
   const [showAskPrompt, setShowAskPrompt] = useState(null);
-  const [sessionInput, setSessionInput] = useState(null);
+  const [sessionInput, setSessionInput] = useState("puff"); // default to puff, user can change on Arena home
   const [inputPulse, setInputPulse] = useState(false);
 
   // ── Atmosphere ──
@@ -6417,8 +6420,6 @@ export default function MoodLabArena() {
       {name:"Pong Masters",emoji:"🏓",game:"Puff Pong",prize:"10,000 coins",color:C.green,status:"OPEN",players:64,round:"Open Entry",bracket:[8,4,2,1],currentRound:0},
     ];
     const activeTourney = arcadeTournaments.find(t=>t.status==="LIVE") || arcadeTournaments[0];
-    const trendingGames = [...PLAY_GAMES].sort((a,b)=>(playerCounts[b.id]||0)-(playerCounts[a.id]||0)).slice(0,5);
-    const maxTrending = playerCounts[trendingGames[0]?.id]||1;
     const smartSorted = [...PLAY_GAMES].sort((a,b)=>{
       if(a.hot&&!b.hot) return -1; if(!a.hot&&b.hot) return 1;
       return (playerCounts[b.id]||0)-(playerCounts[a.id]||0);
@@ -6443,229 +6444,41 @@ export default function MoodLabArena() {
           backgroundImage:`linear-gradient(${C.cyan}06 1px, transparent 1px), linear-gradient(90deg, ${C.cyan}06 1px, transparent 1px)`,
           backgroundSize:"40px 40px",opacity:0.5,
         }}/>
-        <div style={{position:"absolute",top:0,left:0,right:0,height:2,
-          background:`linear-gradient(90deg, transparent, ${C.cyan}40, transparent)`,
-          animation:"scanLine 3s linear infinite",
-        }}/>
       </div>
 
       {renderZoneHeader("arcade")}
 
-      {/* Live counter strip */}
-      <div style={{padding:"0 14px",marginBottom:14,textAlign:"center"}}>
-        <div style={{display:"inline-flex",alignItems:"center",gap:8,marginTop:6,padding:"4px 14px",borderRadius:20,
-          background:`${C.cyan}08`,border:`1px solid ${C.cyan}15`,
-        }}>
-          <span style={{fontSize:10,color:C.text2,fontWeight:600}}>12 GAMES</span>
-          <span style={{fontSize:10,color:C.cyan}}>|</span>
-          <div style={{display:"flex",alignItems:"center",gap:4}}>
-            <div style={{width:6,height:6,borderRadius:"50%",background:C.green,boxShadow:`0 0 6px ${C.green}`,animation:"pulse 1.5s infinite"}}/>
-            <span style={{fontSize:10,fontWeight:800,color:C.green,fontFamily:"monospace"}}>{totalPlaying.toLocaleString()}</span>
-            <span style={{fontSize:10,color:C.text2,fontWeight:600}}>PLAYING NOW</span>
-          </div>
-        </div>
-      </div>
-
       <div style={{padding:"0 14px"}}>
 
-        {/* ======= HOT RIGHT NOW - Dynamic Featured Card ======= */}
-        <div style={{marginBottom:16}}>
-          <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:10}}>
-            <span style={{fontSize:13}}>{"🔥"}</span>
-            <span style={{fontSize:11,fontWeight:900,color:C.orange,letterSpacing:1.5}}>HOT RIGHT NOW</span>
+        {/* ======= FEATURED HOT GAME - Compact Hero ======= */}
+        <div onClick={()=>{playFx("select");setSelectedGame(featuredGame);}} style={{
+          display:"flex",alignItems:"center",gap:12,padding:"10px 14px",borderRadius:14,cursor:"pointer",marginBottom:12,
+          background:`radial-gradient(ellipse at 20% 50%, ${featuredGame.color}12, ${C.bg2} 70%)`,
+          border:`1px solid ${featuredGame.color}25`,
+        }}>
+          <div style={{width:36,height:36,borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,
+            background:`radial-gradient(circle, ${featuredGame.color}20, ${featuredGame.color}06)`,border:`1px solid ${featuredGame.color}30`,flexShrink:0,
+          }}>{featuredGame.emoji}</div>
+          <div style={{flex:1,minWidth:0}}>
+            <div style={{display:"flex",alignItems:"center",gap:6}}>
+              <span style={{fontSize:7,fontWeight:900,color:C.red,padding:"1px 5px",borderRadius:3,background:`${C.red}15`}}>🔥 HOT</span>
+              <span style={{fontSize:12,fontWeight:800,color:C.text}}>{featuredGame.name}</span>
+            </div>
+            <div style={{fontSize:9,color:C.green,fontWeight:600,marginTop:2}}>
+              <span style={{display:"inline-block",width:5,height:5,borderRadius:"50%",background:C.green,marginRight:3,verticalAlign:"middle"}}/>
+              {playerCounts[featuredGame.id]||120} playing · {totalPlaying.toLocaleString()} total online
+            </div>
           </div>
-          <div onClick={()=>{playFx("select");setSelectedGame(featuredGame);}} style={{
-            position:"relative",overflow:"hidden",borderRadius:20,padding:"24px 18px",cursor:"pointer",
-            background:`radial-gradient(ellipse at 20% 30%, ${featuredGame.color}18, transparent 60%), radial-gradient(ellipse at 80% 70%, ${C.cyan}10, transparent 50%), linear-gradient(135deg, ${C.bg2}, ${C.bg3})`,
-            border:`1.5px solid ${featuredGame.color}30`,boxShadow:`0 0 40px ${featuredGame.color}12, inset 0 1px 0 rgba(255,255,255,0.06)`,
-            transition:"all 0.5s ease",
-          }}>
-            <div style={{position:"absolute",top:0,left:0,right:0,bottom:0,pointerEvents:"none",
-              background:`linear-gradient(135deg, transparent 30%, ${featuredGame.color}08 50%, transparent 70%)`,
-            }}/>
-            <div style={{position:"absolute",top:12,right:12,display:"flex",alignItems:"center",gap:5,padding:"4px 10px",borderRadius:8,
-              background:`${C.red}20`,border:`1px solid ${C.red}35`,boxShadow:`0 0 12px ${C.red}20`,animation:"pulse 2s infinite",
-            }}>
-              <span style={{fontSize:9,fontWeight:900,color:C.red,letterSpacing:1}}>{"🔥"} HOT</span>
-            </div>
-            <div style={{position:"absolute",bottom:14,right:16,display:"flex",gap:4}}>
-              {hotGames.map((_,i)=>(
-                <div key={i} style={{width:6,height:6,borderRadius:"50%",transition:"all 0.3s",
-                  background:i===hotIdx?C.cyan:`${C.text3}30`,boxShadow:i===hotIdx?`0 0 8px ${C.cyan}60`:"none",
-                }}/>
-              ))}
-            </div>
-            <div style={{display:"flex",alignItems:"center",gap:16,marginBottom:12}}>
-              <div style={{width:64,height:64,borderRadius:18,display:"flex",alignItems:"center",justifyContent:"center",fontSize:40,
-                background:`radial-gradient(circle, ${featuredGame.color}22, ${featuredGame.color}06)`,border:`2px solid ${featuredGame.color}35`,
-                boxShadow:`0 0 24px ${featuredGame.color}25`,filter:`drop-shadow(0 0 12px ${featuredGame.color}60)`,flexShrink:0,
-              }}>{featuredGame.emoji}</div>
-              <div style={{flex:1}}>
-                <div style={{fontSize:22,fontWeight:900,color:C.text,lineHeight:1.2}}>{featuredGame.name}</div>
-                <div style={{display:"flex",alignItems:"center",gap:6,marginTop:4}}>
-                  <span style={{fontSize:9,fontWeight:700,color:featuredGame.color,padding:"3px 8px",borderRadius:6,...LG.tinted(featuredGame.color)}}>{featuredGame.type}</span>
-                  <span style={{fontSize:10,color:C.green,fontWeight:700}}>
-                    <span style={{display:"inline-block",width:6,height:6,borderRadius:"50%",background:C.green,marginRight:4,verticalAlign:"middle",boxShadow:`0 0 6px ${C.green}`}}/>
-                    {playerCounts[featuredGame.id]||120} playing NOW
-                  </span>
-                </div>
-              </div>
-            </div>
-            <div style={{padding:"12px 0",borderRadius:14,textAlign:"center",
-              background:`linear-gradient(135deg, ${featuredGame.color}25, ${C.cyan}15)`,border:`1px solid ${featuredGame.color}40`,
-              boxShadow:`0 0 20px ${featuredGame.color}15`,
-            }}>
-              <span style={{fontSize:15,fontWeight:900,color:C.text,letterSpacing:2}}>PLAY</span>
-            </div>
+          <div style={{padding:"6px 14px",borderRadius:10,background:`linear-gradient(135deg, ${featuredGame.color}25, ${C.cyan}15)`,border:`1px solid ${featuredGame.color}35`}}>
+            <span style={{fontSize:11,fontWeight:900,color:C.text}}>PLAY</span>
           </div>
         </div>
 
-        {/* ======= QUICK PLAY - Instant Action Strip ======= */}
-        <div style={{marginBottom:16}}>
-          <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:10}}>
-            <span style={{fontSize:13}}>{"⚡"}</span>
-            <span style={{fontSize:11,fontWeight:900,color:C.cyan,letterSpacing:1.5}}>QUICK PLAY</span>
-            <span style={{fontSize:9,color:C.text3,marginLeft:4}}>Jump into a random game!</span>
-          </div>
-          <div style={{display:"flex",gap:8}}>
-            {[
-              {label:"Random",icon:"🎲",sub:"~5s",color:C.cyan},
-              {label:"Fastest Queue",icon:"⚡",sub:"~2s",color:C.gold},
-              {label:"With Friends",icon:"👥",sub:"Invite",color:C.pink},
-            ].map((q,i)=>(
-              <div key={i} onClick={()=>{playFx("select");const rg=PLAY_GAMES[Math.floor(Math.random()*PLAY_GAMES.length)];setSelectedGame(rg);notify("Joining "+rg.name+"!",q.color);}} style={{
-                flex:1,padding:"12px 8px",borderRadius:14,textAlign:"center",cursor:"pointer",
-                background:`${q.color}06`,border:`1px solid ${q.color}18`,
-                backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",
-                transition:"all 0.2s",
-              }}>
-                <div style={{fontSize:22,marginBottom:4}}>{q.icon}</div>
-                <div style={{fontSize:10,fontWeight:800,color:q.color}}>{q.label}</div>
-                <div style={{fontSize:8,color:C.text3,marginTop:2,fontFamily:"monospace"}}>{q.sub}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* ======= LIVE TOURNAMENT SPOTLIGHT ======= */}
-        <div style={{marginBottom:16}}>
-          <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:10}}>
-            <span style={{fontSize:13}}>{"🏆"}</span>
-            <span style={{fontSize:11,fontWeight:900,color:C.gold,letterSpacing:1.5}}>LIVE TOURNAMENT</span>
-          </div>
-          <div onClick={()=>{playFx("select");if(activeTourney.game==="Final Kick")setWcPhase("team_select");else notify(activeTourney.name+" - "+activeTourney.prize,activeTourney.color);}} style={{
-            position:"relative",overflow:"hidden",borderRadius:18,padding:"18px 16px",cursor:"pointer",
-            background:`radial-gradient(ellipse at 30% 20%, ${activeTourney.color}12, transparent 60%), linear-gradient(135deg, ${C.bg2}, ${C.bg3})`,
-            border:`1.5px solid ${activeTourney.color}25`,boxShadow:`0 0 30px ${activeTourney.color}08`,
-          }}>
-            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
-              <div style={{display:"flex",alignItems:"center",gap:8}}>
-                <span style={{fontSize:24}}>{activeTourney.emoji}</span>
-                <div>
-                  <div style={{fontSize:15,fontWeight:900,color:C.text}}>{activeTourney.name}</div>
-                  <div style={{fontSize:10,color:C.text3}}>{activeTourney.game} - {activeTourney.players} entered</div>
-                </div>
-              </div>
-              <div style={{padding:"4px 10px",borderRadius:6,
-                background:activeTourney.status==="LIVE"?`${C.red}20`:`${C.green}15`,
-                border:`1px solid ${activeTourney.status==="LIVE"?C.red:C.green}30`,
-              }}>
-                <div style={{display:"flex",alignItems:"center",gap:4}}>
-                  {activeTourney.status==="LIVE" && <div style={{width:6,height:6,borderRadius:"50%",background:C.red,animation:"pulse 1.5s infinite"}}/>}
-                  <span style={{fontSize:8,fontWeight:900,color:activeTourney.status==="LIVE"?C.red:C.green}}>{activeTourney.status}</span>
-                </div>
-              </div>
-            </div>
-            <div style={{display:"flex",gap:8,marginBottom:12}}>
-              <div style={{flex:1,padding:"8px 10px",borderRadius:10,background:`${C.gold}08`,border:`1px solid ${C.gold}15`}}>
-                <div style={{fontSize:8,color:C.text3,fontWeight:600,marginBottom:2}}>PRIZE POOL</div>
-                <div style={{fontSize:13,fontWeight:900,color:C.gold,fontFamily:"monospace"}}>{activeTourney.prize}</div>
-              </div>
-              <div style={{flex:1,padding:"8px 10px",borderRadius:10,background:`${C.cyan}08`,border:`1px solid ${C.cyan}15`}}>
-                <div style={{fontSize:8,color:C.text3,fontWeight:600,marginBottom:2}}>CURRENT ROUND</div>
-                <div style={{fontSize:11,fontWeight:800,color:C.cyan}}>{activeTourney.round}</div>
-              </div>
-            </div>
-            {/* Mini bracket */}
-            <div style={{display:"flex",alignItems:"center",gap:4,marginBottom:12}}>
-              {activeTourney.bracket.map((n,i)=>(
-                <React.Fragment key={i}>
-                  <div style={{flex:1,padding:"4px 0",borderRadius:6,textAlign:"center",
-                    background:i<=activeTourney.currentRound?`${activeTourney.color}18`:`${C.text3}08`,
-                    border:`1px solid ${i<=activeTourney.currentRound?activeTourney.color+"30":C.border}`,
-                  }}>
-                    <div style={{fontSize:10,fontWeight:800,color:i<=activeTourney.currentRound?activeTourney.color:C.text3}}>{n}</div>
-                    <div style={{fontSize:6,color:C.text3}}>{["R16","QF","SF","F"][i]||"R"+(i+1)}</div>
-                  </div>
-                  {i<activeTourney.bracket.length-1 && <span style={{fontSize:8,color:C.text3}}>{"→"}</span>}
-                </React.Fragment>
-              ))}
-            </div>
-            <div style={{padding:"10px 0",borderRadius:12,textAlign:"center",
-              background:`linear-gradient(135deg, ${activeTourney.color}20, ${C.gold}12)`,border:`1px solid ${activeTourney.color}35`,
-            }}>
-              <span style={{fontSize:13,fontWeight:900,color:activeTourney.color,letterSpacing:1.5}}>ENTER NOW</span>
-            </div>
-          </div>
-          {/* Other tournaments mini-strip */}
-          <div style={{display:"flex",gap:6,marginTop:8,overflowX:"auto",paddingBottom:4,scrollbarWidth:"none"}}>
-            {arcadeTournaments.filter(t=>t!==activeTourney).map((t,i)=>(
-              <div key={i} onClick={()=>{playFx("select");notify(t.name+" - "+t.prize,t.color);}} style={{
-                minWidth:120,padding:"8px 10px",borderRadius:10,cursor:"pointer",flexShrink:0,
-                background:`${t.color}06`,border:`1px solid ${t.color}12`,
-              }}>
-                <div style={{display:"flex",alignItems:"center",gap:4,marginBottom:4}}>
-                  <span style={{fontSize:14}}>{t.emoji}</span>
-                  <span style={{fontSize:7,fontWeight:800,color:t.status==="STARTING"?C.orange:C.green}}>{t.status}</span>
-                </div>
-                <div style={{fontSize:9,fontWeight:800,color:C.text}}>{t.name}</div>
-                <div style={{fontSize:8,color:t.color,fontWeight:700,marginTop:2}}>{"🎁"} {t.prize}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* ======= WHAT'S TRENDING - Popularity Chart ======= */}
-        <div style={{marginBottom:16}}>
-          <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:10}}>
-            <span style={{fontSize:13}}>{"📊"}</span>
-            <span style={{fontSize:11,fontWeight:900,color:C.text,letterSpacing:1.5}}>WHAT'S TRENDING</span>
-          </div>
-          <div style={{padding:"14px",borderRadius:16,background:`${C.cyan}04`,border:`1px solid ${C.cyan}10`,
-            backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",
-          }}>
-            {trendingGames.map((g,i)=>{
-              const count = playerCounts[g.id]||0;
-              const pct = Math.round((count/maxTrending)*100);
-              return (
-                <div key={g.id} onClick={()=>{playFx("select");setSelectedGame(g);}} style={{
-                  display:"flex",alignItems:"center",gap:8,marginBottom:i<4?10:0,cursor:"pointer",
-                }}>
-                  <div style={{width:24,fontSize:16,textAlign:"center",flexShrink:0}}>{g.emoji}</div>
-                  <div style={{flex:1,minWidth:0}}>
-                    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:3}}>
-                      <span style={{fontSize:10,fontWeight:700,color:C.text}}>{g.name}</span>
-                      <span style={{fontSize:10,fontWeight:800,color:g.color,fontFamily:"monospace"}}>{count.toLocaleString()}</span>
-                    </div>
-                    <div style={{height:8,borderRadius:4,background:`${C.text3}10`,overflow:"hidden"}}>
-                      <div style={{height:"100%",borderRadius:4,width:`${pct}%`,
-                        background:`linear-gradient(90deg, ${g.color}60, ${g.color})`,
-                        boxShadow:`0 0 8px ${g.color}40`,
-                        transition:"width 0.8s ease",
-                      }}/>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* ======= ALL GAMES - Smart 2-Column Grid ======= */}
-        <div style={{marginBottom:16}}>
+        {/* ======= ALL GAMES - Smart 2-Column Grid (PRIMARY) ======= */}
+        <div style={{marginBottom:4}}>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
             <div style={{display:"flex",alignItems:"center",gap:6}}>
-              <span style={{fontSize:13}}>{"🎮"}</span>
+              <span style={{fontSize:13}}>🎮</span>
               <span style={{fontSize:11,fontWeight:900,color:C.text,letterSpacing:1.5}}>ALL GAMES</span>
             </div>
             <span style={{fontSize:9,color:C.text3}}>{PLAY_GAMES.length} games</span>
@@ -6682,7 +6495,7 @@ export default function MoodLabArena() {
                   animation:`fadeIn 0.3s ease ${i*0.04}s both`,
                 }}>
                   <div style={{position:"absolute",top:6,right:6,display:"flex",flexDirection:"column",gap:3,alignItems:"flex-end"}}>
-                    {g.hot && <span style={{fontSize:7,fontWeight:800,color:C.red,padding:"1px 6px",borderRadius:4,background:`${C.red}18`,border:`1px solid ${C.red}25`,animation:"pulse 2s infinite"}}>{"🔥"} HOT</span>}
+                    {g.hot && <span style={{fontSize:7,fontWeight:800,color:C.red,padding:"1px 6px",borderRadius:4,background:`${C.red}18`,border:`1px solid ${C.red}25`}}>🔥 HOT</span>}
                     {isNew && <span style={{fontSize:6,fontWeight:800,color:C.cyan,padding:"1px 5px",borderRadius:4,background:`${C.cyan}15`,border:`1px solid ${C.cyan}25`}}>NEW FOR YOU</span>}
                   </div>
                   <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
@@ -6692,7 +6505,7 @@ export default function MoodLabArena() {
                     }}>{g.emoji}</div>
                     <div style={{flex:1,minWidth:0}}>
                       <div style={{fontSize:11,fontWeight:800,color:C.text,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{g.name}</div>
-                      <div style={{fontSize:8,color:C.text3,marginTop:1}}>{"👥"} {g.players} · {"⏱"} {g.time}</div>
+                      <div style={{fontSize:8,color:C.text3,marginTop:1}}>👥 {g.players} · ⏱ {g.time}</div>
                     </div>
                   </div>
                   <div style={{display:"flex",gap:3,flexWrap:"wrap",alignItems:"center"}}>
@@ -6708,17 +6521,53 @@ export default function MoodLabArena() {
           </div>
         </div>
 
-        {/* ======= YOUR ARCADE STATS ======= */}
-        <div style={{marginBottom:16}}>
-          <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:10}}>
-            <span style={{fontSize:13}}>{"💰"}</span>
-            <span style={{fontSize:11,fontWeight:900,color:C.gold,letterSpacing:1.5}}>YOUR ARCADE STATS</span>
+        {/* ======= TAB BAR ======= */}
+        <div style={{display:"flex",borderBottom:`1px solid ${C.border}`,marginTop:12,marginBottom:8}}>
+          {["games","tournaments","stats","activity"].map(t=>(
+            <div key={t} onClick={()=>setArcadeHubTab(t)} style={{
+              flex:1,padding:"8px 0",textAlign:"center",cursor:"pointer",
+              fontSize:9,fontWeight:arcadeHubTab===t?800:600,
+              color:arcadeHubTab===t?C.cyan:C.text3,
+              borderBottom:arcadeHubTab===t?`2px solid ${C.cyan}`:"2px solid transparent",
+            }}>{t.charAt(0).toUpperCase()+t.slice(1)}</div>
+          ))}
+        </div>
+
+        {/* Tournaments tab */}
+        {arcadeHubTab==="tournaments" && (
+          <div style={{marginBottom:14}}>
+            <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:6,scrollbarWidth:"none"}}>
+              {arcadeTournaments.map((t,i)=>(
+                <div key={i} onClick={()=>{playFx("select");if(t.game==="Final Kick")setWcPhase("team_select");else notify(t.name+" - "+t.prize,t.color);}} style={{
+                  minWidth:160,padding:"12px 12px",borderRadius:14,cursor:"pointer",flexShrink:0,
+                  background:`radial-gradient(ellipse at 30% 20%, ${t.color}10, ${C.bg2} 70%)`,
+                  border:`1px solid ${t.color}20`,
+                }}>
+                  <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:6}}>
+                    <span style={{fontSize:20}}>{t.emoji}</span>
+                    <div style={{padding:"2px 7px",borderRadius:4,background:t.status==="LIVE"?`${C.red}18`:`${C.green}12`,border:`1px solid ${t.status==="LIVE"?C.red:C.green}25`}}>
+                      <div style={{display:"flex",alignItems:"center",gap:3}}>
+                        {t.status==="LIVE" && <div style={{width:5,height:5,borderRadius:"50%",background:C.red,animation:"pulse 1.5s infinite"}}/>}
+                        <span style={{fontSize:7,fontWeight:900,color:t.status==="LIVE"?C.red:C.green}}>{t.status}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div style={{fontSize:12,fontWeight:800,color:C.text,marginBottom:3}}>{t.name}</div>
+                  <div style={{fontSize:9,color:C.text3,marginBottom:4}}>{t.game} · {t.players} entered</div>
+                  <div style={{display:"flex",gap:6}}>
+                    <span style={{fontSize:9,fontWeight:700,color:C.gold}}>🎁 {t.prize}</span>
+                    <span style={{fontSize:8,color:C.text3}}>{t.round}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
-          <div style={{padding:"16px",borderRadius:16,
-            background:`${C.cyan}04`,border:`1px solid ${C.cyan}12`,
-            backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",
-          }}>
-            <div style={{display:"flex",gap:8,marginBottom:12}}>
+        )}
+
+        {/* Stats tab */}
+        {arcadeHubTab==="stats" && (
+          <div style={{marginBottom:14,padding:"14px",borderRadius:14,background:`${C.cyan}04`,border:`1px solid ${C.cyan}12`}}>
+            <div style={{display:"flex",gap:8,marginBottom:10}}>
               {[
                 {label:"Games Played",val:myStats.gamesPlayed,color:C.cyan},
                 {label:"Win Rate",val:myStats.winRate+"%",color:C.green},
@@ -6739,7 +6588,7 @@ export default function MoodLabArena() {
                 </div>
               </div>
               <div style={{flex:1,display:"flex",alignItems:"center",gap:6,padding:"6px 8px",borderRadius:8,background:`${C.orange}06`}}>
-                <span style={{fontSize:14}}>{"🔥"}</span>
+                <span style={{fontSize:14}}>🔥</span>
                 <div>
                   <div style={{fontSize:7,color:C.text3}}>Win Streak</div>
                   <div style={{fontSize:9,fontWeight:700,color:C.orange}}>{myStats.streak} wins</div>
@@ -6747,22 +6596,14 @@ export default function MoodLabArena() {
               </div>
             </div>
           </div>
-        </div>
+        )}
 
-        {/* ======= RECENT ACTIVITY ======= */}
-        <div style={{marginBottom:14}}>
-          <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:10}}>
-            <span style={{fontSize:13}}>{"🗣️"}</span>
-            <span style={{fontSize:11,fontWeight:900,color:C.text,letterSpacing:1.5}}>RECENT ACTIVITY</span>
-          </div>
-          <div style={{borderRadius:14,overflow:"hidden",border:`1px solid ${C.cyan}10`,
-            background:`${C.cyan}03`,
-          }}>
+        {/* Activity tab */}
+        {arcadeHubTab==="activity" && (
+          <div style={{marginBottom:14,borderRadius:14,overflow:"hidden",border:`1px solid ${C.cyan}10`,background:`${C.cyan}03`}}>
             {recentActivity.map((a,i)=>(
-              <div key={i} style={{
-                display:"flex",alignItems:"center",gap:10,padding:"10px 12px",
+              <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",
                 borderBottom:i<recentActivity.length-1?`1px solid ${C.border}`:"none",
-                animation:`fadeIn 0.3s ease ${i*0.06}s both`,
               }}>
                 <span style={{fontSize:14,flexShrink:0}}>{a.emoji}</span>
                 <div style={{flex:1,minWidth:0}}>
@@ -6772,7 +6613,7 @@ export default function MoodLabArena() {
               </div>
             ))}
           </div>
-        </div>
+        )}
 
       </div>
       <div style={{height:80}}/>
@@ -6785,18 +6626,13 @@ export default function MoodLabArena() {
     const secondLiveIdx = (showIdx + 4) % SHOW_GAMES.length;
     const liveShow = SHOW_GAMES[showIdx];
     const liveShow2 = SHOW_GAMES[secondLiveIdx];
-    const liveShows = [liveShow, liveShow2];
-    const upcomingShows = SHOW_GAMES.filter((_,i)=>i!==showIdx&&i!==secondLiveIdx).slice(0,4);
-    const stageStats = {watched:vcRound+23, correct:vcScore>0?Math.floor(vcScore/100)+89:89, coinsWon:vcScore+3200, bestShow:"Survival Trivia", bestRound:12, puffBest:"0.08"};
     const nowViewers = 1247 + Math.floor(Math.random()*100);
-    const nowViewers2 = 634 + Math.floor(Math.random()*80);
-    const totalPrize = 12500;
-    const prizeBreakdown = [{name:"Vibe Check",coins:5000},{name:"Survival",coins:3000},{name:"Spin & Win",coins:2500},{name:"Puff Clock",coins:2000}];
-    const highlights = [
-      {emoji:"💀",text:"47 players eliminated in Round 3 of Survival Trivia!",color:C.purple},
-      {emoji:"🎧",text:"BeatMaster hit PERFECT on all 3 songs in Beat Drop!",color:C.pink},
-      {emoji:"🎰",text:"JACKPOT! PuffQueen won 1,000 coins on Spin & Win!",color:C.gold},
-      {emoji:"⏱️",text:"TimeLord hit exactly 4.20s in Puff Clock! 420 coins!",color:C.orange},
+    const stageInfoIdx = Math.floor((tick/4) % 4);
+    const stageInfoCards = [
+      {text:"Next: 🎭 Simon Puffs in 8 min", color:C.gold},
+      {text:"Tonight: 🏆 12,500 coins up for grabs!", color:C.green},
+      {text:"Your Best: 💀 Survival Trivia Round 12", color:C.cyan},
+      {text:"Highlight: 🎰 JACKPOT on Spin & Win!", color:C.pink},
     ];
     const launchShow = (g) => {
       if(g.id==="vibecheck") vcStartGame();
@@ -6813,193 +6649,35 @@ export default function MoodLabArena() {
     };
     return (
     <div style={{position:"relative"}}>
-      {/* ═══ STAGE SPOTLIGHT EFFECTS ═══ */}
+      {/* Stage spotlight background */}
       <div style={{position:"absolute",top:-80,left:"50%",transform:"translateX(-50%)",width:500,height:400,pointerEvents:"none",
         background:`radial-gradient(ellipse at 25% 0%, ${C.purple}20, transparent 45%), radial-gradient(ellipse at 75% 0%, ${C.pink}18, transparent 45%), radial-gradient(ellipse at 50% 5%, ${C.gold}12, transparent 55%)`
       }}/>
-      {/* Sweeping spotlight beams */}
-      <div style={{position:"absolute",top:0,left:0,right:0,height:300,pointerEvents:"none",overflow:"hidden"}}>
-        <div style={{position:"absolute",top:-100,left:"10%",width:80,height:400,background:`linear-gradient(180deg, ${C.purple}10, transparent)`,transform:"rotate(12deg)",animation:"spotlightSweep 6s ease-in-out infinite"}}/>
-        <div style={{position:"absolute",top:-100,right:"15%",width:60,height:350,background:`linear-gradient(180deg, ${C.pink}08, transparent)`,transform:"rotate(-10deg)",animation:"spotlightSweep 8s ease-in-out infinite reverse"}}/>
-        <div style={{position:"absolute",top:-60,left:"45%",width:100,height:300,background:`linear-gradient(180deg, ${C.gold}06, transparent)`,transform:"rotate(3deg)",animation:"spotlightSweep 10s ease-in-out infinite 2s"}}/>
-      </div>
-      {/* Floating music note emojis */}
-      {["🎵","🎶","🎵","🎶","🎵"].map((n,i)=>(
-        <div key={"note"+i} style={{position:"absolute",left:`${15+i*18}%`,top:60+i*30,fontSize:10+i%3*2,opacity:0.12+i*0.02,pointerEvents:"none",animation:`floatUp ${4+i}s ease-in-out infinite ${i*0.8}s`}}>{n}</div>
-      ))}
 
-      {/* ═══ 1. ZONE HERO — Stage Entrance ═══ */}
       {renderZoneHeader("stage")}
       <div style={{padding:"0 14px",position:"relative",zIndex:1}}>
-        {/* Live shows + count strip */}
-        <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginBottom:14,padding:"8px 14px",borderRadius:10,
-          background:`linear-gradient(135deg, ${C.purple}10, ${C.pink}08)`,border:`1px solid ${C.purple}18`}}>
-          <span style={{fontSize:11,fontWeight:900,color:C.purple,letterSpacing:1}}>{SHOW_GAMES.length} LIVE SHOWS</span>
-          <span style={{fontSize:10,color:C.text3}}>|</span>
-          <div style={{display:"flex",alignItems:"center",gap:4}}>
-            <div style={{width:6,height:6,borderRadius:"50%",background:C.red,animation:"pulse 1.5s infinite"}}/>
-            <span style={{fontSize:11,fontWeight:900,color:C.red}}>2 ON NOW</span>
-          </div>
-        </div>
 
-        {/* ═══ 2. ON AIR — Currently Live Shows ═══ */}
-        <div style={{marginBottom:16}}>
-          <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:10}}>
-            <div style={{width:8,height:8,borderRadius:"50%",background:C.red,boxShadow:`0 0 10px ${C.red}`,animation:"pulse 1.5s infinite"}}/>
-            <span style={{fontSize:11,fontWeight:900,color:C.red,letterSpacing:2}}>ON AIR</span>
-          </div>
-
-          {/* Primary live show — large hero card */}
-          <div onClick={()=>launchShow(liveShow)} style={{
-            position:"relative",overflow:"hidden",borderRadius:20,padding:"22px 18px",marginBottom:10,cursor:"pointer",
-            background:`radial-gradient(ellipse at 20% 30%, ${liveShow.color}15, transparent 55%), radial-gradient(ellipse at 85% 70%, ${C.purple}10, transparent 50%), linear-gradient(135deg, ${C.bg2}, ${C.bg3})`,
-            border:`1.5px solid ${C.red}20`,boxShadow:`0 0 30px ${C.red}06, 0 0 60px ${liveShow.color}04, inset 0 1px 0 rgba(255,255,255,0.05)`,
-          }}>
-            {/* LIVE badge */}
-            <div style={{position:"absolute",top:14,right:14,display:"flex",alignItems:"center",gap:5,padding:"4px 12px",borderRadius:6,background:`${C.red}22`,border:`1px solid ${C.red}40`,boxShadow:`0 0 16px ${C.red}30`}}>
-              <div style={{width:7,height:7,borderRadius:"50%",background:C.red,boxShadow:`0 0 8px ${C.red}`,animation:"pulse 1.5s infinite"}}/>
-              <span style={{fontSize:10,fontWeight:900,color:C.red,letterSpacing:1.5}}>LIVE</span>
-            </div>
-            {/* Show theme glow */}
-            <div style={{position:"absolute",bottom:-20,right:-20,width:120,height:120,borderRadius:"50%",background:`radial-gradient(circle, ${liveShow.color}10, transparent 70%)`,pointerEvents:"none"}}/>
-            <div style={{display:"flex",alignItems:"center",gap:14,marginBottom:12}}>
-              <div style={{width:56,height:56,borderRadius:16,display:"flex",alignItems:"center",justifyContent:"center",fontSize:30,
-                background:`radial-gradient(circle, ${liveShow.color}22, ${liveShow.color}06)`,border:`2px solid ${liveShow.color}35`,
-                boxShadow:`0 0 20px ${liveShow.color}18`,filter:`drop-shadow(0 0 10px ${liveShow.color}50)`
-              }}>{liveShow.emoji}</div>
-              <div style={{flex:1}}>
-                <div style={{fontSize:20,fontWeight:900,color:C.text,lineHeight:1.2}}>{liveShow.name}</div>
-                <div style={{fontSize:11,color:C.pink,marginTop:4,lineHeight:1.3}}>🎤 MC Tuan is hosting {liveShow.name} with {nowViewers.toLocaleString()} viewers!</div>
-              </div>
-            </div>
-            <div style={{display:"flex",alignItems:"center",gap:6,marginTop:4}}>
-              <div style={{display:"flex",alignItems:"center",gap:4}}>
-                <div style={{width:24,height:24,borderRadius:"50%",background:`linear-gradient(135deg, ${C.pink}, ${C.purple})`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:12}}>🎤</div>
-                <span style={{fontSize:10,fontWeight:700,color:C.text2}}>MC Tuan</span>
-              </div>
-              <span style={{fontSize:9,color:C.text3}}>|</span>
-              <span style={{fontSize:10,color:C.pink,fontWeight:700}}>👁 {nowViewers.toLocaleString()} watching</span>
-              <span style={{fontSize:9,color:C.text3}}>|</span>
-              <span style={{fontSize:9,fontWeight:700,color:liveShow.color,padding:"2px 6px",borderRadius:4,background:`${liveShow.color}12`}}>{liveShow.type}</span>
-            </div>
-            {/* JOIN LIVE button */}
-            <div style={{marginTop:14,padding:"12px 0",borderRadius:14,textAlign:"center",cursor:"pointer",
-              background:`linear-gradient(135deg, ${C.pink}25, ${C.purple}18)`,border:`1px solid ${C.pink}35`,
-              boxShadow:`0 0 20px ${C.pink}12, 0 0 40px ${C.pink}06`,animation:"pulse 3s ease-in-out infinite"
-            }}>
-              <span style={{fontSize:14,fontWeight:900,color:C.pink,letterSpacing:1.5}}>JOIN LIVE</span>
-            </div>
-          </div>
-
-          {/* Secondary live show — compact card */}
-          <div onClick={()=>launchShow(liveShow2)} style={{
-            position:"relative",overflow:"hidden",borderRadius:16,padding:"14px 16px",cursor:"pointer",
-            background:`radial-gradient(ellipse at 30% 50%, ${liveShow2.color}10, transparent 60%), linear-gradient(135deg, ${C.bg2}, ${C.bg3})`,
-            border:`1.5px solid ${C.red}15`,boxShadow:`0 0 20px ${C.red}04`,
-          }}>
-            <div style={{display:"flex",alignItems:"center",gap:12}}>
-              <div style={{width:42,height:42,borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,
-                background:`radial-gradient(circle, ${liveShow2.color}18, ${liveShow2.color}05)`,border:`1.5px solid ${liveShow2.color}25`,
-                filter:`drop-shadow(0 0 8px ${liveShow2.color}35)`
-              }}>{liveShow2.emoji}</div>
-              <div style={{flex:1}}>
-                <div style={{display:"flex",alignItems:"center",gap:6}}>
-                  <span style={{fontSize:14,fontWeight:800,color:C.text}}>{liveShow2.name}</span>
-                  <div style={{display:"flex",alignItems:"center",gap:3,padding:"2px 7px",borderRadius:4,background:`${C.red}18`,border:`1px solid ${C.red}30`}}>
-                    <div style={{width:5,height:5,borderRadius:"50%",background:C.red,animation:"pulse 1.5s infinite"}}/>
-                    <span style={{fontSize:8,fontWeight:900,color:C.red}}>LIVE</span>
-                  </div>
-                </div>
-                <div style={{fontSize:10,color:C.text2,marginTop:3}}>🎤 MC Host | 👁 {nowViewers2.toLocaleString()} watching</div>
-              </div>
-              <div style={{padding:"8px 14px",borderRadius:10,background:`linear-gradient(135deg, ${C.pink}18, ${C.purple}12)`,border:`1px solid ${C.pink}25`}}>
-                <span style={{fontSize:11,fontWeight:800,color:C.pink}}>JOIN</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* ═══ 3. COMING UP NEXT — Schedule Strip ═══ */}
-        <div style={{marginBottom:16}}>
-          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
-            <div style={{display:"flex",alignItems:"center",gap:6}}>
-              <span style={{fontSize:13}}>⏰</span>
-              <span style={{fontSize:11,fontWeight:900,color:C.text,letterSpacing:1}}>COMING UP NEXT</span>
-            </div>
-            <div style={{fontSize:9,color:C.text3,fontWeight:600}}>Scroll ></div>
-          </div>
-          <div style={{display:"flex",gap:10,overflowX:"auto",paddingBottom:6,WebkitOverflowScrolling:"touch",scrollbarWidth:"none"}}>
-            {upcomingShows.map((g,i)=>{
-              const mins = [3,12,28,55][i]||30;
-              const urgColor = mins<10?C.green:mins<30?C.orange:C.text3;
-              const isUrgent = mins<10;
-              return (
-                <div key={g.id} onClick={()=>{playFx("select");launchShow(g);}} style={{
-                  minWidth:130,padding:"14px 12px",borderRadius:14,cursor:"pointer",flexShrink:0,
-                  background:`radial-gradient(ellipse at 50% 0%, ${g.color}08, ${C.bg2} 70%)`,
-                  border:`1px solid ${g.color}15`,transition:"all 0.3s",
-                }}>
-                  <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
-                    <div style={{fontSize:24,filter:`drop-shadow(0 0 6px ${g.color}40)`}}>{g.emoji}</div>
-                    <div style={{padding:"3px 8px",borderRadius:6,background:`${urgColor}15`,border:`1px solid ${urgColor}25`,
-                      ...(isUrgent?{animation:"pulse 2s infinite",boxShadow:`0 0 8px ${urgColor}20`}:{})
-                    }}>
-                      <span style={{fontSize:9,fontWeight:900,color:urgColor}}>{isUrgent?"Starts in ":"in "}{mins} min</span>
-                    </div>
-                  </div>
-                  <div style={{fontSize:12,fontWeight:800,color:C.text,marginBottom:4}}>{g.name}</div>
-                  <span style={{fontSize:8,fontWeight:700,color:g.color,padding:"2px 6px",borderRadius:4,background:`${g.color}10`}}>{g.type}</span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* ═══ 4. TONIGHT'S PRIZE POOL ═══ */}
-        <div style={{marginBottom:16,padding:"18px 16px",borderRadius:18,position:"relative",overflow:"hidden",
-          background:`linear-gradient(135deg, ${C.gold}08, ${C.orange}05, ${C.bg2})`,
-          border:`1.5px solid ${C.gold}20`,boxShadow:`0 0 30px ${C.gold}06`,backdropFilter:"blur(12px)"
+        {/* ═══ ON AIR — Compact live indicator ═══ */}
+        <div onClick={()=>launchShow(liveShow)} style={{
+          display:"flex",alignItems:"center",gap:10,padding:"10px 14px",borderRadius:14,cursor:"pointer",marginBottom:12,
+          background:`radial-gradient(ellipse at 20% 50%, ${C.red}08, ${C.bg2} 70%)`,
+          border:`1px solid ${C.red}20`,
         }}>
-          <div style={{position:"absolute",top:-30,right:-30,width:100,height:100,borderRadius:"50%",background:`radial-gradient(circle, ${C.gold}10, transparent 70%)`,pointerEvents:"none"}}/>
-          <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
-            <span style={{fontSize:22}}>🏆</span>
-            <div>
-              <div style={{fontSize:11,fontWeight:900,color:C.gold,letterSpacing:2}}>TONIGHT'S PRIZE POOL</div>
-              <div style={{fontSize:22,fontWeight:900,color:C.gold,filter:`drop-shadow(0 0 8px ${C.gold}40)`,marginTop:2}}>{totalPrize.toLocaleString()} coins</div>
-            </div>
+          <div style={{width:8,height:8,borderRadius:"50%",background:C.red,boxShadow:`0 0 10px ${C.red}`,animation:"pulse 1.5s infinite",flexShrink:0}}/>
+          <div style={{width:32,height:32,borderRadius:9,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,
+            background:`radial-gradient(circle, ${liveShow.color}18, ${liveShow.color}05)`,border:`1px solid ${liveShow.color}25`,flexShrink:0,
+          }}>{liveShow.emoji}</div>
+          <div style={{flex:1,minWidth:0}}>
+            <div style={{fontSize:12,fontWeight:800,color:C.text,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{liveShow.name}</div>
+            <div style={{fontSize:9,color:C.pink,fontWeight:600}}>👁 {nowViewers.toLocaleString()} watching</div>
           </div>
-          <div style={{fontSize:10,color:C.text2,marginBottom:10}}>🏆 {totalPrize.toLocaleString()} coins up for grabs tonight!</div>
-          <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
-            {prizeBreakdown.map((p,i)=>(
-              <div key={i} style={{padding:"5px 10px",borderRadius:8,background:`${C.gold}08`,border:`1px solid ${C.gold}12`}}>
-                <span style={{fontSize:9,fontWeight:700,color:C.gold}}>{p.name}: {p.coins.toLocaleString()}</span>
-              </div>
-            ))}
+          <div style={{padding:"6px 14px",borderRadius:10,background:`linear-gradient(135deg, ${C.pink}22, ${C.purple}15)`,border:`1px solid ${C.pink}30`}}>
+            <span style={{fontSize:11,fontWeight:900,color:C.pink}}>JOIN</span>
           </div>
         </div>
 
-        {/* ═══ 5. SHOW HIGHLIGHTS — Best Moments ═══ */}
-        <div style={{marginBottom:16}}>
-          <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:10}}>
-            <span style={{fontSize:13}}>🌟</span>
-            <span style={{fontSize:11,fontWeight:900,color:C.text,letterSpacing:1}}>SHOW HIGHLIGHTS</span>
-          </div>
-          <div style={{fontSize:10,color:C.text3,marginBottom:10}}>Recent highlights from the Stage</div>
-          <div style={{display:"flex",flexDirection:"column",gap:6}}>
-            {highlights.map((h,i)=>(
-              <div key={i} style={{padding:"12px 14px",borderRadius:14,display:"flex",alignItems:"center",gap:10,
-                background:`linear-gradient(135deg, ${h.color}06, ${C.bg2})`,border:`1px solid ${h.color}12`,
-                backdropFilter:"blur(8px)",animation:`fadeIn 0.3s ease ${i*0.08}s both`
-              }}>
-                <span style={{fontSize:18,flexShrink:0}}>{h.emoji}</span>
-                <span style={{fontSize:11,fontWeight:600,color:C.text,lineHeight:1.35}}>{h.text}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* ═══ 6. ALL SHOWS — Complete 2-Column Grid ═══ */}
-        <div style={{marginBottom:16}}>
+        {/* ═══ ALL SHOWS — 2-Column Grid (PRIMARY) ═══ */}
+        <div style={{marginBottom:4}}>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
             <div style={{display:"flex",alignItems:"center",gap:6}}>
               <span style={{fontSize:13}}>🎮</span>
@@ -7015,7 +6693,7 @@ export default function MoodLabArena() {
                 padding:"12px 10px",borderRadius:14,cursor:"pointer",position:"relative",overflow:"hidden",
                 background:`radial-gradient(ellipse at 50% 0%, ${g.color}06, ${C.bg2} 70%)`,
                 border:`1.5px solid ${isLive?C.red:g.color}${isLive?"20":"10"}`,transition:"all 0.3s",
-                boxShadow:isLive?`0 0 16px ${C.red}10, 0 0 30px ${C.red}05`:"none",
+                boxShadow:isLive?`0 0 16px ${C.red}10`:"none",
                 animation:`fadeIn 0.3s ease ${i*0.04}s both`,
               }}>
                 {isLive && <div style={{position:"absolute",top:6,right:6,display:"flex",alignItems:"center",gap:3,padding:"2px 6px",borderRadius:4,background:`${C.red}18`,border:`1px solid ${C.red}30`}}>
@@ -7042,42 +6720,22 @@ export default function MoodLabArena() {
           </div>
         </div>
 
-        {/* ═══ 7. YOUR STAGE STATS ═══ */}
-        <div style={{marginBottom:14}}>
-          <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:10}}>
-            <span style={{fontSize:13}}>📊</span>
-            <span style={{fontSize:11,fontWeight:900,color:C.text,letterSpacing:1}}>YOUR STAGE STATS</span>
-          </div>
-          {/* Main stats row */}
-          <div style={{display:"flex",gap:6,marginBottom:8}}>
-            {[
-              {label:"Shows Watched",val:stageStats.watched,icon:"📺",color:C.cyan},
-              {label:"Correct Answers",val:stageStats.correct,icon:"✅",color:C.green},
-              {label:"Coins Won",val:stageStats.coinsWon.toLocaleString(),icon:"🪙",color:C.gold},
-            ].map((s,i)=>(
-              <div key={i} style={{flex:1,padding:"10px 6px",borderRadius:12,textAlign:"center",
-                background:`${s.color}06`,border:`1px solid ${s.color}12`,
-              }}>
-                <div style={{fontSize:16,marginBottom:2}}>{s.icon}</div>
-                <div style={{fontSize:14,fontWeight:900,color:s.color}}>{s.val}</div>
-                <div style={{fontSize:7,color:C.text3,fontWeight:600,marginTop:1}}>{s.label}</div>
-              </div>
+        {/* ═══ SWIPEABLE INFO CARDS — Auto-cycling strip ═══ */}
+        <div style={{marginTop:14,marginBottom:14,position:"relative",overflow:"hidden",borderRadius:12,
+          padding:"12px 16px",height:46,
+          background:`${stageInfoCards[stageInfoIdx].color}08`,border:`1px solid ${stageInfoCards[stageInfoIdx].color}15`,
+          transition:"all 0.5s ease",
+        }}>
+          <div style={{fontSize:11,fontWeight:700,color:stageInfoCards[stageInfoIdx].color,lineHeight:1.4,
+            transition:"opacity 0.3s ease",
+          }}>{stageInfoCards[stageInfoIdx].text}</div>
+          <div style={{display:"flex",gap:4,justifyContent:"center",marginTop:6}}>
+            {stageInfoCards.map((_,i)=>(
+              <div key={i} style={{width:5,height:5,borderRadius:"50%",
+                background:i===stageInfoIdx?stageInfoCards[stageInfoIdx].color:`${C.text3}30`,
+                transition:"all 0.3s",
+              }}/>
             ))}
-          </div>
-          {/* Best records */}
-          <div style={{display:"flex",gap:6}}>
-            <div style={{flex:1,padding:"10px 12px",borderRadius:12,
-              background:`${C.purple}06`,border:`1px solid ${C.purple}12`}}>
-              <div style={{fontSize:8,color:C.text3,fontWeight:600,marginBottom:3}}>Best Show</div>
-              <div style={{fontSize:11,fontWeight:800,color:C.purple}}>🏆 {stageStats.bestShow}</div>
-              <div style={{fontSize:9,color:C.text2,marginTop:2}}>Survived to Round {stageStats.bestRound}</div>
-            </div>
-            <div style={{flex:1,padding:"10px 12px",borderRadius:12,
-              background:`${C.orange}06`,border:`1px solid ${C.orange}12`}}>
-              <div style={{fontSize:8,color:C.text3,fontWeight:600,marginBottom:3}}>Puff Clock Best</div>
-              <div style={{fontSize:11,fontWeight:800,color:C.orange}}>⏱️ +/-{stageStats.puffBest}s</div>
-              <div style={{fontSize:9,color:C.text2,marginTop:2}}>Personal record</div>
-            </div>
           </div>
         </div>
 
@@ -7352,110 +7010,52 @@ export default function MoodLabArena() {
       {text:"FK1 WC Champion",emoji:"🎮",count:1204,split:[72,28],hot:true},
       {text:"Bitcoin $100K by July?",emoji:"🪙",count:631,split:[55,45]},
     ];
-    const oracleCategories = [
-      {name:"Sports",emoji:"⚽",desc:"WC + Major Leagues",color:"#3B82F6",count:234},
-      {name:"Cannabis",emoji:"🌿",desc:"Strains, Prices, Laws",color:"#22C55E",count:189},
-      {name:"Arena",emoji:"🎮",desc:"Game Predictions",color:"#9333EA",count:156},
-      {name:"Culture",emoji:"🌍",desc:"Pop Culture, Crypto",color:"#F97316",count:211},
-    ];
     const oracleGamesList = [
       {name:"Match Predictor",emoji:"📊",color:"#3B82F6",id:"matchpredictor"},
       {name:"Daily Picks",emoji:"📅",color:"#F97316",id:"dailypicks"},
       {name:"Strain Battle",emoji:"🌿",color:"#22C55E",id:"strainbattle"},
       {name:"Crystal Ball",emoji:"🔮",color:"#9333EA",id:"crystalball"},
-      {name:"Score Predictor",emoji:"🎯",color:C.cyan,id:"scorepredictor"},
-      {name:"Arena Oracle",emoji:"🏆",color:C.gold,id:"arenaoracle"},
-      {name:"Price Prophet",emoji:"💰",color:C.lime,id:"priceprophet"},
     ];
-    const oracleLB = [
-      {name:"OracleKing",acc:92,emoji:"👑",coins:12400,place:"🥇"},
-      {name:"PredictorPro",acc:87,emoji:"🔮",coins:9800,place:"🥈"},
-      {name:"CrystalVision",acc:84,emoji:"💎",coins:8200,place:"🥉"},
-      {name:"Steve",acc:78,emoji:"🌟",coins:4200,place:"4",isYou:true},
-      {name:"MysticSeer",acc:75,emoji:"🌙",coins:3600,place:"5"},
+    const recentPreds = [
+      {q:"Brazil vs Germany",ans:"Brazil",result:"correct",coins:"+100",time:"2h ago"},
+      {q:"Gorilla Glue vs Blue Dream",ans:"Gorilla Glue",result:"correct",coins:"+50",time:"5h ago"},
+      {q:"FK1 WC Winner",ans:"MoodLab FC",result:"pending",coins:"--",time:"1d ago"},
+      {q:"BTC $100K by July?",ans:"Yes",result:"wrong",coins:"-0",time:"1d ago"},
+      {q:"Indica vs Sativa poll",ans:"Indica",result:"correct",coins:"+30",time:"2d ago"},
+      {q:"Arsenal vs Man City",ans:"Draw",result:"correct",coins:"+150",time:"2d ago"},
+      {q:"Purple Haze rating",ans:">4.5",result:"wrong",coins:"-0",time:"3d ago"},
+      {q:"Next viral strain?",ans:"Gelato 41",result:"pending",coins:"--",time:"3d ago"},
+      {q:"Super Bowl LVIII",ans:"Chiefs",result:"correct",coins:"+200",time:"4d ago"},
+      {q:"ETH merge date?",ans:"On time",result:"correct",coins:"+75",time:"5d ago"},
     ];
     return (
     <div style={{position:"relative"}}>
       {/* Starfield particles */}
-      {[...Array(20)].map((_,i)=>(
+      {[...Array(12)].map((_,i)=>(
         <div key={"star"+i} style={{position:"absolute",left:`${(i*17+7)%100}%`,top:`${(i*23+11)%400}px`,width:1+i%3,height:1+i%3,borderRadius:"50%",background:i%3===0?"#9333EA":"#FFD700",opacity:0.15+Math.random()*0.15,animation:`pulse ${2+i%3}s infinite ${i*0.3}s`,pointerEvents:"none",zIndex:0}}/>
       ))}
       <div style={{position:"absolute",top:-40,left:"50%",transform:"translateX(-50%)",width:300,height:200,borderRadius:"50%",background:"radial-gradient(circle, rgba(147,51,234,0.12), transparent 70%)",pointerEvents:"none"}}/>
       {renderZoneHeader("oracle")}
       <div style={{padding:"0 14px",position:"relative",zIndex:1}}>
 
-        {/* YOUR ORACLE STATS */}
-        <div style={{padding:"14px",borderRadius:16,marginBottom:16,background:"linear-gradient(135deg, rgba(147,51,234,0.08), rgba(255,215,0,0.04))",border:"1px solid rgba(147,51,234,0.20)",backdropFilter:"blur(8px)"}}>
-          <div style={{fontSize:10,fontWeight:800,color:"#9333EA",letterSpacing:2,marginBottom:10}}>YOUR ORACLE STATS</div>
-          <div style={{display:"flex",justifyContent:"space-between",gap:4}}>
-            {oracleStats.map((s,i)=>(
-              <div key={i} style={{textAlign:"center",flex:1}}>
-                <div style={{fontSize:12,marginBottom:2}}>{s.icon}</div>
-                <div style={{fontSize:14,fontWeight:900,color:s.color}}>{s.val}</div>
-                <div style={{fontSize:7,color:C.text3,marginTop:1}}>{s.label}</div>
-              </div>
-            ))}
+        {/* DAILY PICKS URGENCY STRIP */}
+        <div onClick={()=>{setGameActive({id:"dailypicks",name:"Daily Picks",emoji:"📅",color:"#F97316"});startDailyPicks();}} style={{
+          display:"flex",alignItems:"center",justifyContent:"center",gap:8,padding:"8px 14px",borderRadius:10,marginBottom:12,cursor:"pointer",
+          background:"linear-gradient(135deg, rgba(249,115,22,0.10), rgba(147,51,234,0.06))",border:"1px solid rgba(249,115,22,0.22)",
+        }}>
+          <span style={{fontSize:10,fontWeight:900,color:"#F97316"}}>3 PICKS TODAY</span>
+          <span style={{fontSize:9,color:C.text3}}>·</span>
+          <span style={{fontSize:10,fontWeight:700,color:C.gold}}>🔥 7-day streak</span>
+          <span style={{fontSize:9,color:C.text3}}>·</span>
+          <span style={{fontSize:9,fontWeight:700,color:C.red}}>closes in 2h</span>
+        </div>
+
+        {/* PREDICTION GAMES GRID (PRIMARY) */}
+        <div style={{marginBottom:4}}>
+          <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:10}}>
+            <span style={{fontSize:13}}>🎮</span>
+            <span style={{fontSize:11,fontWeight:900,color:C.text,letterSpacing:1.5}}>PREDICTION GAMES</span>
           </div>
-        </div>
-
-        {/* DAILY PICKS */}
-        <div style={{padding:"14px",borderRadius:16,marginBottom:16,background:"linear-gradient(135deg, rgba(249,115,22,0.08), rgba(147,51,234,0.04))",border:"1px solid rgba(249,115,22,0.20)"}}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
-            <span style={{fontSize:10,fontWeight:800,color:"#F97316",letterSpacing:2}}>DAILY PICKS</span>
-            <span style={{fontSize:8,fontWeight:700,color:C.gold,padding:"2px 8px",borderRadius:6,background:"rgba(255,215,0,0.10)",border:"1px solid rgba(255,215,0,0.20)"}}>🔥 7 day streak | 3x multiplier</span>
-          </div>
-          {[{label:"Morning Pick",cat:"sports",emoji:"🌅",time:"2h 30m",color:"#F97316"},{label:"Afternoon Pick",cat:"cannabis",emoji:"☀️",time:"6h 15m",color:"#22C55E"},{label:"Night Pick",cat:"culture",emoji:"🌙",time:"12h 45m",color:"#9333EA"}].map((dp,i)=>(
-            <div key={i} onClick={()=>{setGameActive({id:"dailypicks",name:"Daily Picks",emoji:"📅",color:"#F97316"});startDailyPicks();}} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 10px",borderRadius:10,marginBottom:4,cursor:"pointer",background:"rgba(255,255,255,0.02)",border:"1px solid rgba(255,255,255,0.04)",transition:"all 0.2s"}}>
-              <span style={{fontSize:18}}>{dp.emoji}</span>
-              <div style={{flex:1}}>
-                <div style={{fontSize:11,fontWeight:700,color:C.text}}>{dp.label}</div>
-                <div style={{fontSize:8,color:C.text3}}>{dp.cat}</div>
-              </div>
-              <div style={{fontSize:8,fontWeight:700,color:dp.color,padding:"2px 6px",borderRadius:4,background:`${dp.color}12`}}>Closes in {dp.time}</div>
-            </div>
-          ))}
-        </div>
-
-        {/* TRENDING PREDICTIONS */}
-        <div style={{marginBottom:16}}>
-          <div style={{fontSize:10,fontWeight:800,color:C.text,letterSpacing:2,marginBottom:10}}>🔥 TRENDING PREDICTIONS</div>
-          {trendingPreds.map((tp,i)=>(
-            <div key={i} style={{padding:"10px 12px",borderRadius:12,marginBottom:6,background:"rgba(147,51,234,0.04)",border:"1px solid rgba(147,51,234,0.10)",position:"relative"}}>
-              {tp.hot && <div style={{position:"absolute",top:6,right:8,fontSize:7,fontWeight:800,color:C.red,padding:"1px 4px",borderRadius:3,background:"rgba(255,50,50,0.12)"}}>HOT</div>}
-              <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
-                <span style={{fontSize:16}}>{tp.emoji}</span>
-                <span style={{fontSize:11,fontWeight:700,color:C.text,flex:1}}>{tp.text}</span>
-                <span style={{fontSize:9,color:C.text3}}>{tp.count.toLocaleString()} predictions</span>
-              </div>
-              <div style={{display:"flex",alignItems:"center",gap:6}}>
-                <span style={{fontSize:8,fontWeight:700,color:C.cyan}}>{tp.split[0]}%</span>
-                <div style={{flex:1,height:6,borderRadius:3,background:"rgba(255,255,255,0.06)",overflow:"hidden"}}>
-                  <div style={{width:`${tp.split[0]}%`,height:"100%",borderRadius:3,background:"linear-gradient(90deg, #9333EA, #FFD700)",transition:"width 0.5s"}}/>
-                </div>
-                <span style={{fontSize:8,fontWeight:700,color:"#F97316"}}>{tp.split[1]}%</span>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* CATEGORIES */}
-        <div style={{marginBottom:16}}>
-          <div style={{fontSize:10,fontWeight:800,color:C.text,letterSpacing:2,marginBottom:10}}>CATEGORIES</div>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-            {oracleCategories.map((cat,i)=>(
-              <div key={i} onClick={()=>notify(cat.name+" predictions!",cat.color)} style={{padding:"14px 10px",borderRadius:14,cursor:"pointer",textAlign:"center",background:`${cat.color}06`,border:`1px solid ${cat.color}15`,transition:"all 0.3s"}}>
-                <div style={{fontSize:28,marginBottom:4,filter:`drop-shadow(0 0 8px ${cat.color}40)`}}>{cat.emoji}</div>
-                <div style={{fontSize:11,fontWeight:800,color:cat.color}}>{cat.name}</div>
-                <div style={{fontSize:8,color:C.text3,marginTop:2}}>{cat.desc}</div>
-                <div style={{fontSize:8,fontWeight:700,color:C.text3,marginTop:4}}>{cat.count} active</div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* PREDICTION GAMES */}
-        <div style={{marginBottom:16}}>
-          <div style={{fontSize:10,fontWeight:800,color:C.text,letterSpacing:2,marginBottom:10}}>🎮 PREDICTION GAMES</div>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
             {oracleGamesList.map((g,i)=>(
               <div key={i} onClick={()=>{
@@ -7464,32 +7064,91 @@ export default function MoodLabArena() {
                 else if(g.id==="matchpredictor"){setGameActive({id:"matchpredictor",name:"Match Predictor",emoji:"📊",color:"#3B82F6"});startMatchPredictor();}
                 else if(g.id==="dailypicks"){setGameActive({id:"dailypicks",name:"Daily Picks",emoji:"📅",color:"#F97316"});startDailyPicks();}
                 else notify(g.name+" coming soon!",g.color);
-              }} style={{padding:"12px 10px",borderRadius:14,cursor:"pointer",textAlign:"center",position:"relative",overflow:"hidden",background:`radial-gradient(ellipse at 50% 0%, ${g.color}08, rgba(255,255,255,0.01) 70%)`,border:`1px solid ${g.color}15`,transition:"all 0.3s"}}>
-                <div style={{fontSize:24,marginBottom:4,filter:`drop-shadow(0 0 8px ${g.color}50)`}}>{g.emoji}</div>
-                <div style={{fontSize:10,fontWeight:800,color:g.color}}>{g.name}</div>
-                {(g.id==="crystalball"||g.id==="strainbattle"||g.id==="matchpredictor"||g.id==="dailypicks") && <div style={{fontSize:7,fontWeight:700,color:C.lime,marginTop:2}}>PLAY NOW</div>}
+              }} style={{padding:"14px 12px",borderRadius:14,cursor:"pointer",textAlign:"center",position:"relative",overflow:"hidden",
+                background:`radial-gradient(ellipse at 50% 0%, ${g.color}10, rgba(255,255,255,0.01) 70%)`,border:`1px solid ${g.color}18`,transition:"all 0.3s",
+                animation:`fadeIn 0.3s ease ${i*0.06}s both`,
+              }}>
+                <div style={{fontSize:28,marginBottom:4,filter:`drop-shadow(0 0 8px ${g.color}50)`}}>{g.emoji}</div>
+                <div style={{fontSize:11,fontWeight:800,color:g.color}}>{g.name}</div>
+                <div style={{fontSize:7,fontWeight:700,color:C.lime,marginTop:3}}>PLAY NOW</div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* LEADERBOARD */}
-        <div style={{marginBottom:16}}>
-          <div style={{fontSize:10,fontWeight:800,color:C.text,letterSpacing:2,marginBottom:10}}>🏆 TOP ORACLES</div>
-          <div style={{borderRadius:14,overflow:"hidden",border:"1px solid rgba(147,51,234,0.15)",background:"rgba(147,51,234,0.03)"}}>
-            {oracleLB.map((p,i)=>(
-              <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",borderBottom:i<oracleLB.length-1?"1px solid rgba(255,255,255,0.04)":"none",background:p.isYou?"rgba(147,51,234,0.08)":"transparent"}}>
-                <div style={{width:24,height:24,borderRadius:7,display:"flex",alignItems:"center",justifyContent:"center",fontSize:typeof p.place==="string"&&p.place.length>1?13:11,fontWeight:800,color:i<3?[C.gold,"#C0C0C0","#CD7F32"][i]:C.text3,background:i<3?`${[C.gold,"#C0C0C0","#CD7F32"][i]}12`:"rgba(255,255,255,0.04)"}}>{p.place}</div>
-                <span style={{fontSize:16}}>{p.emoji}</span>
-                <div style={{flex:1,minWidth:0}}>
-                  <div style={{fontSize:12,fontWeight:700,color:p.isYou?"#9333EA":C.text}}>{p.name}</div>
-                  <div style={{fontSize:8,color:C.text3}}>Accuracy: {p.acc}%</div>
+        {/* TAB BAR */}
+        <div style={{display:"flex",borderBottom:"1px solid rgba(147,51,234,0.15)",marginTop:12,marginBottom:8}}>
+          {["games","trending","stats","history"].map(t=>(
+            <div key={t} onClick={()=>setOracleHubTab(t)} style={{
+              flex:1,padding:"8px 0",textAlign:"center",cursor:"pointer",
+              fontSize:9,fontWeight:oracleHubTab===t?800:600,
+              color:oracleHubTab===t?"#9333EA":C.text3,
+              borderBottom:oracleHubTab===t?"2px solid #9333EA":"2px solid transparent",
+            }}>{t.charAt(0).toUpperCase()+t.slice(1)}</div>
+          ))}
+        </div>
+
+        {/* Trending tab */}
+        {oracleHubTab==="trending" && (
+          <div style={{marginBottom:14}}>
+            {trendingPreds.map((tp,i)=>(
+              <div key={i} style={{padding:"10px 12px",borderRadius:12,marginBottom:6,background:"rgba(147,51,234,0.04)",border:"1px solid rgba(147,51,234,0.10)",position:"relative"}}>
+                {tp.hot && <div style={{position:"absolute",top:6,right:8,fontSize:7,fontWeight:800,color:C.red,padding:"1px 4px",borderRadius:3,background:"rgba(255,50,50,0.12)"}}>HOT</div>}
+                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
+                  <span style={{fontSize:16}}>{tp.emoji}</span>
+                  <span style={{fontSize:11,fontWeight:700,color:C.text,flex:1}}>{tp.text}</span>
+                  <span style={{fontSize:9,color:C.text3}}>{tp.count.toLocaleString()}</span>
                 </div>
-                <div style={{fontFamily:"'Courier New',monospace",fontSize:11,fontWeight:800,color:C.gold}}>+{(p.coins/1000).toFixed(1)}K</div>
+                <div style={{display:"flex",alignItems:"center",gap:6}}>
+                  <span style={{fontSize:8,fontWeight:700,color:C.cyan}}>{tp.split[0]}%</span>
+                  <div style={{flex:1,height:6,borderRadius:3,background:"rgba(255,255,255,0.06)",overflow:"hidden"}}>
+                    <div style={{width:`${tp.split[0]}%`,height:"100%",borderRadius:3,background:"linear-gradient(90deg, #9333EA, #FFD700)",transition:"width 0.5s"}}/>
+                  </div>
+                  <span style={{fontSize:8,fontWeight:700,color:"#F97316"}}>{tp.split[1]}%</span>
+                </div>
               </div>
             ))}
           </div>
-        </div>
+        )}
+
+        {/* Stats tab */}
+        {oracleHubTab==="stats" && (
+          <div style={{marginBottom:14,padding:"14px",borderRadius:14,background:"linear-gradient(135deg, rgba(147,51,234,0.08), rgba(255,215,0,0.04))",border:"1px solid rgba(147,51,234,0.18)"}}>
+            <div style={{display:"flex",justifyContent:"space-between",gap:4}}>
+              {oracleStats.map((s,i)=>(
+                <div key={i} style={{textAlign:"center",flex:1}}>
+                  <div style={{fontSize:12,marginBottom:2}}>{s.icon}</div>
+                  <div style={{fontSize:14,fontWeight:900,color:s.color}}>{s.val}</div>
+                  <div style={{fontSize:7,color:C.text3,marginTop:1}}>{s.label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* History tab */}
+        {oracleHubTab==="history" && (
+          <div style={{marginBottom:14,borderRadius:14,overflow:"hidden",border:"1px solid rgba(147,51,234,0.12)",background:"rgba(147,51,234,0.03)"}}>
+            {recentPreds.map((p,i)=>(
+              <div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 12px",
+                borderBottom:i<recentPreds.length-1?"1px solid rgba(255,255,255,0.04)":"none",
+              }}>
+                <div style={{width:18,height:18,borderRadius:5,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,
+                  background:p.result==="correct"?`${C.green}15`:p.result==="wrong"?`${C.red}15`:`${C.gold}12`,
+                  color:p.result==="correct"?C.green:p.result==="wrong"?C.red:C.gold,fontWeight:800,
+                }}>{p.result==="correct"?"✓":p.result==="wrong"?"✗":"⏳"}</div>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontSize:10,fontWeight:700,color:C.text,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{p.q}</div>
+                  <div style={{fontSize:8,color:C.text3}}>Picked: {p.ans}</div>
+                </div>
+                <div style={{textAlign:"right"}}>
+                  <div style={{fontSize:9,fontWeight:700,color:p.result==="correct"?C.green:p.result==="wrong"?C.red:C.text3}}>{p.coins}</div>
+                  <div style={{fontSize:7,color:C.text3}}>{p.time}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 
       </div>
       <div style={{height:80}}/>
@@ -16901,40 +16560,7 @@ export default function MoodLabArena() {
     );
   };
 
-  // Ask Prompt
-  const renderAskPrompt = () => {
-    if(!showAskPrompt) return null;
-    const game = showAskPrompt;
-    const supported = game?.inputs||["puff"];
-    return (
-      <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:260,display:"flex",alignItems:"center",justifyContent:"center"}}>
-        <div onClick={()=>{setShowAskPrompt(null);window._inputCb=null;}} style={{position:"absolute",inset:0,background:"rgba(5,5,16,0.85)",backdropFilter:"blur(10px)"}}/>
-        <div style={{position:"relative",width:"88%",maxWidth:340,
-          background:`radial-gradient(ellipse at 50% 20%, rgba(0,229,255,0.06) 0%, transparent 50%), linear-gradient(180deg, #06101E 0%, #0c1a38 50%, #102240 100%)`,
-          borderRadius:22,border:`1px solid ${C.border2}`,padding:"22px 18px",animation:"fadeIn 0.3s ease",boxShadow:"0 20px 60px rgba(0,0,0,0.5)",
-        }}>
-          <div style={{textAlign:"center",marginBottom:16}}>
-            <div style={{fontSize:28,marginBottom:4}}>{game.emoji}</div>
-            <div style={{fontSize:14,fontWeight:900,color:C.text}}>{game.name}</div>
-            <div style={{fontSize:10,color:C.text3,marginTop:3}}>Choose your device control</div>
-            <div style={{fontSize:8,color:C.text3+"80",marginTop:2}}>You'll be matched with players using the same input</div>
-          </div>
-          <div style={{display:"flex",flexDirection:"column",gap:6}}>
-            {INPUT_TYPES.filter(t=>{if(t.id==="puff"||t.id==="dry_puff") return supported.includes("puff"); return supported.includes(t.id);}).map(t=>(
-              <div key={t.id} onClick={()=>handleAskPick(t.id)} style={{padding:"12px 14px",borderRadius:14,cursor:"pointer",display:"flex",alignItems:"center",gap:10,
-                background:`linear-gradient(135deg, ${t.color}08, ${t.color}03)`,border:`1px solid ${t.color}20`,transition:"all 0.2s",
-                boxShadow:`0 0 12px ${t.color}06`,
-              }}>
-                <div style={{width:36,height:36,borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",background:`${t.color}12`,border:`1px solid ${t.color}20`,fontSize:18}}>{t.icon}</div>
-                <div style={{flex:1}}><div style={{fontSize:12,fontWeight:700,color:t.color}}>{t.label}</div><div style={{fontSize:8,color:C.text3}}>{t.desc}</div></div>
-                <span style={{fontSize:14,color:`${t.color}40`}}>›</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  };
+  // Ask Prompt — removed. Device control selected on Arena home screen.
 
   // ═════════════════════════════════════════
   // ── RENDER: CONTROL TAB ──
@@ -17382,7 +17008,7 @@ export default function MoodLabArena() {
       {renderBlePopup()}
       {renderDeviceOptimize()}
       {renderInputPanel()}
-      {renderAskPrompt()}
+      {/* Ask prompt removed — device control selected on Arena home */}
       {renderPuffEvent()}
       {renderHalftime()}
       {renderProfileOverlay()}
