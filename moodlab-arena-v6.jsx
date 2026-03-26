@@ -178,6 +178,10 @@ const ORACLE_GAMES = [
   { id:"puffblackjack", name:"Puff Blackjack", emoji:"🃏", players:"1", time:"3-5m", type:"Fortune", color:"#22C55E", desc:"Classic blackjack with puff controls. Hit or Stand!", inputs:["puff"] },
   { id:"coinflip", name:"Coin Flip", emoji:"🪙", players:"1", time:"1-2m", type:"Fortune", color:"#F59E0B", desc:"50/50 flip with puff confidence multiplier.", inputs:["puff"] },
   { id:"crapsnclouds", name:"Craps & Clouds", emoji:"🎲", players:"1", time:"2-3m", type:"Fortune", color:"#EF4444", desc:"Dice game where your puff controls the roll!", inputs:["puff"] },
+  { id:"mysterybox", name:"Mystery Box", emoji:"🎁", players:"1", time:"2-3m", type:"Fortune", color:"#FFD700", desc:"3 mystery boxes. Pick one. Puff to reveal!", inputs:["puff"] },
+  { id:"scratchpuff", name:"Scratch & Puff", emoji:"🎫", players:"1", time:"2-3m", type:"Fortune", color:"#EC4899", desc:"6 scratch areas. Puff to scratch. Match 3 wins!", inputs:["puff"] },
+  { id:"fortunecookie", name:"Fortune Cookie", emoji:"🥠", players:"1", time:"1-2m", type:"Fortune", color:"#F97316", desc:"Crack open wisdom + coins. Blinker = golden cookie!", inputs:["puff"] },
+  { id:"treasuremap", name:"Treasure Map", emoji:"🗺️", players:"1", time:"3-5m", type:"Fortune", color:"#FFD700", desc:"16 tiles. Find 3 treasures. Avoid 3 bombs!", inputs:["puff"] },
 ];
 
 const ORACLE_WC_MATCHES = [
@@ -7746,171 +7750,340 @@ export default function MoodLabArena() {
     setGameActive(null);
   };
 
-  // ═══ MYSTERY BOX — Pick 1 of 3 boxes, puff to reveal ═══
+  // ═══════════════════════════════════════════════════════════════
+  // MYSTERY BOX -- Pick a box, puff to reveal prize
+  // ═══════════════════════════════════════════════════════════════
+  const MB_PRIZES = [
+    {name:"50 Coins",value:50,emoji:"🪙",rarity:"common",color:C.cyan},
+    {name:"100 Coins",value:100,emoji:"💰",rarity:"common",color:C.green},
+    {name:"200 Coins",value:200,emoji:"💎",rarity:"rare",color:C.purple},
+    {name:"500 Coins",value:500,emoji:"🏆",rarity:"rare",color:C.gold},
+    {name:"Lucky Charm",value:150,emoji:"🍀",rarity:"rare",color:C.lime},
+    {name:"JACKPOT!",value:1000,emoji:"👑",rarity:"legendary",color:C.gold},
+    {name:"Empty Box",value:0,emoji:"📦",rarity:"common",color:C.text3},
+    {name:"Blinker Badge",value:100,emoji:"💀",rarity:"rare",color:C.red},
+  ];
+  const mbGenerateBoxes = () => {
+    const pick = () => MB_PRIZES[Math.floor(Math.random()*MB_PRIZES.length)];
+    return [pick(),pick(),pick()];
+  };
   const startMysteryBox = () => {
-    const prizes = [
-      {label:"100 Coins",coins:100,emoji:"🪙",tier:"common"},
-      {label:"250 Coins",coins:250,emoji:"💰",tier:"uncommon"},
-      {label:"500 Coins",coins:500,emoji:"💎",tier:"rare"},
-      {label:"1000 Coins",coins:1000,emoji:"👑",tier:"epic"},
-      {label:"Empty Box",coins:0,emoji:"📦",tier:"bust"},
-    ];
-    const pool = [prizes[Math.floor(Math.random()*4)],prizes[4],prizes[Math.floor(Math.random()*3)]];
-    pool.sort(()=>Math.random()-0.5);
-    setMysteryBoxes(pool);
-    setMysteryBoxPick(null);
-    setMysteryBoxResult(null);
-    setMysteryBoxPhase("pick");
+    const boxes = mbGenerateBoxes();
+    setMbBoxes(boxes);setMbPicked(null);setMbRevealed(false);setMbPrize(null);
+    setMbRound(0);setMbScore(0);setMbPhase("intro");
+    playFx("crowd");setCommentary("Mystery Box! Pick a box and puff to reveal!");
+    setTimeout(()=>setMbPhase("pick"),1500);
   };
-  const mysteryBoxSelect = (idx) => {
-    if(mysteryBoxPhase!=="pick") return;
-    setMysteryBoxPick(idx);
-    setMysteryBoxPhase("reveal");
-    playFx("hit");
-    setTimeout(()=>{
-      const prize = mysteryBoxes[idx];
-      setMysteryBoxResult(prize);
-      if(prize.coins>0){setCoins(c=>c+prize.coins);spawnConfetti(prize.coins>=500?30:12);playFx("crowd");}
-      else playFx("miss");
-      setMysteryBoxPhase("result");
-      setTimeout(()=>{mysteryBoxCleanup();},3000);
-    },1200);
+  const mbPickBox = (idx) => {
+    if(mbPhase!=="pick") return;
+    setMbPicked(idx);playFx("select");
+    setCommentary("Box "+(idx+1)+" selected! HOLD to puff and open it!");
+    setMbPhase("puffing");
   };
-  const mysteryBoxCleanup = () => {
-    setMysteryBoxPhase(null);setMysteryBoxes([]);setMysteryBoxPick(null);setMysteryBoxResult(null);
+  const mbHandlePuff = () => {
+    if(mbPhase!=="puffing"||mbPicked===null) return;
+    mbPuffStart.current = Date.now();
+  };
+  const mbHandlePuffEnd = () => {
+    if(mbPhase!=="puffing"||mbPicked===null||!mbPuffStart.current) return;
+    const dur = (Date.now()-mbPuffStart.current)/1000;
+    mbPuffStart.current = 0;
+    if(dur<0.2) return;
+    const isBlinker = dur >= 4.5;
+    let prize = mbBoxes[mbPicked];
+    if(isBlinker && prize.rarity==="common") {
+      const rarePool = MB_PRIZES.filter(p=>p.rarity!=="common");
+      prize = rarePool[Math.floor(Math.random()*rarePool.length)];
+      setCommentary("BLINKER UPGRADE! Rarity boosted!");
+      spawnConfetti(30);triggerFlash("goal");
+    }
+    setMbPrize(prize);setMbRevealed(true);setMbPhase("reveal");
+    if(prize.value>0){setCoins(c=>c+prize.value);setMbScore(s=>s+prize.value);}
+    if(prize.rarity==="legendary"){spawnConfetti(50);triggerFlash("goal");playFx("crowd");setCommentary("LEGENDARY! "+prize.emoji+" "+prize.name+"!");}
+    else if(prize.rarity==="rare"){spawnConfetti(20);playFx("crowd");setCommentary("Rare find! "+prize.emoji+" "+prize.name);}
+    else if(prize.value>0){playFx("select");setCommentary(prize.emoji+" "+prize.name+" -- nice!");}
+    else{setCommentary("Empty box... better luck next time!");}
+    setTimeout(()=>mbNextRound(),2500);
+  };
+  const mbNextRound = () => {
+    const next=mbRound+1;
+    if(next>=5){setMbPhase("complete");return;}
+    setMbRound(next);setMbBoxes(mbGenerateBoxes());setMbPicked(null);setMbRevealed(false);setMbPrize(null);
+    setMbPhase("pick");setCommentary("Round "+(next+1)+"/5 -- Pick a box!");
+  };
+  const mbCleanup = () => {
+    setMbPhase(null);setMbBoxes([]);setMbPicked(null);setMbRevealed(false);setMbPrize(null);setMbRound(0);setMbScore(0);
     setGameActive(null);
   };
 
-  // ═══ SCRATCH & PUFF — 6 scratch areas, match 3 to win ═══
+  // ═══════════════════════════════════════════════════════════════
+  // SCRATCH & PUFF -- Scratch card with puff reveals
+  // ═══════════════════════════════════════════════════════════════
+  const SC_SYMBOLS = ["🍒","🍋","💎","⭐","🌿","7️⃣"];
+  const SC_PAYOUTS = {"🍒":50,"🍋":75,"💎":200,"⭐":300,"🌿":500,"7️⃣":1000};
+  const scGenerateCard = () => {
+    const symbols = [];
+    const base = SC_SYMBOLS[Math.floor(Math.random()*SC_SYMBOLS.length)];
+    symbols.push(base,base);
+    for(let i=0;i<4;i++) symbols.push(SC_SYMBOLS[Math.floor(Math.random()*SC_SYMBOLS.length)]);
+    for(let i=symbols.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[symbols[i],symbols[j]]=[symbols[j],symbols[i]];}
+    return symbols;
+  };
   const startScratchPuff = () => {
-    const symbols = ["🍒","🍋","🔔","💎","7️⃣","🍀"];
-    const grid = [];
-    const winSymbol = symbols[Math.floor(Math.random()*symbols.length)];
-    const willWin = Math.random()<0.35;
-    if(willWin){
-      const positions = [0,1,2,3,4,5].sort(()=>Math.random()-0.5);
-      for(let i=0;i<6;i++) grid.push(positions.indexOf(i)<3?winSymbol:symbols[Math.floor(Math.random()*symbols.length)]);
-    } else {
-      for(let i=0;i<6;i++) grid.push(symbols[Math.floor(Math.random()*symbols.length)]);
-    }
-    setScratchCards(grid);
-    setScratchRevealed(Array(6).fill(false));
-    setScratchResult(null);
-    setScratchPhase("scratch");
+    setScCard(scGenerateCard());setScRevealed([false,false,false,false,false,false]);
+    setScCurrentIdx(null);setScMatches({});setScPrize(null);setScRound(0);setScScore(0);
+    setScPhase("intro");playFx("crowd");
+    setCommentary("Scratch & Puff! Tap an area then PUFF to scratch!");
+    setTimeout(()=>setScPhase("scratching"),1500);
   };
-  const scratchReveal = (idx) => {
-    if(scratchPhase!=="scratch"||scratchRevealed[idx]) return;
-    playFx("hit");
-    const newRevealed = [...scratchRevealed];
+  const scSelectArea = (idx) => {
+    if(scPhase!=="scratching"||scRevealed[idx]) return;
+    setScCurrentIdx(idx);playFx("select");
+  };
+  const scHandlePuff = () => {
+    if(scPhase!=="scratching"||scCurrentIdx===null||scRevealed[scCurrentIdx]) return;
+    scPuffStart.current = Date.now();
+  };
+  const scHandlePuffEnd = () => {
+    if(scPhase!=="scratching"||scCurrentIdx===null||!scPuffStart.current) return;
+    const dur = (Date.now()-scPuffStart.current)/1000;
+    scPuffStart.current = 0;
+    if(dur<0.2) return;
+    const isBlinker = dur >= 4.5;
+    const idx = scCurrentIdx;
+    const newRevealed = [...scRevealed];
     newRevealed[idx] = true;
-    setScratchRevealed(newRevealed);
-    const revealedCount = newRevealed.filter(Boolean).length;
-    if(revealedCount>=6){
+    let card = [...scCard];
+    if(isBlinker) {
+      card[idx] = "🌟";setScCard(card);
+      setCommentary("GOLDEN SCRATCH! Wild symbol added!");
+      spawnConfetti(15);
+    } else {
+      setCommentary("Revealed: "+card[idx]);
+    }
+    setScRevealed(newRevealed);playFx("select");setScCurrentIdx(null);
+    const allRevealed = newRevealed.every(r=>r);
+    if(allRevealed) {
       const counts = {};
-      scratchCards.forEach(s=>{counts[s]=(counts[s]||0)+1;});
-      const maxCount = Math.max(...Object.values(counts));
-      const won = maxCount>=3;
-      const prize = won?(maxCount>=4?500:maxCount>=3?200:100):0;
-      if(won){setCoins(c=>c+prize);spawnConfetti(prize>=500?30:15);playFx("crowd");}
-      else playFx("miss");
-      setScratchResult({won,prize,count:maxCount});
-      setScratchPhase("result");
-      setTimeout(()=>{scratchCleanup();},3000);
+      const wilds = card.filter(s=>s==="🌟").length;
+      card.filter(s=>s!=="🌟").forEach(s=>{counts[s]=(counts[s]||0)+1;});
+      let bestSymbol=null, bestCount=0;
+      Object.entries(counts).forEach(([sym,cnt])=>{
+        if(cnt+wilds>=3 && cnt>bestCount){bestSymbol=sym;bestCount=cnt;}
+      });
+      if(!bestSymbol && wilds>=3){bestSymbol="🌟";bestCount=wilds;}
+      if(bestSymbol && (bestCount+wilds>=3 || bestCount>=3)) {
+        const payout = SC_PAYOUTS[bestSymbol]||(bestSymbol==="🌟"?500:50);
+        setScPrize({symbol:bestSymbol,amount:payout});
+        setScScore(s=>s+payout);setCoins(c=>c+payout);
+        spawnConfetti(40);triggerFlash("goal");playFx("crowd");
+        setCommentary("WINNER! 3x "+bestSymbol+" = "+payout+" coins!");
+      } else {
+        setCommentary("No match this time!");
+      }
+      setScPhase("result");
+      setTimeout(()=>scNextRound(),2500);
     }
   };
-  const scratchCleanup = () => {
-    setScratchPhase(null);setScratchCards([]);setScratchRevealed([]);setScratchResult(null);
+  const scNextRound = () => {
+    const next=scRound+1;
+    if(next>=3){setScPhase("complete");return;}
+    setScRound(next);setScCard(scGenerateCard());setScRevealed([false,false,false,false,false,false]);
+    setScCurrentIdx(null);setScMatches({});setScPrize(null);
+    setScPhase("scratching");setCommentary("Card "+(next+1)+"/3 -- Scratch away!");
+  };
+  const scCleanup = () => {
+    setScPhase(null);setScCard([]);setScRevealed([false,false,false,false,false,false]);
+    setScCurrentIdx(null);setScMatches({});setScPrize(null);setScRound(0);setScScore(0);
     setGameActive(null);
   };
 
-  // ═══ FORTUNE COOKIE — Crack open for wisdom + coins ═══
-  const COOKIE_MESSAGES = [
-    "A puff shared is a puff doubled.",
-    "Your next session brings great fortune.",
-    "The clouds part to reveal your destiny.",
-    "Lucky streaks favor the bold puffer.",
-    "Patience in the session, profit in the soul.",
-    "A blinker today keeps the bad vibes away.",
-    "Your aura is maximum chill today.",
-    "The universe rewards those who puff wisely.",
-    "Great clouds gather before great wins.",
-    "Trust your lungs, trust your luck.",
+  // ═══════════════════════════════════════════════════════════════
+  // FORTUNE COOKIE -- Crack open wisdom + coins
+  // ═══════════════════════════════════════════════════════════════
+  const FC_FORTUNES = [
+    "Your next blinker will bring unexpected joy",
+    "The strain you're smoking right now chose YOU",
+    "Someone in this Arena is thinking about your last play",
+    "Your puff-to-win ratio is cosmically aligned today",
+    "A legendary catch awaits you in HOOKED",
+    "The number 420 will appear in your life within 24 hours",
+    "Your lungs are your greatest asset. Treat them well",
+    "The dealer fears your next hand",
+    "Today's high will lead to tomorrow's idea",
+    "Your tolerance break starts... eventually",
+    "The munchies you're about to get will be LEGENDARY",
+    "A friend will ask you for a hit. Share generously",
+    "Your next roll will be a natural 7",
+    "The universe rewards those who puff with purpose",
+    "You will discover a new favorite strain this month",
+    "Your smoke circle is about to get an upgrade",
+    "The edible will hit exactly when you forgot about it",
+    "Your Puff Clock accuracy will improve by 0.1s tomorrow",
+    "A winning streak is written in your stars",
+    "The best ideas come after the second puff",
+    "Your cart will last exactly as long as you need it to",
+    "The dab rig is ready when you are",
+  ];
+  const FC_RARE_FORTUNES = [
+    "You are the chosen one. The Arena bows to you",
+    "A 1000-coin jackpot is in your near future",
+    "Your next 3 games will all be winners",
+    "The stars align for a perfect blinker tonight",
   ];
   const startFortuneCookie = () => {
-    setCookieMessage("");
-    setCookieCoins(0);
-    setCookiePhase("closed");
+    setFcFortune("");setFcCoins(0);setFcCracking(false);setFcRound(0);setFcScore(0);setFcGolden(false);
+    setFcPhase("intro");playFx("crowd");
+    setCommentary("Fortune Cookie! HOLD to puff and crack it open!");
+    setTimeout(()=>setFcPhase("holding"),1500);
   };
-  const crackCookie = () => {
-    if(cookiePhase!=="closed") return;
-    setCookiePhase("cracking");
-    playFx("hit");
-    setTimeout(()=>{
-      const msg = COOKIE_MESSAGES[Math.floor(Math.random()*COOKIE_MESSAGES.length)];
-      const prize = [25,50,75,100,150,200,500][Math.floor(Math.random()*7)];
-      setCookieMessage(msg);
-      setCookieCoins(prize);
-      setCoins(c=>c+prize);
-      spawnConfetti(prize>=200?25:10);
-      playFx("crowd");
-      setCookiePhase("open");
-      setTimeout(()=>{cookieCleanup();},4000);
-    },800);
+  const fcHandlePuff = () => {
+    if(fcPhase!=="holding") return;
+    fcPuffStart.current = Date.now();
+    setFcCracking(true);
   };
-  const cookieCleanup = () => {
-    setCookiePhase(null);setCookieMessage("");setCookieCoins(0);
+  const fcHandlePuffEnd = () => {
+    if(fcPhase!=="holding"||!fcPuffStart.current) return;
+    const dur = (Date.now()-fcPuffStart.current)/1000;
+    fcPuffStart.current = 0;setFcCracking(false);
+    if(dur<0.3) return;
+    const isBlinker = dur >= 4.5;
+    setFcGolden(isBlinker);
+    let fortune;
+    if(isBlinker) {
+      fortune = FC_RARE_FORTUNES[Math.floor(Math.random()*FC_RARE_FORTUNES.length)];
+      spawnConfetti(30);triggerFlash("goal");playFx("crowd");
+      setCommentary("GOLDEN FORTUNE COOKIE! 2x coins!");
+    } else {
+      fortune = FC_FORTUNES[Math.floor(Math.random()*FC_FORTUNES.length)];
+      playFx("select");
+    }
+    const baseCoins = Math.floor(10 + Math.random()*190);
+    const fcWin = isBlinker ? Math.floor(50 + Math.random()*450) : baseCoins;
+    setFcFortune(fortune);setFcCoins(fcWin);setCoins(c=>c+fcWin);setFcScore(s=>s+fcWin);
+    setFcPhase("reading");
+    setTimeout(()=>setFcPhase("result"),3000);
+    setTimeout(()=>fcNextRound(),4500);
+  };
+  const fcNextRound = () => {
+    const next=fcRound+1;
+    if(next>=5){setFcPhase("complete");return;}
+    setFcRound(next);setFcFortune("");setFcCoins(0);setFcCracking(false);setFcGolden(false);
+    setFcPhase("holding");setCommentary("Cookie "+(next+1)+"/5 -- HOLD to crack!");
+  };
+  const fcCleanup = () => {
+    setFcPhase(null);setFcFortune("");setFcCoins(0);setFcCracking(false);setFcRound(0);setFcScore(0);setFcGolden(false);
     setGameActive(null);
   };
 
-  // ═══ TREASURE MAP — 16 tiles, find 3 treasures, avoid bombs ═══
-  const startTreasureMap = () => {
-    const grid = Array(16).fill("empty");
-    const positions = [...Array(16).keys()].sort(()=>Math.random()-0.5);
-    positions.slice(0,3).forEach(p=>{grid[p]="treasure";});
-    positions.slice(3,6).forEach(p=>{grid[p]="bomb";});
-    positions.slice(6,8).forEach(p=>{grid[p]="coin";});
-    setTreasureGrid(grid);
-    setTreasureRevealed(Array(16).fill(false));
-    setTreasureFound(0);
-    setTreasureBombs(0);
-    setTreasurePhase("hunt");
+  // ═══════════════════════════════════════════════════════════════
+  // TREASURE MAP -- 4x4 grid, find treasures, avoid bombs
+  // ═══════════════════════════════════════════════════════════════
+  const tmGenerateGrid = () => {
+    const types = [];
+    for(let i=0;i<3;i++) types.push("treasure");
+    for(let i=0;i<3;i++) types.push("bomb");
+    const smalls = ["coin","coin","coin","coin","star","star","star","clover","clover","clover"];
+    types.push(...smalls);
+    for(let i=types.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[types[i],types[j]]=[types[j],types[i]];}
+    return types;
   };
-  const treasureDig = (idx) => {
-    if(treasurePhase!=="hunt"||treasureRevealed[idx]) return;
-    playFx("hit");
-    const newRevealed = [...treasureRevealed];
+  const TM_TILE_INFO = {
+    treasure:{emoji:"💎",label:"TREASURE",value:200,color:C.gold},
+    bomb:{emoji:"💣",label:"BOMB!",value:0,color:C.red},
+    coin:{emoji:"🪙",label:"+25",value:25,color:C.cyan},
+    star:{emoji:"⭐",label:"+50",value:50,color:C.gold},
+    clover:{emoji:"🍀",label:"+75",value:75,color:C.lime},
+  };
+  const startTreasureMap = () => {
+    const grid = tmGenerateGrid();
+    setTmGrid(grid);setTmRevealed(Array(16).fill(false));setTmTreasures(0);setTmBombs(0);
+    setTmCoins(0);setTmGameOver(false);setTmSelected(null);setTmXray(false);setTmXrayTiles([]);
+    setTmScore(0);setTmPhase("intro");playFx("crowd");
+    setCommentary("Treasure Map! Tap a tile, then PUFF to flip. Find 3 treasures!");
+    setTimeout(()=>setTmPhase("playing"),1500);
+  };
+  const tmSelectTile = (idx) => {
+    if(tmPhase!=="playing"||tmRevealed[idx]||tmGameOver) return;
+    setTmSelected(idx);playFx("select");
+  };
+  const tmHandlePuff = () => {
+    if(tmPhase!=="playing"||tmSelected===null||tmGameOver) return;
+    tmPuffStart.current = Date.now();
+  };
+  const tmHandlePuffEnd = () => {
+    if(tmPhase!=="playing"||tmSelected===null||!tmPuffStart.current||tmGameOver) return;
+    const dur = (Date.now()-tmPuffStart.current)/1000;
+    tmPuffStart.current = 0;
+    if(dur<0.15) return;
+    const isBlinker = dur >= 4.5;
+    if(isBlinker) {
+      const unrev = [];
+      tmGrid.forEach((t,i)=>{if(!tmRevealed[i]&&i!==tmSelected) unrev.push(i);});
+      const treasureTiles = unrev.filter(i=>tmGrid[i]==="treasure");
+      const bombTiles = unrev.filter(i=>tmGrid[i]==="bomb");
+      const xrayShow = [];
+      if(treasureTiles.length>0) xrayShow.push(treasureTiles[Math.floor(Math.random()*treasureTiles.length)]);
+      if(bombTiles.length>0) xrayShow.push(bombTiles[Math.floor(Math.random()*bombTiles.length)]);
+      if(xrayShow.length>0) {
+        setTmXray(true);setTmXrayTiles(xrayShow);
+        setCommentary("X-RAY VISION! Peek at hidden tiles!");
+        spawnConfetti(10);
+        setTimeout(()=>{setTmXray(false);setTmXrayTiles([]);},800);
+      }
+    }
+    const idx = tmSelected;
+    const newRevealed = [...tmRevealed];
     newRevealed[idx] = true;
-    setTreasureRevealed(newRevealed);
-    const cell = treasureGrid[idx];
-    if(cell==="treasure"){
-      const newFound = treasureFound+1;
-      setTreasureFound(newFound);
-      spawnConfetti(10);
-      playFx("crowd");
-      if(newFound>=3){
-        const prize = 500;
-        setCoins(c=>c+prize);
-        spawnConfetti(30);
-        setTreasurePhase("result");
-        setTimeout(()=>{treasureCleanup();},3000);
+    setTmRevealed(newRevealed);setTmSelected(null);
+    const tileType = tmGrid[idx];
+    const info = TM_TILE_INFO[tileType];
+    if(tileType==="treasure") {
+      const newT = tmTreasures+1;
+      setTmTreasures(newT);setTmCoins(c=>c+info.value);
+      spawnConfetti(20);playFx("crowd");
+      setCommentary("TREASURE FOUND! "+info.emoji+" +"+info.value+" coins!");
+      if(newT>=3) {
+        const bonus = 500;
+        setTimeout(()=>{
+          setTmCoins(c=>c+bonus);
+          setCommentary("ALL 3 TREASURES! JACKPOT BONUS +"+bonus+"!");
+          spawnConfetti(50);triggerFlash("goal");
+          const totalWin = tmCoins+info.value+bonus;
+          if(totalWin>0){setCoins(c=>c+totalWin);setTmScore(s=>s+totalWin);}
+          setTmPhase("result");setTmGameOver(true);
+        },500);
+        return;
       }
-    } else if(cell==="bomb"){
-      const newBombs = treasureBombs+1;
-      setTreasureBombs(newBombs);
-      playFx("miss");
-      triggerFlash("foul");
-      if(newBombs>=2){
-        setTreasurePhase("result");
-        setTimeout(()=>{treasureCleanup();},3000);
-      }
-    } else if(cell==="coin"){
-      setCoins(c=>c+50);
-      playFx("hit");
+    } else if(tileType==="bomb") {
+      setTmBombs(b=>b+1);
+      playFx("whistle");triggerFlash("red");
+      const lostCoins = Math.floor(tmCoins/2);
+      setCommentary("BOOM! Lost "+lostCoins+" coins!");
+      setTmGameOver(true);
+      setTimeout(()=>{
+        const remaining = Math.max(0,tmCoins-lostCoins);
+        setTmCoins(remaining);
+        if(remaining>0){setCoins(c=>c+remaining);setTmScore(s=>s+remaining);}
+        setTmPhase("result");
+      },1500);
+      return;
+    } else {
+      setTmCoins(c=>c+info.value);
+      playFx("select");setCommentary(info.emoji+" "+info.label+" coins!");
     }
   };
-  const treasureCleanup = () => {
-    setTreasurePhase(null);setTreasureGrid([]);setTreasureRevealed([]);
-    setTreasureFound(0);setTreasureBombs(0);
+  const tmCashOut = () => {
+    if(tmPhase!=="playing"||tmGameOver) return;
+    const winnings = tmCoins;
+    if(winnings>0){setCoins(c=>c+winnings);setTmScore(s=>s+winnings);}
+    setTmGameOver(true);setTmPhase("result");
+    setCommentary("Cashed out with "+winnings+" coins!");
+    playFx("crowd");
+  };
+  const tmCleanup = () => {
+    setTmPhase(null);setTmGrid([]);setTmRevealed(Array(16).fill(false));setTmTreasures(0);setTmBombs(0);
+    setTmCoins(0);setTmGameOver(false);setTmSelected(null);setTmXray(false);setTmXrayTiles([]);setTmScore(0);
     setGameActive(null);
   };
 
@@ -8952,6 +9125,10 @@ export default function MoodLabArena() {
       setBjPhase(null);setBjPlayerHand([]);setBjDealerHand([]);setBjResult(null);setBjPuffing(false);
       setCfPhase(null);setCfChoice(null);setCfResult(null);setCfPuffing(false);setCfFlipping(false);
       setCrapsPhase(null);setCrapsDice([1,1]);setCrapsRolling(false);setCrapsPoint(null);setCrapsResult(null);setCrapsPuffing(false);
+      setMbPhase(null);setMbBoxes([]);setMbPicked(null);setMbRevealed(false);setMbPrize(null);setMbRound(0);setMbScore(0);
+      setScPhase(null);setScCard([]);setScRevealed([false,false,false,false,false,false]);setScCurrentIdx(null);setScPrize(null);setScRound(0);setScScore(0);
+      setFcPhase(null);setFcFortune("");setFcCoins(0);setFcCracking(false);setFcRound(0);setFcScore(0);setFcGolden(false);
+      setTmPhase(null);setTmGrid([]);setTmRevealed(Array(16).fill(false));setTmTreasures(0);setTmBombs(0);setTmCoins(0);setTmGameOver(false);setTmSelected(null);setTmXray(false);setTmXrayTiles([]);setTmScore(0);
     };
     // Show/hide the HTML back button
     const btn = document.getElementById('back-btn');
@@ -15196,148 +15373,252 @@ export default function MoodLabArena() {
         );
       }
 
-      // ═══ MYSTERY BOX RENDER ═══
-      if(gameActive.id==="mysterybox" && mysteryBoxPhase) {
+      // ═══════════════════════════════════════════════════════════════
+      // MYSTERY BOX -- Render
+      // ═══════════════════════════════════════════════════════════════
+      if(gameActive.id==="mysterybox" && mbPhase) {
+        const isPick=mbPhase==="pick";const isPuff=mbPhase==="puffing";const isReveal=mbPhase==="reveal";const isComp=mbPhase==="complete";
+        const rarityGlow = mbPrize ? (mbPrize.rarity==="legendary"?C.gold:mbPrize.rarity==="rare"?C.purple:C.cyan) : C.gold;
         return (
-          <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden",display:"flex",flexDirection:"column",background:`radial-gradient(ellipse at 50% 30%, ${C.gold}25, ${C.bg} 70%)`}}>
-            {overlayBack(mysteryBoxCleanup)}
-            <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"0 20px"}}>
-              <div style={{fontSize:32,marginBottom:8}}>🎁</div>
-              <div style={{fontSize:22,fontWeight:900,color:C.gold,textShadow:`0 0 20px ${C.gold}60`,marginBottom:4}}>MYSTERY BOX</div>
-              <div style={{fontSize:11,color:C.text2,marginBottom:24}}>{mysteryBoxPhase==="pick"?"Pick a box!":mysteryBoxPhase==="reveal"?"Revealing...":"Result!"}</div>
-              <div style={{display:"flex",gap:16,marginBottom:24}}>
-                {mysteryBoxes.map((box,i)=>(
-                  <div key={i} onClick={()=>mysteryBoxSelect(i)} style={{
-                    width:80,height:80,borderRadius:16,display:"flex",alignItems:"center",justifyContent:"center",cursor:mysteryBoxPhase==="pick"?"pointer":"default",
-                    fontSize:mysteryBoxPick===i&&mysteryBoxPhase!=="pick"?36:40,
-                    background:mysteryBoxPick===i?`${C.gold}20`:`rgba(255,255,255,0.04)`,
-                    border:mysteryBoxPick===i?`2px solid ${C.gold}`:`1px solid ${C.border2}`,
-                    transition:"all 0.3s",transform:mysteryBoxPick===i?"scale(1.1)":"scale(1)",
-                    boxShadow:mysteryBoxPick===i?`0 0 20px ${C.gold}40`:"none",
-                  }}>
-                    {(mysteryBoxPick===i&&mysteryBoxPhase!=="pick")?box.emoji:"🎁"}
-                  </div>
-                ))}
+          <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden",display:"flex",flexDirection:"column"}}
+            onMouseDown={mbHandlePuff} onMouseUp={mbHandlePuffEnd} onTouchStart={(e)=>{e.preventDefault();mbHandlePuff();}} onTouchEnd={(e)=>{e.preventDefault();mbHandlePuffEnd();}}>
+            <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg, #0a0a1a 0%, #1a1028 40%, #0d0d1a 100%)"}}/>
+            <div style={{position:"absolute",inset:0,background:`radial-gradient(ellipse at 50% 40%, ${C.gold}08, transparent 60%)`,pointerEvents:"none"}}/>
+            {confettiParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size*0.6,background:p.color,borderRadius:1,transform:`rotate(${p.rot}deg)`,zIndex:210,pointerEvents:"none",animation:"confettiFall 1.5s ease-out forwards"}}/>))}
+            {overlayBack(mbCleanup)}
+            {renderGameChatPanel("MYSTERY BOX")}
+            <div style={{display:"flex",flexDirection:"column",alignItems:"center",maxWidth:380,width:"100%",padding:"50px 16px 20px",gap:8,zIndex:10,flex:1,margin:"0 auto"}}>
+              <div style={{fontSize:18,fontWeight:900,letterSpacing:4,background:`linear-gradient(135deg, ${C.gold}, ${C.purple})`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>MYSTERY BOX</div>
+              <div style={{display:"flex",gap:16,marginBottom:8}}>
+                <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.gold}}>{mbScore}</div><div style={{fontSize:8,color:C.text3}}>COINS</div></div>
+                <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.text2}}>{mbRound+1}/5</div><div style={{fontSize:8,color:C.text3}}>ROUND</div></div>
               </div>
-              {mysteryBoxResult && (
-                <div style={{textAlign:"center",animation:"fadeIn 0.3s ease"}}>
-                  <div style={{fontSize:18,fontWeight:900,color:mysteryBoxResult.coins>0?C.gold:C.red}}>{mysteryBoxResult.coins>0?"+"+mysteryBoxResult.coins+" Coins!":"Empty Box!"}</div>
-                  <div style={{fontSize:11,color:C.text3,marginTop:4}}>{mysteryBoxResult.label}</div>
+              {mbPhase==="intro"&&(<div style={{textAlign:"center",animation:"fadeIn 0.5s ease"}}><div style={{fontSize:56,marginBottom:8}}>🎁</div><div style={{fontSize:20,fontWeight:900,color:C.gold,letterSpacing:3}}>MYSTERY BOX</div><div style={{fontSize:11,color:C.text3,marginTop:8}}>Pick a box. Puff to reveal. Blinker = rarity upgrade!</div></div>)}
+              {(isPick||isPuff)&&(
+                <div style={{display:"flex",gap:20,justifyContent:"center",marginTop:16}}>
+                  {mbBoxes.map((box,i)=>(
+                    <div key={i} onClick={(e)=>{e.stopPropagation();mbPickBox(i);}} style={{
+                      width:90,height:90,borderRadius:16,display:"flex",alignItems:"center",justifyContent:"center",cursor:isPick?"pointer":"default",
+                      fontSize:mbPicked===i?44:40,
+                      background:mbPicked===i?`${C.gold}20`:"rgba(255,255,255,0.04)",
+                      border:mbPicked===i?`2px solid ${C.gold}`:`1px solid ${C.border}`,
+                      transition:"all 0.3s",transform:mbPicked===i?"scale(1.1)":"scale(1)",
+                      boxShadow:mbPicked===i?`0 0 30px ${C.gold}40`:"0 0 10px rgba(255,215,0,0.08)",
+                      animation:isPick?`pulse 2s infinite ${i*0.3}s`:(mbPicked===i&&isPuff?"pulse 0.5s infinite":"none"),
+                    }}>
+                      🎁
+                    </div>
+                  ))}
                 </div>
               )}
+              {isPuff&&<div style={{fontSize:14,fontWeight:800,color:C.gold,marginTop:16,animation:"pulse 1.5s infinite"}}>HOLD TO PUFF & REVEAL!</div>}
+              {isReveal&&mbPrize&&(
+                <div style={{textAlign:"center",animation:"fadeIn 0.4s ease",marginTop:12}}>
+                  <div style={{fontSize:64,marginBottom:8,filter:`drop-shadow(0 0 20px ${rarityGlow}60)`,animation:"pulse 1s infinite"}}>{mbPrize.emoji}</div>
+                  <div style={{fontSize:22,fontWeight:900,color:rarityGlow}}>{mbPrize.name}</div>
+                  {mbPrize.value>0&&<div style={{fontSize:16,fontWeight:700,color:C.gold,marginTop:4}}>+{mbPrize.value} coins</div>}
+                  <div style={{fontSize:10,fontWeight:700,color:rarityGlow,marginTop:4,textTransform:"uppercase",letterSpacing:2}}>{mbPrize.rarity}</div>
+                </div>
+              )}
+              {isComp&&(<div style={{textAlign:"center",animation:"fadeIn 0.4s ease"}}>
+                <div style={{fontSize:48,marginBottom:8}}>🎁</div>
+                <div style={{fontSize:24,fontWeight:900,color:C.gold,marginBottom:8}}>ALL BOXES OPENED!</div>
+                <div style={{fontSize:18,fontWeight:800,color:C.text}}>Total Won: {mbScore} coins</div>
+                <div style={{display:"flex",gap:10,justifyContent:"center",marginTop:16}}>
+                  <div onClick={(e)=>{e.stopPropagation();mbCleanup();startMysteryBox();setGameActive({id:"mysterybox",name:"Mystery Box",emoji:"🎁",color:C.gold});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.gold}15`,border:`1px solid ${C.gold}30`,fontSize:13,fontWeight:800,color:C.gold}}>Play Again</div>
+                  <div onClick={(e)=>{e.stopPropagation();mbCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
+                </div>
+              </div>)}
+              <div style={{fontSize:11,color:C.text3,fontStyle:"italic",marginTop:8}}>{commentary}</div>
             </div>
           </div>
         );
       }
 
-      // ═══ SCRATCH & PUFF RENDER ═══
-      if(gameActive.id==="scratchpuff" && scratchPhase) {
+      // ═══════════════════════════════════════════════════════════════
+      // SCRATCH & PUFF -- Render
+      // ═══════════════════════════════════════════════════════════════
+      if(gameActive.id==="scratchpuff" && scPhase) {
+        const isScratch=scPhase==="scratching";const isRes=scPhase==="result";const isComp=scPhase==="complete";
         return (
-          <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden",display:"flex",flexDirection:"column",background:`radial-gradient(ellipse at 50% 30%, ${C.pink}20, ${C.bg} 70%)`}}>
-            {overlayBack(scratchCleanup)}
-            <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"0 20px"}}>
-              <div style={{fontSize:32,marginBottom:8}}>🎫</div>
-              <div style={{fontSize:22,fontWeight:900,color:C.pink,textShadow:`0 0 20px ${C.pink}60`,marginBottom:4}}>SCRATCH & PUFF</div>
-              <div style={{fontSize:11,color:C.text2,marginBottom:20}}>{scratchPhase==="scratch"?"Tap to scratch! Match 3 wins!":"Results"}</div>
-              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,marginBottom:20}}>
-                {scratchCards.map((sym,i)=>(
-                  <div key={i} onClick={()=>scratchReveal(i)} style={{
-                    width:64,height:64,borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",
-                    fontSize:scratchRevealed[i]?28:20,cursor:scratchRevealed[i]?"default":"pointer",
-                    background:scratchRevealed[i]?`${C.pink}15`:`linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02))`,
-                    border:`1px solid ${scratchRevealed[i]?C.pink+"40":C.border2}`,
-                    transition:"all 0.3s",
-                  }}>
-                    {scratchRevealed[i]?sym:"?"}
-                  </div>
-                ))}
+          <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden",display:"flex",flexDirection:"column"}}
+            onMouseDown={scHandlePuff} onMouseUp={scHandlePuffEnd} onTouchStart={(e)=>{e.preventDefault();scHandlePuff();}} onTouchEnd={(e)=>{e.preventDefault();scHandlePuffEnd();}}>
+            <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg, #1a0a1a 0%, #2a1535 40%, #1a0a1a 100%)"}}/>
+            <div style={{position:"absolute",inset:0,background:`radial-gradient(ellipse at 50% 40%, ${C.pink}08, transparent 60%)`,pointerEvents:"none"}}/>
+            {confettiParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size*0.6,background:p.color,borderRadius:1,transform:`rotate(${p.rot}deg)`,zIndex:210,pointerEvents:"none",animation:"confettiFall 1.5s ease-out forwards"}}/>))}
+            {overlayBack(scCleanup)}
+            {renderGameChatPanel("SCRATCH & PUFF")}
+            <div style={{display:"flex",flexDirection:"column",alignItems:"center",maxWidth:380,width:"100%",padding:"50px 16px 20px",gap:8,zIndex:10,flex:1,margin:"0 auto"}}>
+              <div style={{fontSize:18,fontWeight:900,letterSpacing:4,background:`linear-gradient(135deg, ${C.pink}, ${C.gold})`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>SCRATCH & PUFF</div>
+              <div style={{display:"flex",gap:16,marginBottom:4}}>
+                <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.gold}}>{scScore}</div><div style={{fontSize:8,color:C.text3}}>COINS</div></div>
+                <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.text2}}>{scRound+1}/3</div><div style={{fontSize:8,color:C.text3}}>CARD</div></div>
+                <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.cyan}}>{scRevealed.filter(Boolean).length}/6</div><div style={{fontSize:8,color:C.text3}}>SCRATCHED</div></div>
               </div>
-              {scratchResult && (
-                <div style={{textAlign:"center",animation:"fadeIn 0.3s ease"}}>
-                  <div style={{fontSize:18,fontWeight:900,color:scratchResult.won?C.gold:C.red}}>{scratchResult.won?"+"+scratchResult.prize+" Coins!":"No Match"}</div>
-                  <div style={{fontSize:11,color:C.text3,marginTop:4}}>{scratchResult.won?"Matched "+scratchResult.count+"!":"Better luck next time"}</div>
+              {scPhase==="intro"&&(<div style={{textAlign:"center",animation:"fadeIn 0.5s ease"}}><div style={{fontSize:56,marginBottom:8}}>🎫</div><div style={{fontSize:20,fontWeight:900,color:C.pink,letterSpacing:3}}>SCRATCH & PUFF</div><div style={{fontSize:11,color:C.text3,marginTop:8}}>Tap an area, then PUFF to scratch. Match 3 to win!</div></div>)}
+              {(isScratch||isRes)&&(
+                <div style={{padding:16,borderRadius:20,border:`3px solid ${C.gold}30`,background:"linear-gradient(135deg, rgba(255,215,0,0.05), rgba(255,105,180,0.05))",boxShadow:`0 0 30px ${C.gold}10`,margin:"8px auto",maxWidth:300}}>
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10}}>
+                    {scCard.map((sym,i)=>(
+                      <div key={i} onClick={(e)=>{e.stopPropagation();scSelectArea(i);}} style={{
+                        width:72,height:72,borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",
+                        fontSize:scRevealed[i]?30:20,cursor:(!scRevealed[i]&&isScratch)?"pointer":"default",
+                        background:scRevealed[i]?"rgba(255,255,255,0.06)":(scCurrentIdx===i?"rgba(255,215,0,0.15)":"linear-gradient(135deg, rgba(192,192,192,0.25), rgba(169,169,169,0.15))"),
+                        border:scCurrentIdx===i?`2px solid ${C.gold}`:`1px solid ${scRevealed[i]?C.pink+"40":C.text3+"30"}`,
+                        transition:"all 0.3s",
+                        boxShadow:scCurrentIdx===i?`0 0 12px ${C.gold}40`:"none",
+                      }}>
+                        {scRevealed[i]?sym:(scCurrentIdx===i?"💨":"?")}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
+              {isScratch&&scCurrentIdx!==null&&<div style={{fontSize:14,fontWeight:800,color:C.pink,marginTop:8,animation:"pulse 1.5s infinite"}}>HOLD TO PUFF & SCRATCH!</div>}
+              {isScratch&&scCurrentIdx===null&&<div style={{fontSize:12,color:C.text3,marginTop:8}}>Tap an area to select it</div>}
+              {isRes&&scPrize&&(
+                <div style={{textAlign:"center",animation:"fadeIn 0.4s ease",marginTop:8}}>
+                  <div style={{fontSize:22,fontWeight:900,color:C.gold}}>WINNER! {scPrize.symbol} x3</div>
+                  <div style={{fontSize:16,fontWeight:700,color:C.gold}}>+{scPrize.amount} coins</div>
+                </div>
+              )}
+              {isRes&&!scPrize&&<div style={{fontSize:16,fontWeight:800,color:C.red,marginTop:8}}>No Match</div>}
+              {isComp&&(<div style={{textAlign:"center",animation:"fadeIn 0.4s ease"}}>
+                <div style={{fontSize:48,marginBottom:8}}>🎫</div>
+                <div style={{fontSize:24,fontWeight:900,color:C.gold,marginBottom:8}}>ALL CARDS SCRATCHED!</div>
+                <div style={{fontSize:18,fontWeight:800,color:C.text}}>Total Won: {scScore} coins</div>
+                <div style={{display:"flex",gap:10,justifyContent:"center",marginTop:16}}>
+                  <div onClick={(e)=>{e.stopPropagation();scCleanup();startScratchPuff();setGameActive({id:"scratchpuff",name:"Scratch & Puff",emoji:"🎫",color:C.pink});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.pink}15`,border:`1px solid ${C.pink}30`,fontSize:13,fontWeight:800,color:C.pink}}>Play Again</div>
+                  <div onClick={(e)=>{e.stopPropagation();scCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
+                </div>
+              </div>)}
+              <div style={{fontSize:11,color:C.text3,fontStyle:"italic",marginTop:8}}>{commentary}</div>
             </div>
           </div>
         );
       }
 
-      // ═══ FORTUNE COOKIE RENDER ═══
-      if(gameActive.id==="fortunecookie" && cookiePhase) {
+      // ═══════════════════════════════════════════════════════════════
+      // FORTUNE COOKIE -- Render
+      // ═══════════════════════════════════════════════════════════════
+      if(gameActive.id==="fortunecookie" && fcPhase) {
+        const isHold=fcPhase==="holding";const isRead=fcPhase==="reading";const isRes=fcPhase==="result";const isComp=fcPhase==="complete";
         return (
-          <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden",display:"flex",flexDirection:"column",background:`radial-gradient(ellipse at 50% 30%, ${C.orange}20, ${C.bg} 70%)`}}>
-            {overlayBack(cookieCleanup)}
-            <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"0 20px"}}>
-              <div onClick={crackCookie} style={{
-                fontSize:cookiePhase==="open"?48:64,marginBottom:16,cursor:cookiePhase==="closed"?"pointer":"default",
-                transition:"all 0.5s",transform:cookiePhase==="cracking"?"rotate(15deg) scale(1.2)":"rotate(0)",
-                filter:cookiePhase==="cracking"?`drop-shadow(0 0 20px ${C.orange}80)`:"none",
-              }}>
-                {cookiePhase==="open"?"🥠":"🥠"}
+          <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden",display:"flex",flexDirection:"column"}}
+            onMouseDown={fcHandlePuff} onMouseUp={fcHandlePuffEnd} onTouchStart={(e)=>{e.preventDefault();fcHandlePuff();}} onTouchEnd={(e)=>{e.preventDefault();fcHandlePuffEnd();}}>
+            <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg, #1a1408 0%, #2a1e0a 40%, #1a1408 100%)"}}/>
+            <div style={{position:"absolute",inset:0,background:`radial-gradient(ellipse at 50% 40%, ${C.orange}10, transparent 60%)`,pointerEvents:"none"}}/>
+            {confettiParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size*0.6,background:p.color,borderRadius:1,transform:`rotate(${p.rot}deg)`,zIndex:210,pointerEvents:"none",animation:"confettiFall 1.5s ease-out forwards"}}/>))}
+            {overlayBack(fcCleanup)}
+            {renderGameChatPanel("FORTUNE COOKIE")}
+            <div style={{display:"flex",flexDirection:"column",alignItems:"center",maxWidth:380,width:"100%",padding:"50px 16px 20px",gap:8,zIndex:10,flex:1,margin:"0 auto"}}>
+              <div style={{fontSize:18,fontWeight:900,letterSpacing:4,background:`linear-gradient(135deg, ${C.orange}, ${C.gold})`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>FORTUNE COOKIE</div>
+              <div style={{display:"flex",gap:16,marginBottom:4}}>
+                <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.gold}}>{fcScore}</div><div style={{fontSize:8,color:C.text3}}>COINS</div></div>
+                <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.text2}}>{fcRound+1}/5</div><div style={{fontSize:8,color:C.text3}}>COOKIE</div></div>
               </div>
-              <div style={{fontSize:22,fontWeight:900,color:C.orange,textShadow:`0 0 20px ${C.orange}60`,marginBottom:8}}>FORTUNE COOKIE</div>
-              {cookiePhase==="closed" && <div style={{fontSize:13,color:C.text2,fontWeight:600}}>Tap to crack it open!</div>}
-              {cookiePhase==="cracking" && <div style={{fontSize:13,color:C.gold,fontWeight:700,animation:"pulse 0.5s infinite"}}>Cracking...</div>}
-              {cookiePhase==="open" && (
-                <div style={{textAlign:"center",animation:"fadeIn 0.5s ease",maxWidth:280}}>
-                  <div style={{fontSize:14,color:C.text,fontStyle:"italic",lineHeight:1.5,marginBottom:12,padding:"12px 16px",borderRadius:12,background:`${C.orange}08`,border:`1px solid ${C.orange}18`}}>"{cookieMessage}"</div>
-                  <div style={{fontSize:18,fontWeight:900,color:C.gold}}>+{cookieCoins} Coins!</div>
+              {fcPhase==="intro"&&(<div style={{textAlign:"center",animation:"fadeIn 0.5s ease"}}><div style={{fontSize:56,marginBottom:8}}>🥠</div><div style={{fontSize:20,fontWeight:900,color:C.orange,letterSpacing:3}}>FORTUNE COOKIE</div><div style={{fontSize:11,color:C.text3,marginTop:8}}>HOLD to puff and crack it open! Blinker = GOLDEN cookie!</div></div>)}
+              {isHold&&(
+                <div style={{textAlign:"center",marginTop:16}}>
+                  <div style={{fontSize:fcCracking?80:72,transition:"all 0.3s",
+                    filter:fcCracking?`drop-shadow(0 0 30px ${C.orange}80)`:`drop-shadow(0 0 10px ${C.orange}30)`,
+                    animation:fcCracking?"pulse 0.3s infinite":"pulse 3s infinite",
+                    transform:fcCracking?"rotate(10deg) scale(1.1)":"rotate(0)",
+                  }}>🥠</div>
+                  <div style={{fontSize:14,fontWeight:800,color:C.orange,marginTop:16,animation:"pulse 1.5s infinite"}}>HOLD TO PUFF & CRACK!</div>
+                  <div style={{fontSize:10,color:C.text3,marginTop:4}}>Longer puff = bigger reveal. Blinker = 2x coins!</div>
                 </div>
               )}
+              {(isRead||isRes)&&(
+                <div style={{textAlign:"center",animation:"fadeIn 0.5s ease",marginTop:16,maxWidth:300}}>
+                  <div style={{fontSize:48,marginBottom:12,filter:fcGolden?`drop-shadow(0 0 20px ${C.gold}80)`:"none"}}>{fcGolden?"🥠":"🥠"}</div>
+                  {fcGolden&&<div style={{fontSize:12,fontWeight:900,color:C.gold,letterSpacing:3,marginBottom:8,animation:"pulse 1s infinite"}}>GOLDEN COOKIE!</div>}
+                  <div style={{padding:"14px 18px",borderRadius:14,background:fcGolden?`${C.gold}10`:`${C.orange}08`,border:`1px solid ${fcGolden?C.gold:C.orange}20`,marginBottom:12}}>
+                    <div style={{fontSize:13,color:C.text,fontStyle:"italic",lineHeight:1.6}}>"{fcFortune}"</div>
+                  </div>
+                  <div style={{fontSize:20,fontWeight:900,color:C.gold}}>+{fcCoins} Coins!</div>
+                </div>
+              )}
+              {isComp&&(<div style={{textAlign:"center",animation:"fadeIn 0.4s ease"}}>
+                <div style={{fontSize:48,marginBottom:8}}>🥠</div>
+                <div style={{fontSize:24,fontWeight:900,color:C.gold,marginBottom:8}}>ALL COOKIES CRACKED!</div>
+                <div style={{fontSize:18,fontWeight:800,color:C.text}}>Total Won: {fcScore} coins</div>
+                <div style={{display:"flex",gap:10,justifyContent:"center",marginTop:16}}>
+                  <div onClick={(e)=>{e.stopPropagation();fcCleanup();startFortuneCookie();setGameActive({id:"fortunecookie",name:"Fortune Cookie",emoji:"🥠",color:C.orange});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.orange}15`,border:`1px solid ${C.orange}30`,fontSize:13,fontWeight:800,color:C.orange}}>Play Again</div>
+                  <div onClick={(e)=>{e.stopPropagation();fcCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
+                </div>
+              </div>)}
+              <div style={{fontSize:11,color:C.text3,fontStyle:"italic",marginTop:8}}>{commentary}</div>
             </div>
           </div>
         );
       }
 
-      // ═══ TREASURE MAP RENDER ═══
-      if(gameActive.id==="treasuremap" && treasurePhase) {
-        const tileEmoji = (idx) => {
-          if(!treasureRevealed[idx]) return "?";
-          const cell = treasureGrid[idx];
-          if(cell==="treasure") return "💎";
-          if(cell==="bomb") return "💣";
-          if(cell==="coin") return "🪙";
-          return "🕳️";
-        };
-        const tileColor = (idx) => {
-          if(!treasureRevealed[idx]) return C.border2;
-          const cell = treasureGrid[idx];
-          if(cell==="treasure") return C.gold+"60";
-          if(cell==="bomb") return C.red+"60";
-          if(cell==="coin") return C.green+"40";
-          return C.text3+"20";
-        };
-        const won = treasureFound>=3;
+      // ═══════════════════════════════════════════════════════════════
+      // TREASURE MAP -- Render
+      // ═══════════════════════════════════════════════════════════════
+      if(gameActive.id==="treasuremap" && tmPhase) {
+        const isPlay=tmPhase==="playing";const isRes=tmPhase==="result";const isComp=tmPhase==="complete";
         return (
-          <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden",display:"flex",flexDirection:"column",background:`radial-gradient(ellipse at 50% 30%, ${C.gold}18, ${C.bg} 70%)`}}>
-            {overlayBack(treasureCleanup)}
-            <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"0 20px"}}>
-              <div style={{fontSize:28,marginBottom:6}}>🗺️</div>
-              <div style={{fontSize:20,fontWeight:900,color:C.gold,textShadow:`0 0 16px ${C.gold}60`,marginBottom:4}}>TREASURE MAP</div>
-              <div style={{display:"flex",gap:12,marginBottom:12}}>
-                <span style={{fontSize:11,color:C.gold,fontWeight:700}}>💎 {treasureFound}/3</span>
-                <span style={{fontSize:11,color:C.red,fontWeight:700}}>💣 {treasureBombs}/2</span>
+          <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden",display:"flex",flexDirection:"column"}}
+            onMouseDown={tmHandlePuff} onMouseUp={tmHandlePuffEnd} onTouchStart={(e)=>{e.preventDefault();tmHandlePuff();}} onTouchEnd={(e)=>{e.preventDefault();tmHandlePuffEnd();}}>
+            <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg, #1a1408 0%, #2a1e0a 40%, #1a1408 100%)"}}/>
+            <div style={{position:"absolute",inset:0,background:`radial-gradient(ellipse at 50% 40%, ${C.gold}08, transparent 60%)`,pointerEvents:"none"}}/>
+            {confettiParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size*0.6,background:p.color,borderRadius:1,transform:`rotate(${p.rot}deg)`,zIndex:210,pointerEvents:"none",animation:"confettiFall 1.5s ease-out forwards"}}/>))}
+            {overlayBack(tmCleanup)}
+            {renderGameChatPanel("TREASURE MAP")}
+            <div style={{display:"flex",flexDirection:"column",alignItems:"center",maxWidth:380,width:"100%",padding:"50px 16px 20px",gap:6,zIndex:10,flex:1,margin:"0 auto"}}>
+              <div style={{fontSize:18,fontWeight:900,letterSpacing:4,background:`linear-gradient(135deg, ${C.gold}, #8B4513)`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>TREASURE MAP</div>
+              <div style={{display:"flex",gap:12,marginBottom:4}}>
+                <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.gold}}>🪙 {tmCoins}</div><div style={{fontSize:8,color:C.text3}}>FOUND</div></div>
+                <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.gold}}>💎 {tmTreasures}/3</div><div style={{fontSize:8,color:C.text3}}>TREASURE</div></div>
+                <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.red}}>💣 {tmBombs}</div><div style={{fontSize:8,color:C.text3}}>BOMBS</div></div>
               </div>
-              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",gap:6,marginBottom:16}}>
-                {treasureGrid.map((_,i)=>(
-                  <div key={i} onClick={()=>treasureDig(i)} style={{
-                    width:52,height:52,borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",
-                    fontSize:treasureRevealed[i]?22:16,cursor:(!treasureRevealed[i]&&treasurePhase==="hunt")?"pointer":"default",
-                    background:treasureRevealed[i]?`${tileColor(i)}15`:`linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))`,
-                    border:`1px solid ${tileColor(i)}`,
-                    transition:"all 0.3s",
-                  }}>
-                    {tileEmoji(i)}
+              {tmPhase==="intro"&&(<div style={{textAlign:"center",animation:"fadeIn 0.5s ease"}}><div style={{fontSize:48,marginBottom:8}}>🗺️</div><div style={{fontSize:20,fontWeight:900,color:C.gold,letterSpacing:3}}>TREASURE MAP</div><div style={{fontSize:11,color:C.text3,marginTop:8}}>Tap a tile, then PUFF to flip. Find 3 treasures! Avoid bombs!</div></div>)}
+              {(isPlay||isRes)&&(
+                <div style={{width:"100%",maxWidth:280}}>
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",gap:6,marginBottom:8}}>
+                    {tmGrid.map((tile,i)=>{
+                      const info = TM_TILE_INFO[tile]||{emoji:"?",color:C.text3};
+                      const revealed = tmRevealed[i];
+                      const isXray = tmXray && tmXrayTiles.includes(i);
+                      return (
+                        <div key={i} onClick={(e)=>{e.stopPropagation();tmSelectTile(i);}} style={{
+                          width:"100%",aspectRatio:"1",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",
+                          fontSize:revealed?22:(isXray?18:16),cursor:(!revealed&&isPlay&&!tmGameOver)?"pointer":"default",
+                          background:revealed?`${info.color}15`:(tmSelected===i?`${C.gold}20`:(isXray?`${C.cyan}15`:"linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))")),
+                          border:tmSelected===i?`2px solid ${C.gold}`:`1px solid ${revealed?info.color+"40":(isXray?C.cyan+"60":C.border)}`,
+                          transition:"all 0.3s",
+                          boxShadow:tmSelected===i?`0 0 12px ${C.gold}40`:(isXray?`0 0 10px ${C.cyan}40`:"none"),
+                          animation:isXray?"pulse 0.3s infinite":"none",
+                        }}>
+                          {revealed?info.emoji:(isXray?(TM_TILE_INFO[tile]?TM_TILE_INFO[tile].emoji:"?"):"❓")}
+                        </div>
+                      );
+                    })}
                   </div>
-                ))}
-              </div>
-              {treasurePhase==="result" && (
-                <div style={{textAlign:"center",animation:"fadeIn 0.3s ease"}}>
-                  <div style={{fontSize:20,fontWeight:900,color:won?C.gold:C.red}}>{won?"ALL TREASURES FOUND! +500":"BOOM! Game Over"}</div>
-                  <div style={{fontSize:11,color:C.text3,marginTop:4}}>{won?"You found all 3 treasures!":"Hit "+treasureBombs+" bombs"}</div>
+                  {isPlay&&!tmGameOver&&tmSelected!==null&&<div style={{fontSize:13,fontWeight:800,color:C.gold,textAlign:"center",animation:"pulse 1.5s infinite"}}>PUFF TO FLIP!</div>}
+                  {isPlay&&!tmGameOver&&tmSelected===null&&<div style={{fontSize:11,color:C.text3,textAlign:"center"}}>Tap a tile to select it</div>}
+                  {isPlay&&!tmGameOver&&tmCoins>0&&(
+                    <div onClick={(e)=>{e.stopPropagation();tmCashOut();}} style={{
+                      margin:"10px auto",padding:"10px 24px",borderRadius:12,cursor:"pointer",textAlign:"center",
+                      background:`${C.green}15`,border:`1px solid ${C.green}30`,fontSize:13,fontWeight:800,color:C.green,
+                      transform:`scale(${1+tmCoins/500})`,maxWidth:200,
+                    }}>CASH OUT ({tmCoins} coins)</div>
+                  )}
                 </div>
               )}
+              {isRes&&(
+                <div style={{textAlign:"center",animation:"fadeIn 0.4s ease",marginTop:8}}>
+                  <div style={{fontSize:22,fontWeight:900,color:tmTreasures>=3?C.gold:C.red}}>{tmTreasures>=3?"ALL TREASURES FOUND!":"GAME OVER!"}</div>
+                  <div style={{fontSize:16,fontWeight:700,color:C.text,marginTop:4}}>Coins earned: {tmScore}</div>
+                  <div style={{display:"flex",gap:10,justifyContent:"center",marginTop:16}}>
+                    <div onClick={(e)=>{e.stopPropagation();tmCleanup();startTreasureMap();setGameActive({id:"treasuremap",name:"Treasure Map",emoji:"🗺️",color:C.gold});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.gold}15`,border:`1px solid ${C.gold}30`,fontSize:13,fontWeight:800,color:C.gold}}>Play Again</div>
+                    <div onClick={(e)=>{e.stopPropagation();tmCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
+                  </div>
+                </div>
+              )}
+              <div style={{fontSize:11,color:C.text3,fontStyle:"italic",marginTop:8}}>{commentary}</div>
             </div>
           </div>
         );
