@@ -6338,7 +6338,7 @@ export default function MoodLabArena() {
       <div style={{padding:"0 14px"}}>
 
         {/* NOW SHOWING - Hero Card */}
-        <div onClick={()=>{setShowVibeCheck(true);setVcQ(0);setVcScore(0);setVcAnswered(false);setVcStreak(0);}} style={{
+        <div onClick={()=>vcStartGame()} style={{
           position:"relative",overflow:"hidden",borderRadius:20,padding:"24px 18px",marginBottom:16,cursor:"pointer",
           background:`radial-gradient(ellipse at 20% 30%, ${liveShow.color}18, transparent 60%), radial-gradient(ellipse at 80% 70%, ${C.purple}12, transparent 50%), linear-gradient(135deg, ${C.bg2}, ${C.bg3})`,
           border:`1.5px solid ${liveShow.color}25`,boxShadow:`0 0 30px ${liveShow.color}08, inset 0 1px 0 rgba(255,255,255,0.05)`,
@@ -6411,7 +6411,7 @@ export default function MoodLabArena() {
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
             {SHOW_GAMES.map(g=>(
               <div key={g.id} onClick={()=>{
-                if(g.id==="vibecheck"){setShowVibeCheck(true);setVcQ(0);setVcScore(0);setVcAnswered(false);setVcStreak(0);}
+                if(g.id==="vibecheck")vcStartGame()
                 else if(g.id==="spinwin"){setSelectedGame(g);swStartGame();}
                 else if(g.id==="beatdrop"){setSelectedGame(g);startMatch(g,"ai");}
                 else if(g.id==="pufflimbo"){setSelectedGame(g);startMatch(g,"ai");}
@@ -7607,6 +7607,303 @@ export default function MoodLabArena() {
         plStartRound(plRound + 1, newPlayers + 1, guard);
       }
     }, 2500);
+  };
+
+  // =====================================================================
+  // SIMON PUFFS -- Full Game Engine
+  // =====================================================================
+  const spGetPuffType = (dur) => {
+    if(dur < 1.0) return "short";
+    if(dur < 2.5) return "medium";
+    return "long";
+  };
+
+  const startSimonPuffs = () => {
+    setSpPhase("intro");
+    setSpPattern([]);
+    setSpPlayerPattern([]);
+    setSpRound(0);
+    setSpScore(0);
+    setSpResult(null);
+    setSpAlive(true);
+    setSpCurrentShow(-1);
+    setSpShowingPattern(false);
+    setSpPuffing(false);
+    setSpPuffTime(0);
+    setSpComment("");
+    setSpIntroStep(0);
+    setSpBestRound(0);
+    setSpPlayersLeft(Math.floor(30+Math.random()*70));
+    playFx("crowd");
+    setCommentary("Welcome to Simon Puffs! Can you remember the pattern?");
+    setTimeout(()=>setSpIntroStep(1),400);
+    setTimeout(()=>setSpIntroStep(2),1000);
+    setTimeout(()=>setSpIntroStep(3),1800);
+    setTimeout(()=>{
+      setSpIntroStep(4);
+      playFx("whistle");
+    },2600);
+    setTimeout(()=>{
+      spStartRound(1);
+    },3400);
+  };
+
+  const spStartRound = (roundNum) => {
+    const types = ["short","medium","long"];
+    const prev = roundNum === 1 ? [] : spPattern;
+    const newType = types[Math.floor(Math.random()*3)];
+    const pattern = [...prev, {type:newType, duration:newType==="short"?0.6:newType==="medium"?1.8:3.2}];
+    setSpPattern(pattern);
+    setSpRound(roundNum);
+    setSpPlayerPattern([]);
+    setSpResult(null);
+    setSpCurrentShow(-1);
+    setSpShowingPattern(true);
+    setSpPhase("showing");
+    const joke = SP_COMEDY[Math.min(roundNum-1, SP_COMEDY.length-1)];
+    setSpComment(joke);
+    setCommentary("Watch the pattern! Round " + roundNum);
+    playFx("select");
+    let delay = 600;
+    pattern.forEach((p, idx) => {
+      setTimeout(() => {
+        setSpCurrentShow(idx);
+        playFx("crowd");
+      }, delay);
+      const showDur = p.type==="short"?600:p.type==="medium"?1200:2000;
+      delay += showDur + 400;
+      setTimeout(() => {
+        setSpCurrentShow(-1);
+      }, delay - 400);
+    });
+    setTimeout(() => {
+      setSpShowingPattern(false);
+      setSpCurrentShow(-1);
+      setSpPhase("input");
+      setCommentary("Your turn! Repeat the pattern!");
+      setSpComment("Puff the pattern! " + pattern.length + " puffs to go...");
+    }, delay + 200);
+  };
+
+  const spStartPuff = () => {
+    if(spPhase !== "input" || spPuffing) return;
+    setSpPuffing(true);
+    setSpPuffTime(0);
+    spPuffStart.current = Date.now();
+    if(spPuffInterval.current) clearInterval(spPuffInterval.current);
+    spPuffInterval.current = setInterval(() => {
+      const elapsed = (Date.now() - spPuffStart.current) / 1000;
+      setSpPuffTime(elapsed);
+    }, 50);
+  };
+
+  const spEndPuff = () => {
+    if(!spPuffing) return;
+    if(spPuffInterval.current){clearInterval(spPuffInterval.current);spPuffInterval.current=null;}
+    const dur = (Date.now() - spPuffStart.current) / 1000;
+    setSpPuffing(false);
+    setSpPuffTime(0);
+    const puffType = spGetPuffType(dur);
+    const newPlayerPattern = [...spPlayerPattern, {type:puffType, duration:dur}];
+    setSpPlayerPattern(newPlayerPattern);
+    const idx = newPlayerPattern.length - 1;
+    if(spPattern[idx] && puffType === spPattern[idx].type) {
+      playFx("crowd");
+      if(newPlayerPattern.length === spPattern.length) {
+        const roundScore = spRound * 100;
+        setSpScore(s => s + roundScore);
+        setSpBestRound(spRound);
+        setSpResult("correct");
+        setSpPhase("judging");
+        triggerFlash("goal");
+        setCommentary("CORRECT! Round " + spRound + " complete!");
+        setSpComment("Perfect memory! +" + roundScore + " points!");
+        setSpPlayersLeft(p => Math.max(1, Math.floor(p * (0.6 + Math.random()*0.2))));
+        playFx("goal");
+        setTimeout(() => {
+          if(spRound >= 10) {
+            setSpPhase("final");
+            setCommentary("INCREDIBLE! You completed all 10 rounds!");
+            triggerConfetti();
+          } else {
+            spStartRound(spRound + 1);
+          }
+        }, 2200);
+      } else {
+        setSpComment((spPattern.length - newPlayerPattern.length) + " more to go...");
+      }
+    } else {
+      setSpResult("wrong");
+      setSpAlive(false);
+      setSpPhase("eliminated");
+      playFx("error");
+      triggerFlash("miss");
+      setScreenShake(true);
+      setTimeout(()=>setScreenShake(false),400);
+      const expected = spPattern[idx] ? spPattern[idx].type : "???";
+      setCommentary("WRONG! You puffed " + puffType + " but needed " + expected + "!");
+      setSpComment("Eliminated at Round " + spRound + "! You lasted " + spRound + " rounds.");
+    }
+  };
+
+  const spEndGame = () => {
+    if(spPuffInterval.current){clearInterval(spPuffInterval.current);spPuffInterval.current=null;}
+    if(spShowTimer.current){clearTimeout(spShowTimer.current);spShowTimer.current=null;}
+    const earned = Math.min(500, spScore);
+    if(earned > 0) { setCoins(c => c + earned); notify("+"+earned+" coins!", C.green); }
+    setSpPhase(null);
+    setGameActive(null);
+  };
+
+  // =====================================================================
+  // PUFF AUCTION -- Full Game Engine
+  // =====================================================================
+  const PA_BLINKER_THRESHOLD = 5.0;
+  const PA_DANGER_ZONE = 4.5;
+
+  const startPuffAuction = () => {
+    setPaPhase("intro");
+    setPaRound(0);
+    setPaBids([]);
+    setPaWinner(null);
+    setPaDisqualified(false);
+    setPaHolding(false);
+    setPaBidTime(0);
+    setPaTotalWon(0);
+    setPaPrize(null);
+    setPaComment("");
+    setPaIntroStep(0);
+    setPaShowGavel(false);
+    playFx("crowd");
+    setCommentary("Welcome to the Puff Auction! Bid with your lungs!");
+    setTimeout(()=>setPaIntroStep(1),400);
+    setTimeout(()=>setPaIntroStep(2),1000);
+    setTimeout(()=>setPaIntroStep(3),1800);
+    setTimeout(()=>{
+      setPaIntroStep(4);
+      playFx("whistle");
+    },2600);
+    setTimeout(()=>{
+      paStartRound(0);
+    },3400);
+  };
+
+  const paStartRound = (roundNum) => {
+    const prize = PA_PRIZES[Math.min(roundNum, PA_PRIZES.length - 1)];
+    setPaRound(roundNum);
+    setPaPrize(prize);
+    setPaBids([]);
+    setPaWinner(null);
+    setPaDisqualified(false);
+    setPaHolding(false);
+    setPaBidTime(0);
+    setPaShowGavel(false);
+    setPaPhase("reveal");
+    setCommentary("Round " + (roundNum+1) + ": " + prize.emoji + " " + prize.name + "!");
+    setPaComment("Get ready to bid...");
+    playFx("select");
+    setTimeout(() => {
+      setPaPhase("bidding");
+      setCommentary("BIDDING OPEN! Longest puff wins... but DON'T blinker!");
+      setPaComment("Hold your puff... but stay under " + PA_BLINKER_THRESHOLD + "s!");
+    }, 2000);
+  };
+
+  const paStartBid = () => {
+    if(paPhase !== "bidding" || paHolding || paDisqualified) return;
+    setPaHolding(true);
+    setPaBidTime(0);
+    paPuffStart.current = Date.now();
+    if(paPuffInterval.current) clearInterval(paPuffInterval.current);
+    paPuffInterval.current = setInterval(() => {
+      const elapsed = (Date.now() - paPuffStart.current) / 1000;
+      setPaBidTime(elapsed);
+      if(elapsed >= PA_BLINKER_THRESHOLD) {
+        clearInterval(paPuffInterval.current);
+        paPuffInterval.current = null;
+        setPaHolding(false);
+        setPaDisqualified(true);
+        setPaBidTime(elapsed);
+        playFx("error");
+        triggerFlash("blinker");
+        setScreenShake(true);
+        setTimeout(()=>setScreenShake(false),500);
+        setCommentary("BLINKER! DISQUALIFIED! Over " + PA_BLINKER_THRESHOLD + "s!");
+        setPaComment("The greed got you! DISQUALIFIED!");
+        setTimeout(() => {
+          const aiBids = [];
+          const numAi = 3 + Math.floor(Math.random()*4);
+          for(let i = 0; i < numAi; i++) {
+            const aiDur = 1.5 + Math.random() * 3.2;
+            aiBids.push({name:SPECTATOR_NAMES[Math.floor(Math.random()*SPECTATOR_NAMES.length)], time:Math.min(aiDur, PA_BLINKER_THRESHOLD-0.1), disqualified:aiDur >= PA_BLINKER_THRESHOLD});
+          }
+          const validBids = aiBids.filter(b=>!b.disqualified).sort((a,b)=>b.time-a.time);
+          setPaBids([{name:"You",time:elapsed,disqualified:true,isYou:true}, ...validBids]);
+          setPaWinner(validBids[0] || null);
+          setPaPhase("result");
+          setPaShowGavel(true);
+          setCommentary("You were DISQUALIFIED! " + (validBids[0]?validBids[0].name+" wins!":"No winner!"));
+          setTimeout(() => {
+            if(paRound < PA_PRIZES.length - 1) { paStartRound(paRound + 1); }
+            else { setPaPhase("final"); setCommentary("Auction complete!"); }
+          }, 3000);
+        }, 1500);
+      } else if(elapsed >= PA_DANGER_ZONE) {
+        setPaComment("DANGER ZONE! Release NOW or risk it all!");
+      }
+    }, 50);
+  };
+
+  const paEndBid = () => {
+    if(!paHolding) return;
+    if(paPuffInterval.current){clearInterval(paPuffInterval.current);paPuffInterval.current=null;}
+    const dur = (Date.now() - paPuffStart.current) / 1000;
+    setPaHolding(false);
+    if(dur >= PA_BLINKER_THRESHOLD) return;
+    setPaBidTime(dur);
+    playFx("crowd");
+    const aiBids = [];
+    const numAi = 3 + Math.floor(Math.random()*4);
+    for(let i = 0; i < numAi; i++) {
+      const aiDur = 1.5 + Math.random() * 3.2;
+      const aiName = SPECTATOR_NAMES[Math.floor(Math.random()*SPECTATOR_NAMES.length)];
+      aiBids.push({name:aiName, time:Math.min(aiDur, PA_BLINKER_THRESHOLD-0.1), disqualified:aiDur >= PA_BLINKER_THRESHOLD});
+    }
+    const myBid = {name:"You", time:dur, disqualified:false, isYou:true};
+    const allBids = [myBid, ...aiBids].filter(b => !b.disqualified).sort((a,b) => b.time - a.time);
+    const dqBids = [myBid, ...aiBids].filter(b => b.disqualified);
+    setPaBids([...allBids, ...dqBids]);
+    const winner = allBids[0];
+    setPaWinner(winner);
+    setPaShowGavel(true);
+    setPaPhase("result");
+    if(winner && winner.isYou) {
+      const prize = PA_PRIZES[Math.min(paRound, PA_PRIZES.length-1)];
+      setPaTotalWon(t => t + prize.value);
+      setCoins(c => c + prize.value);
+      triggerFlash("goal");
+      triggerConfetti();
+      playFx("goal");
+      setCommentary("YOU WIN! " + prize.emoji + " " + prize.name + "! Bid: " + dur.toFixed(2) + "s");
+      setPaComment("SOLD to the champion puffer! +" + prize.value + " coins!");
+    } else {
+      setCommentary("Outbid! " + (winner?winner.name:"Nobody") + " wins with " + (winner?winner.time.toFixed(2):"0") + "s!");
+      setPaComment("Better luck next round! Your bid: " + dur.toFixed(2) + "s");
+    }
+    setTimeout(() => {
+      if(paRound < PA_PRIZES.length - 1) {
+        paStartRound(paRound + 1);
+      } else {
+        setPaPhase("final");
+        setCommentary("Auction complete! Total won: " + paTotalWon + " value!");
+      }
+    }, 3000);
+  };
+
+  const paEndGame = () => {
+    if(paPuffInterval.current){clearInterval(paPuffInterval.current);paPuffInterval.current=null;}
+    setPaPhase(null);
+    setGameActive(null);
   };
 
   const overlayBack = (onClose) => (
