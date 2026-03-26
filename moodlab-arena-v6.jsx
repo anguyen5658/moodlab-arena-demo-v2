@@ -149,6 +149,16 @@ const SHOW_GAMES = [
   { id:"puffderby", name:"Puff Derby", emoji:"🏇", players:"1-50+", time:"2-5m", type:"Racing", color:C.green, desc:"Pick a horse, puff to boost! Race to the finish line.", live:true, inputs:["puff","button"] },
 ];
 
+const MC_LINES = {
+  intro: ["Ladies and gentlemen, welcome to {show}!", "The stage is SET! Tonight's show: {show}!", "Welcome back to {show}! Let's get started!"],
+  contestant_pick: ["And our contestant tonight is... YOU! 🎯", "The spotlight is on YOU! Ready?", "Step up to the stage! You're our star tonight! ⭐"],
+  round_start: ["Round {n}! Here we go!", "Next round coming up!", "Can they keep the streak alive?"],
+  correct: ["CORRECT! The crowd goes wild! 🎉", "Nailed it! Brilliant!", "That's RIGHT! {points} points!"],
+  wrong: ["Ohhh! Not quite! 😬", "The crowd groans! Wrong answer!", "So close! Better luck next round!"],
+  audience_react: ["The audience is LOVING this!", "Puff reactions flooding in! 💨", "What a show tonight!"],
+  finale: ["What a performance! Give it up! 👏", "That's a wrap! Final scores coming in!", "Incredible show tonight! See you next time!"],
+};
+
 const ORACLE_GAMES = [
   { id:"crystalball", name:"Crystal Ball", emoji:"🔮", players:"1", time:"1-2m", type:"Prediction", color:"#9333EA", desc:"Yes/No universal predictions. Puff to decide destiny.", inputs:["puff"] },
   { id:"strainbattle", name:"Strain Battle", emoji:"🌿", players:"1", time:"2-3m", type:"Vote", color:"#22C55E", desc:"Vote for the best strain in epic matchups.", inputs:["puff"] },
@@ -1115,6 +1125,13 @@ export default function MoodLabArena() {
   const pcPuffStart = useRef(0);
   const pcPuffInterval = useRef(null);
   const pcTimerRef = useRef(null);
+
+  // ── Stage Role & MC System ──
+  const [stageRole, setStageRole] = useState(null); // null | "contestant" | "audience" | "judge"
+  const [rolePrompt, setRolePrompt] = useState(null); // {role:"contestant", show:game}
+  const [mcText, setMcText] = useState(""); // AI MC commentary
+  const [mcVisible, setMcVisible] = useState(false);
+  const [marqueeTickIdx, setMarqueeTickIdx] = useState(0); // for theater marquee border lights
 
   // ── Visual Effects Engine ──
   const [screenShake, setScreenShake] = useState(false);
@@ -3771,6 +3788,26 @@ export default function MoodLabArena() {
   const getDevicePool = () => DEVICE_POOLS[(DEVICE_MODELS.find(d=>d.id===deviceModel)||DEVICE_MODELS[5]).pool] || DEVICE_POOLS.open;
   const getDeviceShort = () => (DEVICE_MODELS.find(d=>d.id===deviceModel)||DEVICE_MODELS[5]).short;
   const pick = (arr) => arr[Math.floor(Math.random()*arr.length)];
+
+  // ── MC Commentary Helper ──
+  const showMC = (category, replacements={}) => {
+    let line = pick(MC_LINES[category] || MC_LINES.intro);
+    Object.entries(replacements).forEach(([k,v])=>{ line = line.replace(`{${k}}`, v); });
+    setMcText(line);
+    setMcVisible(true);
+    setTimeout(()=>setMcVisible(false), 3000);
+  };
+
+  // ── Stage Role Assignment ──
+  const assignStageRole = (game) => {
+    const roll = Math.random();
+    let role;
+    if(roll < 0.30) role = "contestant";
+    else if(roll < 0.40) role = "judge";
+    else role = "audience";
+    // Contestant gets a prompt to accept/decline, others go straight
+    setRolePrompt({role, show:game});
+  };
 
   // AI Opponents pool — with DiceBear avatar URLs
   const AI_OPPONENTS = [
@@ -6448,6 +6485,24 @@ export default function MoodLabArena() {
 
       {renderZoneHeader("arcade")}
 
+      {/* Neon ARCADE title + live counter */}
+      <div style={{padding:"0 14px",marginBottom:14,textAlign:"center"}}>
+        <div style={{fontSize:28,fontWeight:900,color:C.cyan,letterSpacing:4,
+          textShadow:`0 0 20px ${C.cyan}80, 0 0 40px ${C.cyan}40, 0 0 60px ${C.cyan}20`,
+          animation:"pulse 3s ease-in-out infinite",
+        }}>ARCADE</div>
+        <div style={{display:"inline-flex",alignItems:"center",gap:8,marginTop:6,padding:"4px 14px",borderRadius:20,
+          background:`${C.cyan}08`,border:`1px solid ${C.cyan}15`,
+        }}>
+          <span style={{fontSize:10,color:C.text2,fontWeight:600}}>{PLAY_GAMES.length} GAMES</span>
+          <span style={{fontSize:10,color:C.cyan}}>|</span>
+          <div style={{display:"flex",alignItems:"center",gap:4}}>
+            <div style={{width:6,height:6,borderRadius:"50%",background:C.green,animation:"pulse 1.5s infinite"}}/>
+            <span style={{fontSize:10,fontWeight:700,color:C.green}}>{totalPlaying.toLocaleString()} PLAYING NOW</span>
+          </div>
+        </div>
+      </div>
+
       <div style={{padding:"0 14px"}}>
 
         {/* ======= FEATURED HOT GAME - Compact Hero ======= */}
@@ -6473,6 +6528,17 @@ export default function MoodLabArena() {
             <span style={{fontSize:11,fontWeight:900,color:C.text}}>PLAY</span>
           </div>
         </div>
+
+        {/* ======= TAB BAR ======= */}
+        <div style={{display:"flex",borderBottom:`1px solid ${C.border}`,marginTop:12,marginBottom:8}}>
+          {["games","tournaments","stats","activity"].map(t=>(
+            <div key={t} onClick={()=>setArcadeHubTab(t)} style={{
+              flex:1,padding:"8px 0",textAlign:"center",cursor:"pointer",
+              fontSize:9,fontWeight:arcadeHubTab===t?800:600,
+              color:arcadeHubTab===t?C.cyan:C.text3,
+              borderBottom:arcadeHubTab===t?`2px solid ${C.cyan}`:"2px solid transparent",
+            }}>{t.charAt(0).toUpperCase()+t.slice(1)}</div>
+
 
         {/* ======= ALL GAMES - Smart 2-Column Grid (PRIMARY) ======= */}
         <div style={{marginBottom:4}}>
@@ -6521,16 +6587,7 @@ export default function MoodLabArena() {
           </div>
         </div>
 
-        {/* ======= TAB BAR ======= */}
-        <div style={{display:"flex",borderBottom:`1px solid ${C.border}`,marginTop:12,marginBottom:8}}>
-          {["games","tournaments","stats","activity"].map(t=>(
-            <div key={t} onClick={()=>setArcadeHubTab(t)} style={{
-              flex:1,padding:"8px 0",textAlign:"center",cursor:"pointer",
-              fontSize:9,fontWeight:arcadeHubTab===t?800:600,
-              color:arcadeHubTab===t?C.cyan:C.text3,
-              borderBottom:arcadeHubTab===t?`2px solid ${C.cyan}`:"2px solid transparent",
-            }}>{t.charAt(0).toUpperCase()+t.slice(1)}</div>
-          ))}
+                  ))}
         </div>
 
         {/* Tournaments tab */}
@@ -7036,19 +7093,55 @@ export default function MoodLabArena() {
       ))}
       <div style={{position:"absolute",top:-40,left:"50%",transform:"translateX(-50%)",width:300,height:200,borderRadius:"50%",background:"radial-gradient(circle, rgba(147,51,234,0.12), transparent 70%)",pointerEvents:"none"}}/>
       {renderZoneHeader("oracle")}
-      <div style={{padding:"0 14px",position:"relative",zIndex:1}}>
 
-        {/* DAILY PICKS URGENCY STRIP */}
-        <div onClick={()=>{setGameActive({id:"dailypicks",name:"Daily Picks",emoji:"📅",color:"#F97316"});startDailyPicks();}} style={{
-          display:"flex",alignItems:"center",justifyContent:"center",gap:8,padding:"8px 14px",borderRadius:10,marginBottom:12,cursor:"pointer",
-          background:"linear-gradient(135deg, rgba(249,115,22,0.10), rgba(147,51,234,0.06))",border:"1px solid rgba(249,115,22,0.22)",
-        }}>
-          <span style={{fontSize:10,fontWeight:900,color:"#F97316"}}>3 PICKS TODAY</span>
-          <span style={{fontSize:9,color:C.text3}}>·</span>
-          <span style={{fontSize:10,fontWeight:700,color:C.gold}}>🔥 7-day streak</span>
-          <span style={{fontSize:9,color:C.text3}}>·</span>
-          <span style={{fontSize:9,fontWeight:700,color:C.red}}>closes in 2h</span>
+      {/* YOUR ORACLE STATS */}
+      <div style={{padding:"0 14px",marginBottom:12}}>
+        <div style={{padding:"14px",borderRadius:16,background:"linear-gradient(135deg, rgba(147,51,234,0.08), rgba(255,215,0,0.04))",
+          border:"1px solid rgba(147,51,234,0.20)",backdropFilter:"blur(8px)"}}>
+          <div style={{fontSize:10,fontWeight:800,color:"#9333EA",letterSpacing:2,marginBottom:10}}>YOUR ORACLE STATS</div>
+          <div style={{display:"flex",justifyContent:"space-between",gap:4}}>
+            {[
+              {icon:"🔮",val:"147",label:"Predictions",color:C.purple||"#9333EA"},
+              {icon:"🎯",val:"78%",label:"Accuracy",color:C.green},
+              {icon:"⚡",val:"7 🔥",label:"Streak",color:C.orange||"#F97316"},
+              {icon:"🏆",val:"15",label:"Best",color:C.gold},
+              {icon:"🌙",val:"+4,200",label:"Coins Won",color:C.lime},
+            ].map((s,i)=>(
+              <div key={i} style={{textAlign:"center",flex:1}}>
+                <div style={{fontSize:12,marginBottom:2}}>{s.icon}</div>
+                <div style={{fontSize:14,fontWeight:900,color:s.color}}>{s.val}</div>
+                <div style={{fontSize:7,color:C.text3,marginTop:1}}>{s.label}</div>
+              </div>
+            ))}
+          </div>
         </div>
+      </div>
+
+      {/* DAILY PICKS */}
+      <div style={{padding:"0 14px",marginBottom:12}}>
+        <div style={{padding:"12px 14px",borderRadius:14,background:"rgba(147,51,234,0.03)",border:"1px solid rgba(147,51,234,0.10)"}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+            <span style={{fontSize:10,fontWeight:800,color:"#9333EA",letterSpacing:2}}>DAILY PICKS</span>
+            <span style={{fontSize:8,fontWeight:700,color:C.gold,padding:"3px 8px",borderRadius:100,background:`${C.gold}12`,border:`1px solid ${C.gold}25`}}>🔥 7 day streak | 3x multiplier</span>
+          </div>
+          {[
+            {icon:"🌅",name:"Morning Pick",cat:"sports",time:"Closes in 2h 30m",open:true},
+            {icon:"☀️",name:"Afternoon Pick",cat:"cannabis",time:"Closes in 6h 15m",open:true},
+            {icon:"🌙",name:"Night Pick",cat:"culture",time:"Closes in 12h 45m",open:true},
+          ].map((p,i)=>(
+            <div key={i} onClick={()=>{setGameActive({id:"dailypicks",name:"Daily Picks",emoji:"📅",color:"#F97316"});startDailyPicks();}} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 0",cursor:"pointer",borderTop:i>0?`1px solid ${C.border}`:"none"}}>
+              <span style={{fontSize:20}}>{p.icon}</span>
+              <div style={{flex:1}}>
+                <div style={{fontSize:12,fontWeight:700,color:C.text}}>{p.name}</div>
+                <div style={{fontSize:9,color:C.text3}}>{p.cat}</div>
+              </div>
+              <span style={{fontSize:9,fontWeight:700,color:p.open?C.green:C.text3,padding:"3px 8px",borderRadius:6,background:p.open?`${C.green}10`:`${C.text3}08`,border:`1px solid ${p.open?C.green+"20":C.text3+"10"}`}}>{p.time}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div style={{padding:"0 14px",position:"relative",zIndex:1}}>
 
         {/* PREDICTION GAMES GRID (PRIMARY) */}
         <div style={{marginBottom:4}}>
