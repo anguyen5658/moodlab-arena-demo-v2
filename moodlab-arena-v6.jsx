@@ -17334,14 +17334,7 @@ export default function MoodLabArena() {
         {tab==="me" && renderMe()}
       </div>
 
-      {/* Universal chat button — always visible, aligned with nav */}
-      <div onClick={()=>setChatPanel(!chatPanel)} style={{display:"none",position:"fixed",bottom:18,right:14,zIndex:55,
-        width:42,height:42,borderRadius:14,display:"flex",alignItems:"center",justifyContent:"center",
-        ...GLASS_CLEAR,cursor:"pointer",fontSize:16,
-      }}>
-        💬
-        <div style={{position:"absolute",top:6,right:6,width:6,height:6,borderRadius:"50%",background:C.green,boxShadow:`0 0 4px ${C.green}`}}/>
-      </div>
+      {/* Chat button removed — chat only available inside games/events */}
 
       {/* Universal inline chat — above nav when toggled on */}
       {chatPanel && gameActive ? <div style={{position:"fixed",bottom:66,left:10,right:10,zIndex:54,maxWidth:410,margin:"0 auto",animation:"panelSlideUp 0.3s ease both"}}>
