@@ -7534,7 +7534,6 @@ export default function MoodLabArena() {
       else if(g.id==="pricepuff"){setGameActive({id:"pricepuff",name:"The Price is Puff",emoji:"💰",color:C.green});startPriceIsPuff();}
       else notify(g.name+" starting soon!",g.color);
     };
-    const dotCycle = Math.floor(tick*2) % 24;
     return (
     <div style={{position:"relative"}}>
       {/* Warm amber theater lighting */}
@@ -7545,34 +7544,47 @@ export default function MoodLabArena() {
       {renderZoneHeader("stage")}
       <div style={{padding:"0 14px",position:"relative",zIndex:1}}>
 
-        {/* 1. THEATER MARQUEE */}
-        <div style={{position:"relative",padding:"10px 14px",borderRadius:16,marginBottom:8,overflow:"hidden",cursor:"pointer",
-          background:`linear-gradient(135deg, rgba(255,217,61,0.06), rgba(251,146,60,0.04), rgba(255,217,61,0.06))`,
-          border:`2px solid ${C.gold}20`,boxShadow:`0 0 20px ${C.gold}08, inset 0 0 30px ${C.gold}04`,
-        }} onClick={()=>launchShowFromHub(liveShow)}>
-          {[...Array(24)].map((_,i)=>{
-            const dist = ((i-dotCycle+24)%24);
-            const bright = dist<4 ? 1-dist*0.2 : 0.15;
-            const isTop = i<7; const isRight = i>=7&&i<13; const isBottom = i>=13&&i<19; const isLeft = i>=19;
-            return <div key={"md"+i} style={{position:"absolute",width:3,height:3,borderRadius:"50%",
-              background:C.gold,opacity:bright,zIndex:2,
-              top: isTop?-1: isRight?`${((i-7)/5)*100}%`: isBottom?"auto": `${((24-i)/5)*100}%`,
-              bottom: isBottom?-1:"auto",
-              left: isTop?`${(i/6)*100}%`: isLeft?-1: isBottom?`${((18-i)/5)*100}%`:"auto",
-              right: isRight?-1:"auto",
-            }}/>;
-          })}
-          <div style={{textAlign:"center"}}>
-            <div style={{fontSize:8,fontWeight:900,letterSpacing:3,color:C.gold,opacity:0.7,marginBottom:4,textTransform:"uppercase"}}>NOW SHOWING</div>
-            <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginBottom:4}}>
-              <span style={{fontSize:22}}>{liveShow.emoji}</span>
-              <span style={{fontSize:16,fontWeight:900,color:C.text,textShadow:`0 0 12px ${C.gold}30`}}>{liveShow.name}</span>
-              <span style={{padding:"2px 8px",borderRadius:4,fontSize:7,fontWeight:900,color:"#fff",
-                background:C.red,boxShadow:`0 0 8px ${C.red}60`,animation:"pulse 1.5s infinite"}}>LIVE</span>
+        {/* 1. AUTO-SLIDER HERO */}
+        {(()=>{
+          const stageSlides = [
+            {emoji:liveShow.emoji,title:liveShow.name,sub:(liveShow.type||"Show")+" · 1,247 watching",color:C.red,badge:"LIVE"},
+            {emoji:liveShow2.emoji,title:liveShow2.name,sub:(liveShow2.type||"Show")+" · NOW SHOWING",color:C.pink,badge:"LIVE"},
+            {emoji:"🏆",title:"Tonight: 12,500 coins",sub:"Prize pool across all shows tonight!",color:C.gold,badge:"PRIZES"},
+            {emoji:"🎭",title:"Next: Simon Puffs",sub:"Starting in 8 minutes · Memory challenge",color:C.purple,badge:"SOON"},
+            {emoji:"💀",title:"Survival Trivia Record",sub:"CloudChaser survived to Round 15!",color:C.red,badge:"NEW"},
+          ];
+          const slideIdx = Math.floor(tick/4) % stageSlides.length;
+          const slide = stageSlides[slideIdx];
+          return (
+            <div style={{padding:"0 0px",marginBottom:8}}>
+              <div style={{padding:"14px 16px",borderRadius:16,position:"relative",overflow:"hidden",
+                background:`linear-gradient(135deg, ${slide.color}12, ${slide.color}04)`,
+                border:`1px solid ${slide.color}20`,cursor:"pointer",
+              }} onClick={()=>launchShowFromHub(liveShow)}>
+                <div style={{position:"absolute",top:0,right:0,width:"40%",height:"100%",background:`radial-gradient(circle at 80% 50%, ${slide.color}15, transparent 70%)`,pointerEvents:"none"}}/>
+                <div style={{display:"flex",alignItems:"center",gap:12,position:"relative",zIndex:1}}>
+                  <div style={{fontSize:32,filter:`drop-shadow(0 0 8px ${slide.color}60)`}}>{slide.emoji}</div>
+                  <div style={{flex:1}}>
+                    <div style={{display:"flex",alignItems:"center",gap:6}}>
+                      <div style={{fontSize:15,fontWeight:900,color:C.text}}>{slide.title}</div>
+                      {slide.badge && <span style={{fontSize:6,fontWeight:900,padding:"2px 6px",borderRadius:4,
+                        background:slide.badge==="LIVE"?`${C.red}18`:`${slide.color}12`,
+                        color:slide.badge==="LIVE"?C.red:slide.color,
+                        border:`1px solid ${slide.badge==="LIVE"?C.red:slide.color}25`,
+                      }}>{slide.badge}</span>}
+                    </div>
+                    <div style={{fontSize:10,color:C.text3,marginTop:2}}>{slide.sub}</div>
+                  </div>
+                </div>
+                <div style={{display:"flex",gap:4,justifyContent:"center",marginTop:8}}>
+                  {stageSlides.map((_,i)=>(
+                    <div key={i} style={{width:i===slideIdx?16:5,height:5,borderRadius:3,background:i===slideIdx?slide.color:`${C.text3}30`,transition:"all 0.3s"}}/>
+                  ))}
+                </div>
+              </div>
             </div>
-            <div style={{fontSize:9,color:C.gold,fontWeight:600,opacity:0.8}}>{"👥"} {nowViewers.toLocaleString()} in the audience</div>
-          </div>
-        </div>
+          );
+        })()}
 
         {/* 2. QUICK FEED BAR */}
         <div style={{padding:"6px 12px",borderRadius:100,marginBottom:8,
