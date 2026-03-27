@@ -6846,28 +6846,26 @@ export default function MoodLabArena() {
         {/* Tournaments tab */}
         {arcadeHubTab==="tournaments" && (
           <div style={{marginBottom:14}}>
-            <div style={{display:"flex",flexDirection:"column",gap:8}}>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
               {arcadeTournaments.map((t,i)=>(
                 <div key={i} onClick={()=>{playFx("select");if(t.game==="Final Kick")setWcPhase("team_select");else notify(t.name+" - "+t.prize,t.color);}} style={{
-                  padding:"12px 14px",borderRadius:14,cursor:"pointer",flexShrink:0,
+                  padding:"10px 10px",borderRadius:12,cursor:"pointer",
                   background:`radial-gradient(ellipse at 30% 20%, ${t.color}10, ${C.bg2} 70%)`,
                   border:`1px solid ${t.color}20`,
                 }}>
-                  <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:6}}>
-                    <span style={{fontSize:20}}>{t.emoji}</span>
-                    <div style={{padding:"2px 7px",borderRadius:4,background:t.status==="LIVE"?`${C.red}18`:`${C.green}12`,border:`1px solid ${t.status==="LIVE"?C.red:C.green}25`}}>
-                      <div style={{display:"flex",alignItems:"center",gap:3}}>
-                        {t.status==="LIVE" && <div style={{width:5,height:5,borderRadius:"50%",background:C.red,animation:"pulse 1.5s infinite"}}/>}
-                        <span style={{fontSize:7,fontWeight:900,color:t.status==="LIVE"?C.red:C.green}}>{t.status}</span>
+                  <div style={{display:"flex",alignItems:"center",gap:4,marginBottom:4}}>
+                    <span style={{fontSize:16}}>{t.emoji}</span>
+                    <div style={{padding:"1px 5px",borderRadius:3,background:t.status==="LIVE"?`${C.red}18`:`${C.green}12`,border:`1px solid ${t.status==="LIVE"?C.red:C.green}25`}}>
+                      <div style={{display:"flex",alignItems:"center",gap:2}}>
+                        {t.status==="LIVE" && <div style={{width:4,height:4,borderRadius:"50%",background:C.red,animation:"pulse 1.5s infinite"}}/>}
+                        <span style={{fontSize:6,fontWeight:900,color:t.status==="LIVE"?C.red:C.green}}>{t.status}</span>
                       </div>
                     </div>
                   </div>
-                  <div style={{fontSize:12,fontWeight:800,color:C.text,marginBottom:3}}>{t.name}</div>
-                  <div style={{fontSize:9,color:C.text3,marginBottom:4}}>{t.game} · {t.players} entered</div>
-                  <div style={{display:"flex",gap:6}}>
-                    <span style={{fontSize:9,fontWeight:700,color:C.gold}}>🎁 {t.prize}</span>
-                    <span style={{fontSize:8,color:C.text3}}>{t.round}</span>
-                  </div>
+                  <div style={{fontSize:10,fontWeight:800,color:C.text,marginBottom:2}}>{t.name}</div>
+                  <div style={{fontSize:7,color:C.text3,marginBottom:3}}>{t.game} · {t.players} entered</div>
+                  <div style={{fontSize:8,fontWeight:700,color:C.gold}}>🎁 {t.prize}</div>
+                  <div style={{fontSize:7,color:C.text3}}>{t.round}</div>
                 </div>
               ))}
             </div>
