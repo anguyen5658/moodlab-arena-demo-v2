@@ -637,6 +637,38 @@ const GAME_TEAMS = {
     {id:"krakenpuffs",name:"Kraken Puffs",emoji:"🦑💨",color:C.purple},
     {id:"tidalpull",name:"Tidal Pull",emoji:"🌊💪",color:C.gold},
   ],
+  beatdrop: [
+    {id:"rolling_bass",name:"Rolling Bass",emoji:"🎸",color:"#FF4D8D"},
+    {id:"cloud_beats",name:"Cloud Beats",emoji:"☁️",color:"#A855F7"},
+    {id:"neon_drop",name:"Neon Drop",emoji:"💜",color:"#00E5FF"},
+    {id:"bass_blinkers",name:"Bass Blinkers",emoji:"🔊",color:"#FF8C42"},
+    {id:"tempo_titans",name:"Tempo Titans",emoji:"⚡",color:"#FFD93D"},
+    {id:"sub_zero",name:"Sub Zero",emoji:"❄️",color:"#60A5FA"},
+  ],
+  puffclock: [
+    {id:"time_lords",name:"Time Lords",emoji:"⏰",color:"#00E5FF"},
+    {id:"precision_crew",name:"Precision Crew",emoji:"🎯",color:"#7FFF00"},
+    {id:"clock_stoppers",name:"Clock Stoppers",emoji:"⏱️",color:"#FFD93D"},
+    {id:"four_twenty",name:"The 4:20s",emoji:"🌿",color:"#34D399"},
+    {id:"nano_second",name:"Nano Second",emoji:"⚡",color:"#FF8C42"},
+    {id:"zen_timers",name:"Zen Timers",emoji:"🧘",color:"#A855F7"},
+  ],
+  pufflimbo: [
+    {id:"iron_lungs",name:"Iron Lungs",emoji:"🫁",color:"#FF4444"},
+    {id:"blinker_gang",name:"Blinker Gang",emoji:"💀",color:"#A855F7"},
+    {id:"endurance_elite",name:"Endurance Elite",emoji:"💪",color:"#00E5FF"},
+    {id:"limbo_legends",name:"Limbo Legends",emoji:"🎪",color:"#FF8C42"},
+    {id:"breath_masters",name:"Breath Masters",emoji:"💨",color:"#7FFF00"},
+    {id:"cloud_chasers",name:"Cloud Chasers",emoji:"☁️",color:"#FFD93D"},
+  ],
+  puffderby: [
+    {id:"thunder_stable",name:"Thunder Stable",emoji:"⚡",color:"#FFD93D"},
+    {id:"cloud_riders",name:"Cloud Riders",emoji:"☁️",color:"#00E5FF"},
+    {id:"sativa_sprint",name:"Sativa Sprint",emoji:"🌿",color:"#34D399"},
+    {id:"blinker_bolt",name:"Blinker Bolt",emoji:"💀",color:"#FF4444"},
+    {id:"indica_cruise",name:"Indica Cruise",emoji:"🍃",color:"#A855F7"},
+    {id:"hybrid_hustle",name:"Hybrid Hustle",emoji:"🔥",color:"#FF8C42"},
+  ],
 };
 
 const GAME_TOURNAMENTS = {
@@ -711,6 +743,38 @@ const GAME_TOURNAMENTS = {
     rules: "3 fishing sessions, 2 min each. Total catch points = ranking. Legendary=60, Rare=25, Common=10.",
     teamType: "crew",
     prizes: {gold:{pts:30000,coins:800,label:"Golden Rod 🎣"},silver:{pts:15000,coins:400,label:"Silver Hook 🪝"},bronze:{pts:7500,coins:200,label:"Bronze Reel 🔄"},fourth:{pts:3000,coins:100,label:"Deckhand"}},
+  },
+  beatdrop: {
+    name: "The Drop Zone", emoji: "🎧",
+    format: "Score Chase (3 Songs)", formatShort: "Score",
+    duration: "~15 min", rounds: ["Opening Act","Main Set","ENCORE (2x Speed)"],
+    rules: "Everyone plays 3 rounds. Total score = final ranking. No elimination! Round 3 is double speed.",
+    teamType: "crew",
+    prizes: {gold:{pts:30000,coins:800,label:"Platinum Beat 🎵"},silver:{pts:15000,coins:400,label:"Gold Record 🥇"},bronze:{pts:7500,coins:200,label:"Silver Mix 🥈"},fourth:{pts:3000,coins:100,label:"DJ Trainee"}},
+  },
+  puffclock: {
+    name: "Time Masters", emoji: "⏱️",
+    format: "Precision Tournament (5 Rounds)", formatShort: "Precision",
+    duration: "~20 min", rounds: ["Round 1 (2.0s)","Round 2 (3.5s)","Round 3 (1.75s)","Round 4 (4.20s!)","Finals (Random)"],
+    rules: "5 precision rounds. Closest to target time wins points. Total points = ranking. The 4.20s round is worth double!",
+    teamType: "squad",
+    prizes: {gold:{pts:30000,coins:800,label:"Time Lord Crown ⏱️"},silver:{pts:15000,coins:400,label:"Precision Medal 🎯"},bronze:{pts:7500,coins:200,label:"Clock Watcher 🕐"},fourth:{pts:3000,coins:100,label:"Timekeeper"}},
+  },
+  pufflimbo: {
+    name: "Limbo Legends", emoji: "🎪",
+    format: "Survival (7 Rounds)", formatShort: "Survival",
+    duration: "~15 min", rounds: ["3.0s","3.5s","4.0s","4.2s","4.5s","4.7s","5.0s BLINKER!"],
+    rules: "Target puff gets longer each round. Fall short = eliminated. Survive the 5.0s blinker round to win!",
+    teamType: "crew",
+    prizes: {gold:{pts:30000,coins:800,label:"Limbo Champion 🎪"},silver:{pts:15000,coins:400,label:"Endurance Medal 💪"},bronze:{pts:7500,coins:200,label:"Survivor Badge 🏅"},fourth:{pts:3000,coins:100,label:"Participant"}},
+  },
+  puffderby: {
+    name: "Grand Derby", emoji: "🏇",
+    format: "Race Series (3 Races)", formatShort: "Racing",
+    duration: "~10 min", rounds: ["Heat 1","Heat 2","CHAMPIONSHIP RACE"],
+    rules: "3 races. Pick a horse, spam puff to run. Watch stamina! Total finishing positions = final ranking.",
+    teamType: "stable",
+    prizes: {gold:{pts:30000,coins:800,label:"Derby Champion 🏇"},silver:{pts:15000,coins:400,label:"Silver Saddle 🥈"},bronze:{pts:7500,coins:200,label:"Bronze Horseshoe 🐴"},fourth:{pts:3000,coins:100,label:"Stable Hand"}},
   },
 };
 
@@ -11924,7 +11988,7 @@ const startSimonPuffs = () => {
                 <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,marginBottom:5,flexWrap:"wrap"}}>
                   {gameActive?.wcMode ? (
                     <span style={{fontSize:8,fontWeight:800,color:C.gold,letterSpacing:2}}>
-                      🏆 {gameActive?.wcKnockout && wcBracket ? wcBracket.rounds[wcBracket.currentRound].toUpperCase() : `GROUP ${wcTournament?.group || "?"} · MATCH ${(gameActive?.wcMatchIdx ?? 0)+1}/3`}
+                      🏆 {gameActive?.wcKnockout && wcBracket ? wcBracket.rounds[wcBracket.currentRound].toUpperCase() : (GAME_TOURNAMENTS[wcGameId] ? `${GAME_TOURNAMENTS[wcGameId].emoji} ${GAME_TOURNAMENTS[wcGameId].rounds[0].toUpperCase()} · MATCH ${(gameActive?.wcMatchIdx ?? 0)+1}/3` : `GROUP ${wcTournament?.group || "?"} · MATCH ${(gameActive?.wcMatchIdx ?? 0)+1}/3`)}
                     </span>
                   ) : (
                     <span style={{fontSize:8,fontWeight:800,color:C.gold,letterSpacing:2}}>{isFK2?"⚽🔥 FINAL KICK 2":"🏆 FINAL KICK"}</span>
@@ -12840,7 +12904,7 @@ const startSimonPuffs = () => {
                 <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,marginBottom:5,flexWrap:"wrap"}}>
                   {gameActive?.wcMode ? (
                     <span style={{fontSize:8,fontWeight:800,color:C.gold,letterSpacing:2}}>
-                      🏆 {gameActive?.wcKnockout && wcBracket ? wcBracket.rounds[wcBracket.currentRound].toUpperCase() : `GROUP ${wcTournament?.group || "?"} · MATCH ${(gameActive?.wcMatchIdx ?? 0)+1}/3`}
+                      🏆 {gameActive?.wcKnockout && wcBracket ? wcBracket.rounds[wcBracket.currentRound].toUpperCase() : (GAME_TOURNAMENTS[wcGameId] ? `${GAME_TOURNAMENTS[wcGameId].emoji} ${GAME_TOURNAMENTS[wcGameId].rounds[0].toUpperCase()} · MATCH ${(gameActive?.wcMatchIdx ?? 0)+1}/3` : `GROUP ${wcTournament?.group || "?"} · MATCH ${(gameActive?.wcMatchIdx ?? 0)+1}/3`)}
                     </span>
                   ) : (
                     <span style={{fontSize:8,fontWeight:800,color:C.gold,letterSpacing:2}}>⚽🔥 FINAL KICK 2</span>
@@ -16428,6 +16492,10 @@ const startSimonPuffs = () => {
                     selectedGame.id==="puffauction"?"🔨💨":
                     selectedGame.id==="higherlower"?"📊🔼🔽":
                     selectedGame.id==="pricepuff"?"💰🏷️":
+                    selectedGame.id==="beatdrop"?"🎧🎵":
+                    selectedGame.id==="puffclock"?"⏱️💨":
+                    selectedGame.id==="pufflimbo"?"🎪🫁":
+                    selectedGame.id==="puffderby"?"🏇💨":
                     selectedGame.emoji
                   }</div>
                   <div style={{fontSize:18,fontWeight:900,color:C.text}}>{
@@ -16448,6 +16516,10 @@ const startSimonPuffs = () => {
                     selectedGame.id==="puffauction"?"Puff Auction":
                     selectedGame.id==="higherlower"?"Higher or Lower":
                     selectedGame.id==="pricepuff"?"The Price is Puff":
+                    selectedGame.id==="beatdrop"?"Beat Drop":
+                    selectedGame.id==="puffclock"?"Puff Clock":
+                    selectedGame.id==="pufflimbo"?"Puff Limbo":
+                    selectedGame.id==="puffderby"?"Puff Derby":
                     selectedGame.name
                   }</div>
                   <div style={{fontSize:10,color:C.text2}}>{
@@ -16468,6 +16540,10 @@ const startSimonPuffs = () => {
                     selectedGame.id==="puffauction"?"Bid with Your Lungs — Biggest Puff Wins!":
                     selectedGame.id==="higherlower"?"Guess if the Next Stat is Higher or Lower!":
                     selectedGame.id==="pricepuff"?"Guess the Price — Closest Without Going Over!":
+                    selectedGame.id==="beatdrop"?"Drop on the Beat — Timing is Everything!":
+                    selectedGame.id==="puffclock"?"Hold Your Puff — Hit the Target Time!":
+                    selectedGame.id==="pufflimbo"?"How Low Can You Go? Survive the Blinker!":
+                    selectedGame.id==="puffderby"?"Pick a Horse, Spam Puff, Win the Race!":
                     selectedGame.desc
                   }</div>
                 </div>
@@ -18324,6 +18400,362 @@ const startSimonPuffs = () => {
                   </div>
                 </div>
 
+                </>) : (selectedGame.id==="beatdrop") ? (<>
+
+                {/* ═══ BEAT DROP — GAME FLOW ═══ */}
+                <div style={{padding:"12px",borderRadius:16,...GLASS_CARD,marginBottom:12}}>
+                  <div style={{fontSize:9,fontWeight:800,color:C.gold,letterSpacing:2,marginBottom:8,textAlign:"center"}}>⚡ GAME FLOW</div>
+                  <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
+                    {[
+                      {step:"1",icon:"🎵",label:"Music Builds",sub:"Listen to the beat building up",color:C.cyan,arrow:true},
+                      {step:"2",icon:"💨",label:"Hold Puff",sub:"Start your puff as the beat builds",color:C.lime,arrow:true},
+                      {step:"3",icon:"🎧",label:"Beat Drops!",sub:"The music hits the drop moment",color:C.gold,arrow:true},
+                      {step:"4",icon:"👆",label:"Release on Time",sub:"Let go right when the beat drops",color:C.green,arrow:true},
+                      {step:"5",icon:"🏆",label:"Score!",sub:"3 songs, total score = ranking",color:C.purple,arrow:false},
+                    ].map((s,i)=>(
+                      <React.Fragment key={i}>
+                        <div style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"6px 10px",borderRadius:10,background:`${s.color}08`,border:`1px solid ${s.color}15`}}>
+                          <div style={{width:28,height:28,borderRadius:8,background:`${s.color}20`,border:`1px solid ${s.color}30`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,flexShrink:0}}>{s.icon}</div>
+                          <div style={{flex:1}}>
+                            <div style={{fontSize:10,fontWeight:800,color:s.color}}>{s.label}</div>
+                            <div style={{fontSize:7,color:C.text3}}>{s.sub}</div>
+                          </div>
+                          <div style={{width:18,height:18,borderRadius:"50%",background:`${s.color}15`,border:`1px solid ${s.color}30`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,fontWeight:900,color:s.color}}>{s.step}</div>
+                        </div>
+                        {s.arrow && <div style={{fontSize:10,color:C.text3+"60",lineHeight:1}}>↓</div>}
+                      </React.Fragment>
+                    ))}
+                  </div>
+                </div>
+
+                {/* ═══ BEAT DROP — TIMING ZONES ═══ */}
+                <div style={{padding:"12px",borderRadius:16,...GLASS_CARD,marginBottom:12}}>
+                  <div style={{fontSize:9,fontWeight:800,color:C.lime,letterSpacing:2,marginBottom:8,textAlign:"center"}}>🎯 TIMING ACCURACY</div>
+                  <div style={{fontSize:8,color:C.text2,textAlign:"center",marginBottom:8}}>Release your puff right when the beat drops!</div>
+                  <div style={{display:"flex",flexDirection:"column",gap:4}}>
+                    {[
+                      {label:"PERFECT",range:"±0.2s",pts:"100 pts",color:C.green,emoji:"💎"},
+                      {label:"GREAT",range:"±0.5s",pts:"75 pts",color:C.cyan,emoji:"⭐"},
+                      {label:"GOOD",range:"±1.0s",pts:"50 pts",color:C.gold,emoji:"👍"},
+                      {label:"EARLY",range:"Too soon",pts:"0 pts",color:C.orange,emoji:"⏩"},
+                      {label:"LATE",range:"Too late",pts:"10 pts",color:C.red,emoji:"🐌"},
+                    ].map((t,i)=>(
+                      <div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"6px 10px",borderRadius:8,background:`${t.color}08`,border:`1px solid ${t.color}15`}}>
+                        <span style={{fontSize:14}}>{t.emoji}</span>
+                        <div style={{flex:1}}>
+                          <span style={{fontSize:9,fontWeight:800,color:t.color}}>{t.label}</span>
+                          <span style={{fontSize:7,color:C.text3,marginLeft:6}}>{t.range}</span>
+                        </div>
+                        <span style={{fontSize:9,fontWeight:800,color:t.color}}>{t.pts}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* ═══ BEAT DROP — SPECIAL FEATURES ═══ */}
+                <div style={{padding:"12px",borderRadius:16,...GLASS_CARD,marginBottom:12}}>
+                  <div style={{fontSize:9,fontWeight:800,color:C.purple,letterSpacing:2,marginBottom:8,textAlign:"center"}}>✨ SPECIAL FEATURES</div>
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
+                    {[
+                      {icon:"🎵",title:"3 Songs",desc:"Each song gets harder to nail",color:C.cyan},
+                      {icon:"👻",title:"Fake Drops",desc:"Watch out for fake build-ups!",color:C.orange},
+                      {icon:"💀",title:"Blinker Bonus",desc:"Hold a blinker through the drop = legendary",color:C.red},
+                      {icon:"⚡",title:"2x Speed Encore",desc:"Round 3 is double speed!",color:C.gold},
+                    ].map((f,i)=>(
+                      <div key={i} style={{padding:"8px",borderRadius:10,background:`${f.color}06`,border:`1px solid ${f.color}12`,textAlign:"center"}}>
+                        <div style={{fontSize:16,marginBottom:2}}>{f.icon}</div>
+                        <div style={{fontSize:8,fontWeight:800,color:f.color}}>{f.title}</div>
+                        <div style={{fontSize:7,color:C.text3}}>{f.desc}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* ═══ BEAT DROP — PRO TIPS ═══ */}
+                <div style={{padding:"12px",borderRadius:16,background:`${C.lime}06`,border:`1px solid ${C.lime}15`,marginBottom:8}}>
+                  <div style={{fontSize:9,fontWeight:800,color:C.lime,letterSpacing:2,marginBottom:6,textAlign:"center"}}>🧠 PRO TIPS</div>
+                  <div style={{display:"flex",flexDirection:"column",gap:4}}>
+                    {[
+                      "Feel the rhythm — close your eyes and FEEL the drop",
+                      "Watch for fake drops, they build up but don't release",
+                      "Blinker through the drop for legendary bonus points",
+                      "Round 3 is 2x speed — stay locked in for the encore",
+                    ].map((tip,i)=>(
+                      <div key={i} style={{display:"flex",gap:6,alignItems:"flex-start"}}>
+                        <span style={{fontSize:8,color:C.lime,fontWeight:900,flexShrink:0}}>💡</span>
+                        <span style={{fontSize:8,color:C.text2,lineHeight:1.3}}>{tip}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                </>) : (selectedGame.id==="puffclock") ? (<>
+
+                {/* ═══ PUFF CLOCK — GAME FLOW ═══ */}
+                <div style={{padding:"12px",borderRadius:16,...GLASS_CARD,marginBottom:12}}>
+                  <div style={{fontSize:9,fontWeight:800,color:C.gold,letterSpacing:2,marginBottom:8,textAlign:"center"}}>⚡ GAME FLOW</div>
+                  <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
+                    {[
+                      {step:"1",icon:"🎯",label:"See Target Time",sub:"A target duration is shown on screen",color:C.cyan,arrow:true},
+                      {step:"2",icon:"💨",label:"Hold Puff",sub:"Start holding — no clock visible!",color:C.lime,arrow:true},
+                      {step:"3",icon:"👆",label:"Release at Target",sub:"Let go when you think time's up",color:C.gold,arrow:true},
+                      {step:"4",icon:"📊",label:"Check Accuracy",sub:"See how close you were",color:C.green,arrow:true},
+                      {step:"5",icon:"🏆",label:"Score",sub:"5 rounds, closest total wins",color:C.purple,arrow:false},
+                    ].map((s,i)=>(
+                      <React.Fragment key={i}>
+                        <div style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"6px 10px",borderRadius:10,background:`${s.color}08`,border:`1px solid ${s.color}15`}}>
+                          <div style={{width:28,height:28,borderRadius:8,background:`${s.color}20`,border:`1px solid ${s.color}30`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,flexShrink:0}}>{s.icon}</div>
+                          <div style={{flex:1}}>
+                            <div style={{fontSize:10,fontWeight:800,color:s.color}}>{s.label}</div>
+                            <div style={{fontSize:7,color:C.text3}}>{s.sub}</div>
+                          </div>
+                          <div style={{width:18,height:18,borderRadius:"50%",background:`${s.color}15`,border:`1px solid ${s.color}30`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,fontWeight:900,color:s.color}}>{s.step}</div>
+                        </div>
+                        {s.arrow && <div style={{fontSize:10,color:C.text3+"60",lineHeight:1}}>↓</div>}
+                      </React.Fragment>
+                    ))}
+                  </div>
+                </div>
+
+                {/* ═══ PUFF CLOCK — TARGET ROUNDS ═══ */}
+                <div style={{padding:"12px",borderRadius:16,...GLASS_CARD,marginBottom:12}}>
+                  <div style={{fontSize:9,fontWeight:800,color:C.lime,letterSpacing:2,marginBottom:8,textAlign:"center"}}>⏱️ TARGET ROUNDS</div>
+                  <div style={{fontSize:8,color:C.text2,textAlign:"center",marginBottom:8}}>Hit the exact target time — no clock to help you!</div>
+                  <div style={{display:"flex",flexDirection:"column",gap:4}}>
+                    {[
+                      {label:"Round 1",target:"2.00s",desc:"Quick warmup",color:C.cyan,emoji:"1️⃣"},
+                      {label:"Round 2",target:"3.50s",desc:"Medium hold",color:C.green,emoji:"2️⃣"},
+                      {label:"Round 3",target:"1.75s",desc:"Tricky short hold",color:C.orange,emoji:"3️⃣"},
+                      {label:"Round 4",target:"4.20s",desc:"SPECIAL! Worth double points! 🌿",color:C.lime,emoji:"🌿"},
+                      {label:"Finals",target:"Random",desc:"Random target — pure skill",color:C.gold,emoji:"🎲"},
+                    ].map((t,i)=>(
+                      <div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"6px 10px",borderRadius:8,background:`${t.color}08`,border:`1px solid ${t.color}15`}}>
+                        <span style={{fontSize:14}}>{t.emoji}</span>
+                        <div style={{flex:1}}>
+                          <span style={{fontSize:9,fontWeight:800,color:t.color}}>{t.label}</span>
+                          <span style={{fontSize:7,color:C.text3,marginLeft:6}}>{t.desc}</span>
+                        </div>
+                        <span style={{fontSize:10,fontWeight:900,color:t.color}}>{t.target}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* ═══ PUFF CLOCK — SPECIAL FEATURES ═══ */}
+                <div style={{padding:"12px",borderRadius:16,...GLASS_CARD,marginBottom:12}}>
+                  <div style={{fontSize:9,fontWeight:800,color:C.purple,letterSpacing:2,marginBottom:8,textAlign:"center"}}>✨ SPECIAL FEATURES</div>
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
+                    {[
+                      {icon:"🌿",title:"Perfect 4.20",desc:"Nail 4.20s exactly = 420 coins!",color:C.lime},
+                      {icon:"📊",title:"Leaderboard",desc:"Precision rankings across all rounds",color:C.cyan},
+                      {icon:"🧠",title:"THC Effect",desc:"Higher = time perception distorts!",color:C.purple},
+                      {icon:"🎯",title:"No Clock",desc:"Pure internal timing, no help",color:C.gold},
+                    ].map((f,i)=>(
+                      <div key={i} style={{padding:"8px",borderRadius:10,background:`${f.color}06`,border:`1px solid ${f.color}12`,textAlign:"center"}}>
+                        <div style={{fontSize:16,marginBottom:2}}>{f.icon}</div>
+                        <div style={{fontSize:8,fontWeight:800,color:f.color}}>{f.title}</div>
+                        <div style={{fontSize:7,color:C.text3}}>{f.desc}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* ═══ PUFF CLOCK — PRO TIPS ═══ */}
+                <div style={{padding:"12px",borderRadius:16,background:`${C.lime}06`,border:`1px solid ${C.lime}15`,marginBottom:8}}>
+                  <div style={{fontSize:9,fontWeight:800,color:C.lime,letterSpacing:2,marginBottom:6,textAlign:"center"}}>🧠 PRO TIPS</div>
+                  <div style={{display:"flex",flexDirection:"column",gap:4}}>
+                    {[
+                      "Count in your head — 'one-Mississippi, two-Mississippi...'",
+                      "The 4.20 round is worth double — practice that timing!",
+                      "Don't rush the short rounds, precision beats speed",
+                      "THC makes time feel slower — compensate accordingly",
+                    ].map((tip,i)=>(
+                      <div key={i} style={{display:"flex",gap:6,alignItems:"flex-start"}}>
+                        <span style={{fontSize:8,color:C.lime,fontWeight:900,flexShrink:0}}>💡</span>
+                        <span style={{fontSize:8,color:C.text2,lineHeight:1.3}}>{tip}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                </>) : (selectedGame.id==="pufflimbo") ? (<>
+
+                {/* ═══ PUFF LIMBO — GAME FLOW ═══ */}
+                <div style={{padding:"12px",borderRadius:16,...GLASS_CARD,marginBottom:12}}>
+                  <div style={{fontSize:9,fontWeight:800,color:C.gold,letterSpacing:2,marginBottom:8,textAlign:"center"}}>⚡ GAME FLOW</div>
+                  <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
+                    {[
+                      {step:"1",icon:"🎪",label:"Target Duration Shown",sub:"See how long you must hold",color:C.cyan,arrow:true},
+                      {step:"2",icon:"💨",label:"Hold Puff",sub:"Start holding — must reach target!",color:C.lime,arrow:true},
+                      {step:"3",icon:"✅",label:"Must Reach Target",sub:"Hold at least the target duration",color:C.green,arrow:true},
+                      {step:"4",icon:"💪",label:"Survive!",sub:"Fall short = eliminated",color:C.orange,arrow:true},
+                      {step:"5",icon:"🔄",label:"Next Round",sub:"Target gets longer each round!",color:C.purple,arrow:false},
+                    ].map((s,i)=>(
+                      <React.Fragment key={i}>
+                        <div style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"6px 10px",borderRadius:10,background:`${s.color}08`,border:`1px solid ${s.color}15`}}>
+                          <div style={{width:28,height:28,borderRadius:8,background:`${s.color}20`,border:`1px solid ${s.color}30`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,flexShrink:0}}>{s.icon}</div>
+                          <div style={{flex:1}}>
+                            <div style={{fontSize:10,fontWeight:800,color:s.color}}>{s.label}</div>
+                            <div style={{fontSize:7,color:C.text3}}>{s.sub}</div>
+                          </div>
+                          <div style={{width:18,height:18,borderRadius:"50%",background:`${s.color}15`,border:`1px solid ${s.color}30`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,fontWeight:900,color:s.color}}>{s.step}</div>
+                        </div>
+                        {s.arrow && <div style={{fontSize:10,color:C.text3+"60",lineHeight:1}}>↓</div>}
+                      </React.Fragment>
+                    ))}
+                  </div>
+                </div>
+
+                {/* ═══ PUFF LIMBO — ROUND PROGRESSION ═══ */}
+                <div style={{padding:"12px",borderRadius:16,...GLASS_CARD,marginBottom:12}}>
+                  <div style={{fontSize:9,fontWeight:800,color:C.lime,letterSpacing:2,marginBottom:8,textAlign:"center"}}>🎪 ROUND PROGRESSION</div>
+                  <div style={{fontSize:8,color:C.text2,textAlign:"center",marginBottom:8}}>Each round gets harder — hold longer or get eliminated!</div>
+                  <div style={{display:"flex",flexDirection:"column",gap:4}}>
+                    {[
+                      {label:"Round 1",target:"3.0s",desc:"Easy warmup",color:C.cyan,emoji:"1️⃣"},
+                      {label:"Round 2",target:"3.5s",desc:"Getting serious",color:C.green,emoji:"2️⃣"},
+                      {label:"Round 3",target:"4.0s",desc:"Lung check",color:C.lime,emoji:"3️⃣"},
+                      {label:"Round 4",target:"4.2s",desc:"The 4.20 special 🌿",color:C.gold,emoji:"4️⃣"},
+                      {label:"Round 5",target:"4.5s",desc:"Iron lungs territory",color:C.orange,emoji:"5️⃣"},
+                      {label:"Round 6",target:"4.7s",desc:"Only the strong survive",color:C.red,emoji:"6️⃣"},
+                      {label:"FINAL",target:"5.0s",desc:"BLINKER ROUND! 💀",color:"#FF4444",emoji:"💀"},
+                    ].map((t,i)=>(
+                      <div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"6px 10px",borderRadius:8,background:`${t.color}08`,border:`1px solid ${t.color}15`}}>
+                        <span style={{fontSize:14}}>{t.emoji}</span>
+                        <div style={{flex:1}}>
+                          <span style={{fontSize:9,fontWeight:800,color:t.color}}>{t.label}</span>
+                          <span style={{fontSize:7,color:C.text3,marginLeft:6}}>{t.desc}</span>
+                        </div>
+                        <span style={{fontSize:10,fontWeight:900,color:t.color}}>{t.target}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* ═══ PUFF LIMBO — SPECIAL FEATURES ═══ */}
+                <div style={{padding:"12px",borderRadius:16,...GLASS_CARD,marginBottom:12}}>
+                  <div style={{fontSize:9,fontWeight:800,color:C.purple,letterSpacing:2,marginBottom:8,textAlign:"center"}}>✨ SPECIAL FEATURES</div>
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
+                    {[
+                      {icon:"💀",title:"Elimination",desc:"Fall short = you're out instantly",color:C.red},
+                      {icon:"🫁",title:"Endurance Test",desc:"Targets get longer each round",color:C.cyan},
+                      {icon:"🎪",title:"Blinker Finale",desc:"5.0s final round IS a blinker",color:C.gold},
+                      {icon:"🏆",title:"Champion Title",desc:"Survive all 7 rounds to win!",color:C.lime},
+                    ].map((f,i)=>(
+                      <div key={i} style={{padding:"8px",borderRadius:10,background:`${f.color}06`,border:`1px solid ${f.color}12`,textAlign:"center"}}>
+                        <div style={{fontSize:16,marginBottom:2}}>{f.icon}</div>
+                        <div style={{fontSize:8,fontWeight:800,color:f.color}}>{f.title}</div>
+                        <div style={{fontSize:7,color:C.text3}}>{f.desc}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* ═══ PUFF LIMBO — PRO TIPS ═══ */}
+                <div style={{padding:"12px",borderRadius:16,background:`${C.lime}06`,border:`1px solid ${C.lime}15`,marginBottom:8}}>
+                  <div style={{fontSize:9,fontWeight:800,color:C.lime,letterSpacing:2,marginBottom:6,textAlign:"center"}}>🧠 PRO TIPS</div>
+                  <div style={{display:"flex",flexDirection:"column",gap:4}}>
+                    {[
+                      "Build your stamina in early rounds — don't over-hold",
+                      "The final round IS a blinker — prepare your lungs",
+                      "Pace your breathing between rounds to recover",
+                      "You only need to REACH the target, not exceed it",
+                    ].map((tip,i)=>(
+                      <div key={i} style={{display:"flex",gap:6,alignItems:"flex-start"}}>
+                        <span style={{fontSize:8,color:C.lime,fontWeight:900,flexShrink:0}}>💡</span>
+                        <span style={{fontSize:8,color:C.text2,lineHeight:1.3}}>{tip}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                </>) : (selectedGame.id==="puffderby") ? (<>
+
+                {/* ═══ PUFF DERBY — GAME FLOW ═══ */}
+                <div style={{padding:"12px",borderRadius:16,...GLASS_CARD,marginBottom:12}}>
+                  <div style={{fontSize:9,fontWeight:800,color:C.gold,letterSpacing:2,marginBottom:8,textAlign:"center"}}>⚡ GAME FLOW</div>
+                  <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
+                    {[
+                      {step:"1",icon:"🏇",label:"Pick Your Horse",sub:"Choose from 6 unique horses",color:C.cyan,arrow:true},
+                      {step:"2",icon:"⏱️",label:"30s Race",sub:"Race lasts 30 seconds",color:C.gold,arrow:true},
+                      {step:"3",icon:"💨",label:"Spam Puff = Speed",sub:"More puffs = faster horse!",color:C.lime,arrow:true},
+                      {step:"4",icon:"⚡",label:"Watch Stamina",sub:"Don't burn out too early!",color:C.orange,arrow:true},
+                      {step:"5",icon:"🏆",label:"Win!",sub:"3 races, total position = ranking",color:C.purple,arrow:false},
+                    ].map((s,i)=>(
+                      <React.Fragment key={i}>
+                        <div style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"6px 10px",borderRadius:10,background:`${s.color}08`,border:`1px solid ${s.color}15`}}>
+                          <div style={{width:28,height:28,borderRadius:8,background:`${s.color}20`,border:`1px solid ${s.color}30`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,flexShrink:0}}>{s.icon}</div>
+                          <div style={{flex:1}}>
+                            <div style={{fontSize:10,fontWeight:800,color:s.color}}>{s.label}</div>
+                            <div style={{fontSize:7,color:C.text3}}>{s.sub}</div>
+                          </div>
+                          <div style={{width:18,height:18,borderRadius:"50%",background:`${s.color}15`,border:`1px solid ${s.color}30`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,fontWeight:900,color:s.color}}>{s.step}</div>
+                        </div>
+                        {s.arrow && <div style={{fontSize:10,color:C.text3+"60",lineHeight:1}}>↓</div>}
+                      </React.Fragment>
+                    ))}
+                  </div>
+                </div>
+
+                {/* ═══ PUFF DERBY — HORSES ═══ */}
+                <div style={{padding:"12px",borderRadius:16,...GLASS_CARD,marginBottom:12}}>
+                  <div style={{fontSize:9,fontWeight:800,color:C.lime,letterSpacing:2,marginBottom:8,textAlign:"center"}}>🏇 CHOOSE YOUR HORSE</div>
+                  <div style={{fontSize:8,color:C.text2,textAlign:"center",marginBottom:8}}>Each horse has unique stats — pick wisely!</div>
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
+                    {[
+                      {name:"Thunder Puff",emoji:"⚡",stat:"High speed, low stamina",color:"#FFD93D"},
+                      {name:"Blinker Bolt",emoji:"💀",stat:"Insane burst, crashes fast",color:"#FF4444"},
+                      {name:"Cloud Chaser",emoji:"☁️",stat:"Balanced all-rounder",color:"#00E5FF"},
+                      {name:"Sativa Sprint",emoji:"🌿",stat:"Slow start, strong finish",color:"#34D399"},
+                      {name:"Indica Cruise",emoji:"🍃",stat:"Steady pace, never burns",color:"#A855F7"},
+                      {name:"Hybrid Hustle",emoji:"🔥",stat:"Adaptive stamina system",color:"#FF8C42"},
+                    ].map((h,i)=>(
+                      <div key={i} style={{padding:"8px",borderRadius:10,background:`${h.color}08`,border:`1px solid ${h.color}15`,textAlign:"center"}}>
+                        <div style={{fontSize:18,marginBottom:2}}>{h.emoji}</div>
+                        <div style={{fontSize:8,fontWeight:800,color:h.color}}>{h.name}</div>
+                        <div style={{fontSize:7,color:C.text3}}>{h.stat}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* ═══ PUFF DERBY — SPECIAL FEATURES ═══ */}
+                <div style={{padding:"12px",borderRadius:16,...GLASS_CARD,marginBottom:12}}>
+                  <div style={{fontSize:9,fontWeight:800,color:C.purple,letterSpacing:2,marginBottom:8,textAlign:"center"}}>✨ SPECIAL FEATURES</div>
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
+                    {[
+                      {icon:"⚡",title:"Stamina Bar",desc:"Depletes as you puff — manage it!",color:C.gold},
+                      {icon:"🧠",title:"Strategy",desc:"Sprint vs conserve — your call",color:C.cyan},
+                      {icon:"🤖",title:"6 AI Horses",desc:"Race against AI opponents",color:C.purple},
+                      {icon:"🏆",title:"3 Race Series",desc:"Total positions across all races",color:C.lime},
+                    ].map((f,i)=>(
+                      <div key={i} style={{padding:"8px",borderRadius:10,background:`${f.color}06`,border:`1px solid ${f.color}12`,textAlign:"center"}}>
+                        <div style={{fontSize:16,marginBottom:2}}>{f.icon}</div>
+                        <div style={{fontSize:8,fontWeight:800,color:f.color}}>{f.title}</div>
+                        <div style={{fontSize:7,color:C.text3}}>{f.desc}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* ═══ PUFF DERBY — PRO TIPS ═══ */}
+                <div style={{padding:"12px",borderRadius:16,background:`${C.lime}06`,border:`1px solid ${C.lime}15`,marginBottom:8}}>
+                  <div style={{fontSize:9,fontWeight:800,color:C.lime,letterSpacing:2,marginBottom:6,textAlign:"center"}}>🧠 PRO TIPS</div>
+                  <div style={{display:"flex",flexDirection:"column",gap:4}}>
+                    {[
+                      "Don't burn all stamina early — save burst for final stretch",
+                      "Indica Cruise is best for beginners — steady and reliable",
+                      "Blinker Bolt is high risk, high reward — for advanced players",
+                      "Watch the stamina bar — empty = your horse crawls!",
+                    ].map((tip,i)=>(
+                      <div key={i} style={{display:"flex",gap:6,alignItems:"flex-start"}}>
+                        <span style={{fontSize:8,color:C.lime,fontWeight:900,flexShrink:0}}>💡</span>
+                        <span style={{fontSize:8,color:C.text2,lineHeight:1.3}}>{tip}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
                 </>) : (
                   <div style={{textAlign:"center",padding:"30px 20px",...GLASS_CARD,borderRadius:16}}>
                     <div style={{fontSize:48,marginBottom:10}}>{selectedGame.emoji}</div>
@@ -19107,7 +19539,40 @@ const startSimonPuffs = () => {
 
             {/* ── ALL GROUPS TAB ── */}
             {wcViewTab === "allgroups" && (()=>{
-              // Generate all 12 groups (A-L) using WC_GROUPS data with seeded random standings
+              const isFK = ["finalkick","finalkick2","finalkick3"].includes(wcGameId);
+              const gtAllGroups = GAME_TOURNAMENTS[wcGameId];
+              if(!isFK && gtAllGroups && GAME_TEAMS[wcGameId]) {
+                // Non-FK games: show pools from game teams
+                const allGameTeams = GAME_TEAMS[wcGameId];
+                const poolSize = Math.max(3, Math.ceil(allGameTeams.length / 2));
+                const pools = [];
+                for(let p = 0; p < Math.ceil(allGameTeams.length / poolSize); p++) {
+                  pools.push(allGameTeams.slice(p * poolSize, (p + 1) * poolSize));
+                }
+                return pools.map((poolTeams, pIdx) => {
+                  const poolLabel = gtAllGroups.rounds[0] ? `${gtAllGroups.rounds[0]} — Pool ${String.fromCharCode(65 + pIdx)}` : `Pool ${String.fromCharCode(65 + pIdx)}`;
+                  const isUserPool = poolTeams.some(t => t.id === wcTeam?.id);
+                  const standings = isUserPool && st ? st : poolTeams.map((t, ti) => {
+                    const seed = pIdx * 7 + ti * 13;
+                    const pts = seed % 3 === 0 ? 9 : seed % 2 === 0 ? 6 : 3;
+                    return { ...t, pts, flag: t.flag || t.emoji };
+                  }).sort((a, b) => b.pts - a.pts);
+                  return (
+                    <div key={pIdx} style={{marginBottom:10,padding:"8px 10px",borderRadius:12,...GLASS_CARD,border:isUserPool?`1px solid ${C.cyan}25`:undefined}}>
+                      <div style={{fontSize:9,fontWeight:800,color:isUserPool?C.cyan:C.gold,marginBottom:5,letterSpacing:1}}>{poolLabel}{isUserPool?" (YOUR POOL)":""}</div>
+                      {standings.map((t, i) => (
+                        <div key={t.id} style={{display:"flex",alignItems:"center",gap:6,padding:"2px 0",borderBottom:i<standings.length-1?`1px solid ${C.border}`:"none"}}>
+                          <div style={{width:14,fontSize:7,fontWeight:700,color:i<2?C.green:C.text3}}>{i+1}</div>
+                          <span style={{fontSize:12}}>{t.flag||t.emoji}</span>
+                          <span style={{flex:1,fontSize:8,fontWeight:t.id===wcTeam?.id?800:600,color:t.id===wcTeam?.id?C.cyan:C.text}}>{t.name}</span>
+                          <span style={{fontSize:8,fontWeight:700,color:C.gold,width:20,textAlign:"right"}}>{t.pts}</span>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                });
+              }
+              // FK games: show all 12 WC groups (A-L)
               const groupLetters = Object.keys(WC_GROUPS);
               return groupLetters.map(letter => {
                 const teamIds = WC_GROUPS[letter];
@@ -19140,25 +19605,29 @@ const startSimonPuffs = () => {
 
             {/* ── BRACKET TAB ── */}
             {wcViewTab === "bracket" && (()=>{
-              const bracketRounds = ["R32","R16","QF","SF","Final"];
-              // Generate fake bracket matchups from group winners/runners
-              const groupLetters = Object.keys(WC_GROUPS);
-              const fakeSlots = groupLetters.flatMap(letter => {
-                const teamIds = WC_GROUPS[letter];
-                const teams = teamIds.map(id => WC_TEAMS.find(t => t.id === id)).filter(Boolean);
-                return teams.slice(0, 2); // top 2 per group
-              });
+              const isFK = ["finalkick","finalkick2","finalkick3"].includes(wcGameId);
+              const gtBracket = GAME_TOURNAMENTS[wcGameId];
+              const bracketRounds = (!isFK && gtBracket) ? gtBracket.rounds : ["R32","R16","QF","SF","Final"];
+              const fakeSlots = (!isFK && GAME_TEAMS[wcGameId]) ? GAME_TEAMS[wcGameId] : (()=>{
+                const groupLetters = Object.keys(WC_GROUPS);
+                return groupLetters.flatMap(letter => {
+                  const teamIds = WC_GROUPS[letter];
+                  const teams = teamIds.map(id => WC_TEAMS.find(t => t.id === id)).filter(Boolean);
+                  return teams.slice(0, 2);
+                });
+              })();
               return (
                 <div style={{display:"flex",flexDirection:"column",gap:8}}>
-                  <div style={{fontSize:8,color:C.text3,textAlign:"center",marginBottom:4}}>{GAME_TOURNAMENTS[wcGameId] ? `${GAME_TOURNAMENTS[wcGameId].format} — ${GAME_TOURNAMENTS[wcGameId].rules}` : "48 Teams -- Top 2 per group advance to R32"}</div>
+                  <div style={{fontSize:8,color:C.text3,textAlign:"center",marginBottom:4}}>{(!isFK && gtBracket) ? `${gtBracket.format} — ${gtBracket.rules}` : "48 Teams -- Top 2 per group advance to R32"}</div>
                   {bracketRounds.map((roundName, rIdx) => {
-                    const matchCount = rIdx === 0 ? 16 : rIdx === 1 ? 8 : rIdx === 2 ? 4 : rIdx === 3 ? 2 : 1;
+                    const defaultMatchCount = rIdx === 0 ? 16 : rIdx === 1 ? 8 : rIdx === 2 ? 4 : rIdx === 3 ? 2 : 1;
+                    const matchCount = (!isFK && gtBracket) ? Math.max(1, Math.ceil(fakeSlots.length / Math.pow(2, rIdx + 1))) : defaultMatchCount;
                     const isActive = rIdx === 0;
                     return (
                       <div key={roundName} style={{padding:"6px 10px",borderRadius:10,...GLASS_CARD,border:isActive?`1px solid ${C.gold}20`:undefined}}>
                         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:4}}>
                           <div style={{fontSize:9,fontWeight:800,color:isActive?C.gold:C.text2,letterSpacing:1}}>{roundName}</div>
-                          <div style={{fontSize:7,color:C.text3}}>{matchCount} matches</div>
+                          <div style={{fontSize:7,color:C.text3}}>{matchCount} {matchCount===1?"match":"matches"}</div>
                         </div>
                         <div style={{display:"flex",flexWrap:"wrap",gap:3}}>
                           {[...Array(Math.min(matchCount, 8))].map((_, mi) => {
@@ -19166,9 +19635,9 @@ const startSimonPuffs = () => {
                             const t2 = fakeSlots[(rIdx * 7 + mi * 2 + 1) % fakeSlots.length];
                             return (
                               <div key={mi} style={{display:"flex",alignItems:"center",gap:2,padding:"2px 5px",borderRadius:6,background:"rgba(255,255,255,0.03)",border:`1px solid ${C.border}`,fontSize:7}}>
-                                <span style={{fontSize:10}}>{t1?.flag}</span>
+                                <span style={{fontSize:10}}>{t1?.flag||t1?.emoji}</span>
                                 <span style={{color:C.text3,fontWeight:700}}>v</span>
-                                <span style={{fontSize:10}}>{t2?.flag}</span>
+                                <span style={{fontSize:10}}>{t2?.flag||t2?.emoji}</span>
                               </div>
                             );
                           })}
@@ -19284,7 +19753,7 @@ const startSimonPuffs = () => {
           <div style={{textAlign:"center",padding:24,animation:"fadeIn 0.6s ease",position:"relative",zIndex:2}}>
             {/* Trophy / medal */}
             <div style={{fontSize:60,marginBottom:8,animation:"gentleFloat 2s infinite",filter:`drop-shadow(0 0 20px ${accentColor}40)`}}>
-              {isGold ? "🏆" : wcFinalResult === "silver" ? "🥈" : wcFinalResult === "bronze" ? "🥉" : "⚽"}
+              {isGold ? "🏆" : wcFinalResult === "silver" ? "🥈" : wcFinalResult === "bronze" ? "🥉" : (gtResult ? gtResult.emoji : "⚽")}
             </div>
 
             <div style={{fontSize:20,fontWeight:900,color:accentColor,textShadow:`0 0 20px ${accentColor}30`,marginBottom:4}}>
