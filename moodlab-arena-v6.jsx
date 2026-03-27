@@ -1355,6 +1355,9 @@ export default function MoodLabArena() {
   const [mcVisible, setMcVisible] = useState(false);
   const [marqueeTickIdx, setMarqueeTickIdx] = useState(0); // for theater marquee border lights
 
+  // ── Stage Elimination Engine ──
+  const [stageElim, setStageElim] = useState(null); // {players:[], round:0, eliminated:[], myRank:null, phase:"intro"}
+
   // ── Visual Effects Engine ──
   const [screenShake, setScreenShake] = useState(false);
   const [screenFlash, setScreenFlash] = useState(null); // null | "goal" | "save" | "miss" | "blinker"
@@ -9844,6 +9847,86 @@ export default function MoodLabArena() {
     setMatchIntro(null);
     setCommentatorText(""); setPuffBubbles([]); setAudienceBubbles([]);
     setConfettiParticles([]); setSmokeParticles([]);
+    setStageElim(null);
+  };
+
+  // ═══════════════════════════════════════════════════════════════
+  // STAGE ELIMINATION ENGINE — Live elimination for all Stage games
+  // ═══════════════════════════════════════════════════════════════
+  const STAGE_CONTESTANTS = [
+    {name:"PuffMaster",emoji:"😎",skill:0.7},
+    {name:"CloudChaser",emoji:"🤠",skill:0.8},
+    {name:"THC_Tony",emoji:"😤",skill:0.6},
+    {name:"NeonQueen",emoji:"👑",skill:0.75},
+    {name:"BlinkerBetty",emoji:"💀",skill:0.65},
+    {name:"VibeKing",emoji:"😎",skill:0.85},
+    {name:"ChillMaster",emoji:"🧘",skill:0.55},
+  ];
+
+  const initStageElim = () => {
+    const shuffled = [...STAGE_CONTESTANTS].sort(()=>Math.random()-0.5);
+    const players = [{name:"You",emoji:"🌟",skill:0,isYou:true},...shuffled.slice(0,7)];
+    setStageElim({players, round:0, eliminated:[], myRank:null, phase:"intro"});
+  };
+
+  const elimRound = (yourScore) => {
+    if(!stageElim) return;
+    const el = {...stageElim};
+    const alive = el.players.filter(p=>!el.eliminated.includes(p.name));
+    if(alive.length <= 1) return;
+    const scores = alive.map(p => {
+      if(p.isYou) return {player:p, score:yourScore};
+      const aiScore = p.skill * 100 + (Math.random()-0.5)*30;
+      return {player:p, score:aiScore};
+    });
+    scores.sort((a,b)=>b.score-a.score);
+    const elimCount = alive.length > 4 ? 2 : alive.length > 2 ? 1 : 0;
+    if(elimCount === 0) return;
+    const newElim = scores.slice(-elimCount).map(s=>s.player.name);
+    el.eliminated = [...el.eliminated, ...newElim];
+    el.round++;
+    if(newElim.includes("You")) {
+      el.myRank = alive.length;
+      el.phase = "eliminated";
+      playFx("eliminated");
+    } else if(alive.length - elimCount <= 1) {
+      el.myRank = 1;
+      el.phase = "champion";
+      playFx("crowd_cheer");
+      spawnConfetti(40);
+    } else {
+      el.phase = "playing";
+    }
+    setStageElim(el);
+  };
+
+  const renderContestantGrid = () => {
+    if(!stageElim || stageRole !== "contestant") return null;
+    const alive = stageElim.players.filter(p=>!stageElim.eliminated.includes(p.name));
+    return (
+      <div style={{display:"flex",gap:4,justifyContent:"center",padding:"4px 8px",flexWrap:"wrap",zIndex:20,position:"relative"}}>
+        {stageElim.players.map((p,i)=>{
+          const isElim = stageElim.eliminated.includes(p.name);
+          return (
+            <div key={i} style={{
+              width:32,height:32,borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",
+              fontSize:isElim?12:16,
+              background:p.isYou?C.cyan+"15":isElim?C.red+"08":C.text3+"08",
+              border:"1px solid "+(p.isYou?C.cyan:isElim?C.red:C.text3)+(isElim?"15":"25"),
+              opacity:isElim?0.4:1,
+              position:"relative",
+              transition:"all 0.3s ease",
+            }}>
+              {isElim?"💀":p.emoji}
+              {p.isYou && <div style={{position:"absolute",bottom:-2,left:"50%",transform:"translateX(-50%)",fontSize:5,fontWeight:900,color:C.cyan}}>YOU</div>}
+            </div>
+          );
+        })}
+        <div style={{width:"100%",textAlign:"center",fontSize:8,color:C.text3,marginTop:2}}>
+          {alive.length} contestants remaining · Round {stageElim.round+1}
+        </div>
+      </div>
+    );
   };
 
   // ═══════════════════════════════════════════════════════════════
@@ -9987,15 +10070,17 @@ export default function MoodLabArena() {
       exact: playerExact,
     }]);
     // After reveal, move to next round or final result
+    const _pipCurRound = pipRound;
+    const _pipCurUsed = [...pipUsedProducts];
     setTimeout(()=>{
-      const nextRound = pipRound + 1;
+      const nextRound = _pipCurRound + 1;
       if(nextRound >= PIP_ROUNDS) {
         setPipPhase("result");
         playFx("crowd");
         setCommentary("That's the show! Let's see how you did!");
         triggerConfetti();
       } else {
-        pipStartRound(nextRound, pipUsedProducts.length > 0 ? [...pipUsedProducts] : []);
+        pipStartRound(nextRound, _pipCurUsed);
       }
     },3500);
   };
@@ -16496,6 +16581,190 @@ const startSimonPuffs = () => {
         </div>
       );
     }
+    // ═══════════════════════════════════════════════════════════════
+    // PRICE IS PUFF — Render (Gold/Green Price is Right Theme)
+    // ═══════════════════════════════════════════════════════════════
+    if(gameActive.id==="pricepuff" && pipPhase) {
+      const isIntroP = pipPhase==="intro";
+      const isProduct = pipPhase==="product";
+      const isGuessing = pipPhase==="guessing";
+      const isReveal = pipPhase==="reveal";
+      const isResultP = pipPhase==="result";
+      const guessPct = Math.min(pipGuess/200, 1);
+      return (
+        <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden",background:"linear-gradient(180deg, #0a1a0a 0%, #1a2e0a 25%, #0a1a0a 50%, #081408 100%)",animation:screenShake?"shake 0.4s ease":"none"}}
+          onMouseDown={isGuessing?pipStartPuff:undefined} onMouseUp={isGuessing||pipPuffing?pipStopPuff:undefined}
+          onTouchStart={isGuessing?(e)=>{e.preventDefault();pipStartPuff();}:undefined} onTouchEnd={(isGuessing||pipPuffing)?(e)=>{e.preventDefault();pipStopPuff();}:undefined}>
+          {screenFlash && <div style={{position:"absolute",inset:0,zIndex:200,pointerEvents:"none",opacity:0,background:screenFlash==="goal"?"rgba(255,215,0,0.3)":"rgba(255,50,50,0.2)",animation:"flashOverlay 0.4s ease forwards"}}/>}
+          {confettiParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size*0.6,background:p.color,borderRadius:1,transform:`rotate(${p.rot}deg)`,zIndex:210,pointerEvents:"none",animation:"confettiFall 1.5s ease-out forwards"}}/>))}
+          <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse at 50% 30%, rgba(76,175,80,.10) 0%, transparent 60%)",pointerEvents:"none"}}/>
+          <div style={{position:"absolute",top:"5%",left:"50%",transform:"translateX(-50%)",width:300,height:300,borderRadius:"50%",background:"radial-gradient(circle, rgba(255,215,0,.06), transparent 70%)",pointerEvents:"none"}}/>
+          {stageRole && renderGameChatPanel("PRICE IS PUFF")}
+          {overlayBack(pipCleanup)}
+          <div style={{display:"flex",flexDirection:"column",alignItems:"center",maxWidth:380,width:"100%",padding:"50px 16px 20px",gap:8,zIndex:10,flex:1,margin:"0 auto",overflowY:"auto"}}>
+            {/* Title */}
+            <div style={{fontSize:20,fontWeight:900,letterSpacing:4,background:"linear-gradient(135deg, #FFD700, #4CAF50, #FFD700)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",textAlign:"center"}}>THE PRICE IS PUFF</div>
+            {/* Round tracker */}
+            {!isIntroP && !isResultP && (
+              <div style={{display:"flex",gap:8,marginBottom:4}}>
+                {Array.from({length:PIP_ROUNDS}).map((_,i)=>(
+                  <div key={i} style={{width:24,height:24,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:900,
+                    background:i<pipRound?`${C.green}30`:(i===pipRound?`${C.gold}30`:"rgba(255,255,255,0.06)"),
+                    border:`2px solid ${i<pipRound?C.green:(i===pipRound?C.gold:C.border)}`,
+                    color:i<=pipRound?C.gold:C.text3,
+                  }}>{i<pipRound?"✓":(i+1)}</div>
+                ))}
+              </div>
+            )}
+            {/* Score */}
+            {!isIntroP && <div style={{textAlign:"center"}}><span style={{fontSize:14,fontWeight:900,color:C.gold}}>🪙 {pipScore}</span><span style={{fontSize:9,color:C.text3,marginLeft:6}}>coins</span></div>}
+
+            {/* INTRO */}
+            {isIntroP && (
+              <div style={{textAlign:"center",animation:"fadeIn 0.5s ease",display:"flex",flexDirection:"column",alignItems:"center",gap:12,marginTop:20}}>
+                <div style={{fontSize:64,animation:"bounce 1s infinite"}}>{pipIntroStep>=1?"💰":"🎬"}</div>
+                {pipIntroStep>=1 && <div style={{fontSize:16,fontWeight:900,color:C.gold,letterSpacing:3,animation:"fadeIn 0.3s ease"}}>THE PRICE IS PUFF!</div>}
+                {pipIntroStep>=2 && <div style={{fontSize:11,color:C.text2,animation:"fadeIn 0.3s ease"}}>Guess the price by how long you PUFF!</div>}
+                {pipIntroStep>=3 && <div style={{fontSize:10,color:C.lime,animation:"fadeIn 0.3s ease"}}>Longer puff = higher price guess</div>}
+                {pipIntroStep>=4 && <div style={{fontSize:11,fontWeight:700,color:C.gold,animation:"fadeIn 0.3s ease"}}>Closest without going over WINS! 🏆</div>}
+              </div>
+            )}
+
+            {/* PRODUCT SHOWN */}
+            {isProduct && pipProduct && (
+              <div style={{textAlign:"center",animation:"fadeIn 0.5s ease",display:"flex",flexDirection:"column",alignItems:"center",gap:8,marginTop:10}}>
+                <div style={{padding:"20px 30px",borderRadius:20,background:"linear-gradient(135deg, rgba(255,215,0,0.08), rgba(76,175,80,0.06))",border:"2px solid "+C.gold+"30",boxShadow:"0 0 30px rgba(255,215,0,0.1)",minWidth:200}}>
+                  <div style={{fontSize:60,marginBottom:8}}>{pipProduct.emoji}</div>
+                  <div style={{fontSize:16,fontWeight:900,color:"#fff",marginBottom:4}}>{pipProduct.name}</div>
+                  <div style={{fontSize:10,fontWeight:700,color:C.gold,letterSpacing:2,textTransform:"uppercase"}}>{pipProduct.category}</div>
+                </div>
+                <div style={{fontSize:12,color:C.text3,animation:"pulse 1.5s infinite"}}>Get ready to guess...</div>
+              </div>
+            )}
+
+            {/* GUESSING (PUFF PHASE) */}
+            {isGuessing && pipProduct && (
+              <div style={{textAlign:"center",display:"flex",flexDirection:"column",alignItems:"center",gap:8,width:"100%"}}>
+                <div style={{padding:"12px 20px",borderRadius:16,background:"rgba(255,215,0,0.06)",border:"1px solid "+C.gold+"20",minWidth:180}}>
+                  <div style={{fontSize:36}}>{pipProduct.emoji}</div>
+                  <div style={{fontSize:13,fontWeight:800,color:"#fff"}}>{pipProduct.name}</div>
+                  <div style={{fontSize:9,color:C.gold,letterSpacing:1}}>{pipProduct.category}</div>
+                </div>
+                {/* Price meter */}
+                <div style={{width:"100%",maxWidth:300,marginTop:8}}>
+                  <div style={{fontSize:36,fontWeight:900,color:pipPuffing?C.lime:C.gold,fontFamily:"monospace",textAlign:"center",textShadow:pipPuffing?"0 0 20px "+C.lime:"none",transition:"all 0.1s"}}>
+                    ${pipGuess}
+                  </div>
+                  <div style={{height:12,borderRadius:6,overflow:"hidden",background:"rgba(255,255,255,0.06)",border:"1px solid "+C.border,marginTop:4}}>
+                    <div style={{width:`${guessPct*100}%`,height:"100%",borderRadius:6,transition:"width 0.05s linear",
+                      background:guessPct>0.8?`linear-gradient(90deg, ${C.green}, ${C.red})`:`linear-gradient(90deg, ${C.green}, ${C.gold})`,
+                      boxShadow:`0 0 8px ${guessPct>0.8?C.red:C.green}`,
+                    }}/>
+                  </div>
+                  <div style={{display:"flex",justifyContent:"space-between",marginTop:2}}>
+                    <span style={{fontSize:7,color:C.text3}}>$0</span>
+                    <span style={{fontSize:7,color:C.text3}}>$100</span>
+                    <span style={{fontSize:7,color:C.text3}}>$200</span>
+                  </div>
+                </div>
+                {/* Puff instruction */}
+                <div style={{marginTop:12,padding:"16px 24px",borderRadius:16,cursor:"pointer",
+                  background:pipPuffing?"linear-gradient(135deg, rgba(76,175,80,0.3), rgba(255,215,0,0.2))":"linear-gradient(135deg, rgba(76,175,80,0.1), rgba(255,215,0,0.05))",
+                  border:`2px solid ${pipPuffing?C.lime:C.gold+"40"}`,
+                  boxShadow:pipPuffing?`0 0 30px ${C.lime}40`:"none",
+                  animation:pipPuffing?"none":"pulse 2s infinite",
+                }}>
+                  <div style={{fontSize:24}}>{pipPuffing?"💨":"👆"}</div>
+                  <div style={{fontSize:12,fontWeight:800,color:pipPuffing?C.lime:C.gold,marginTop:4}}>
+                    {pipPuffing?"PUFFING... Release to lock in!":"HOLD TO PUFF YOUR GUESS!"}
+                  </div>
+                  <div style={{fontSize:9,color:C.text3,marginTop:2}}>
+                    {pipPuffing?`$${PIP_PRICE_PER_SEC}/sec`:"Longer puff = higher price"}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* REVEAL */}
+            {isReveal && pipProduct && (
+              <div style={{textAlign:"center",display:"flex",flexDirection:"column",alignItems:"center",gap:10,width:"100%",animation:"fadeIn 0.5s ease"}}>
+                <div style={{padding:"12px 20px",borderRadius:16,background:"rgba(255,215,0,0.06)",border:"1px solid "+C.gold+"20"}}>
+                  <div style={{fontSize:28}}>{pipProduct.emoji}</div>
+                  <div style={{fontSize:12,fontWeight:800,color:"#fff"}}>{pipProduct.name}</div>
+                </div>
+                {/* Real price vs your guess */}
+                <div style={{display:"flex",gap:16,alignItems:"center",justifyContent:"center"}}>
+                  <div style={{textAlign:"center"}}>
+                    <div style={{fontSize:9,color:C.text3,fontWeight:700}}>YOUR GUESS</div>
+                    <div style={{fontSize:24,fontWeight:900,color:pipGuess>pipProduct.price?C.red:C.lime,fontFamily:"monospace"}}>${pipGuess}</div>
+                  </div>
+                  <div style={{fontSize:20,color:C.text3}}>vs</div>
+                  <div style={{textAlign:"center"}}>
+                    <div style={{fontSize:9,color:C.text3,fontWeight:700}}>REAL PRICE</div>
+                    <div style={{fontSize:24,fontWeight:900,color:C.gold,fontFamily:"monospace"}}>${pipProduct.price}</div>
+                  </div>
+                </div>
+                {/* AI guesses */}
+                <div style={{width:"100%",maxWidth:280,marginTop:4}}>
+                  <div style={{fontSize:9,fontWeight:700,color:C.text3,marginBottom:6,letterSpacing:1}}>AI OPPONENTS</div>
+                  {pipAiGuesses.map((ai,i)=>(
+                    <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"6px 10px",borderRadius:8,marginBottom:4,
+                      background:ai.guess<=pipProduct.price&&(pipGuess>pipProduct.price||ai.guess>pipGuess)?"rgba(76,175,80,0.08)":"rgba(255,255,255,0.03)",
+                      border:`1px solid ${ai.guess>pipProduct.price?C.red+"25":C.green+"15"}`,
+                    }}>
+                      <span style={{fontSize:11}}>{ai.emoji} {ai.name}</span>
+                      <span style={{fontSize:13,fontWeight:800,fontFamily:"monospace",color:ai.guess>pipProduct.price?C.red:C.lime}}>${ai.guess}</span>
+                      {ai.guess>pipProduct.price && <span style={{fontSize:9,color:C.red}}>OVER</span>}
+                    </div>
+                  ))}
+                </div>
+                {/* Result comment */}
+                <div style={{padding:"10px 16px",borderRadius:12,background:pipComment.includes("WINNER")||pipComment.includes("JACKPOT")?"rgba(76,175,80,0.12)":"rgba(255,50,50,0.08)",
+                  border:`1px solid ${pipComment.includes("WINNER")||pipComment.includes("JACKPOT")?C.green+"30":C.red+"20"}`,marginTop:4}}>
+                  <div style={{fontSize:13,fontWeight:800,color:pipComment.includes("WINNER")||pipComment.includes("JACKPOT")?C.lime:C.red}}>{pipComment}</div>
+                </div>
+              </div>
+            )}
+
+            {/* FINAL RESULT */}
+            {isResultP && (
+              <div style={{textAlign:"center",display:"flex",flexDirection:"column",alignItems:"center",gap:10,width:"100%",animation:"fadeIn 0.5s ease",marginTop:8}}>
+                <div style={{fontSize:48,marginBottom:4}}>{pipScore>=75?"🏆":pipScore>=50?"🥈":"🎮"}</div>
+                <div style={{fontSize:18,fontWeight:900,color:C.gold}}>SHOW COMPLETE!</div>
+                <div style={{fontSize:24,fontWeight:900,color:C.lime}}>🪙 {pipScore} coins</div>
+                <div style={{fontSize:11,color:C.text2,marginBottom:8}}>
+                  {pipScore>=100?"PRICE MASTER! You know your stuff!":pipScore>=50?"Great show! Good eye for prices!":"Keep practicing those prices!"}
+                </div>
+                {/* Round breakdown */}
+                <div style={{width:"100%",maxWidth:300}}>
+                  <div style={{fontSize:9,fontWeight:700,color:C.text3,letterSpacing:1,marginBottom:6}}>ROUND BREAKDOWN</div>
+                  {pipResults.map((r,i)=>(
+                    <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"6px 10px",borderRadius:8,marginBottom:3,
+                      background:r.winner==="You"?"rgba(76,175,80,0.08)":"rgba(255,255,255,0.03)",
+                      border:`1px solid ${r.winner==="You"?C.green+"20":C.border}`,
+                    }}>
+                      <span style={{fontSize:10}}>{r.product.emoji}</span>
+                      <span style={{fontSize:9,color:C.text2,flex:1,marginLeft:6,textAlign:"left"}}>{r.product.name}</span>
+                      <span style={{fontSize:9,fontFamily:"monospace",color:r.over?C.red:C.text2,marginRight:6}}>${r.guess}</span>
+                      <span style={{fontSize:9,fontFamily:"monospace",color:C.gold,marginRight:6}}>${r.realPrice}</span>
+                      <span style={{fontSize:9,fontWeight:800,color:r.winner==="You"?C.lime:(r.exact?C.gold:C.text3)}}>
+                        {r.exact?"🎰":r.winner==="You"?"🏆":r.over?"📈":"❌"}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                {/* Play again / Exit */}
+                <div style={{display:"flex",gap:12,marginTop:12}}>
+                  <div onClick={()=>{pipCleanup();startPriceIsPuff();}} style={{padding:"12px 24px",borderRadius:12,cursor:"pointer",background:C.green+"15",border:"1px solid "+C.green+"30",fontSize:13,fontWeight:800,color:C.green}}>Play Again</div>
+                  <div onClick={()=>{pipCleanup();setGameActive(null);}} style={{padding:"12px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.05)",border:"1px solid "+C.border,fontSize:13,fontWeight:800,color:C.text3}}>Exit</div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
     // Game detail sheet — IMMERSIVE with Quick Play + Tournament
     if(selectedGame) {
       const gc = selectedGame.color;
