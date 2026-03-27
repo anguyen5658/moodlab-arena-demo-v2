@@ -7238,34 +7238,64 @@ export default function MoodLabArena() {
 
       {renderZoneHeader("arcade")}
 
-      {/* Neon ARCADE title + live counter */}
-      <div style={{padding:"0 14px",marginBottom:14,textAlign:"center"}}>
-        <div style={{fontSize:28,fontWeight:900,color:C.cyan,letterSpacing:4,
-          textShadow:`0 0 20px ${C.cyan}80, 0 0 40px ${C.cyan}40, 0 0 60px ${C.cyan}20`,
-          animation:"pulse 3s ease-in-out infinite",
-        }}>ARCADE</div>
-        <div style={{display:"inline-flex",alignItems:"center",gap:8,marginTop:6,padding:"4px 14px",borderRadius:20,
-          background:`${C.cyan}08`,border:`1px solid ${C.cyan}15`,
-        }}>
-          <span style={{fontSize:10,color:C.text2,fontWeight:600}}>{PLAY_GAMES.length} GAMES</span>
-          <span style={{fontSize:10,color:C.cyan}}>|</span>
-          <div style={{display:"flex",alignItems:"center",gap:4}}>
-            <div style={{width:6,height:6,borderRadius:"50%",background:C.green,animation:"pulse 1.5s infinite"}}/>
-            <span style={{fontSize:10,fontWeight:700,color:C.green}}>{totalPlaying.toLocaleString()} PLAYING NOW</span>
+      {/* ═══ 1. HERO SECTION — Auto-slider of best info ═══ */}
+      {(()=>{
+        const heroSlides = [
+          {emoji:featuredGame.emoji,title:featuredGame.name,sub:`${featuredGame.type} · ${playerCounts[featuredGame.id]||0} playing`,color:featuredGame.color,badge:featuredGame.hot?"🔥 HOT":"",action:()=>{playFx("select");setSelectedGame(featuredGame);}},
+          {emoji:"🏆",title:activeTourney.name,sub:`${activeTourney.players} entered · ${activeTourney.round}`,color:C.gold,badge:activeTourney.status,action:()=>{playFx("select");setWcPhase("team_select");}},
+          {emoji:"🎮",title:"ARCADE",sub:`${PLAY_GAMES.length} Games · ${totalPlaying.toLocaleString()} Playing Now`,color:C.cyan,badge:"LIVE",action:null},
+          {emoji:"⚡",title:"Quick Play",sub:"Jump into a random game instantly!",color:C.lime,badge:"INSTANT",action:()=>{playFx("select");const rg=PLAY_GAMES[Math.floor(Math.random()*PLAY_GAMES.length)];setSelectedGame(rg);}},
+        ];
+        const slideIdx = Math.floor(tick/4) % heroSlides.length;
+        const slide = heroSlides[slideIdx];
+        return (
+          <div onClick={slide.action} style={{padding:"0 14px",marginBottom:10,cursor:slide.action?"pointer":"default"}}>
+            <div style={{padding:"14px 16px",borderRadius:16,position:"relative",overflow:"hidden",
+              background:`linear-gradient(135deg, ${slide.color}12, ${slide.color}04)`,
+              border:`1px solid ${slide.color}20`,
+            }}>
+              <div style={{position:"absolute",top:0,right:0,width:"40%",height:"100%",background:`radial-gradient(circle at 80% 50%, ${slide.color}15, transparent 70%)`,pointerEvents:"none"}}/>
+              <div style={{display:"flex",alignItems:"center",gap:12,position:"relative",zIndex:1}}>
+                <div style={{fontSize:32,filter:`drop-shadow(0 0 8px ${slide.color}60)`}}>{slide.emoji}</div>
+                <div style={{flex:1}}>
+                  <div style={{display:"flex",alignItems:"center",gap:6}}>
+                    <div style={{fontSize:15,fontWeight:900,color:C.text}}>{slide.title}</div>
+                    {slide.badge && <span style={{fontSize:6,fontWeight:900,padding:"2px 6px",borderRadius:4,
+                      background:slide.badge==="LIVE"||slide.badge==="🔥 HOT"?`${C.red}18`:`${C.green}12`,
+                      color:slide.badge==="LIVE"||slide.badge==="🔥 HOT"?C.red:C.green,
+                      border:`1px solid ${slide.badge==="LIVE"||slide.badge==="🔥 HOT"?C.red:C.green}25`,
+                    }}>{slide.badge}</span>}
+                  </div>
+                  <div style={{fontSize:10,color:C.text3,marginTop:2}}>{slide.sub}</div>
+                </div>
+              </div>
+              {/* Slide dots */}
+              <div style={{display:"flex",gap:4,justifyContent:"center",marginTop:8}}>
+                {heroSlides.map((_,i)=>(
+                  <div key={i} style={{width:i===slideIdx?16:5,height:5,borderRadius:3,background:i===slideIdx?slide.color:`${C.text3}30`,transition:"all 0.3s"}}/>
+                ))}
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
+        );
+      })()}
 
-      {/* ======= QUICK FEED BAR ======= */}
+      {/* ═══ 2. QUICK HIGHLIGHTS — Auto-slider text ═══ */}
       <div style={{padding:"0 14px",marginBottom:8}}>
         <div style={{display:"flex",alignItems:"center",gap:6,padding:"5px 12px",borderRadius:100,
           background:`${C.cyan}06`,border:`1px solid ${C.cyan}10`}}>
           <div style={{width:4,height:4,borderRadius:"50%",background:C.green,animation:"pulse 1.5s infinite"}}/>
-          <span style={{fontSize:9,color:C.text2,fontWeight:600,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{["🔥 Wild West trending · 720 playing","🏆 Outlaw Circuit Round 2 starting","⚡ Hot Potato lobby FULL 8/8","🎯 CloudChaser won 500 coins!"][Math.floor(tick/3)%4]}</span>
+          <span style={{fontSize:9,color:C.text2,fontWeight:600,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{[
+            "🔥 "+featuredGame.name+" trending · "+(playerCounts[featuredGame.id]||0)+" playing",
+            "🏆 "+activeTourney.name+" "+activeTourney.round+" starting",
+            "⚡ "+recentActivity[0].text,
+            "🎯 "+recentActivity[1].text,
+            "💣 "+recentActivity[4].text,
+          ][Math.floor(tick/3)%5]}</span>
         </div>
       </div>
 
-      {/* ======= STAT STRIP ======= */}
+      {/* ═══ 3. QUICK STATS ═══ */}
       <div style={{padding:"0 14px",marginBottom:8}}>
         <div style={{display:"flex",gap:6}}>
           <div style={{flex:1,padding:"6px 0",borderRadius:8,textAlign:"center",background:`${C.cyan}06`,border:`1px solid ${C.cyan}12`}}>
@@ -7291,7 +7321,7 @@ export default function MoodLabArena() {
 
         {/* ======= TAB BAR — TOP ======= */}
         <div style={{display:"flex",borderBottom:`1px solid ${C.border}`,marginBottom:10}}>
-          {["games","tournaments","activity"].map(t=>(
+          {["games","tournaments","activity","stats"].map(t=>(
             <div key={t} onClick={()=>setArcadeHubTab(t)} style={{
               flex:1,padding:"8px 0",textAlign:"center",cursor:"pointer",
               fontSize:9,fontWeight:arcadeHubTab===t?800:600,
@@ -7406,6 +7436,46 @@ export default function MoodLabArena() {
                 <span style={{fontSize:8,color:C.text3,flexShrink:0,fontFamily:"monospace"}}>{a.time}</span>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* ======= STATS TAB ======= */}
+        {arcadeHubTab==="stats" && (
+          <div style={{marginBottom:14}}>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:10}}>
+              <div style={{padding:"12px",borderRadius:12,background:`${C.cyan}06`,border:`1px solid ${C.cyan}12`,textAlign:"center"}}>
+                <div style={{fontSize:22,fontWeight:900,color:C.cyan}}>{myStats.gamesPlayed}</div>
+                <div style={{fontSize:9,color:C.text3}}>Games Played</div>
+              </div>
+              <div style={{padding:"12px",borderRadius:12,background:`${C.green}06`,border:`1px solid ${C.green}12`,textAlign:"center"}}>
+                <div style={{fontSize:22,fontWeight:900,color:C.green}}>{myStats.winRate}%</div>
+                <div style={{fontSize:9,color:C.text3}}>Win Rate</div>
+              </div>
+              <div style={{padding:"12px",borderRadius:12,background:`${C.gold}06`,border:`1px solid ${C.gold}12`,textAlign:"center"}}>
+                <div style={{fontSize:22,fontWeight:900,color:C.gold}}>{myStats.coinsWon.toLocaleString()}</div>
+                <div style={{fontSize:9,color:C.text3}}>Coins Won</div>
+              </div>
+              <div style={{padding:"12px",borderRadius:12,background:`${C.orange}06`,border:`1px solid ${C.orange}12`,textAlign:"center"}}>
+                <div style={{fontSize:22,fontWeight:900,color:C.orange}}>🔥 {myStats.streak}</div>
+                <div style={{fontSize:9,color:C.text3}}>Win Streak</div>
+              </div>
+            </div>
+            <div style={{display:"flex",gap:8,marginBottom:10}}>
+              <div style={{flex:1,padding:"10px 12px",borderRadius:12,background:`${C.text3}06`,border:`1px solid ${C.border}`,display:"flex",alignItems:"center",gap:8}}>
+                <span style={{fontSize:20}}>{myStats.favGame.emoji}</span>
+                <div>
+                  <div style={{fontSize:8,color:C.text3}}>Favorite Game</div>
+                  <div style={{fontSize:11,fontWeight:700,color:C.text}}>{myStats.favGame.name}</div>
+                </div>
+              </div>
+              <div style={{flex:1,padding:"10px 12px",borderRadius:12,background:`${C.text3}06`,border:`1px solid ${C.border}`,display:"flex",alignItems:"center",gap:8}}>
+                <span style={{fontSize:20}}>🏅</span>
+                <div>
+                  <div style={{fontSize:8,color:C.text3}}>Best Record</div>
+                  <div style={{fontSize:11,fontWeight:700,color:C.text}}>{myStats.bestRecord}</div>
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
