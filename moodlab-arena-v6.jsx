@@ -2960,31 +2960,457 @@ export default function MoodLabArena() {
     if(!audioOn) return;
     try { const a = new Audio(src); a.volume = vol; a.play().catch(()=>{}); } catch(e){}
   }, [audioOn]);
-  const playFx = useCallback((type) => {
+  const playFx = useCallback((type, vol=1.0) => {
     if(!audioOn) return;
     // Real audio files for key moments
-    if(type==="laugh"){ playAudio("assets/arena/laugh.m4a", 0.6); return; }
-    if(type==="win"){ playAudio("assets/arena/win.m4a", 0.7); return; }
-    if(type==="lose"){ playAudio("assets/arena/lose.m4a", 0.6); return; }
-    // Synthesized sounds for quick feedback
+    const audioFiles = {
+      win: {src:"assets/arena/win.m4a", vol:0.7},
+      lose: {src:"assets/arena/lose.m4a", vol:0.6},
+      laugh: {src:"assets/arena/laugh.m4a", vol:0.6},
+    };
+    if(audioFiles[type]) {
+      try { const a = new Audio(audioFiles[type].src); a.volume = audioFiles[type].vol * vol; a.play().catch(()=>{}); } catch(e){}
+      return;
+    }
+    // Web Audio API synthesized sounds
     try {
-      const ac = new (window.AudioContext||window.webkitAudioContext)();
-      const osc = ac.createOscillator();
-      const gain = ac.createGain();
-      osc.connect(gain); gain.connect(ac.destination);
-      if(type==="kick"){osc.type="sine";osc.frequency.setValueAtTime(220,ac.currentTime);osc.frequency.exponentialRampToValueAtTime(880,ac.currentTime+0.15);gain.gain.setValueAtTime(0.3,ac.currentTime);gain.gain.exponentialRampToValueAtTime(0.01,ac.currentTime+0.2);osc.start();osc.stop(ac.currentTime+0.2);}
-      else if(type==="goal"){osc.type="square";osc.frequency.setValueAtTime(523,ac.currentTime);osc.frequency.setValueAtTime(659,ac.currentTime+0.1);osc.frequency.setValueAtTime(784,ac.currentTime+0.2);gain.gain.setValueAtTime(0.2,ac.currentTime);gain.gain.exponentialRampToValueAtTime(0.01,ac.currentTime+0.4);osc.start();osc.stop(ac.currentTime+0.4);}
-      else if(type==="save"){osc.type="sawtooth";osc.frequency.setValueAtTime(300,ac.currentTime);osc.frequency.exponentialRampToValueAtTime(100,ac.currentTime+0.3);gain.gain.setValueAtTime(0.15,ac.currentTime);gain.gain.exponentialRampToValueAtTime(0.01,ac.currentTime+0.3);osc.start();osc.stop(ac.currentTime+0.3);}
-      else if(type==="whistle"){osc.type="sine";osc.frequency.setValueAtTime(2800,ac.currentTime);osc.frequency.setValueAtTime(3200,ac.currentTime+0.15);osc.frequency.setValueAtTime(2800,ac.currentTime+0.3);gain.gain.setValueAtTime(0.12,ac.currentTime);gain.gain.exponentialRampToValueAtTime(0.01,ac.currentTime+0.5);osc.start();osc.stop(ac.currentTime+0.5);}
-      else if(type==="crowd"){const n=ac.createBufferSource();const b=ac.createBuffer(1,ac.sampleRate*0.6,ac.sampleRate);const d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*0.15*Math.sin(i/d.length*Math.PI);n.buffer=b;const g2=ac.createGain();g2.gain.setValueAtTime(0.3,ac.currentTime);g2.gain.exponentialRampToValueAtTime(0.01,ac.currentTime+0.6);n.connect(g2);g2.connect(ac.destination);n.start();}
-      else if(type==="charge"){osc.type="sine";osc.frequency.setValueAtTime(200,ac.currentTime);osc.frequency.exponentialRampToValueAtTime(1200,ac.currentTime+1.5);gain.gain.setValueAtTime(0.08,ac.currentTime);gain.gain.setValueAtTime(0.08,ac.currentTime+1.4);gain.gain.exponentialRampToValueAtTime(0.01,ac.currentTime+1.5);osc.start();osc.stop(ac.currentTime+1.5);}
-      // ── UI tap sounds ──
-      else if(type==="tap"){osc.type="sine";osc.frequency.setValueAtTime(800,ac.currentTime);osc.frequency.exponentialRampToValueAtTime(600,ac.currentTime+0.06);gain.gain.setValueAtTime(0.08,ac.currentTime);gain.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+0.08);osc.start();osc.stop(ac.currentTime+0.08);}
-      else if(type==="select"){osc.type="sine";osc.frequency.setValueAtTime(600,ac.currentTime);osc.frequency.setValueAtTime(900,ac.currentTime+0.05);gain.gain.setValueAtTime(0.1,ac.currentTime);gain.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+0.12);osc.start();osc.stop(ac.currentTime+0.12);}
-      else if(type==="nav"){osc.type="sine";osc.frequency.setValueAtTime(440,ac.currentTime);osc.frequency.exponentialRampToValueAtTime(660,ac.currentTime+0.08);gain.gain.setValueAtTime(0.06,ac.currentTime);gain.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+0.1);osc.start();osc.stop(ac.currentTime+0.1);}
-      else if(type==="back"){osc.type="sine";osc.frequency.setValueAtTime(660,ac.currentTime);osc.frequency.exponentialRampToValueAtTime(330,ac.currentTime+0.1);gain.gain.setValueAtTime(0.06,ac.currentTime);gain.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+0.12);osc.start();osc.stop(ac.currentTime+0.12);}
-      else if(type==="success"){osc.type="sine";osc.frequency.setValueAtTime(523,ac.currentTime);osc.frequency.setValueAtTime(659,ac.currentTime+0.08);osc.frequency.setValueAtTime(784,ac.currentTime+0.16);gain.gain.setValueAtTime(0.1,ac.currentTime);gain.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+0.25);osc.start();osc.stop(ac.currentTime+0.25);}
-      else if(type==="error"){osc.type="square";osc.frequency.setValueAtTime(200,ac.currentTime);osc.frequency.setValueAtTime(150,ac.currentTime+0.1);gain.gain.setValueAtTime(0.06,ac.currentTime);gain.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+0.15);osc.start();osc.stop(ac.currentTime+0.15);}
+      const ac = new (window.AudioContext || window.webkitAudioContext)();
+      const now = ac.currentTime;
+      // Helper: create oscillator with envelope
+      const tone = (freq, waveType, start, dur, v=0.15, freqEnd=null) => {
+        const osc = ac.createOscillator();
+        const gain = ac.createGain();
+        osc.type = waveType;
+        osc.frequency.setValueAtTime(freq, now+start);
+        if(freqEnd) osc.frequency.exponentialRampToValueAtTime(freqEnd, now+start+dur);
+        gain.gain.setValueAtTime(v*vol, now+start);
+        gain.gain.exponentialRampToValueAtTime(0.001, now+start+dur);
+        osc.connect(gain);
+        gain.connect(ac.destination);
+        osc.start(now+start);
+        osc.stop(now+start+dur);
+      };
+      // Helper: noise burst
+      const noise = (start, dur, v=0.08) => {
+        const buf = ac.createBuffer(1, Math.max(1,Math.floor(ac.sampleRate*dur)), ac.sampleRate);
+        const data = buf.getChannelData(0);
+        for(let i=0;i<data.length;i++) data[i]=(Math.random()*2-1);
+        const src = ac.createBufferSource();
+        const gain = ac.createGain();
+        src.buffer = buf;
+        gain.gain.setValueAtTime(v*vol, now+start);
+        gain.gain.exponentialRampToValueAtTime(0.001, now+start+dur);
+        src.connect(gain);
+        gain.connect(ac.destination);
+        src.start(now+start);
+        src.stop(now+start+dur);
+      };
+      switch(type) {
+        // ═══ UNIVERSAL UI ═══
+        case "tap": case "button_tap":
+          tone(800, "sine", 0, 0.06, 0.08);
+          tone(1200, "sine", 0.02, 0.04, 0.05);
+          break;
+        case "select":
+          tone(600, "sine", 0, 0.05, 0.1);
+          tone(900, "sine", 0.05, 0.07, 0.08);
+          break;
+        case "nav":
+          tone(440, "sine", 0, 0.08, 0.06, 660);
+          break;
+        case "back": case "button_back":
+          tone(600, "sine", 0, 0.08, 0.06, 300);
+          break;
+        case "coin_collect": case "coins":
+          tone(1200, "sine", 0, 0.08, 0.1);
+          tone(1600, "sine", 0.06, 0.08, 0.1);
+          tone(2000, "sine", 0.12, 0.12, 0.08);
+          break;
+        case "level_up": case "rank_up":
+          tone(523, "sine", 0, 0.12, 0.1);
+          tone(659, "sine", 0.1, 0.12, 0.1);
+          tone(784, "sine", 0.2, 0.12, 0.1);
+          tone(1047, "sine", 0.3, 0.2, 0.12);
+          break;
+        case "notification": case "ping":
+          tone(880, "sine", 0, 0.1, 0.08);
+          tone(1100, "sine", 0.08, 0.15, 0.06);
+          break;
+        case "error": case "wrong": case "wrong_buzzer":
+          tone(200, "sawtooth", 0, 0.15, 0.1);
+          tone(150, "sawtooth", 0.1, 0.2, 0.08);
+          break;
+        case "countdown_tick": case "tick":
+          tone(800, "sine", 0, 0.04, 0.1);
+          break;
+        case "countdown_go": case "go":
+          tone(600, "sine", 0, 0.1, 0.12);
+          tone(900, "sine", 0.08, 0.15, 0.12);
+          tone(1200, "sine", 0.16, 0.2, 0.15);
+          noise(0, 0.3, 0.05);
+          break;
+        case "streak_fire":
+          tone(400, "sawtooth", 0, 0.05, 0.06);
+          tone(600, "sawtooth", 0.04, 0.05, 0.08);
+          tone(900, "sawtooth", 0.08, 0.1, 0.1);
+          break;
+        case "blinker": case "blinker_alert":
+          tone(300, "square", 0, 0.1, 0.1);
+          tone(300, "square", 0.15, 0.1, 0.1);
+          tone(300, "square", 0.3, 0.1, 0.1);
+          break;
+        case "success":
+          tone(523, "sine", 0, 0.1, 0.1);
+          tone(784, "sine", 0.08, 0.15, 0.1);
+          break;
+        case "miss":
+          tone(300, "sawtooth", 0, 0.1, 0.08, 150);
+          tone(150, "sawtooth", 0.08, 0.15, 0.06);
+          break;
+        // ═══ FOOTBALL / KICK ═══
+        case "kick":
+          tone(150, "triangle", 0, 0.15, 0.12, 80);
+          noise(0, 0.06, 0.06);
+          break;
+        case "goal":
+          tone(523, "square", 0, 0.12, 0.15);
+          tone(659, "square", 0.1, 0.12, 0.15);
+          tone(784, "square", 0.2, 0.15, 0.12);
+          break;
+        case "save":
+          tone(400, "triangle", 0, 0.1, 0.08);
+          tone(600, "triangle", 0.05, 0.1, 0.06);
+          break;
+        case "whistle":
+          tone(2800, "sine", 0, 0.15, 0.1);
+          tone(3200, "sine", 0.1, 0.15, 0.08, 2800);
+          break;
+        case "charge":
+          tone(200, "sine", 0, 1.5, 0.08, 1200);
+          break;
+        case "crowd": case "crowd_cheer":
+          noise(0, 0.6, 0.1);
+          tone(300, "sawtooth", 0, 0.5, 0.03, 500);
+          break;
+        // ═══ ARCADE -- Wild West ═══
+        case "gunshot":
+          noise(0, 0.15, 0.2);
+          tone(100, "sawtooth", 0, 0.08, 0.15, 40);
+          break;
+        case "gun_click":
+          tone(2000, "sine", 0, 0.02, 0.1);
+          tone(800, "sine", 0.015, 0.03, 0.06);
+          break;
+        case "gun_bang":
+          noise(0, 0.3, 0.25);
+          tone(80, "sawtooth", 0, 0.15, 0.2, 30);
+          tone(200, "square", 0, 0.05, 0.15);
+          break;
+        case "revolver_spin":
+          for(let i=0;i<8;i++) tone(1500+i*100, "sine", i*0.04, 0.03, 0.04);
+          break;
+        // ═══ ARCADE -- Balloon Pop ═══
+        case "balloon_inflate":
+          tone(200, "sine", 0, 0.15, 0.06, 400);
+          break;
+        case "balloon_pop":
+          noise(0, 0.2, 0.3);
+          tone(2000, "sine", 0, 0.03, 0.15);
+          tone(100, "sawtooth", 0, 0.1, 0.1, 40);
+          break;
+        // ═══ ARCADE -- Puff Pong ═══
+        case "pong_hit":
+          tone(500, "square", 0, 0.05, 0.1);
+          break;
+        case "pong_wall":
+          tone(300, "square", 0, 0.04, 0.06);
+          break;
+        case "pong_score":
+          tone(800, "sine", 0, 0.08, 0.1);
+          tone(1000, "sine", 0.06, 0.1, 0.08);
+          break;
+        // ═══ ARCADE -- Rhythm Puff ═══
+        case "rhythm_hit":
+          tone(700, "sine", 0, 0.06, 0.08);
+          tone(1000, "sine", 0.03, 0.06, 0.06);
+          break;
+        case "rhythm_miss":
+          tone(200, "sawtooth", 0, 0.1, 0.06);
+          break;
+        case "rhythm_perfect":
+          tone(1000, "sine", 0, 0.06, 0.1);
+          tone(1500, "sine", 0.04, 0.06, 0.1);
+          tone(2000, "sine", 0.08, 0.1, 0.08);
+          break;
+        // ═══ ARCADE -- Tug of War ═══
+        case "rope_pull":
+          tone(150, "sawtooth", 0, 0.08, 0.06);
+          noise(0, 0.06, 0.04);
+          break;
+        case "rope_snap":
+          noise(0, 0.1, 0.15);
+          tone(400, "sawtooth", 0, 0.05, 0.1);
+          break;
+        case "mud_splash":
+          noise(0, 0.3, 0.12);
+          tone(100, "sine", 0, 0.2, 0.06, 50);
+          break;
+        // ═══ ARCADE -- Hot Potato ═══
+        case "bomb_tick":
+          tone(1200, "sine", 0, 0.03, 0.08);
+          break;
+        case "bomb_pass":
+          tone(500, "sine", 0, 0.06, 0.06, 800);
+          break;
+        case "bomb_explode": case "explosion":
+          noise(0, 0.4, 0.3);
+          tone(60, "sawtooth", 0, 0.3, 0.2, 20);
+          tone(150, "square", 0, 0.1, 0.15);
+          break;
+        // ═══ ARCADE -- Puff RPS ═══
+        case "punch_clash": case "clash":
+          noise(0, 0.12, 0.15);
+          tone(200, "sawtooth", 0, 0.08, 0.1);
+          tone(400, "square", 0.03, 0.06, 0.08);
+          break;
+        // ═══ ARCADE -- HOOKED ═══
+        case "fishing_cast":
+          tone(400, "sine", 0, 0.15, 0.06, 800);
+          noise(0.1, 0.1, 0.03);
+          break;
+        case "fishing_reel":
+          for(let i=0;i<5;i++) tone(600+i*50, "sine", i*0.05, 0.04, 0.04);
+          break;
+        case "fishing_bite":
+          tone(800, "sine", 0, 0.05, 0.1);
+          tone(1000, "sine", 0.04, 0.05, 0.1);
+          break;
+        case "fishing_catch":
+          tone(600, "sine", 0, 0.1, 0.1);
+          tone(800, "sine", 0.08, 0.1, 0.1);
+          tone(1200, "sine", 0.16, 0.15, 0.08);
+          noise(0, 0.2, 0.04);
+          break;
+        case "fishing_snap": case "line_break":
+          tone(400, "sawtooth", 0, 0.05, 0.1, 100);
+          noise(0, 0.1, 0.08);
+          break;
+        // ═══ ARCADE -- Beat Drop ═══
+        case "beat_buildup":
+          tone(200, "sine", 0, 0.5, 0.04, 800);
+          break;
+        case "beat_drop":
+          tone(80, "sawtooth", 0, 0.3, 0.2);
+          noise(0, 0.15, 0.1);
+          tone(60, "square", 0.05, 0.2, 0.15);
+          break;
+        // ═══ ARCADE -- Puff Clock ═══
+        case "clock_tick_precise":
+          tone(1000, "sine", 0, 0.02, 0.06);
+          break;
+        // ═══ ARCADE -- Puff Derby ═══
+        case "horse_gallop":
+          tone(200, "sine", 0, 0.04, 0.05);
+          tone(250, "sine", 0.06, 0.04, 0.05);
+          break;
+        case "horse_whinny":
+          tone(600, "sine", 0, 0.15, 0.08, 1200);
+          tone(1200, "sine", 0.1, 0.15, 0.06, 600);
+          break;
+        // ═══ ARCADE -- Puff Limbo ═══
+        case "limbo_bar_raise":
+          tone(300, "sine", 0, 0.15, 0.06, 500);
+          break;
+        // ═══ STAGE -- Show Sounds ═══
+        case "show_intro": case "fanfare":
+          tone(523, "sine", 0, 0.12, 0.08);
+          tone(659, "sine", 0.1, 0.12, 0.08);
+          tone(784, "sine", 0.2, 0.12, 0.08);
+          tone(1047, "sine", 0.3, 0.2, 0.1);
+          noise(0, 0.4, 0.03);
+          break;
+        case "correct_ding": case "correct":
+          tone(880, "sine", 0, 0.08, 0.1);
+          tone(1320, "sine", 0.06, 0.12, 0.08);
+          break;
+        case "eliminated":
+          tone(400, "sawtooth", 0, 0.1, 0.08, 200);
+          tone(200, "sawtooth", 0.08, 0.15, 0.06, 100);
+          break;
+        case "timer_urgent":
+          tone(1000, "square", 0, 0.05, 0.08);
+          tone(1000, "square", 0.1, 0.05, 0.08);
+          tone(1200, "square", 0.2, 0.08, 0.1);
+          break;
+        case "pattern_tone_1":
+          tone(440, "sine", 0, 0.2, 0.1);
+          break;
+        case "pattern_tone_2":
+          tone(660, "sine", 0, 0.2, 0.1);
+          break;
+        case "pattern_tone_3":
+          tone(880, "sine", 0, 0.2, 0.1);
+          break;
+        case "auction_gavel":
+          tone(300, "square", 0, 0.06, 0.12);
+          tone(200, "square", 0.04, 0.08, 0.08);
+          noise(0, 0.08, 0.06);
+          break;
+        case "auction_bid":
+          tone(600, "sine", 0, 0.06, 0.06, 900);
+          break;
+        case "disqualified":
+          tone(200, "square", 0, 0.15, 0.12);
+          tone(150, "square", 0.12, 0.2, 0.1);
+          noise(0, 0.3, 0.06);
+          break;
+        case "reveal_drumroll":
+          for(let i=0;i<12;i++) { noise(i*0.04, 0.04, 0.03+i*0.005); }
+          break;
+        case "streak_break":
+          tone(500, "sine", 0, 0.1, 0.08, 200);
+          tone(200, "sawtooth", 0.08, 0.15, 0.06);
+          break;
+        // ═══ FORTUNE -- Slots ═══
+        case "slot_spin": case "spin":
+          for(let i=0;i<10;i++) tone(800+Math.random()*400, "sine", i*0.03, 0.025, 0.04);
+          break;
+        case "slot_stop":
+          tone(600, "sine", 0, 0.06, 0.08);
+          tone(400, "sine", 0.04, 0.08, 0.06);
+          break;
+        case "slot_jackpot": case "jackpot":
+          for(let i=0;i<6;i++) {
+            tone(523+i*100, "sine", i*0.08, 0.12, 0.1);
+          }
+          noise(0, 0.5, 0.05);
+          break;
+        // ═══ FORTUNE -- Cards ═══
+        case "card_deal": case "card_flip":
+          noise(0, 0.05, 0.06);
+          tone(2000, "sine", 0, 0.02, 0.04);
+          break;
+        case "blackjack":
+          tone(800, "sine", 0, 0.1, 0.1);
+          tone(1000, "sine", 0.08, 0.1, 0.1);
+          tone(1200, "sine", 0.16, 0.15, 0.12);
+          break;
+        // ═══ FORTUNE -- Coin Flip ═══
+        case "coin_flip":
+          for(let i=0;i<8;i++) tone(1500, "sine", i*0.06, 0.03, 0.05-i*0.005);
+          break;
+        case "coin_land":
+          tone(2000, "sine", 0, 0.04, 0.08);
+          tone(1500, "sine", 0.03, 0.06, 0.06);
+          noise(0, 0.05, 0.04);
+          break;
+        // ═══ FORTUNE -- Dice ═══
+        case "dice_shake":
+          for(let i=0;i<6;i++) noise(i*0.05, 0.04, 0.05);
+          break;
+        case "dice_roll":
+          noise(0, 0.15, 0.08);
+          tone(300, "sine", 0.1, 0.05, 0.05);
+          tone(500, "sine", 0.13, 0.04, 0.04);
+          break;
+        // ═══ FORTUNE -- Mystery ═══
+        case "box_open":
+          tone(400, "sine", 0, 0.1, 0.06, 1200);
+          noise(0.05, 0.1, 0.04);
+          tone(1200, "sine", 0.1, 0.15, 0.08);
+          break;
+        case "scratch":
+          noise(0, 0.12, 0.08);
+          break;
+        case "cookie_crack":
+          noise(0, 0.06, 0.1);
+          tone(800, "sine", 0.03, 0.04, 0.06);
+          tone(1200, "sine", 0.05, 0.06, 0.04);
+          break;
+        case "treasure_find":
+          tone(800, "sine", 0, 0.08, 0.1);
+          tone(1000, "sine", 0.06, 0.08, 0.1);
+          tone(1200, "sine", 0.12, 0.08, 0.1);
+          tone(1600, "sine", 0.18, 0.15, 0.08);
+          break;
+        case "bomb_hit":
+          tone(200, "square", 0, 0.1, 0.1);
+          noise(0, 0.15, 0.1);
+          break;
+        // ═══ FORTUNE -- Wheel ═══
+        case "wheel_spin":
+          for(let i=0;i<15;i++) tone(600+i*30, "sine", i*0.04, 0.03, 0.04-i*0.002);
+          break;
+        case "wheel_tick":
+          tone(1500, "sine", 0, 0.015, 0.06);
+          break;
+        case "wheel_stop":
+          tone(800, "sine", 0, 0.08, 0.08);
+          tone(600, "sine", 0.06, 0.1, 0.06);
+          break;
+        case "jackpot_alarm":
+          for(let i=0;i<4;i++) {
+            tone(800, "square", i*0.15, 0.1, 0.08);
+            tone(1200, "square", i*0.15+0.05, 0.1, 0.08);
+          }
+          break;
+        // ═══ SOCIAL / ATMOSPHERE ═══
+        case "crowd_ooh":
+          tone(400, "sine", 0, 0.3, 0.05, 300);
+          noise(0, 0.3, 0.04);
+          break;
+        case "crowd_gasp":
+          noise(0, 0.2, 0.06);
+          tone(600, "sine", 0, 0.15, 0.04, 400);
+          break;
+        case "puff_wave":
+          tone(200, "sine", 0, 0.4, 0.06, 800);
+          noise(0, 0.5, 0.04);
+          break;
+        case "achievement":
+          tone(523, "sine", 0, 0.1, 0.08);
+          tone(659, "sine", 0.08, 0.1, 0.08);
+          tone(784, "sine", 0.16, 0.1, 0.08);
+          tone(1047, "sine", 0.24, 0.2, 0.1);
+          break;
+        case "daily_streak":
+          tone(700, "sine", 0, 0.08, 0.06);
+          tone(900, "sine", 0.06, 0.08, 0.06);
+          tone(1100, "sine", 0.12, 0.1, 0.08);
+          break;
+        case "lucky_hour":
+          for(let i=0;i<3;i++) {
+            tone(600+i*200, "sine", i*0.12, 0.1, 0.08);
+          }
+          noise(0, 0.3, 0.03);
+          break;
+        case "chat_message":
+          tone(1200, "sine", 0, 0.04, 0.04);
+          break;
+        // ═══ WORLD CUP ═══
+        case "stadium_roar":
+          noise(0, 1.5, 0.1);
+          tone(200, "sawtooth", 0, 0.8, 0.04, 400);
+          break;
+        case "vuvuzela":
+          tone(233, "sawtooth", 0, 0.6, 0.06);
+          tone(466, "sawtooth", 0, 0.6, 0.03);
+          break;
+        case "referee_whistle":
+          tone(2800, "sine", 0, 0.3, 0.1);
+          tone(3200, "sine", 0.1, 0.2, 0.08);
+          break;
+        case "goal_horn":
+          tone(200, "sawtooth", 0, 0.8, 0.1);
+          tone(250, "sawtooth", 0, 0.8, 0.08);
+          noise(0, 0.5, 0.05);
+          break;
+        default:
+          // Unknown sound -- play a generic click
+          tone(800, "sine", 0, 0.04, 0.05);
+      }
+      // Auto-close AudioContext after sounds finish
+      setTimeout(()=>{ if(ac.state!=="closed") ac.close().catch(()=>{}); }, 3000);
     } catch(e){}
   }, [audioOn]);
 
@@ -3136,7 +3562,7 @@ export default function MoodLabArena() {
     setBpPlayers(up);setBpAirLevel(newAir);setBpBalloonColor(color);setBpHistory(h=>[...h,{playerIdx:pidx,amount:ca,totalAfter:newAir}]);setBpRound(r=>r+1);
     if(ca>=20)setBpComment(pick(BP_COMMENTS.blinker));else if(ca<=7)setBpComment(pick(BP_COMMENTS.small));else if(ca>=15)setBpComment(pick(BP_COMMENTS.big));else setBpComment("Solid puff, playing smart 🧠");
     if(nearPop&&!popped){setBpShaking(true);if(dAir>threshold*0.85)setTimeout(()=>setBpComment(pick(BP_COMMENTS.shaking)),600);}
-    if(popped){setBpPopping(true);setBpShaking(false);setBpLoser(up[pidx]);setBpPhase("popped");setBpComment(pick(BP_COMMENTS.pop));playFx("lose");triggerShake();triggerFlash("miss");spawnSmoke(20);playFx("crowd");
+    if(popped){setBpPopping(true);setBpShaking(false);setBpLoser(up[pidx]);setBpPhase("popped");setBpComment(pick(BP_COMMENTS.pop));playFx("balloon_pop");playFx("lose");triggerShake();triggerFlash("miss");spawnSmoke(20);playFx("crowd");
       setCommentary(up[pidx].isYou?"💥 YOU POPPED IT! 💀":"💥 "+up[pidx].name+" POPPED IT! 🎉");
       setTimeout(()=>{setBpPopping(false);setBpPhase("result");if(!up[pidx].isYou){spawnConfetti(40,[C.pink,C.gold,C.cyan]);playFx("win");triggerFlash("goal");}else playFx("laugh");},2000);return;}
     const next = (pidx+1)%up.length;setBpCurrentTurn(next);
@@ -3150,7 +3576,7 @@ export default function MoodLabArena() {
     setTimeout(()=>{clearInterval(iv);setBpCharging(false);setBpPuffAmount(0);playFx("kick");bpProcessPuff(idx,amt,players,airLevel,threshold);},dur);
   };
   const bpStartCharge = () => {if(bpPhase!=="playing"||bpCharging)return;if(bpPlayers[bpCurrentTurn]&&bpPlayers[bpCurrentTurn].isAI)return;
-    setBpCharging(true);setBpPuffAmount(0);bpPuffStart.current=Date.now();setDimLights(true);playFx("charge");
+    setBpCharging(true);setBpPuffAmount(0);bpPuffStart.current=Date.now();setDimLights(true);playFx("balloon_inflate");
     bpChargeInterval.current=setInterval(()=>{const e=(Date.now()-bpPuffStart.current)/1000;setBpPuffAmount(Math.min(100,(e/4.5)*100));if(Math.random()<0.35)spawnPuffBubble();if(e>=5.0)bpStopCharge();},50);};
   const bpStopCharge = () => {if(!bpCharging)return;setBpCharging(false);setDimLights(false);if(bpChargeInterval.current){clearInterval(bpChargeInterval.current);bpChargeInterval.current=null;}
     const e=(Date.now()-bpPuffStart.current)/1000;
@@ -3212,7 +3638,7 @@ export default function MoodLabArena() {
     setTimeout(()=>{if(!rrActive.v)return;setRrIntroStage(2);},1800);
     setTimeout(()=>{if(!rrActive.v)return;setRrIntroStage(3);},3500);
     setTimeout(()=>{if(!rrActive.v)return;setRrIntroStage(4);playFx("whistle");},5000);
-    setTimeout(()=>{if(!rrActive.v)return;setRrPhase("spinning");setRrSpinAngle(1080+Math.random()*720);setRrComment(pick(RR_COMMENTS.spin));playFx("charge");spawnSmoke(10);
+    setTimeout(()=>{if(!rrActive.v)return;setRrPhase("spinning");setRrSpinAngle(1080+Math.random()*720);setRrComment(pick(RR_COMMENTS.spin));playFx("revolver_spin");spawnSmoke(10);
       setTimeout(()=>{if(!rrActive.v)return;setRrPhase("player_turn");setRrTension(10);setRrHeartRate(90);rrStartTurn(players,0,chamber,0);},2500);},6500);
     window._rrActive=rrActive; // store ref for cleanup
   };
@@ -3227,10 +3653,10 @@ export default function MoodLabArena() {
     const newChamber=(chamberPos+1)%6;const isLoaded=newChamber===bullet;
     setRrCurrentChamber(newChamber);setRrRound(r=>r+1);
     const dodgePct=rrGetDodgeChance(dodgeCharge);const dodged=isLoaded&&Math.random()*100<dodgePct;
-    setRrChambers(ch=>{const c=[...ch];c[newChamber]=true;return c;});playFx("kick");
+    setRrChambers(ch=>{const c=[...ch];c[newChamber]=true;return c;});playFx("gun_click");
     if(isLoaded&&!dodged){
       setRrPhase("bang");setRrComment(pick(RR_COMMENTS.bang));setRrEliminated(players[idx]);
-      triggerShake();triggerFlash("miss");playFx("lose");spawnSmoke(12);
+      triggerShake();triggerFlash("miss");playFx("gun_bang");spawnSmoke(12);
       setCommentary(players[idx].isYou?"💥 YOU GOT HIT!":"💥 "+players[idx].name+" is OUT! 💀");
       const up=players.map((p,i)=>i===idx?{...p,alive:false}:p);setRrPlayers(up);
       setRrEliminatedList(el=>[...el,players[idx]]);setRrTension(t=>Math.min(100,t+20));setRrHeartRate(160);
@@ -3240,7 +3666,7 @@ export default function MoodLabArena() {
           if(winner&&winner.isYou){spawnConfetti(50,[C.gold,C.green,C.cyan,C.pink]);playFx("win");playFx("crowd");triggerFlash("goal");}else playFx("crowd");
           setCommentary(winner?(winner.isYou?"SURVIVOR! 👑":""+winner.name+" wins!"):"Game over!");
         }else{const nb=Math.floor(Math.random()*6);setRrChamber(nb);setRrCurrentChamber(0);setRrChambers([false,false,false,false,false,false]);
-          setRrPhase("spinning");setRrSpinAngle(a=>a+720+Math.random()*720);setRrComment("Respinning... "+aliveCount+" remain 😰");playFx("charge");spawnSmoke(8);
+          setRrPhase("spinning");setRrSpinAngle(a=>a+720+Math.random()*720);setRrComment("Respinning... "+aliveCount+" remain 😰");playFx("revolver_spin");spawnSmoke(8);
           setTimeout(()=>{const next=rrFindNextAlive(up,idx);if(next!==null){setRrPhase("player_turn");rrStartTurn(up,next,nb,0);}},2200);}
       },2500);
     }else if(isLoaded&&dodged){
@@ -3249,7 +3675,7 @@ export default function MoodLabArena() {
       setCommentary((players[idx].isYou?"You":""+players[idx].name)+" DODGED! "+rrGetPuffTier(dodgeCharge).emoji);
       const up=players.map((p,i)=>i===idx?{...p,dodges:p.dodges+1,survived:p.survived+1}:p);setRrPlayers(up);setRrTension(t=>Math.min(100,t+15));
       setTimeout(()=>{const nb=Math.floor(Math.random()*6);setRrChamber(nb);setRrCurrentChamber(0);setRrChambers([false,false,false,false,false,false]);
-        setRrPhase("spinning");setRrSpinAngle(a=>a+720+Math.random()*720);setRrComment("Respinning after dodge... 🔄");playFx("charge");
+        setRrPhase("spinning");setRrSpinAngle(a=>a+720+Math.random()*720);setRrComment("Respinning after dodge... 🔄");playFx("revolver_spin");
         setTimeout(()=>{const next=rrFindNextAlive(up,idx);if(next!==null){setRrPhase("player_turn");rrStartTurn(up,next,nb,0);}},2200);},2000);
     }else{
       setRrPhase("click");setRrComment(pick(RR_COMMENTS.click));playFx("select");
@@ -3300,24 +3726,24 @@ export default function MoodLabArena() {
       if(g.paused)return;const dt=Math.min((now-g.lastT)/16.667,3);g.lastT=now;
       let nx=g.bx+g.dx*dt,ny=g.by+g.dy*dt,ndx=g.dx,ndy=g.dy;
       g.trail.push({x:g.bx,y:g.by,age:0});if(g.trail.length>18)g.trail.shift();g.trail.forEach(t=>t.age++);
-      if(ny<=2){ny=2;ndy=Math.abs(ndy);playFx("tap");}
-      if(ny>=98){ny=98;ndy=-Math.abs(ndy);playFx("tap");}
+      if(ny<=2){ny=2;ndy=Math.abs(ndy);playFx("pong_wall");}
+      if(ny>=98){ny=98;ndy=-Math.abs(ndy);playFx("pong_wall");}
       const aiSpd=0.04+Math.min(Math.abs(g.dx)*0.005,0.04);
       g.ay+=(ny-g.ay)*aiSpd*dt;g.ay=Math.max(10,Math.min(90,g.ay));
       const spd=Math.sqrt(ndx*ndx+ndy*ndy);
       if(nx<=6&&g.bx>6){const hd=Math.abs(ny-g.py);
         if(hd<12){const ho=(ny-g.py)/12,sm=hd<2;ndx=Math.abs(ndx)*(sm?1.6:1.05);ndy=g.dy+ho*2.5;nx=7;
-          g.rally++;g.smash=sm;playFx("kick");setPpImpact({x:6,y:ny,t:Date.now()});setTimeout(()=>setPpImpact(null),300);
+          g.rally++;g.smash=sm;playFx("pong_hit");setPpImpact({x:6,y:ny,t:Date.now()});setTimeout(()=>setPpImpact(null),300);
           if(sm){setPpSmash(true);triggerShake();setPpComment(pick(PP_SMASH));setTimeout(()=>setPpSmash(false),500);}else setPpComment(pick(PP_HIT));
           if(g.rally>0&&g.rally%10===0){setPpComment(pick(PP_RALLY).replace("{n}",g.rally));playFx("crowd");}setPpRally(g.rally);
-        }else{g.scoreA++;setPpScore({you:g.scoreY,ai:g.scoreA});triggerShake();triggerFlash("miss");playFx("error");
+        }else{g.scoreA++;setPpScore({you:g.scoreY,ai:g.scoreA});triggerShake();triggerFlash("miss");playFx("pong_score");
           setPpComment(pick(PP_SA));g.rally=0;setPpRally(0);
           if(g.scoreA>=5){g.paused=true;setPpPhase("result");setCommentary("AI wins Puff Pong! "+g.scoreY+"-"+g.scoreA);playFx("lose");return;}
           nx=50;ny=50;ndx=2.2;ndy=1.2*(Math.random()>0.5?1:-1);g.trail=[];}}
       if(nx>=94&&g.bx<94){const hd=Math.abs(ny-g.ay);
         if(hd<10){ndx=-Math.abs(ndx)*1.03;ndy=g.dy+(ny-g.ay)*0.12;nx=93;
-          g.rally++;setPpRally(g.rally);playFx("tap");setPpImpact({x:94,y:ny,t:Date.now()});setTimeout(()=>setPpImpact(null),300);
-        }else{g.scoreY++;setPpScore({you:g.scoreY,ai:g.scoreA});triggerFlash("goal");triggerShake();playFx("crowd");
+          g.rally++;setPpRally(g.rally);playFx("pong_hit");setPpImpact({x:94,y:ny,t:Date.now()});setTimeout(()=>setPpImpact(null),300);
+        }else{g.scoreY++;setPpScore({you:g.scoreY,ai:g.scoreA});triggerFlash("goal");triggerShake();playFx("pong_score");
           setPpComment(pick(PP_SY));g.rally=0;setPpRally(0);
           if(g.scoreY>=5){g.paused=true;setPpPhase("result");setCommentary("You WIN Puff Pong! "+g.scoreY+"-"+g.scoreA+" 🏆");playFx("win");spawnConfetti(40,[C.cyan,C.gold,C.green,C.pink]);return;}
           nx=50;ny=50;ndx=-2.2;ndy=1.2*(Math.random()>0.5?1:-1);g.trail=[];}}
@@ -3616,7 +4042,7 @@ export default function MoodLabArena() {
       spawnConfetti(40,[C.cyan,C.gold,C.blue,C.green]);playFx("win");triggerFlash("goal");triggerShake();
       setTowComment(pick(TOW_COMMENTS_WIN));setCommentary("VICTORY! Your team DOMINATES! 💪🏆");
     } else {
-      setTowMudSplash(true);playFx("lose");triggerFlash("miss");triggerShake();
+      setTowMudSplash(true);playFx("mud_splash");playFx("lose");triggerFlash("miss");triggerShake();
       setTowComment(pick(TOW_COMMENTS_LOSE));setCommentary("Defeat... into the mud pit! 🫠");
       setTimeout(()=>setTowMudSplash(false),2000);
     }
@@ -3629,7 +4055,7 @@ export default function MoodLabArena() {
     const baseForce=isSudden?(2+Math.random()*2):(1.5+Math.random()*2);
     const force=baseForce*surgeMulti;
     towPosRef.current=Math.min(100,towPosRef.current+force);
-    setTowPosition(towPosRef.current);setTowPuffs(n=>n+1);playFx("kick");
+    setTowPosition(towPosRef.current);setTowPuffs(n=>n+1);playFx("rope_pull");
     if(towSurgeAvail&&!towSurge){
       setTowSurge(true);setTowSurgeAvail(false);
       setTowComment("🔥 SURGE ACTIVATED! 3x PULL POWER! 🔥");playFx("blinker");triggerFlash("blinker");triggerShake();
@@ -3721,7 +4147,7 @@ export default function MoodLabArena() {
     setHpCurrentHolder(startHolder);setHpPhase("playing");
     if(round > 1){setHpComment(pick(HP_COMMENTS.tension));setHpTension(Math.min(100, (round-1)*15));}
     else setHpComment("Bomb activated! 💣");
-    playFx("kick");
+    playFx("bomb_tick");
     // Start bomb timer
     const startTime = Date.now();
     if(hpTimerRef.current) clearInterval(hpTimerRef.current);
@@ -3744,7 +4170,7 @@ export default function MoodLabArena() {
     if(target===null) return;
     setHpPassing(true);setHpPassTarget(target);
     if(skipCount > 0){setHpComment(pick(HP_COMMENTS.skip));playFx("laugh");}
-    else {setHpComment(pick(HP_COMMENTS.pass));playFx("kick");}
+    else {setHpComment(pick(HP_COMMENTS.pass));playFx("bomb_pass");}
     setTimeout(()=>{
       if(!window._hpActive?.v) return;
       setHpCurrentHolder(target);setHpPassing(false);setHpPassTarget(null);
@@ -3793,7 +4219,7 @@ export default function MoodLabArena() {
     setHpPuffHeld(false);setDimLights(false);setHpPuffPower(0);
     // Get current holder at explosion time
     setHpPhase("exploding");setHpComment(pick(HP_COMMENTS.explode));
-    triggerShake();triggerFlash("miss");playFx("lose");spawnSmoke(15);
+    triggerShake();triggerFlash("miss");playFx("bomb_explode");spawnSmoke(15);
     // Spawn explosion particles
     const parts = Array.from({length:20},(_,i)=>({id:Date.now()+i,x:Math.random()*60+20,y:Math.random()*40+30,size:4+Math.random()*8,color:["#FF4444","#FF8800","#FFCC00","#FF6600"][Math.floor(Math.random()*4)],rot:Math.random()*360}));
     setHpExplosionParticles(parts);
@@ -3860,7 +4286,7 @@ export default function MoodLabArena() {
       const fish = hookSpawnFish();
       setHookFish(fish);setHookPhase("bite");setHookZoneWidth(fish.zoneWidth);setHookZoneCenter(30+Math.random()*40);
       setHookComment(fish.emoji+" "+fish.name+" is on the line!");
-      triggerShake();playFx("crowd");
+      triggerShake();playFx("fishing_bite");
       hookStartGameLoop(fish);
     },waitTime);
   };
@@ -3904,12 +4330,12 @@ export default function MoodLabArena() {
         setHookScore(prev=>{const ns=prev+total;setHookBestScore(b=>Math.max(b,ns));return ns;});
         setHookRecentCatches(prev=>[{...fish,bonus,total,time:totalT},...prev].slice(0,5));
         setHookPhase("caught");setHookComment("CAUGHT! "+fish.emoji+" "+fish.name+" +"+total+"pts!");
-        triggerFlash("goal");spawnConfetti(20,[fish.color,C.green,C.gold]);playFx("win");
+        triggerFlash("goal");spawnConfetti(20,[fish.color,C.green,C.gold]);playFx("fishing_catch");
       } else if(lineT >= 100) {
         clearInterval(hookGameLoop.current);hookGameLoop.current=null;
         setHookScore(prev=>Math.max(0,prev-5));
         setHookPhase("line_break");setHookComment("LINE SNAPPED! 💥 Too much tension!");
-        triggerFlash("miss");triggerShake();playFx("error");
+        triggerFlash("miss");triggerShake();playFx("fishing_snap");
       } else if(escT >= 100) {
         clearInterval(hookGameLoop.current);hookGameLoop.current=null;
         setHookPhase("escaped");setHookComment(fish.emoji+" "+fish.name+" escaped! Not enough suction!");
@@ -7358,12 +7784,12 @@ export default function MoodLabArena() {
     }
     // Animate reels stopping one by one
     const finalReels = [r1,r2,r3];
-    setSlotsReels(["❓","❓","❓"]);
-    setTimeout(()=>{setSlotsReels([r1,"❓","❓"]);playFx("select");},400);
-    setTimeout(()=>{setSlotsReels([r1,r2,"❓"]);playFx("select");},800);
+    setSlotsReels(["❓","❓","❓"]);playFx("slot_spin");
+    setTimeout(()=>{setSlotsReels([r1,"❓","❓"]);playFx("slot_stop");},400);
+    setTimeout(()=>{setSlotsReels([r1,r2,"❓"]);playFx("slot_stop");},800);
     setTimeout(()=>{
       setSlotsReels(finalReels);
-      playFx("select");
+      playFx("slot_stop");
       // Calculate win
       let win=0;
       if(r1===r2&&r2===r3) {
@@ -7372,6 +7798,7 @@ export default function MoodLabArena() {
         spawnConfetti(40);
         triggerFlash("goal");
         playFx("crowd");
+        playFx("jackpot");
         if(r1==="🌿") setCommentary("JACKPOT! 🌿🌿🌿 CANNABIS JACKPOT!!!");
         else if(r1==="7️⃣") setCommentary("TRIPLE SEVENS! MASSIVE WIN!");
         else setCommentary("WINNER! "+r1+r1+r1+" pays out "+win+"!");
@@ -7441,7 +7868,7 @@ export default function MoodLabArena() {
     setBjPlayerHand(pHand);setBjDealerHand(dHand);
     setBjPlayerTotal(pTotal);setBjDealerTotal(dTotal);
     setBjResult(null);setBjPhase("dealing");
-    playFx("select");
+    playFx("card_deal");
     setCommentary("Cards dealt...");
     setTimeout(()=>{
       // Check for natural blackjack
@@ -7593,12 +8020,12 @@ export default function MoodLabArena() {
     setCommentary(label+" confidence locked! Flipping...");
     setCfFlipping(true);
     setCfPhase("flipping");
-    playFx("whistle");
+    playFx("coin_flip");
     // Flip animation + result
     setTimeout(()=>{
       const outcome = Math.random()>0.5?"heads":"tails";
       setCfResult(outcome);
-      setCfFlipping(false);
+      setCfFlipping(false);playFx("coin_land");
       const won = outcome===cfChoice;
       if(won) {
         const winAmt = Math.floor(cfBet*mult);
@@ -7672,7 +8099,7 @@ export default function MoodLabArena() {
     const d1 = Math.max(1,Math.min(6,Math.floor(total/2)+(Math.random()>0.5?1:0)));
     const d2 = Math.max(1,Math.min(6,total-d1));
     setCrapsDice([d1,d2]);
-    playFx("whistle");
+    playFx("dice_roll");
     if(isBlinker) {setCommentary("HOT DICE! +50% payout if you win!");triggerFlash("goal");}
     // Resolve
     setTimeout(()=>{
@@ -7776,12 +8203,12 @@ export default function MoodLabArena() {
       setCommentary("BLINKER UPGRADE! Rarity boosted!");
       spawnConfetti(30);triggerFlash("goal");
     }
-    setMbPrize(prize);setMbRevealed(true);setMbPhase("reveal");
+    setMbPrize(prize);setMbRevealed(true);setMbPhase("reveal");playFx("box_open");
     if(prize.value>0){setCoins(c=>c+prize.value);setMbScore(s=>s+prize.value);}
-    if(prize.rarity==="legendary"){spawnConfetti(50);triggerFlash("goal");playFx("crowd");setCommentary("LEGENDARY! "+prize.emoji+" "+prize.name+"!");}
-    else if(prize.rarity==="rare"){spawnConfetti(20);playFx("crowd");setCommentary("Rare find! "+prize.emoji+" "+prize.name);}
-    else if(prize.value>0){playFx("select");setCommentary(prize.emoji+" "+prize.name+" -- nice!");}
-    else{setCommentary("Empty box... better luck next time!");}
+    if(prize.rarity==="legendary"){spawnConfetti(50);triggerFlash("goal");playFx("treasure_find");setCommentary("LEGENDARY! "+prize.emoji+" "+prize.name+"!");}
+    else if(prize.rarity==="rare"){spawnConfetti(20);playFx("treasure_find");setCommentary("Rare find! "+prize.emoji+" "+prize.name);}
+    else if(prize.value>0){playFx("coin_collect");setCommentary(prize.emoji+" "+prize.name+" -- nice!");}
+    else{playFx("error");setCommentary("Empty box... better luck next time!");}
     setTimeout(()=>mbNextRound(),2500);
   };
   const mbNextRound = () => {
@@ -7840,7 +8267,7 @@ export default function MoodLabArena() {
     } else {
       setCommentary("Revealed: "+card[idx]);
     }
-    setScRevealed(newRevealed);playFx("select");setScCurrentIdx(null);
+    setScRevealed(newRevealed);playFx("scratch");setScCurrentIdx(null);
     const allRevealed = newRevealed.every(r=>r);
     if(allRevealed) {
       const counts = {};
@@ -7926,16 +8353,16 @@ export default function MoodLabArena() {
     const dur = (Date.now()-fcPuffStart.current)/1000;
     fcPuffStart.current = 0;setFcCracking(false);
     if(dur<0.3) return;
+    playFx("cookie_crack");
     const isBlinker = dur >= 4.5;
     setFcGolden(isBlinker);
     let fortune;
     if(isBlinker) {
       fortune = FC_RARE_FORTUNES[Math.floor(Math.random()*FC_RARE_FORTUNES.length)];
-      spawnConfetti(30);triggerFlash("goal");playFx("crowd");
+      spawnConfetti(30);triggerFlash("goal");playFx("treasure_find");
       setCommentary("GOLDEN FORTUNE COOKIE! 2x coins!");
     } else {
       fortune = FC_FORTUNES[Math.floor(Math.random()*FC_FORTUNES.length)];
-      playFx("select");
     }
     const baseCoins = Math.floor(10 + Math.random()*190);
     const fcWin = isBlinker ? Math.floor(50 + Math.random()*450) : baseCoins;
@@ -9344,7 +9771,7 @@ export default function MoodLabArena() {
     setRpsPhase("clash");
     setRpsClashAnim(true);
     triggerShake();
-    playFx("kick");
+    playFx("punch_clash");
     if(playerPwrInfo.tier==="ultra") setCommentary(RPS_BLINKER_COMMENTS[Math.floor(Math.random()*RPS_BLINKER_COMMENTS.length)]);
     else setCommentary("CLASH! 💥");
     setTimeout(()=>{
@@ -9919,7 +10346,7 @@ export default function MoodLabArena() {
       bdPlayDropSound();
       triggerFlash("goal");
       triggerShake();
-      playFx("crowd");
+      playFx("beat_drop");
       setCommentary("DROP! RELEASE NOW!");
       setTimeout(() => {
         if (!guard.v) return;
@@ -10429,7 +10856,7 @@ export default function MoodLabArena() {
   const startPuffDerby = () => { setPdPhase("pick");setPdPlayerHorse(null);setPdRaceTime(30);setPdPuffCount(0);setPdStamina(100);pdStaminaRef.current=100;setPdPositions([0,0,0,0,0,0]);pdPosRef.current=[0,0,0,0,0,0];setPdFinishOrder([]);pdFinishRef.current=[];pdLastPuff.current=0;setCommentary("Pick your horse!");playFx("crowd"); };
   const pdPickHorse = (idx) => { setPdPlayerHorse(idx);playFx("select");setCommentary(PD_HORSE_NAMES[idx]+" selected!");setPdPhase("countdown");let c=3;const cd=setInterval(()=>{c--;if(c<=0){clearInterval(cd);setPdPhase("racing");setCommentary("AND THEY'RE OFF!");playFx("whistle");triggerFlash("goal");pdStartRace(idx);}},800); };
   const pdStartRace = (pi) => { pdPosRef.current=[0,0,0,0,0,0];pdFinishRef.current=[];pdStaminaRef.current=100;pdLastPuff.current=Date.now();let tl=30;setPdRaceTime(30);pdAiRef.current=setInterval(()=>{if(Date.now()-pdLastPuff.current>500){pdStaminaRef.current=Math.min(100,pdStaminaRef.current+0.4);setPdStamina(Math.round(pdStaminaRef.current));}const np=[...pdPosRef.current];for(let i=0;i<6;i++){if(i===pi||pdFinishRef.current.includes(i))continue;const p=PD_AI[i];let mv=p.bs*(0.6+Math.random()*0.8);if(Math.random()<p.bc)mv+=p.bz;if(Math.random()<p.rc)mv=0;if(np[i]>70)mv*=1.2;if(np[i]>90)mv*=1.1;np[i]=Math.min(100,np[i]+mv*0.16);if(np[i]>=100&&!pdFinishRef.current.includes(i)){pdFinishRef.current=[...pdFinishRef.current,i];setPdFinishOrder([...pdFinishRef.current]);}}if(np[pi]>=100&&!pdFinishRef.current.includes(pi)){pdFinishRef.current=[...pdFinishRef.current,pi];setPdFinishOrder([...pdFinishRef.current]);}pdPosRef.current=np;setPdPositions([...np]);if(pdFinishRef.current.length>=6)pdEndRace(pi);},50);pdTimerRef.current=setInterval(()=>{tl--;setPdRaceTime(tl);if(tl<=10&&tl>0)setCommentary(tl+" seconds!");if(tl<=0)pdEndRace(pi);},1000); };
-  const pdPuff = () => { if(pdPhase!=="racing"||pdPlayerHorse===null)return;const idx=pdPlayerHorse;pdLastPuff.current=Date.now();setPdPuffCount(p=>p+1);playFx("tap");let boost=3+Math.random()*2;if(pdStaminaRef.current<=0){boost=1;}else{pdStaminaRef.current=Math.max(0,pdStaminaRef.current-5);setPdStamina(Math.round(pdStaminaRef.current));}const np=[...pdPosRef.current];np[idx]=Math.min(100,np[idx]+boost);pdPosRef.current=np;setPdPositions([...np]);if(np[idx]>=100&&!pdFinishRef.current.includes(idx)){pdFinishRef.current=[...pdFinishRef.current,idx];setPdFinishOrder([...pdFinishRef.current]);} };
+  const pdPuff = () => { if(pdPhase!=="racing"||pdPlayerHorse===null)return;const idx=pdPlayerHorse;pdLastPuff.current=Date.now();setPdPuffCount(p=>p+1);playFx("horse_gallop");let boost=3+Math.random()*2;if(pdStaminaRef.current<=0){boost=1;}else{pdStaminaRef.current=Math.max(0,pdStaminaRef.current-5);setPdStamina(Math.round(pdStaminaRef.current));}const np=[...pdPosRef.current];np[idx]=Math.min(100,np[idx]+boost);pdPosRef.current=np;setPdPositions([...np]);if(np[idx]>=100&&!pdFinishRef.current.includes(idx)){pdFinishRef.current=[...pdFinishRef.current,idx];setPdFinishOrder([...pdFinishRef.current]);} };
   const pdEndRace = (pi) => { if(pdAiRef.current){clearInterval(pdAiRef.current);pdAiRef.current=null;}if(pdTimerRef.current){clearInterval(pdTimerRef.current);pdTimerRef.current=null;}const fin=[...pdFinishRef.current];const rem=[0,1,2,3,4,5].filter(i=>!fin.includes(i));rem.sort((a,b)=>pdPosRef.current[b]-pdPosRef.current[a]);const fo=[...fin,...rem];setPdFinishOrder(fo);pdFinishRef.current=fo;const place=fo.indexOf(pi)+1;setCoins(c=>c+([0,500,300,150,75,30,10][place]||10));setPdPhase("result");if(place===1){setCommentary(PD_HORSE_NAMES[pi]+" WINS!");triggerFlash("goal");playFx("crowd");if(stageRole)showMC("correct",{points:"500"});setConfettiParticles(Array.from({length:30},(_,i)=>({id:Date.now()+i,x:Math.random()*100,y:-10-Math.random()*20,size:4+Math.random()*4,color:[C.green,C.gold,C.cyan,C.pink][i%4],rot:Math.random()*360})));}else if(place<=3){setCommentary("Top 3!");playFx("select");}else{setCommentary("Better luck next time!");playFx("tap");} };
   const pdCleanup = () => { if(pdAiRef.current){clearInterval(pdAiRef.current);pdAiRef.current=null;}if(pdTimerRef.current){clearInterval(pdTimerRef.current);pdTimerRef.current=null;}setPdPhase(null);setGameActive(null);setStageRole(null);setMcVisible(false); };
   const hlPickRandom = () => { const av=HL_STATS.filter((_,i)=>!hlUsedRef.current.includes(i));if(av.length===0){hlUsedRef.current=[];return HL_STATS[Math.floor(Math.random()*HL_STATS.length)];}const pk=av[Math.floor(Math.random()*av.length)];hlUsedRef.current=[...hlUsedRef.current,HL_STATS.indexOf(pk)];return pk; };
