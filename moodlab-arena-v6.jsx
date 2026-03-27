@@ -5452,23 +5452,7 @@ export default function MoodLabArena() {
           <span style={{fontSize:9,color:C.text2}}>Win Rate: <span style={{color:C.lime,fontWeight:800}}>62%</span></span>
           <span style={{fontSize:9,color:C.text2}}>Streak: <span style={{color:C.orange,fontWeight:800}}>🔥 5</span></span>
         </div>
-        {/* Mini-Games strip — removed to save space */}
-        {false && <div style={{display:"flex",gap:4,marginTop:8}}>
-          {[
-            {type:"roulette",emoji:"🎰",name:"Roulette",color:C.pink},
-            {type:"tug",emoji:"🤝",name:"Tug",color:C.gold},
-            {type:"lucky",emoji:"🍀",name:"Lucky",color:C.green},
-            {type:"trivia",emoji:"🧠",name:"Trivia",color:C.purple},
-          ].map(mg=>(
-            <div key={mg.type} onClick={(e)=>{e.stopPropagation();setHalftimeGame({type:mg.type,phase:"intro"});}} style={{
-              flex:1,padding:"6px 2px",borderRadius:8,textAlign:"center",cursor:"pointer",
-              background:`${mg.color}06`,border:`1px solid ${mg.color}12`,
-            }}>
-              <div style={{fontSize:14}}>{mg.emoji}</div>
-              <div style={{fontSize:6,fontWeight:700,color:mg.color,marginTop:1}}>{mg.name}</div>
-            </div>
-          ))}
-        </div>
+        {/* Mini-Games strip removed */}
       </div>
     );
     if (viewKey === "stage") return (
