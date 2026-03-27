@@ -27,7 +27,7 @@ const ARENA_VIDEOS = {
 // ── ZONE COLORS ──
 const Z = {
   arcade: { primary:"#00E5FF", glow:"rgba(0,229,255,0.35)", dim:"rgba(0,229,255,0.08)", name:"The Arcade", icon:"🎮", sub:"16 Action Games" },
-  stage:  { primary:"#FFD93D", glow:"rgba(255,217,61,0.35)", dim:"rgba(255,217,61,0.08)", name:"The Stage", icon:"🎪", sub:"7 Live Shows" },
+  stage:  { primary:"#FFD93D", glow:"rgba(255,217,61,0.35)", dim:"rgba(255,217,61,0.08)", name:"The Stage", icon:"🎪", sub:"6 Live Shows" },
   oracle: { primary:"#FFD93D", glow:"rgba(255,217,61,0.35)", dim:"rgba(255,217,61,0.08)", name:"The Fortune", icon:"🔮", sub:"16 Fortune Games" },
   wall:   { primary:"#FB923C", glow:"rgba(251,146,60,0.35)", dim:"rgba(251,146,60,0.08)", name:"The Wall", icon:"🏆", sub:"Rankings & Glory" },
   worldcup:{ primary:"#FFD93D", glow:"rgba(255,217,61,0.35)", dim:"rgba(255,217,61,0.08)", name:"World Cup 2026", icon:"⚽", sub:"Limited Event" },
@@ -151,7 +151,7 @@ const PLAY_GAMES = [
 
 const SHOW_GAMES = [
   { id:"vibecheck", name:"Vibe Check", emoji:"🧠", players:"1-100+", time:"5-15m", type:"Trivia", color:C.gold, desc:"Trivia Game Show. Host hỏi, contestants trả lời, audience vote.", live:true, inputs:["puff","tap"] },
-  { id:"spinwin", name:"Spin & Win", emoji:"🎰", players:"1-50+", time:"2-5m", type:"Luck", color:C.pink, desc:"Vòng quay may mắn. Puff để spin. Addictive.", live:true, inputs:["puff","button"] },
+  // Spin & Win moved to Fortune zone
   { id:"higherlower", name:"Higher or Lower", emoji:"📊", players:"1-100+", time:"5-10m", type:"Knowledge", color:C.cyan, desc:"Đoán số tiếp theo cao hay thấp. Streak = thưởng lớn.", live:true, inputs:["puff","tap"] },
   { id:"pricepuff", name:"The Price is Puff", emoji:"💰", players:"2-50+", time:"5-10m", type:"Knowledge", color:C.green, desc:"Đoán giá sản phẩm. Gần nhất thắng.", live:true, inputs:["puff","tap"] },
   { id:"survivaltrivia", name:"Survival Trivia", emoji:"🏆", players:"2-100+", time:"5-15m", type:"Trivia", color:C.purple, desc:"Answer correctly or get eliminated. Last one standing wins!", live:true, inputs:["puff","tap"] },
@@ -2592,7 +2592,7 @@ export default function MoodLabArena() {
       setMatchmaking({game,mode,stage:"searching",input});
       setTimeout(()=>{
         setMatchmaking(p=>p?{...p,stage:"found",opp:mode==="ai"?"🤖 AI Bot":mode==="random"?"🎲 Player_847":"👫 Minh"}:null);
-        setTimeout(()=>{setMatchmaking(null);setGameActive({...game,activeInput:input});if(game.id==="wildwest")startDuel();if(game.id==="finalkick"||game.id==="finalkick2"||game.id==="finalkick3"){startKick(game.id);startMatchIntro(kickOpponent.current);}if(game.id==="balloon")startBalloonPop();if(game.id==="russian")startRussianRoulette();if(game.id==="puffpong")startPuffPong();if(game.id==="rhythm")startRhythmPuff();if(game.id==="tugofwar")startTugOfWar();if(game.id==="hotpotato")startHotPotato();if(game.id==="hooked")startHooked();if(game.id==="rps")startRps();if(game.id==="survivaltrivia")startSurvivalTrivia();if(game.id==="puffclock")startPuffClock();if(game.id==="beatdrop")startBeatDrop();if(game.id==="pufflimbo")startPuffLimbo();if(game.id==="puffderby")startPuffDerby();if(game.id==="higherlower")startHigherLower();},800);
+        setTimeout(()=>{setMatchmaking(null);setGameActive({...game,activeInput:input});if(game.id==="wildwest")startDuel();if(game.id==="finalkick"||game.id==="finalkick2"||game.id==="finalkick3"){startKick(game.id);startMatchIntro(kickOpponent.current);}if(game.id==="balloon")startBalloonPop();if(game.id==="russian")startRussianRoulette();if(game.id==="puffpong")startPuffPong();if(game.id==="rhythm")startRhythmPuff();if(game.id==="tugofwar")startTugOfWar();if(game.id==="hotpotato")startHotPotato();if(game.id==="hooked")startHooked();if(game.id==="rps")startRps();if(game.id==="survivaltrivia")startSurvivalTrivia();if(game.id==="puffclock")startPuffClock();if(game.id==="beatdrop")startBeatDrop();if(game.id==="pufflimbo")startPuffLimbo();if(game.id==="puffderby")startPuffDerby();if(game.id==="higherlower")startHigherLower();if(game.id==="simonpuffs")startSimonPuffs();if(game.id==="puffauction")startPuffAuction();},800);
       },mode==="ai"?400:1200);
     });
   };
@@ -6906,7 +6906,7 @@ export default function MoodLabArena() {
     const startShowGame = (g) => {
       showMC("intro", {show:g.name});
       if(g.id==="vibecheck") vcStartGame();
-      else if(g.id==="spinwin"){setSelectedGame(g);swStartGame();}
+      // spinwin moved to Fortune
       else if(g.id==="higherlower"){setGameActive({id:"higherlower",name:"Higher or Lower",emoji:"📊",color:C.cyan});startHigherLower();}
       else if(g.id==="survivaltrivia"){setGameActive({id:"survivaltrivia",name:"Survival Trivia",emoji:"🏆",color:C.purple});startSurvivalTrivia();}
       else if(g.id==="simonpuffs"){setGameActive({id:"simonpuffs",name:"Simon Puffs",emoji:"🔴",color:C.red});startSimonPuffs();}
