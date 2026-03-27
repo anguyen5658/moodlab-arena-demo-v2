@@ -2592,7 +2592,7 @@ export default function MoodLabArena() {
       setMatchmaking({game,mode,stage:"searching",input});
       setTimeout(()=>{
         setMatchmaking(p=>p?{...p,stage:"found",opp:mode==="ai"?"🤖 AI Bot":mode==="random"?"🎲 Player_847":"👫 Minh"}:null);
-        setTimeout(()=>{setMatchmaking(null);setGameActive({...game,activeInput:input});if(game.id==="wildwest")startDuel();if(game.id==="finalkick"||game.id==="finalkick2"||game.id==="finalkick3"){startKick(game.id);startMatchIntro(kickOpponent.current);}if(game.id==="balloon")startBalloonPop();if(game.id==="russian")startRussianRoulette();if(game.id==="puffpong")startPuffPong();if(game.id==="rhythm")startRhythmPuff();if(game.id==="tugofwar")startTugOfWar();if(game.id==="hotpotato")startHotPotato();if(game.id==="hooked")startHooked();if(game.id==="rps")startRps();if(game.id==="survivaltrivia")startSurvivalTrivia();if(game.id==="puffclock")startPuffClock();if(game.id==="beatdrop")startBeatDrop();if(game.id==="pufflimbo")startPuffLimbo();if(game.id==="puffderby")startPuffDerby();if(game.id==="higherlower")startHigherLower();if(game.id==="simonpuffs")startSimonPuffs();if(game.id==="puffauction")startPuffAuction();},800);
+        setTimeout(()=>{setMatchmaking(null);setGameActive({...game,activeInput:input});if(game.id==="wildwest")startDuel();if(game.id==="finalkick"||game.id==="finalkick2"||game.id==="finalkick3"){startKick(game.id);startMatchIntro(kickOpponent.current);}if(game.id==="balloon")startBalloonPop();if(game.id==="russian")startRussianRoulette();if(game.id==="puffpong")startPuffPong();if(game.id==="rhythm")startRhythmPuff();if(game.id==="tugofwar")startTugOfWar();if(game.id==="hotpotato")startHotPotato();if(game.id==="hooked")startHooked();if(game.id==="rps")startRps();if(game.id==="survivaltrivia")startSurvivalTrivia();if(game.id==="puffclock")startPuffClock();if(game.id==="beatdrop")startBeatDrop();if(game.id==="pufflimbo")startPuffLimbo();if(game.id==="puffderby")startPuffDerby();if(game.id==="higherlower")startHigherLower();if(game.id==="simonpuffs")startSimonPuffs();if(game.id==="puffauction")startPuffAuction();if(game.id==="vibecheck")vcStartGame();if(game.id==="pricepuff"){notify("The Price is Puff starting!",C.green);}},800);
       },mode==="ai"?400:1200);
     });
   };
@@ -6900,8 +6900,7 @@ export default function MoodLabArena() {
     const upcomingShows = SHOW_GAMES.filter(g=>!onAirShows.find(s=>s.id===g.id));
     const launchShowFromHub = (g) => {
       playFx("select");
-      setStageRole("contestant");
-      startShowGame(g);
+      setSelectedGame(g);
     };
     const startShowGame = (g) => {
       showMC("intro", {show:g.name});
@@ -15712,6 +15711,37 @@ export default function MoodLabArena() {
               <span style={{fontSize:10,color:C.text3}}>›</span>
             </div>}
 
+            {selectedGame.live ? (
+            <>
+            {/* ═══ STAGE SHOW — ROLE SELECTION ═══ */}
+            <div style={{width:"100%",maxWidth:320,display:"flex",flexDirection:"column",gap:8,marginBottom:16}}>
+              <div style={{fontSize:10,fontWeight:800,color:C.gold,letterSpacing:2,textAlign:"center",marginBottom:4}}>CHOOSE YOUR ROLE</div>
+              <div onClick={()=>{playFx("select");setStageRole("contestant");setSelectedGame(null);const g=selectedGame;showMC("intro",{show:g.name});if(g.id==="vibecheck")vcStartGame();else if(g.id==="higherlower"){setGameActive({id:"higherlower",name:"Higher or Lower",emoji:"📊",color:C.cyan});startHigherLower();}else if(g.id==="survivaltrivia"){setGameActive({id:"survivaltrivia",name:"Survival Trivia",emoji:"🏆",color:C.purple});startSurvivalTrivia();}else if(g.id==="simonpuffs"){setGameActive({id:"simonpuffs",name:"Simon Puffs",emoji:"🔴",color:C.red});startSimonPuffs();}else if(g.id==="puffauction"){setGameActive({id:"puffauction",name:"Puff Auction",emoji:"🔨",color:C.lime});startPuffAuction();}else if(g.id==="pricepuff"){setGameActive({id:"pricepuff",name:"The Price is Puff",emoji:"💰",color:C.green});notify("The Price is Puff starting!",C.green);}}} style={{
+                display:"flex",alignItems:"center",gap:12,padding:"14px 16px",borderRadius:14,cursor:"pointer",
+                background:`linear-gradient(135deg, ${C.gold}12, ${C.gold}05)`,border:`1px solid ${C.gold}25`,
+              }}>
+                <div style={{fontSize:28}}>🎯</div>
+                <div style={{flex:1,textAlign:"left"}}>
+                  <div style={{fontSize:13,fontWeight:800,color:C.gold}}>Contestant</div>
+                  <div style={{fontSize:9,color:C.text3,marginTop:1}}>Step into the spotlight and play!</div>
+                </div>
+                <div style={{fontSize:14,color:`${C.gold}60`}}>›</div>
+              </div>
+              <div onClick={()=>{playFx("select");setStageRole("audience");setSelectedGame(null);const g=selectedGame;showMC("intro",{show:g.name});if(g.id==="vibecheck")vcStartGame();else if(g.id==="higherlower"){setGameActive({id:"higherlower",name:"Higher or Lower",emoji:"📊",color:C.cyan});startHigherLower();}else if(g.id==="survivaltrivia"){setGameActive({id:"survivaltrivia",name:"Survival Trivia",emoji:"🏆",color:C.purple});startSurvivalTrivia();}else if(g.id==="simonpuffs"){setGameActive({id:"simonpuffs",name:"Simon Puffs",emoji:"🔴",color:C.red});startSimonPuffs();}else if(g.id==="puffauction"){setGameActive({id:"puffauction",name:"Puff Auction",emoji:"🔨",color:C.lime});startPuffAuction();}else if(g.id==="pricepuff"){setGameActive({id:"pricepuff",name:"The Price is Puff",emoji:"💰",color:C.green});notify("The Price is Puff starting!",C.green);}}} style={{
+                display:"flex",alignItems:"center",gap:12,padding:"14px 16px",borderRadius:14,cursor:"pointer",
+                background:`${C.text3}06`,border:`1px solid ${C.text3}15`,
+              }}>
+                <div style={{fontSize:28}}>👥</div>
+                <div style={{flex:1,textAlign:"left"}}>
+                  <div style={{fontSize:13,fontWeight:800,color:C.text2}}>Audience</div>
+                  <div style={{fontSize:9,color:C.text3,marginTop:1}}>Watch, react, and cheer!</div>
+                </div>
+                <div style={{fontSize:14,color:`${C.text3}60`}}>›</div>
+              </div>
+            </div>
+            </>
+            ) : (
+            <>
             {/* ═══ SECTION A: QUICK PLAY ═══ */}
             <div style={{width:"100%",maxWidth:340,marginBottom:12}}>
               <div style={{fontSize:10,fontWeight:800,color:C.text2,letterSpacing:1.5,marginBottom:6}}>⚡ QUICK PLAY</div>
@@ -15826,6 +15856,8 @@ export default function MoodLabArena() {
                 </div>
               </div>
             )}
+            </>
+            )}
           </div>
 
           {/* ═══ HOW TO PLAY — MASSIVE VISUAL REDESIGN ═══ */}
@@ -15851,6 +15883,12 @@ export default function MoodLabArena() {
                     selectedGame.id==="tugofwar"?"💪🪢":
                     selectedGame.id==="hotpotato"?"💣🔥":
                     selectedGame.id==="hooked"?"🎣🐟":
+                    selectedGame.id==="vibecheck"?"🧠🎤":
+                    selectedGame.id==="survivaltrivia"?"🏆💀":
+                    selectedGame.id==="simonpuffs"?"🔴🟢🔵":
+                    selectedGame.id==="puffauction"?"🔨💨":
+                    selectedGame.id==="higherlower"?"📊🔼🔽":
+                    selectedGame.id==="pricepuff"?"💰🏷️":
                     selectedGame.emoji
                   }</div>
                   <div style={{fontSize:18,fontWeight:900,color:C.text}}>{
@@ -15865,6 +15903,12 @@ export default function MoodLabArena() {
                     selectedGame.id==="tugofwar"?"Tug of War":
                     selectedGame.id==="hotpotato"?"Hot Potato":
                     selectedGame.id==="hooked"?"Hooked":
+                    selectedGame.id==="vibecheck"?"Vibe Check":
+                    selectedGame.id==="survivaltrivia"?"Survival Trivia":
+                    selectedGame.id==="simonpuffs"?"Simon Puffs":
+                    selectedGame.id==="puffauction"?"Puff Auction":
+                    selectedGame.id==="higherlower"?"Higher or Lower":
+                    selectedGame.id==="pricepuff"?"The Price is Puff":
                     selectedGame.name
                   }</div>
                   <div style={{fontSize:10,color:C.text2}}>{
@@ -15879,6 +15923,12 @@ export default function MoodLabArena() {
                     selectedGame.id==="tugofwar"?"Puff Power vs AI — Pull the Rope!":
                     selectedGame.id==="hotpotato"?"Pass the Bomb — Last One Standing Wins!":
                     selectedGame.id==="hooked"?"Stack Fishing — Puff to Reel In!":
+                    selectedGame.id==="vibecheck"?"Live Trivia Game Show — 100 Enter, 1 Survives!":
+                    selectedGame.id==="survivaltrivia"?"Wrong Answer = Instant Death. Last One Standing!":
+                    selectedGame.id==="simonpuffs"?"Remember the Pattern, Repeat with Puffs!":
+                    selectedGame.id==="puffauction"?"Bid with Your Lungs — Biggest Puff Wins!":
+                    selectedGame.id==="higherlower"?"Guess if the Next Stat is Higher or Lower!":
+                    selectedGame.id==="pricepuff"?"Guess the Price — Closest Without Going Over!":
                     selectedGame.desc
                   }</div>
                 </div>
@@ -17236,6 +17286,500 @@ export default function MoodLabArena() {
                       <div key={i} style={{display:"flex",alignItems:"flex-start",gap:6,padding:"5px 8px",borderRadius:8,background:`${tip.c}05`}}>
                         <span style={{fontSize:12,flexShrink:0}}>{tip.e}</span>
                         <span style={{fontSize:9,color:C.text2,lineHeight:1.4}}>{tip.t}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                </>) : (selectedGame.id==="vibecheck") ? (<>
+
+                {/* ═══ VIBE CHECK — GAME FLOW ═══ */}
+                <div style={{padding:"12px",borderRadius:16,...GLASS_CARD,marginBottom:12}}>
+                  <div style={{fontSize:9,fontWeight:800,color:C.gold,letterSpacing:2,marginBottom:8,textAlign:"center"}}>⚡ GAME FLOW</div>
+                  <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
+                    {[
+                      {step:"1",icon:"🎟️",label:"Join Show",sub:"Enter as Contestant or Audience",color:C.cyan,arrow:true},
+                      {step:"2",icon:"🎤",label:"MC Asks Question",sub:"Trivia question appears on screen",color:C.gold,arrow:true},
+                      {step:"3",icon:"⏱️",label:"10s Timer",sub:"Answer before time runs out!",color:C.orange,arrow:true},
+                      {step:"4",icon:"💨",label:"Answer by Puff",sub:"Puff duration = your answer (A/B/C/D)",color:C.lime,arrow:true},
+                      {step:"5",icon:"✅",label:"Correct = Survive",sub:"Wrong = ELIMINATED. Last standing wins!",color:C.green,arrow:false},
+                    ].map((s,i)=>(
+                      <React.Fragment key={i}>
+                        <div style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"6px 10px",borderRadius:10,background:`${s.color}08`,border:`1px solid ${s.color}15`}}>
+                          <div style={{width:28,height:28,borderRadius:8,background:`${s.color}20`,border:`1px solid ${s.color}30`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,flexShrink:0}}>{s.icon}</div>
+                          <div style={{flex:1}}>
+                            <div style={{fontSize:10,fontWeight:800,color:s.color}}>{s.label}</div>
+                            <div style={{fontSize:7,color:C.text3}}>{s.sub}</div>
+                          </div>
+                          <div style={{width:18,height:18,borderRadius:"50%",background:`${s.color}15`,border:`1px solid ${s.color}30`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,fontWeight:900,color:s.color}}>{s.step}</div>
+                        </div>
+                        {s.arrow && <div style={{fontSize:10,color:C.text3+"60",lineHeight:1}}>↓</div>}
+                      </React.Fragment>
+                    ))}
+                  </div>
+                </div>
+
+                {/* ═══ VIBE CHECK — PUFF MECHANIC ═══ */}
+                <div style={{padding:"12px",borderRadius:16,...GLASS_CARD,marginBottom:12}}>
+                  <div style={{fontSize:9,fontWeight:800,color:C.lime,letterSpacing:2,marginBottom:8,textAlign:"center"}}>💨 PUFF = ANSWER</div>
+                  <div style={{fontSize:8,color:C.text2,textAlign:"center",marginBottom:8}}>Your puff duration selects your answer!</div>
+                  <div style={{height:32,borderRadius:16,overflow:"hidden",display:"flex",marginBottom:6,border:`2px solid ${C.border}`}}>
+                    <div style={{width:"25%",background:`${C.cyan}20`,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:7,fontWeight:900,color:C.cyan}}>A (Tap)</span></div>
+                    <div style={{width:"25%",background:`${C.green}20`,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:7,fontWeight:900,color:C.green}}>B (Short)</span></div>
+                    <div style={{width:"25%",background:`${C.orange}20`,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:7,fontWeight:900,color:C.orange}}>C (Med)</span></div>
+                    <div style={{width:"25%",background:`${C.purple}20`,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:7,fontWeight:900,color:C.purple}}>D (Long)</span></div>
+                  </div>
+                  <div style={{display:"flex",justifyContent:"space-between",padding:"0 2px"}}>
+                    <span style={{fontSize:6,color:C.text3}}>Tap</span>
+                    <span style={{fontSize:6,color:C.text3}}>0.5-1.5s</span>
+                    <span style={{fontSize:6,color:C.text3}}>1.5-3s</span>
+                    <span style={{fontSize:6,color:C.text3}}>3s+</span>
+                  </div>
+                </div>
+
+                {/* ═══ VIBE CHECK — SPECIAL FEATURES ═══ */}
+                <div style={{padding:"12px",borderRadius:16,...GLASS_CARD,marginBottom:12}}>
+                  <div style={{fontSize:9,fontWeight:800,color:C.purple,letterSpacing:2,marginBottom:8,textAlign:"center"}}>✨ SPECIAL FEATURES</div>
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
+                    {[
+                      {icon:"👥",title:"100 Players",desc:"Mass elimination format!",color:C.cyan},
+                      {icon:"💀",title:"Wrong = Out",desc:"No second chances",color:C.red},
+                      {icon:"🔥",title:"Streak Bonus",desc:"Consecutive correct = bonus pts",color:C.gold},
+                      {icon:"🎭",title:"Audience Vote",desc:"Audience puffs influence the show",color:C.purple},
+                    ].map((f,i)=>(
+                      <div key={i} style={{padding:"8px",borderRadius:10,background:`${f.color}06`,border:`1px solid ${f.color}12`,textAlign:"center"}}>
+                        <div style={{fontSize:16,marginBottom:2}}>{f.icon}</div>
+                        <div style={{fontSize:8,fontWeight:800,color:f.color}}>{f.title}</div>
+                        <div style={{fontSize:7,color:C.text3}}>{f.desc}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* ═══ VIBE CHECK — PRO TIPS ═══ */}
+                <div style={{padding:"12px",borderRadius:16,background:`${C.lime}06`,border:`1px solid ${C.lime}15`,marginBottom:8}}>
+                  <div style={{fontSize:9,fontWeight:800,color:C.lime,letterSpacing:2,marginBottom:6,textAlign:"center"}}>🧠 PRO TIPS</div>
+                  <div style={{display:"flex",flexDirection:"column",gap:4}}>
+                    {[
+                      "Practice your puff timing — consistency is key",
+                      "Short puff = A, slightly longer = B, etc.",
+                      "Watch the audience reactions for hints",
+                      "Streak bonus multiplies — don't break the chain!",
+                    ].map((tip,i)=>(
+                      <div key={i} style={{display:"flex",gap:6,alignItems:"flex-start"}}>
+                        <span style={{fontSize:8,color:C.lime,fontWeight:900,flexShrink:0}}>💡</span>
+                        <span style={{fontSize:8,color:C.text2,lineHeight:1.3}}>{tip}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                </>) : (selectedGame.id==="survivaltrivia") ? (<>
+
+                {/* ═══ SURVIVAL TRIVIA — GAME FLOW ═══ */}
+                <div style={{padding:"12px",borderRadius:16,...GLASS_CARD,marginBottom:12}}>
+                  <div style={{fontSize:9,fontWeight:800,color:C.gold,letterSpacing:2,marginBottom:8,textAlign:"center"}}>⚡ GAME FLOW</div>
+                  <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
+                    {[
+                      {step:"1",icon:"👥",label:"100 Enter",sub:"All contestants start alive",color:C.cyan,arrow:true},
+                      {step:"2",icon:"❓",label:"Question Every 15s",sub:"Rapid-fire trivia barrage",color:C.gold,arrow:true},
+                      {step:"3",icon:"💀",label:"Wrong = Instant Death",sub:"No lives, no mercy!",color:C.red,arrow:true},
+                      {step:"4",icon:"⚡",label:"Questions Get Harder",sub:"Timer drops to 8s in finals",color:C.orange,arrow:true},
+                      {step:"5",icon:"🏆",label:"Final 3 Showdown",sub:"Last survivors battle for the crown",color:C.gold,arrow:false},
+                    ].map((s,i)=>(
+                      <React.Fragment key={i}>
+                        <div style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"6px 10px",borderRadius:10,background:`${s.color}08`,border:`1px solid ${s.color}15`}}>
+                          <div style={{width:28,height:28,borderRadius:8,background:`${s.color}20`,border:`1px solid ${s.color}30`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,flexShrink:0}}>{s.icon}</div>
+                          <div style={{flex:1}}>
+                            <div style={{fontSize:10,fontWeight:800,color:s.color}}>{s.label}</div>
+                            <div style={{fontSize:7,color:C.text3}}>{s.sub}</div>
+                          </div>
+                          <div style={{width:18,height:18,borderRadius:"50%",background:`${s.color}15`,border:`1px solid ${s.color}30`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,fontWeight:900,color:s.color}}>{s.step}</div>
+                        </div>
+                        {s.arrow && <div style={{fontSize:10,color:C.text3+"60",lineHeight:1}}>↓</div>}
+                      </React.Fragment>
+                    ))}
+                  </div>
+                </div>
+
+                {/* ═══ SURVIVAL TRIVIA — PUFF MECHANIC ═══ */}
+                <div style={{padding:"12px",borderRadius:16,...GLASS_CARD,marginBottom:12}}>
+                  <div style={{fontSize:9,fontWeight:800,color:C.lime,letterSpacing:2,marginBottom:8,textAlign:"center"}}>💨 PUFF = ANSWER</div>
+                  <div style={{fontSize:8,color:C.text2,textAlign:"center",marginBottom:8}}>Same as Vibe Check — puff duration picks A/B/C/D</div>
+                  <div style={{height:32,borderRadius:16,overflow:"hidden",display:"flex",marginBottom:6,border:`2px solid ${C.border}`}}>
+                    <div style={{width:"25%",background:`${C.cyan}20`,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:7,fontWeight:900,color:C.cyan}}>A (Tap)</span></div>
+                    <div style={{width:"25%",background:`${C.green}20`,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:7,fontWeight:900,color:C.green}}>B (Short)</span></div>
+                    <div style={{width:"25%",background:`${C.orange}20`,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:7,fontWeight:900,color:C.orange}}>C (Med)</span></div>
+                    <div style={{width:"25%",background:`${C.purple}20`,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:7,fontWeight:900,color:C.purple}}>D (Long)</span></div>
+                  </div>
+                  <div style={{display:"flex",justifyContent:"space-between",padding:"0 2px"}}>
+                    <span style={{fontSize:6,color:C.text3}}>Tap</span>
+                    <span style={{fontSize:6,color:C.text3}}>0.5-1.5s</span>
+                    <span style={{fontSize:6,color:C.text3}}>1.5-3s</span>
+                    <span style={{fontSize:6,color:C.text3}}>3s+</span>
+                  </div>
+                </div>
+
+                {/* ═══ SURVIVAL TRIVIA — SPECIAL FEATURES ═══ */}
+                <div style={{padding:"12px",borderRadius:16,...GLASS_CARD,marginBottom:12}}>
+                  <div style={{fontSize:9,fontWeight:800,color:C.purple,letterSpacing:2,marginBottom:8,textAlign:"center"}}>✨ SPECIAL FEATURES</div>
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
+                    {[
+                      {icon:"💀",title:"Instant Death",desc:"One wrong answer and you're out",color:C.red},
+                      {icon:"📈",title:"Harder Over Time",desc:"Questions escalate in difficulty",color:C.orange},
+                      {icon:"⏱️",title:"Timer Shrinks",desc:"15s drops to 8s in finals",color:C.gold},
+                      {icon:"🏆",title:"Final 3",desc:"Last 3 get a special showdown",color:C.purple},
+                    ].map((f,i)=>(
+                      <div key={i} style={{padding:"8px",borderRadius:10,background:`${f.color}06`,border:`1px solid ${f.color}12`,textAlign:"center"}}>
+                        <div style={{fontSize:16,marginBottom:2}}>{f.icon}</div>
+                        <div style={{fontSize:8,fontWeight:800,color:f.color}}>{f.title}</div>
+                        <div style={{fontSize:7,color:C.text3}}>{f.desc}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* ═══ SURVIVAL TRIVIA — PRO TIPS ═══ */}
+                <div style={{padding:"12px",borderRadius:16,background:`${C.lime}06`,border:`1px solid ${C.lime}15`,marginBottom:8}}>
+                  <div style={{fontSize:9,fontWeight:800,color:C.lime,letterSpacing:2,marginBottom:6,textAlign:"center"}}>🧠 PRO TIPS</div>
+                  <div style={{display:"flex",flexDirection:"column",gap:4}}>
+                    {[
+                      "Early rounds are easy — save your focus for later",
+                      "Timer drops to 8s in finals — practice quick puffs",
+                      "If unsure, a medium puff (B/C) is safer than extremes",
+                      "Watch elimination count — adapt your strategy",
+                    ].map((tip,i)=>(
+                      <div key={i} style={{display:"flex",gap:6,alignItems:"flex-start"}}>
+                        <span style={{fontSize:8,color:C.lime,fontWeight:900,flexShrink:0}}>💡</span>
+                        <span style={{fontSize:8,color:C.text2,lineHeight:1.3}}>{tip}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                </>) : (selectedGame.id==="simonpuffs") ? (<>
+
+                {/* ═══ SIMON PUFFS — GAME FLOW ═══ */}
+                <div style={{padding:"12px",borderRadius:16,...GLASS_CARD,marginBottom:12}}>
+                  <div style={{fontSize:9,fontWeight:800,color:C.gold,letterSpacing:2,marginBottom:8,textAlign:"center"}}>⚡ GAME FLOW</div>
+                  <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
+                    {[
+                      {step:"1",icon:"👀",label:"MC Shows Pattern",sub:"Watch the sequence of colored zones",color:C.cyan,arrow:true},
+                      {step:"2",icon:"🧠",label:"Remember It",sub:"Memorize the order and durations",color:C.purple,arrow:true},
+                      {step:"3",icon:"💨",label:"Repeat with Puffs",sub:"Puff the correct durations in order",color:C.lime,arrow:true},
+                      {step:"4",icon:"➕",label:"Each Round Adds One",sub:"Pattern grows longer each round",color:C.orange,arrow:true},
+                      {step:"5",icon:"❌",label:"Wrong = Out",sub:"Mess up the pattern and you're eliminated",color:C.red,arrow:false},
+                    ].map((s,i)=>(
+                      <React.Fragment key={i}>
+                        <div style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"6px 10px",borderRadius:10,background:`${s.color}08`,border:`1px solid ${s.color}15`}}>
+                          <div style={{width:28,height:28,borderRadius:8,background:`${s.color}20`,border:`1px solid ${s.color}30`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,flexShrink:0}}>{s.icon}</div>
+                          <div style={{flex:1}}>
+                            <div style={{fontSize:10,fontWeight:800,color:s.color}}>{s.label}</div>
+                            <div style={{fontSize:7,color:C.text3}}>{s.sub}</div>
+                          </div>
+                          <div style={{width:18,height:18,borderRadius:"50%",background:`${s.color}15`,border:`1px solid ${s.color}30`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,fontWeight:900,color:s.color}}>{s.step}</div>
+                        </div>
+                        {s.arrow && <div style={{fontSize:10,color:C.text3+"60",lineHeight:1}}>↓</div>}
+                      </React.Fragment>
+                    ))}
+                  </div>
+                </div>
+
+                {/* ═══ SIMON PUFFS — PUFF ZONES ═══ */}
+                <div style={{padding:"12px",borderRadius:16,...GLASS_CARD,marginBottom:12}}>
+                  <div style={{fontSize:9,fontWeight:800,color:C.lime,letterSpacing:2,marginBottom:8,textAlign:"center"}}>💨 PUFF DURATION = ZONE</div>
+                  <div style={{fontSize:8,color:C.text2,textAlign:"center",marginBottom:8}}>Puff length determines which zone you hit</div>
+                  <div style={{height:32,borderRadius:16,overflow:"hidden",display:"flex",marginBottom:6,border:`2px solid ${C.border}`}}>
+                    <div style={{width:"33%",background:`${C.red}25`,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:7,fontWeight:900,color:C.red}}>Zone 1 (Short)</span></div>
+                    <div style={{width:"34%",background:`${C.green}25`,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:7,fontWeight:900,color:C.green}}>Zone 2 (Med)</span></div>
+                    <div style={{width:"33%",background:`${C.blue}25`,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:7,fontWeight:900,color:C.blue}}>Zone 3 (Long)</span></div>
+                  </div>
+                  <div style={{display:"flex",justifyContent:"space-between",padding:"0 2px"}}>
+                    <span style={{fontSize:6,color:C.red}}>Under 1s</span>
+                    <span style={{fontSize:6,color:C.green}}>1-2.5s</span>
+                    <span style={{fontSize:6,color:C.blue}}>2.5s+</span>
+                  </div>
+                </div>
+
+                {/* ═══ SIMON PUFFS — SPECIAL FEATURES ═══ */}
+                <div style={{padding:"12px",borderRadius:16,...GLASS_CARD,marginBottom:12}}>
+                  <div style={{fontSize:9,fontWeight:800,color:C.purple,letterSpacing:2,marginBottom:8,textAlign:"center"}}>✨ SPECIAL FEATURES</div>
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
+                    {[
+                      {icon:"🔟",title:"10 Rounds",desc:"Survive all 10 to win",color:C.gold},
+                      {icon:"🧠",title:"Memory Test",desc:"Pattern grows each round",color:C.purple},
+                      {icon:"🎯",title:"Puff Precision",desc:"Duration must match the zone",color:C.lime},
+                      {icon:"⚡",title:"Speed Bonus",desc:"Faster recall = more points",color:C.cyan},
+                    ].map((f,i)=>(
+                      <div key={i} style={{padding:"8px",borderRadius:10,background:`${f.color}06`,border:`1px solid ${f.color}12`,textAlign:"center"}}>
+                        <div style={{fontSize:16,marginBottom:2}}>{f.icon}</div>
+                        <div style={{fontSize:8,fontWeight:800,color:f.color}}>{f.title}</div>
+                        <div style={{fontSize:7,color:C.text3}}>{f.desc}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* ═══ SIMON PUFFS — PRO TIPS ═══ */}
+                <div style={{padding:"12px",borderRadius:16,background:`${C.lime}06`,border:`1px solid ${C.lime}15`,marginBottom:8}}>
+                  <div style={{fontSize:9,fontWeight:800,color:C.lime,letterSpacing:2,marginBottom:6,textAlign:"center"}}>🧠 PRO TIPS</div>
+                  <div style={{display:"flex",flexDirection:"column",gap:4}}>
+                    {[
+                      "Watch the demo carefully — count the beats mentally",
+                      "Short-Med-Long is the rhythm — practice the feel",
+                      "Relax your breathing between rounds for consistency",
+                      "Zone 2 (medium) is the trickiest — practice 1-2.5s holds",
+                    ].map((tip,i)=>(
+                      <div key={i} style={{display:"flex",gap:6,alignItems:"flex-start"}}>
+                        <span style={{fontSize:8,color:C.lime,fontWeight:900,flexShrink:0}}>💡</span>
+                        <span style={{fontSize:8,color:C.text2,lineHeight:1.3}}>{tip}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                </>) : (selectedGame.id==="puffauction") ? (<>
+
+                {/* ═══ PUFF AUCTION — GAME FLOW ═══ */}
+                <div style={{padding:"12px",borderRadius:16,...GLASS_CARD,marginBottom:12}}>
+                  <div style={{fontSize:9,fontWeight:800,color:C.gold,letterSpacing:2,marginBottom:8,textAlign:"center"}}>⚡ GAME FLOW</div>
+                  <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
+                    {[
+                      {step:"1",icon:"🎁",label:"Prize Revealed",sub:"See what's up for auction",color:C.gold,arrow:true},
+                      {step:"2",icon:"📢",label:"Bidding Opens",sub:"All contestants prepare to puff",color:C.cyan,arrow:true},
+                      {step:"3",icon:"💨",label:"Hold to Puff",sub:"Your puff duration = your bid",color:C.lime,arrow:true},
+                      {step:"4",icon:"🏆",label:"Longest Bid Wins",sub:"But don't go over 5s or you're DQ'd!",color:C.green,arrow:true},
+                      {step:"5",icon:"🔄",label:"5 Rounds",sub:"New prize each round",color:C.purple,arrow:false},
+                    ].map((s,i)=>(
+                      <React.Fragment key={i}>
+                        <div style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"6px 10px",borderRadius:10,background:`${s.color}08`,border:`1px solid ${s.color}15`}}>
+                          <div style={{width:28,height:28,borderRadius:8,background:`${s.color}20`,border:`1px solid ${s.color}30`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,flexShrink:0}}>{s.icon}</div>
+                          <div style={{flex:1}}>
+                            <div style={{fontSize:10,fontWeight:800,color:s.color}}>{s.label}</div>
+                            <div style={{fontSize:7,color:C.text3}}>{s.sub}</div>
+                          </div>
+                          <div style={{width:18,height:18,borderRadius:"50%",background:`${s.color}15`,border:`1px solid ${s.color}30`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,fontWeight:900,color:s.color}}>{s.step}</div>
+                        </div>
+                        {s.arrow && <div style={{fontSize:10,color:C.text3+"60",lineHeight:1}}>↓</div>}
+                      </React.Fragment>
+                    ))}
+                  </div>
+                </div>
+
+                {/* ═══ PUFF AUCTION — BID METER ═══ */}
+                <div style={{padding:"12px",borderRadius:16,...GLASS_CARD,marginBottom:12}}>
+                  <div style={{fontSize:9,fontWeight:800,color:C.lime,letterSpacing:2,marginBottom:8,textAlign:"center"}}>💨 PUFF = BID AMOUNT</div>
+                  <div style={{fontSize:8,color:C.text2,textAlign:"center",marginBottom:8}}>Hold longer to bid higher — but 5s+ = DISQUALIFIED!</div>
+                  <div style={{height:32,borderRadius:16,overflow:"hidden",display:"flex",marginBottom:6,border:`2px solid ${C.border}`}}>
+                    <div style={{width:"20%",background:`${C.text3}15`,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:6,fontWeight:700,color:C.text3}}>LOW</span></div>
+                    <div style={{width:"25%",background:`${C.cyan}15`,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:6,fontWeight:700,color:C.cyan}}>GOOD</span></div>
+                    <div style={{width:"30%",background:`${C.green}25`,display:"flex",alignItems:"center",justifyContent:"center",border:`2px solid ${C.green}50`,borderRadius:4}}><span style={{fontSize:7,fontWeight:900,color:C.green}}>SWEET SPOT 🎯</span></div>
+                    <div style={{width:"25%",background:`${C.red}25`,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:7,fontWeight:900,color:C.red}}>💀 DQ!</span></div>
+                  </div>
+                  <div style={{display:"flex",justifyContent:"space-between",padding:"0 2px"}}>
+                    <span style={{fontSize:6,color:C.text3}}>0-2s</span>
+                    <span style={{fontSize:6,color:C.cyan}}>2-3.5s</span>
+                    <span style={{fontSize:6,color:C.green,fontWeight:800}}>4.0-4.4s</span>
+                    <span style={{fontSize:6,color:C.red}}>5s+ DQ</span>
+                  </div>
+                </div>
+
+                {/* ═══ PUFF AUCTION — SPECIAL FEATURES ═══ */}
+                <div style={{padding:"12px",borderRadius:16,...GLASS_CARD,marginBottom:12}}>
+                  <div style={{fontSize:9,fontWeight:800,color:C.purple,letterSpacing:2,marginBottom:8,textAlign:"center"}}>✨ SPECIAL FEATURES</div>
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
+                    {[
+                      {icon:"🔨",title:"Live Bidding",desc:"All players puff simultaneously",color:C.gold},
+                      {icon:"💀",title:"Blinker = DQ",desc:"5s+ instantly disqualifies you",color:C.red},
+                      {icon:"🎯",title:"Sweet Spot",desc:"4.0-4.4s is the winning zone",color:C.green},
+                      {icon:"🎁",title:"5 Prizes",desc:"Each round a new item to win",color:C.purple},
+                    ].map((f,i)=>(
+                      <div key={i} style={{padding:"8px",borderRadius:10,background:`${f.color}06`,border:`1px solid ${f.color}12`,textAlign:"center"}}>
+                        <div style={{fontSize:16,marginBottom:2}}>{f.icon}</div>
+                        <div style={{fontSize:8,fontWeight:800,color:f.color}}>{f.title}</div>
+                        <div style={{fontSize:7,color:C.text3}}>{f.desc}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* ═══ PUFF AUCTION — PRO TIPS ═══ */}
+                <div style={{padding:"12px",borderRadius:16,background:`${C.lime}06`,border:`1px solid ${C.lime}15`,marginBottom:8}}>
+                  <div style={{fontSize:9,fontWeight:800,color:C.lime,letterSpacing:2,marginBottom:6,textAlign:"center"}}>🧠 PRO TIPS</div>
+                  <div style={{display:"flex",flexDirection:"column",gap:4}}>
+                    {[
+                      "Aim for 4.0-4.4 seconds — the sweet spot to win",
+                      "Going over 5s is instant DQ — count in your head!",
+                      "Watch other players' bids to calibrate yours",
+                      "Save your best puff for the most valuable prize",
+                    ].map((tip,i)=>(
+                      <div key={i} style={{display:"flex",gap:6,alignItems:"flex-start"}}>
+                        <span style={{fontSize:8,color:C.lime,fontWeight:900,flexShrink:0}}>💡</span>
+                        <span style={{fontSize:8,color:C.text2,lineHeight:1.3}}>{tip}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                </>) : (selectedGame.id==="higherlower") ? (<>
+
+                {/* ═══ HIGHER OR LOWER — GAME FLOW ═══ */}
+                <div style={{padding:"12px",borderRadius:16,...GLASS_CARD,marginBottom:12}}>
+                  <div style={{fontSize:9,fontWeight:800,color:C.gold,letterSpacing:2,marginBottom:8,textAlign:"center"}}>⚡ GAME FLOW</div>
+                  <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
+                    {[
+                      {step:"1",icon:"📊",label:"See Current Stat",sub:"A real stat is shown with its value",color:C.cyan,arrow:true},
+                      {step:"2",icon:"🤔",label:"Next Stat Appears",sub:"You see the category but NOT the number",color:C.gold,arrow:true},
+                      {step:"3",icon:"💨",label:"Puff Your Guess",sub:"Short = LOWER, Long = HIGHER",color:C.lime,arrow:true},
+                      {step:"4",icon:"📈",label:"Reveal!",sub:"See if you were right",color:C.green,arrow:true},
+                      {step:"5",icon:"🔥",label:"Build Streak",sub:"10 rounds, streak multiplier for points",color:C.orange,arrow:false},
+                    ].map((s,i)=>(
+                      <React.Fragment key={i}>
+                        <div style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"6px 10px",borderRadius:10,background:`${s.color}08`,border:`1px solid ${s.color}15`}}>
+                          <div style={{width:28,height:28,borderRadius:8,background:`${s.color}20`,border:`1px solid ${s.color}30`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,flexShrink:0}}>{s.icon}</div>
+                          <div style={{flex:1}}>
+                            <div style={{fontSize:10,fontWeight:800,color:s.color}}>{s.label}</div>
+                            <div style={{fontSize:7,color:C.text3}}>{s.sub}</div>
+                          </div>
+                          <div style={{width:18,height:18,borderRadius:"50%",background:`${s.color}15`,border:`1px solid ${s.color}30`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,fontWeight:900,color:s.color}}>{s.step}</div>
+                        </div>
+                        {s.arrow && <div style={{fontSize:10,color:C.text3+"60",lineHeight:1}}>↓</div>}
+                      </React.Fragment>
+                    ))}
+                  </div>
+                </div>
+
+                {/* ═══ HIGHER OR LOWER — PUFF MECHANIC ═══ */}
+                <div style={{padding:"12px",borderRadius:16,...GLASS_CARD,marginBottom:12}}>
+                  <div style={{fontSize:9,fontWeight:800,color:C.lime,letterSpacing:2,marginBottom:8,textAlign:"center"}}>💨 PUFF = YOUR GUESS</div>
+                  <div style={{fontSize:8,color:C.text2,textAlign:"center",marginBottom:8}}>Short puff = LOWER, Long puff = HIGHER</div>
+                  <div style={{height:32,borderRadius:16,overflow:"hidden",display:"flex",marginBottom:6,border:`2px solid ${C.border}`}}>
+                    <div style={{width:"50%",background:`${C.red}20`,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:8,fontWeight:900,color:C.red}}>🔽 LOWER (Short)</span></div>
+                    <div style={{width:"50%",background:`${C.green}20`,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:8,fontWeight:900,color:C.green}}>🔼 HIGHER (Long)</span></div>
+                  </div>
+                  <div style={{display:"flex",justifyContent:"space-between",padding:"0 2px"}}>
+                    <span style={{fontSize:6,color:C.red}}>Under 1.5s = LOWER</span>
+                    <span style={{fontSize:6,color:C.green}}>Over 1.5s = HIGHER</span>
+                  </div>
+                </div>
+
+                {/* ═══ HIGHER OR LOWER — SPECIAL FEATURES ═══ */}
+                <div style={{padding:"12px",borderRadius:16,...GLASS_CARD,marginBottom:12}}>
+                  <div style={{fontSize:9,fontWeight:800,color:C.purple,letterSpacing:2,marginBottom:8,textAlign:"center"}}>✨ SPECIAL FEATURES</div>
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
+                    {[
+                      {icon:"🔟",title:"10 Rounds",desc:"Survive all 10 for max score",color:C.cyan},
+                      {icon:"🔥",title:"Streak x2 x3",desc:"Consecutive correct = multiplier",color:C.gold},
+                      {icon:"🌿",title:"Cannabis Stats",desc:"THC %, prices, consumption data",color:C.green},
+                      {icon:"💻",title:"Tech + Culture",desc:"Social media, sports, pop culture",color:C.purple},
+                    ].map((f,i)=>(
+                      <div key={i} style={{padding:"8px",borderRadius:10,background:`${f.color}06`,border:`1px solid ${f.color}12`,textAlign:"center"}}>
+                        <div style={{fontSize:16,marginBottom:2}}>{f.icon}</div>
+                        <div style={{fontSize:8,fontWeight:800,color:f.color}}>{f.title}</div>
+                        <div style={{fontSize:7,color:C.text3}}>{f.desc}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* ═══ HIGHER OR LOWER — PRO TIPS ═══ */}
+                <div style={{padding:"12px",borderRadius:16,background:`${C.lime}06`,border:`1px solid ${C.lime}15`,marginBottom:8}}>
+                  <div style={{fontSize:9,fontWeight:800,color:C.lime,letterSpacing:2,marginBottom:6,textAlign:"center"}}>🧠 PRO TIPS</div>
+                  <div style={{display:"flex",flexDirection:"column",gap:4}}>
+                    {[
+                      "Know your cannabis stats — THC % ranges help a lot",
+                      "When in doubt, most viral stats tend to be HIGHER",
+                      "Build streaks early — the multiplier compounds fast",
+                      "1.5s is the cutoff — practice that timing!",
+                    ].map((tip,i)=>(
+                      <div key={i} style={{display:"flex",gap:6,alignItems:"flex-start"}}>
+                        <span style={{fontSize:8,color:C.lime,fontWeight:900,flexShrink:0}}>💡</span>
+                        <span style={{fontSize:8,color:C.text2,lineHeight:1.3}}>{tip}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                </>) : (selectedGame.id==="pricepuff") ? (<>
+
+                {/* ═══ PRICE IS PUFF — GAME FLOW ═══ */}
+                <div style={{padding:"12px",borderRadius:16,...GLASS_CARD,marginBottom:12}}>
+                  <div style={{fontSize:9,fontWeight:800,color:C.gold,letterSpacing:2,marginBottom:8,textAlign:"center"}}>⚡ GAME FLOW</div>
+                  <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
+                    {[
+                      {step:"1",icon:"🏷️",label:"Product Shown",sub:"See a real product on screen",color:C.cyan,arrow:true},
+                      {step:"2",icon:"🤔",label:"Guess the Price",sub:"How much does it cost?",color:C.gold,arrow:true},
+                      {step:"3",icon:"💨",label:"Puff Your Guess",sub:"Longer puff = higher price guess",color:C.lime,arrow:true},
+                      {step:"4",icon:"💰",label:"Closest Wins",sub:"Nearest without going over!",color:C.green,arrow:true},
+                      {step:"5",icon:"🔄",label:"Multiple Rounds",sub:"Products get trickier each round",color:C.purple,arrow:false},
+                    ].map((s,i)=>(
+                      <React.Fragment key={i}>
+                        <div style={{display:"flex",alignItems:"center",gap:8,width:"100%",padding:"6px 10px",borderRadius:10,background:`${s.color}08`,border:`1px solid ${s.color}15`}}>
+                          <div style={{width:28,height:28,borderRadius:8,background:`${s.color}20`,border:`1px solid ${s.color}30`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,flexShrink:0}}>{s.icon}</div>
+                          <div style={{flex:1}}>
+                            <div style={{fontSize:10,fontWeight:800,color:s.color}}>{s.label}</div>
+                            <div style={{fontSize:7,color:C.text3}}>{s.sub}</div>
+                          </div>
+                          <div style={{width:18,height:18,borderRadius:"50%",background:`${s.color}15`,border:`1px solid ${s.color}30`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,fontWeight:900,color:s.color}}>{s.step}</div>
+                        </div>
+                        {s.arrow && <div style={{fontSize:10,color:C.text3+"60",lineHeight:1}}>↓</div>}
+                      </React.Fragment>
+                    ))}
+                  </div>
+                </div>
+
+                {/* ═══ PRICE IS PUFF — PUFF MECHANIC ═══ */}
+                <div style={{padding:"12px",borderRadius:16,...GLASS_CARD,marginBottom:12}}>
+                  <div style={{fontSize:9,fontWeight:800,color:C.lime,letterSpacing:2,marginBottom:8,textAlign:"center"}}>💨 PUFF = PRICE GUESS</div>
+                  <div style={{fontSize:8,color:C.text2,textAlign:"center",marginBottom:8}}>Puff duration maps to price — longer = higher guess!</div>
+                  <div style={{height:32,borderRadius:16,overflow:"hidden",display:"flex",marginBottom:6,border:`2px solid ${C.border}`}}>
+                    <div style={{width:"20%",background:`${C.text3}15`,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:6,fontWeight:700,color:C.text3}}>$1-10</span></div>
+                    <div style={{width:"20%",background:`${C.cyan}15`,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:6,fontWeight:700,color:C.cyan}}>$10-50</span></div>
+                    <div style={{width:"20%",background:`${C.green}20`,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:6,fontWeight:700,color:C.green}}>$50-100</span></div>
+                    <div style={{width:"20%",background:`${C.orange}20`,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:6,fontWeight:700,color:C.orange}}>$100-500</span></div>
+                    <div style={{width:"20%",background:`${C.gold}20`,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:6,fontWeight:700,color:C.gold}}>$500+</span></div>
+                  </div>
+                  <div style={{display:"flex",justifyContent:"space-between",padding:"0 2px"}}>
+                    <span style={{fontSize:6,color:C.text3}}>Tap</span>
+                    <span style={{fontSize:6,color:C.cyan}}>1s</span>
+                    <span style={{fontSize:6,color:C.green}}>2s</span>
+                    <span style={{fontSize:6,color:C.orange}}>3s</span>
+                    <span style={{fontSize:6,color:C.gold}}>4s+</span>
+                  </div>
+                </div>
+
+                {/* ═══ PRICE IS PUFF — SPECIAL FEATURES ═══ */}
+                <div style={{padding:"12px",borderRadius:16,...GLASS_CARD,marginBottom:12}}>
+                  <div style={{fontSize:9,fontWeight:800,color:C.purple,letterSpacing:2,marginBottom:8,textAlign:"center"}}>✨ SPECIAL FEATURES</div>
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
+                    {[
+                      {icon:"🏷️",title:"Real Products",desc:"Actual product prices from stores",color:C.cyan},
+                      {icon:"📏",title:"Closest Wins",desc:"Without going over the real price",color:C.green},
+                      {icon:"🎯",title:"Exact = Jackpot",desc:"Nail the exact price for bonus",color:C.gold},
+                      {icon:"🌿",title:"Cannabis Items",desc:"Strains, devices, accessories",color:C.lime},
+                    ].map((f,i)=>(
+                      <div key={i} style={{padding:"8px",borderRadius:10,background:`${f.color}06`,border:`1px solid ${f.color}12`,textAlign:"center"}}>
+                        <div style={{fontSize:16,marginBottom:2}}>{f.icon}</div>
+                        <div style={{fontSize:8,fontWeight:800,color:f.color}}>{f.title}</div>
+                        <div style={{fontSize:7,color:C.text3}}>{f.desc}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* ═══ PRICE IS PUFF — PRO TIPS ═══ */}
+                <div style={{padding:"12px",borderRadius:16,background:`${C.lime}06`,border:`1px solid ${C.lime}15`,marginBottom:8}}>
+                  <div style={{fontSize:9,fontWeight:800,color:C.lime,letterSpacing:2,marginBottom:6,textAlign:"center"}}>🧠 PRO TIPS</div>
+                  <div style={{display:"flex",flexDirection:"column",gap:4}}>
+                    {[
+                      "Know your cannabis product prices — it helps!",
+                      "Going OVER the price = you lose, aim slightly under",
+                      "Watch other players' puffs for price calibration",
+                      "Premium products (vapes, rigs) are usually $100+",
+                    ].map((tip,i)=>(
+                      <div key={i} style={{display:"flex",gap:6,alignItems:"flex-start"}}>
+                        <span style={{fontSize:8,color:C.lime,fontWeight:900,flexShrink:0}}>💡</span>
+                        <span style={{fontSize:8,color:C.text2,lineHeight:1.3}}>{tip}</span>
                       </div>
                     ))}
                   </div>
