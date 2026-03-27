@@ -5452,8 +5452,8 @@ export default function MoodLabArena() {
           <span style={{fontSize:9,color:C.text2}}>Win Rate: <span style={{color:C.lime,fontWeight:800}}>62%</span></span>
           <span style={{fontSize:9,color:C.text2}}>Streak: <span style={{color:C.orange,fontWeight:800}}>🔥 5</span></span>
         </div>
-        {/* Mini-Games strip */}
-        <div style={{display:"flex",gap:4,marginTop:8}}>
+        {/* Mini-Games strip — removed to save space */}
+        {false && <div style={{display:"flex",gap:4,marginTop:8}}>
           {[
             {type:"roulette",emoji:"🎰",name:"Roulette",color:C.pink},
             {type:"tug",emoji:"🤝",name:"Tug",color:C.gold},
