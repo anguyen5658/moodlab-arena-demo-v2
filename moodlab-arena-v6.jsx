@@ -9451,6 +9451,51 @@ export default function MoodLabArena() {
         </div>
       </div>
 
+      {/* ═══ CHAMPIONS PODIUM ═══ */}
+      <div style={{padding:"0 14px",marginBottom:8}}>
+        <div style={{borderRadius:16,padding:"14px 10px 10px",
+          background:`linear-gradient(135deg, ${C.gold}0A, rgba(255,180,0,0.04), ${C.gold}06)`,
+          border:`1px solid ${C.gold}20`,boxShadow:`0 0 30px ${C.gold}08`}}>
+          <div style={{textAlign:"center",marginBottom:10}}>
+            <div style={{fontSize:10,fontWeight:900,color:C.gold,letterSpacing:3,textShadow:`0 0 12px ${C.gold}40`}}>CHAMPIONS PODIUM</div>
+            <div style={{fontSize:7,color:C.text3,letterSpacing:1,marginTop:2}}>Latest Tournament Winners</div>
+          </div>
+          <div style={{display:"flex",alignItems:"flex-end",gap:4,justifyContent:"center"}}>
+            {[1,0,2].map(idx=>{
+              const ch = WALL_CHAMPIONS[idx];
+              const isFirst = idx===0;
+              const isSec = idx===1;
+              const medals = ["🥇","🥈","🥉"];
+              const podiumColors = [C.gold,"#C0C0C0","#CD7F32"];
+              const podiumBg = isFirst
+                ? `linear-gradient(180deg, ${C.gold}18, ${C.gold}08)`
+                : isSec ? `linear-gradient(180deg, #C0C0C010, #C0C0C006)` : `linear-gradient(180deg, #CD7F3210, #CD7F3206)`;
+              const podiumH = isFirst ? 130 : isSec ? 110 : 100;
+              const avatarSize = isFirst ? 32 : 26;
+              const shortName = ch.tournament.length > 14 ? ch.tournament.slice(0,13) + "..." : ch.tournament;
+              return (
+                <div key={idx} style={{flex:1,maxWidth:isFirst?120:100,height:podiumH,borderRadius:12,padding:"8px 4px",
+                  display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:2,
+                  background:podiumBg,border:`1.5px solid ${podiumColors[idx]}${isFirst?"40":"20"}`,
+                  boxShadow:isFirst?`0 0 20px ${C.gold}15, inset 0 0 15px ${C.gold}08`:"none",
+                  position:"relative",overflow:"hidden"}}>
+                  {isFirst && <div style={{position:"absolute",top:-2,fontSize:16,animation:"wallFloat 2s ease-in-out infinite alternate",filter:`drop-shadow(0 0 6px ${C.gold}60)`}}>👑</div>}
+                  <div style={{fontSize:isFirst?18:14,marginTop:isFirst?14:0}}>{medals[idx]}</div>
+                  <div style={{width:avatarSize,height:avatarSize,borderRadius:"50%",
+                    display:"flex",alignItems:"center",justifyContent:"center",
+                    fontSize:isFirst?18:14,
+                    background:`${podiumColors[idx]}12`,border:`2px solid ${podiumColors[idx]}${isFirst?"50":"30"}`,
+                    boxShadow:isFirst?`0 0 10px ${C.gold}25`:"none"}}>{ch.emoji}</div>
+                  <div style={{fontSize:6,fontWeight:800,color:podiumColors[idx],textAlign:"center",lineHeight:1.2,marginTop:1}}>{shortName}</div>
+                  <div style={{fontSize:8,fontWeight:700,color:C.text,textAlign:"center"}}>{ch.player}</div>
+                  <div style={{fontSize:10}}>{ch.flag}</div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
       {/* ═══ STAT STRIP ═══ */}
       <div style={{padding:"0 14px",marginBottom:8}}>
         <div style={{display:"flex",gap:6}}>
@@ -9474,28 +9519,6 @@ export default function MoodLabArena() {
       </div>
 
       <div style={{padding:"0 14px"}}>
-
-        {/* ═══ CHAMPIONS — Compact ═══ */}
-        <div style={{marginBottom:12,padding:"10px 12px",borderRadius:14,
-          background:`linear-gradient(135deg, ${C.gold}08, rgba(255,180,0,0.03))`,
-          border:`1px solid ${C.gold}15`}}>
-          <div style={{fontSize:9,fontWeight:800,color:C.gold,letterSpacing:2,marginBottom:8}}>CHAMPIONS</div>
-          <div style={{display:"flex",gap:6}}>
-            {WALL_CHAMPIONS.map((ch,i)=>{
-              const colors = [C.gold,"#C0C0C0","#CD7F32"];
-              const medals = ["🥇","🥈","🥉"];
-              return (
-                <div key={i} style={{flex:1,padding:"8px 4px",borderRadius:10,textAlign:"center",
-                  background:`${colors[i]}06`,border:`1px solid ${colors[i]}15`}}>
-                  <div style={{fontSize:14}}>{medals[i]}</div>
-                  <div style={{fontSize:16,marginTop:2}}>{ch.emoji}</div>
-                  <div style={{fontSize:7,fontWeight:800,color:colors[i],marginTop:2,lineHeight:1.2}}>{ch.tournament}</div>
-                  <div style={{fontSize:8,fontWeight:700,color:C.text,marginTop:1}}>{ch.player}</div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
 
         {/* ═══ TAB BAR — TOP ═══ */}
         <div style={{display:"flex",borderBottom:`1px solid ${C.gold}15`,marginBottom:10}}>
