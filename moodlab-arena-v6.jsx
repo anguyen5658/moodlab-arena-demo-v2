@@ -8139,7 +8139,7 @@ export default function MoodLabArena() {
       else if(g.id==="strainbattle"){setGameActive({id:"strainbattle",name:"Strain Battle",emoji:"🌿",color:"#22C55E"});startStrainBattle();}
       else if(g.id==="matchpredictor"){setGameActive({id:"matchpredictor",name:"Match Predictor",emoji:"📊",color:"#3B82F6"});startMatchPredictor();}
       else if(g.id==="dailypicks"){setGameActive({id:"dailypicks",name:"Daily Bets",emoji:"📅",color:"#F97316"});startDailyPicks();}
-      else if(g.id==="spinwin"){setHalftimeGame({type:"roulette",phase:"intro"});}
+      else if(g.id==="spinwin"){setSelectedGame(SHOW_GAMES.find(s=>s.id==="spinwin")||g);swStartGame();}
       else if(g.id==="puffslots"){setGameActive({id:"puffslots",name:"Puff Slots",emoji:"🎰",color:"#FFD700"});startPuffSlots();}
       else if(g.id==="coinflip"){setGameActive({id:"coinflip",name:"Coin Flip",emoji:"🪙",color:"#F59E0B"});startCoinFlip();}
       else if(g.id==="puffblackjack"){setGameActive({id:"puffblackjack",name:"Puff Blackjack",emoji:"🃏",color:"#22C55E"});startPuffBlackjack();}
@@ -8148,6 +8148,8 @@ export default function MoodLabArena() {
       else if(g.id==="scratchpuff"){setGameActive({id:"scratchpuff",name:"Scratch & Puff",emoji:"🎫",color:C.pink});startScratchPuff();}
       else if(g.id==="fortunecookie"){setGameActive({id:"fortunecookie",name:"Fortune Cookie",emoji:"🥠",color:C.orange});startFortuneCookie();}
       else if(g.id==="treasuremap"){setGameActive({id:"treasuremap",name:"Treasure Map",emoji:"🗺️",color:C.gold});startTreasureMap();}
+      else if(g.id==="puffderby"){setGameActive({id:"puffderby",name:"Puff Derby",emoji:"🏇",color:C.green});startPuffDerby();}
+      else if(g.id==="highcard"){notify("High Card Puff coming soon!",C.red);}
       else notify(g.name+" coming soon!",g.color);
     };
     return (
