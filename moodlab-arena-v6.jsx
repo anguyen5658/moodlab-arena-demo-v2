@@ -18269,7 +18269,8 @@ export default function MoodLabArena() {
   };
 
   const vcAnswerQuestion = (ansIdx) => {
-    if(vcAnswered || vcEliminated) return;
+    if(vcAnswered) return;
+    if(vcEliminated && ansIdx !== -1) return; // allow timeout (-1) even when eliminated
     if(vcTimerRef.current){ clearInterval(vcTimerRef.current); vcTimerRef.current=null; }
     setVcAnswered(true);
     setVcPuffAnswer(ansIdx);
@@ -18298,6 +18299,8 @@ export default function MoodLabArena() {
           if(t<=1){
             clearInterval(vcTimerRef.current);
             vcTimerRef.current=null;
+            // Auto-eliminate on timeout
+            setTimeout(()=>vcAnswerQuestion(-1), 100);
             return 0;
           }
           return t-1;
@@ -18308,7 +18311,7 @@ export default function MoodLabArena() {
   },[vcPhase, vcRound, showVibeCheck, vcAnswered]);
 
   const vcNextQuestion = () => {
-    if(vcRound+1 >= VC_QUESTIONS_V2.length || vcPlayers <= 3){
+    if(vcRound+1 >= VC_QUESTIONS_V2.length || vcPlayers <= 3 || vcEliminated){
       setVcPhase("result");
       return;
     }
