@@ -6457,15 +6457,15 @@ export default function MoodLabArena() {
           <video autoPlay loop muted playsInline poster={ARENA_IMAGES.hub} style={{width:"100%",height:"100%",objectFit:"cover",objectPosition:"center"}}>
             <source src={ARENA_VIDEOS.hub} type="video/mp4"/>
           </video>
-          {/* Cali Clear logo — below ceiling panel, above World Cup arch */}
-          <div style={{position:"absolute",top:"39%",left:"50%",transform:"translate(-50%,-50%)",pointerEvents:"none",zIndex:1}}>
+          {/* Cali Clear logo — responsive, positioned relative to background */}
+          <div style={{position:"absolute",top:"calc(35% + 2vh)",left:"50%",transform:"translate(-50%,-50%)",pointerEvents:"none",zIndex:1}}>
             {/* Outer glow pulse */}
-            <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:120,height:80,borderRadius:"50%",background:`radial-gradient(ellipse, ${C.gold}15, transparent 65%)`,animation:"breathe 3s ease-in-out infinite"}}/>
+            <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:"28vw",maxWidth:120,height:"18vw",maxHeight:80,borderRadius:"50%",background:`radial-gradient(ellipse, ${C.gold}15, transparent 65%)`,animation:"breathe 3s ease-in-out infinite"}}/>
             {/* Inner bright glow */}
-            <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:80,height:55,borderRadius:"50%",background:`radial-gradient(ellipse, ${C.gold}25, transparent 70%)`,animation:"breathe 4s ease-in-out 1s infinite"}}/>
+            <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:"18vw",maxWidth:80,height:"12vw",maxHeight:55,borderRadius:"50%",background:`radial-gradient(ellipse, ${C.gold}25, transparent 70%)`,animation:"breathe 4s ease-in-out 1s infinite"}}/>
             {/* Logo */}
             <img src="assets/arena/cali-clear-logo.png" alt="" style={{
-              position:"relative",width:65,height:"auto",display:"block",
+              position:"relative",width:"15vw",maxWidth:65,height:"auto",display:"block",
               filter:`drop-shadow(0 0 8px ${C.gold}80) drop-shadow(0 0 16px ${C.gold}50) drop-shadow(0 0 32px ${C.gold}25)`,
             }}/>
           </div>
