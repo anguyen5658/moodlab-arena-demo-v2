@@ -11473,7 +11473,6 @@ const startSimonPuffs = () => {
 
   // Game detail / matchmaking
   const renderGameOverlay = () => {
-    try {
     if(matchmaking) {
       const gc = matchmaking.game.color;
       const pool = getDevicePool();
