@@ -10581,7 +10581,32 @@ export default function MoodLabArena() {
     return "long";
   };
 
-  const startSimonPuffs = () => {
+  
+  // ── Simon Puffs Constants ──
+  const SP_PUFF_TYPES = [{name:"Short",maxDur:1.0,color:C.cyan},{name:"Medium",maxDur:2.5,color:C.gold},{name:"Long",maxDur:99,color:C.pink}];
+  const SP_COMEDY = [
+    "Round 1! Easy peasy! 🎵",
+    "Getting warmer! Can you remember? 🧠",
+    "3 puffs! Your short-term memory is being tested! 💨",
+    "4 in a row! Not bad for someone who's probably baked! 🌿",
+    "5 puffs! Simon is impressed! 🎭",
+    "6?! Your brain is on FIRE! 🔥🧠",
+    "7 puffs! Are you even human?! 🤖",
+    "8! This is INSANE! The crowd can't believe it! 😱",
+    "9 PUFFS! You're a LEGEND! 👑",
+    "10! SIMON MASTER! You've beaten the game! 🏆",
+  ];
+
+  // ── Puff Auction Constants ──
+  const PA_PRIZES = [
+    {name:"100 Coins",value:100,emoji:"🪙",rarity:"common"},
+    {name:"200 Coins",value:200,emoji:"💰",rarity:"common"},
+    {name:"Rare Badge",value:300,emoji:"🏅",rarity:"rare"},
+    {name:"500 Coins",value:500,emoji:"💎",rarity:"rare"},
+    {name:"MYSTERY BOX",value:1000,emoji:"🎁",rarity:"legendary"},
+  ];
+
+const startSimonPuffs = () => {
     setSpPhase("intro");
     setSpPattern([]);
     setSpPlayerPattern([]);
