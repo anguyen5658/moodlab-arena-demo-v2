@@ -1317,8 +1317,8 @@ export default function MoodLabArena() {
   const [spBestRound, setSpBestRound] = useState(0);
   const [spPlayersLeft, setSpPlayersLeft] = useState(20);
   const spPuffStart = useRef(0);
-  const spTimerRef = useRef(null);
-  const spShowRef = useRef(null);
+  const spPuffInterval = useRef(null);
+  const spShowTimer = useRef(null);
 
   // ── Puff Auction ──
   const [paPhase, setPaPhase] = useState(null);
@@ -1333,8 +1333,8 @@ export default function MoodLabArena() {
   const [paComment, setPaComment] = useState("");
   const [paIntroStep, setPaIntroStep] = useState(0);
   const [paShowGavel, setPaShowGavel] = useState(false);
-  const paTimerRef = useRef(null);
-  const paPuffRef = useRef(null);
+  const paPuffStart = useRef(null);
+  const paPuffInterval = useRef(null);
   const paRoundRef = useRef(0);
   const [stCorrect, setStCorrect] = useState(null);
   const [stFinalMode, setStFinalMode] = useState(false);
@@ -1354,6 +1354,7 @@ export default function MoodLabArena() {
   const [pcPerfect420, setPcPerfect420] = useState(false);
   const pcPuffStart = useRef(0);
   const pcPuffInterval = useRef(null);
+  const pcRoundRef = useRef(0);
   const pcTimerRef = useRef(null);
 
   // ── Stage Role & MC System ──
@@ -1417,6 +1418,7 @@ export default function MoodLabArena() {
   const [fortuneJackpot, setFortuneJackpot] = useState(47382);
   const [fortuneLuckyHour, setFortuneLuckyHour] = useState(false);
   const [fortuneLevel, setFortuneLevel] = useState({level:"Silver Gambler",progress:42,totalWagered:2400});
+  const [fortuneXP, setFortuneXP] = useState(2400);
   // ── Mystery/Discovery Games State ──
   const [mbPhase, setMbPhase] = useState(null);
   const [mbBoxes, setMbBoxes] = useState([]);
@@ -1623,6 +1625,7 @@ export default function MoodLabArena() {
   const bdGainNode = useRef(null);
   const bdDropTimer = useRef(null);
   const bdHoldInterval = useRef(null);
+  const bdReleasedRef = useRef(false);
 
   // ── Puff Limbo (Stage Game) ──
   const [plPhase, setPlPhase] = useState(null);
@@ -1726,6 +1729,7 @@ export default function MoodLabArena() {
   const [bjPuffing, setBjPuffing] = useState(false);
   const bjPuffStart = useRef(0);
   const bjTimerRef = useRef(null);
+  const bjBetRef = useRef(50);
 
   // ── Coin Flip ──
   const [cfPhase, setCfPhase] = useState(null); // null|betting|flipping|result
@@ -3110,6 +3114,7 @@ export default function MoodLabArena() {
     setDuelStaredownStage(0);
     setDuelStaredownText("");
   };
+  const sharedAudioCtx = useRef(null);
   // ── Sound FX — real audio files + synthesized fallbacks ──
   const playAudio = useCallback((src, vol=0.5) => {
     if(!audioOn) return;
@@ -3129,7 +3134,10 @@ export default function MoodLabArena() {
     }
     // Web Audio API synthesized sounds
     try {
-      const ac = new (window.AudioContext || window.webkitAudioContext)();
+      if(!sharedAudioCtx.current || sharedAudioCtx.current.state === 'closed') {
+        sharedAudioCtx.current = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      const ac = sharedAudioCtx.current;
       const now = ac.currentTime;
       // Helper: create oscillator with envelope
       const tone = (freq, waveType, start, dur, v=0.15, freqEnd=null) => {
@@ -3564,8 +3572,7 @@ export default function MoodLabArena() {
           // Unknown sound -- play a generic click
           tone(800, "sine", 0, 0.04, 0.05);
       }
-      // Auto-close AudioContext after sounds finish
-      setTimeout(()=>{ if(ac.state!=="closed") ac.close().catch(()=>{}); }, 3000);
+      // Shared AudioContext is reused across calls — no close needed
     } catch(e){}
   }, [audioOn]);
 
@@ -5446,14 +5453,13 @@ export default function MoodLabArena() {
     newBracket.results = [...newBracket.results, { round: newBracket.currentRound, win: actualWin, myScore, aiScore, extraTime: myScore === aiScore }];
 
     if(!actualWin) {
-      // Eliminated — determine placement
+      // Eliminated — determine placement dynamically
       const round = newBracket.currentRound;
+      const totalRounds = newBracket.rounds.length;
       let placement = "group";
-      if(round === 4) placement = "silver"; // lost final
-      else if(round === 3) placement = "fourth"; // lost SF (simplified — no 3rd place match)
+      if(round === totalRounds - 1) placement = "silver"; // lost final
+      else if(round === totalRounds - 2) placement = "bronze"; // lost semi-final
       else placement = "group"; // lost earlier rounds
-      // Special: if lost in SF, offer bronze
-      if(round === 3) placement = "bronze"; // give bronze for reaching SF
 
       setWcBracket(newBracket);
       setWcFinalResult(placement);
@@ -7316,7 +7322,7 @@ export default function MoodLabArena() {
   // ═════════════════════════════════════════
   const renderZoneHeader = (zKey) => {
     const z = Z[zKey];
-    const taglines = {arcade:"",stage:"",oracle:"PUFF YOUR FORTUNE",wall:"YOUR LEGACY · YOUR GLORY",worldcup:"PLAY · PREDICT · CELEBRATE"};
+    const taglines = {arcade:"PLAY · COMPETE · WIN",stage:"WATCH · PLAY · WIN",oracle:"PUFF YOUR FORTUNE",wall:"YOUR LEGACY · YOUR GLORY",worldcup:"PLAY · PREDICT · CELEBRATE"};
     return (
       <div style={{padding:"0 14px",marginBottom:8}}>
         <div style={{display:"flex",alignItems:"center",gap:12}}>
@@ -7661,7 +7667,7 @@ export default function MoodLabArena() {
     };
     const startShowGame = (g) => {
       showMC("intro", {show:g.name});
-      if(g.id==="vibecheck") vcStartGame();
+      if(g.id==="vibecheck"){setGameActive({id:"vibecheck",name:"Vibe Check",emoji:"🧠",color:C.gold});vcStartGame();}
       // spinwin moved to Fortune
       else if(g.id==="higherlower"){setGameActive({id:"higherlower",name:"Higher or Lower",emoji:"📊",color:C.cyan});startHigherLower();}
       else if(g.id==="survivaltrivia"){setGameActive({id:"survivaltrivia",name:"Survival Trivia",emoji:"🏆",color:C.purple});startSurvivalTrivia();}
@@ -7930,7 +7936,7 @@ export default function MoodLabArena() {
     const leftPct = 30 + Math.floor(Math.random()*40);
     const rightPct = 100 - leftPct;
     setSbResults({left:leftPct,right:rightPct});
-    setSbPhase("results"); setTimeout(()=>{const nx=sbRound+1;if(nx>=5){setSbPhase("complete");}else{setSbRound(nx);setSbPhase("matchup");setSbVote(null);setSbMatchup([SB_STRAINS[Math.floor(Math.random()*SB_STRAINS.length)],SB_STRAINS[Math.floor(Math.random()*SB_STRAINS.length)]]);}},2500);
+    setSbPhase("results"); setTimeout(()=>sbNextRound(),2500);
     playFx("tap");
     const winner = vote==="left"?sbMatchup[0].name:sbMatchup[1].name;
     setCommentary("You voted for "+winner+"! Let's see the results...");
@@ -7994,7 +8000,7 @@ export default function MoodLabArena() {
       setMpScore(s=>s+pts);
       if(correct) { setCoins(c=>c+pts); spawnConfetti(30); playFx("crowd"); setCommentary("Correct prediction! +100 coins!"); }
       else { setCommentary("Not this time... the result was: "+(simResult==="home"?"Home Win":simResult==="draw"?"Draw":"Away Win")); }
-      setMpPhase("result"); setTimeout(()=>{const nx=mpRound+1;if(nx>=5){setMpPhase("complete");}else{setMpRound(nx);setMpPhase("match");setMpPrediction(null);}},2500);
+      setMpPhase("result"); setTimeout(()=>mpNextRound(), 2500);
     },2000);
   };
   const mpNextRound = () => {
@@ -8045,7 +8051,7 @@ export default function MoodLabArena() {
     if(pick.type==="yn") { ans = dur < 1.5 ? "no" : "yes"; }
     else { ans = dur < 1.5 ? pick.a : pick.b; }
     setDpAnswer(ans);
-    setDpPhase("reveal"); setTimeout(()=>{const nx=dpPick+1;if(nx>=3){setDpPhase("summary");}else{setDpPick(nx);setDpPhase("pick");setDpAnswer(null);}},2500);
+    setDpPhase("reveal");
     playFx("tap");
     // Simulate correctness
     const correct = Math.random() > 0.4;
@@ -8078,6 +8084,22 @@ export default function MoodLabArena() {
   const dpCleanup = () => {
     setDpPhase(null);setDpPicks([]);setDpAnswered([]);setDpResults([]);setDpCurrentPick(0);setDpAnswer(null);
     setGameActive(null);
+  };
+
+  // ── Fortune Level XP helper ──
+  const updateFortuneXP = (amount) => {
+    setFortuneXP(x => {
+      const newXP = x + Math.abs(amount);
+      const levels = [0, 1000, 5000, 15000, 50000, 200000];
+      const names = ["Bronze Gambler","Silver Gambler","Gold Gambler","Platinum Player","Diamond Dealer","High Roller"];
+      let newLevel = 0;
+      for(let i = levels.length-1; i >= 0; i--) { if(newXP >= levels[i]) { newLevel = i; break; } }
+      const nextThreshold = levels[newLevel+1] || levels[levels.length-1]*2;
+      const prevThreshold = levels[newLevel];
+      const progress = Math.min(100, Math.floor(((newXP - prevThreshold) / (nextThreshold - prevThreshold)) * 100));
+      setFortuneLevel({level: names[newLevel] || names[0], progress, totalWagered: newXP});
+      return newXP;
+    });
   };
 
   // ═══════════════════════════════════════════════════════════════
@@ -8154,7 +8176,7 @@ export default function MoodLabArena() {
       }
       setSlotsWin(win);
       setSlotsScore(s=>s+win);
-      if(win>0) setCoins(c=>c+win);
+      if(win>0) { const w=fortuneLuckyHour?win*2:win; setCoins(c=>c+w); updateFortuneXP(w); }
       setSlotsHistory(h=>[...h,{reels:finalReels,win,bonus:isBonus}]);
       setSlotsPhase("result");
       // Auto-advance after 2.5s
@@ -8198,7 +8220,7 @@ export default function MoodLabArena() {
   };
   const startPuffBlackjack = () => {
     setBjPlayerHand([]);setBjDealerHand([]);setBjPlayerTotal(0);setBjDealerTotal(0);
-    setBjBet(50);setBjResult(null);setBjRound(0);setBjScore(0);setBjPuffing(false);
+    setBjBet(50);bjBetRef.current=50;setBjResult(null);setBjRound(0);setBjScore(0);setBjPuffing(false);
     setBjPhase("intro");
     playFx("crowd");
     setCommentary("Welcome to Puff Blackjack! Get closer to 21!");
@@ -8235,7 +8257,7 @@ export default function MoodLabArena() {
     setBjPuffing(false);
     if(dur >= 4.5) {
       // DOUBLE DOWN
-      setBjBet(b=>b*2);
+      setBjBet(b=>b*2);bjBetRef.current=bjBetRef.current*2;
       const newCard=bjDrawCard();
       const newHand=[...bjPlayerHand,newCard];
       const newTotal=bjHandTotal(newHand);
@@ -8294,35 +8316,37 @@ export default function MoodLabArena() {
   };
   const bjResolve = (pHand,dHand,isNatural) => {
     const pTotal=bjHandTotal(pHand), dTotal=bjHandTotal(dHand);
+    const bet = bjBetRef.current;
     setBjPlayerTotal(pTotal);setBjDealerTotal(dTotal);
     let result,winAmt=0;
     if(isNatural&&pTotal===21) {
       if(dTotal===21){result="push";setCommentary("Both Blackjack! Push!");}
-      else{result="blackjack";winAmt=Math.floor(bjBet*2.5);setCommentary("BLACKJACK! 2.5x payout!");spawnConfetti(40);triggerFlash("goal");}
+      else{result="blackjack";winAmt=Math.floor(bet*2.5);setCommentary("BLACKJACK! 2.5x payout!");spawnConfetti(40);triggerFlash("goal");}
     } else if(pTotal>21) {
-      result="bust";setCommentary("BUST! You lose "+bjBet);
+      result="bust";setCommentary("BUST! You lose "+bet);
     } else if(dTotal>21) {
-      result="win";winAmt=bjBet*2;setCommentary("Dealer busts! You WIN "+winAmt+"!");spawnConfetti(25);
+      result="win";winAmt=bet*2;setCommentary("Dealer busts! You WIN "+winAmt+"!");spawnConfetti(25);
     } else if(pTotal>dTotal) {
-      result="win";winAmt=bjBet*2;setCommentary("You win! "+pTotal+" beats "+dTotal);spawnConfetti(20);
+      result="win";winAmt=bet*2;setCommentary("You win! "+pTotal+" beats "+dTotal);spawnConfetti(20);
     } else if(pTotal<dTotal) {
       result="lose";setCommentary("Dealer wins. "+dTotal+" beats "+pTotal);
     } else {
       result="push";setCommentary("Push! Both have "+pTotal);
     }
-    if(winAmt>0){setCoins(c=>c+winAmt);playFx("crowd");}
+    if(winAmt>0){const w=fortuneLuckyHour?winAmt*2:winAmt;setCoins(c=>c+w);updateFortuneXP(w);playFx("crowd");}
+    if(result==="bust"||result==="lose") setCoins(c=>Math.max(0,c-bet));
     setBjResult(result);setBjScore(s=>s+winAmt);setBjPhase("result");
     setTimeout(()=>bjNextRound(),2500);
   };
   const bjNextRound = () => {
     const next=bjRound+1;
     if(next>=7){setBjPhase("complete");return;}
-    setBjRound(next);setBjBet(50);setBjResult(null);
+    setBjRound(next);setBjBet(50);bjBetRef.current=50;setBjResult(null);
     bjDeal();
   };
   const bjCleanup = () => {
     setBjPhase(null);setBjPlayerHand([]);setBjDealerHand([]);setBjPlayerTotal(0);setBjDealerTotal(0);
-    setBjBet(50);setBjResult(null);setBjRound(0);setBjScore(0);setBjPuffing(false);
+    setBjBet(50);bjBetRef.current=50;setBjResult(null);setBjRound(0);setBjScore(0);setBjPuffing(false);
     if(bjTimerRef.current){clearTimeout(bjTimerRef.current);bjTimerRef.current=null;}
     setGameActive(null);
   };
@@ -8372,8 +8396,10 @@ export default function MoodLabArena() {
       const won = outcome===cfChoice;
       if(won) {
         const winAmt = Math.floor(cfBet*mult);
-        setCoins(c=>c+winAmt);
-        setCfScore(s=>s+winAmt);
+        const cfW = fortuneLuckyHour?winAmt*2:winAmt;
+        setCoins(c=>c+cfW);
+        updateFortuneXP(cfW);
+        setCfScore(s=>s+cfW);
         setCfStreak(s=>s+1);
         spawnConfetti(25);
         playFx("crowd");
@@ -8383,7 +8409,7 @@ export default function MoodLabArena() {
         const lossAmt = mult>=5 ? cfBet*2 : 0;
         if(lossAmt>0) setCoins(c=>Math.max(0,c-lossAmt));
         setCfStreak(0);
-        setCommentary("TAILS UP! You guessed wrong."+(mult>=5?" Blinker penalty: -"+lossAmt:""));
+        setCommentary(outcome.toUpperCase()+"! You guessed wrong."+(mult>=5?" Blinker penalty: -"+lossAmt:""));
       }
       setCfPhase("result");
       setTimeout(()=>cfNextRound(),2500);
@@ -9519,7 +9545,7 @@ export default function MoodLabArena() {
             <span style={{fontSize:14,color:C.text2}}>←</span>
             <span style={{fontSize:11,fontWeight:600,color:C.text2}}>Arena</span>
           </div>
-          <div style={{fontSize:9,color:C.gold,letterSpacing:2,fontWeight:700,textAlign:"center",flex:1}}>YOUR LEGACY · YOUR GLORY</div>
+          <div style={{fontSize:9,color:C.gold,letterSpacing:2,fontWeight:700,textAlign:"center",flex:1}}></div>
         </div>
       </div>
 
@@ -9835,7 +9861,7 @@ export default function MoodLabArena() {
       // 3. Viewing a game detail (selectedGame) → back to zone hub
       if(selectedGame) { setSelectedGame(null); return; }
       // 4. In Vibe Check or Spin & Win overlay → back to zone hub
-      if(showVibeCheck) { setShowVibeCheck(false);setVcPhase(null);setStageElim(null);if(vcTimerRef.current){clearInterval(vcTimerRef.current);vcTimerRef.current=null;} return; }
+      if(showVibeCheck) { setShowVibeCheck(false);setVcPhase(null);setStageElim(null);setStageRole(null);setMcVisible(false);if(vcTimerRef.current){clearInterval(vcTimerRef.current);vcTimerRef.current=null;} return; }
       if(swPhase) { setSwPhase(null); return; }
       // 5. In fan mode → go back through fan flow
       if(fanMode) { setFanMode(null);setFanTeam(null);setFanDevice(null); return; }
@@ -9939,6 +9965,16 @@ export default function MoodLabArena() {
     if(swTickRef.current){clearInterval(swTickRef.current);swTickRef.current=null;}
     // Vibe Check
     if(vcTimerRef.current){clearInterval(vcTimerRef.current);vcTimerRef.current=null;}
+    // Simon Puffs
+    if(spPuffInterval.current){clearInterval(spPuffInterval.current);spPuffInterval.current=null;}
+    if(spShowTimer.current){clearTimeout(spShowTimer.current);spShowTimer.current=null;}
+    // Puff Auction
+    if(paPuffInterval.current){clearInterval(paPuffInterval.current);paPuffInterval.current=null;}
+    // Halftime
+    if(htTimerRef.current){clearTimeout(htTimerRef.current);htTimerRef.current=null;}
+    if(htTugRef.current){clearInterval(htTugRef.current);htTugRef.current=null;}
+    // Puff Events
+    if(puffEventRef.current){clearInterval(puffEventRef.current);puffEventRef.current=null;}
     // Oracle Games (Crystal Ball, Strain Battle, Match Predictor, Daily Picks)
     if(cbTimerRef.current){clearTimeout(cbTimerRef.current);cbTimerRef.current=null;}
     // Fortune Games (Slots, Blackjack, Coin Flip, Craps)
@@ -10675,6 +10711,7 @@ export default function MoodLabArena() {
     if(target === 0) target = +(1.0 + Math.random()*3.5).toFixed(2);
     setPcTarget(target);
     setPcRound(roundNum+1);
+    pcRoundRef.current = roundNum;
     setPcPuffTime(0);
     setPcHolding(false);
     setPcComment(PC_ROUND_NAMES[roundNum]);
@@ -10749,7 +10786,7 @@ export default function MoodLabArena() {
       return updated.slice(0,10);
     });
 
-    setTimeout(()=>pcStartRound(pcRound),3500);
+    setTimeout(()=>pcStartRound(pcRoundRef.current+1),3500);
   };
 
   const pcShowFinalResults = () => {
@@ -10872,6 +10909,7 @@ export default function MoodLabArena() {
     setBdHoldStart(0);
     setBdDropTime(0);
     setBdReleaseTime(null);
+    bdReleasedRef.current = false;
     setBdBeatIntensity(0);
     setBdRoundLabel("");
     setBdFakeDropped(false);
@@ -10910,7 +10948,7 @@ export default function MoodLabArena() {
       setCommentary("DROP! RELEASE NOW!");
       setTimeout(() => {
         if (!guard.v) return;
-        if (!bdReleaseTime) {
+        if (!bdReleasedRef.current) {
           bdScoreRound(roundNum, null, Date.now(), guard);
         }
       }, 3000);
@@ -10929,6 +10967,7 @@ export default function MoodLabArena() {
     setBdHolding(false);
     const releaseT = Date.now();
     setBdReleaseTime(releaseT);
+    bdReleasedRef.current = true;
     if (!bdDropped) {
       setBdRoundLabel("EARLY");
       setCommentary("Too soon! The beat hadn't dropped yet...");
@@ -20748,7 +20787,7 @@ const startSimonPuffs = () => {
                 </div>
               )}
 
-              <div onClick={()=>{setShowVibeCheck(false);setVcPhase(null);setCoins(c=>c+vcScore);}} style={{
+              <div onClick={()=>{setShowVibeCheck(false);setVcPhase(null);setCoins(c=>c+vcScore);setStageRole(null);setMcVisible(false);setStageElim(null);}} style={{
                 padding:"14px 40px",borderRadius:14,cursor:"pointer",
                 background:`linear-gradient(135deg, ${C.gold}20, ${C.orange}15)`,border:`1px solid ${C.gold}30`,
               }}>
