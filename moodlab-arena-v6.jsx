@@ -7180,7 +7180,7 @@ export default function MoodLabArena() {
   // ═════════════════════════════════════════
   const renderZoneHeader = (zKey) => {
     const z = Z[zKey];
-    const taglines = {arcade:"PLAY · COMPETE · WIN",stage:"WATCH · PLAY · WIN",oracle:"PUFF YOUR FORTUNE",wall:"YOUR LEGACY · YOUR GLORY",worldcup:"PLAY · PREDICT · CELEBRATE"};
+    const taglines = {arcade:"",stage:"",oracle:"PUFF YOUR FORTUNE",wall:"YOUR LEGACY · YOUR GLORY",worldcup:"PLAY · PREDICT · CELEBRATE"};
     return (
       <div style={{padding:"0 14px",marginBottom:8}}>
         <div style={{display:"flex",alignItems:"center",gap:12}}>
