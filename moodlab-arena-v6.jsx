@@ -3844,7 +3844,7 @@ export default function MoodLabArena() {
       const candidates = notes.map((n,i)=>({...n,idx:i})).filter(n=>n.lane===lane&&!n.hit);
       const inZone = candidates.filter(n=>n.y>RP_HIT_ZONE-18&&n.y<RP_HIT_ZONE+12);
       if(inZone.length===0){
-        setRpCombo(0);setRpMisses(m=>m+1);setRpComment("Wrong lane! 😬");playFx("error");
+        setRpCombo(0);setRpMisses(m=>m+1);setRpComment("Wrong lane! 😬");playFx("rhythm_miss");
         rpShowRating("MISS",C.red,lane);return notes;
       }
       const closest = inZone.reduce((a,b)=>Math.abs(a.y-RP_HIT_ZONE)<Math.abs(b.y-RP_HIT_ZONE)?a:b);
@@ -3856,7 +3856,7 @@ export default function MoodLabArena() {
       else if(dist<=14){rating="OK";pts=50;ratingColor=C.orange;}
       else{rating="MISS";pts=0;ratingColor=C.red;}
       if(rating==="MISS"){
-        setRpCombo(0);setRpMisses(m=>m+1);setRpComment(pick(rpComedy.miss));playFx("error");
+        setRpCombo(0);setRpMisses(m=>m+1);setRpComment(pick(rpComedy.miss));playFx("rhythm_miss");
       } else {
         const mult = rpGetMultiplier(rpCombo);
         const finalPts = pts * mult;
@@ -3871,8 +3871,8 @@ export default function MoodLabArena() {
           else setRpComment(pick(rpComedy.ok));
           return nc;
         });
-        playFx("kick");
-        if(rating==="PERFECT"){triggerFlash("save");setRpStageFlash(f=>f+1);}
+        if(rating==="PERFECT"){playFx("rhythm_perfect");triggerFlash("save");setRpStageFlash(f=>f+1);}
+        else playFx("rhythm_hit");
       }
       rpShowRating(rating,ratingColor,lane);
       return newN;
@@ -5616,7 +5616,7 @@ export default function MoodLabArena() {
     setSwPrize(null);
     setSwShowBust(false);
     setSwShowJackpot(false);
-    playFx("crowd");
+    playFx("wheel_spin");
 
     // Puff duration determines spin force
     const puffDur = puffStartTime.current ? (Date.now() - puffStartTime.current) / 1000 : (0.5 + Math.random() * 2);
@@ -5638,19 +5638,7 @@ export default function MoodLabArena() {
     swTickRef.current = setInterval(() => {
       tickCount++;
       if(tickCount < maxTicks) {
-        try {
-          const actx = new (window.AudioContext || window.webkitAudioContext)();
-          const osc = actx.createOscillator();
-          const gain = actx.createGain();
-          osc.connect(gain);
-          gain.connect(actx.destination);
-          osc.frequency.value = 800 + Math.random() * 400;
-          osc.type = "square";
-          gain.gain.value = 0.03;
-          osc.start();
-          osc.stop(actx.currentTime + 0.02);
-          setTimeout(() => actx.close(), 100);
-        } catch(e) {}
+        playFx("wheel_tick");
       } else {
         clearInterval(swTickRef.current);
       }
@@ -5685,7 +5673,7 @@ export default function MoodLabArena() {
         setSwShowJackpot(true);
         setSwTotalWon(prev => prev + actualValue);
         setCoins(c => c + actualValue);
-        playFx("win");
+        playFx("jackpot_alarm");
         playFx("crowd");
         spawnConfetti(80, [C.gold, C.orange, "#fff", C.cyan, C.pink]);
         triggerFlash("gold");
@@ -10022,7 +10010,7 @@ export default function MoodLabArena() {
       setStStreak(s=>s+1);
       const msg = ST_SURVIVE_MSGS[Math.floor(Math.random()*ST_SURVIVE_MSGS.length)];
       setStComment(msg);
-      playFx("goal");
+      playFx("correct_ding");
       setCommentary(eliminated+" players eliminated! "+newAlive+" remain.");
       const streakBonus = (stStreak+1) >= 5 ? 50 : (stStreak+1) >= 3 ? 25 : 10;
       setCoins(c=>c+streakBonus);
@@ -10033,7 +10021,7 @@ export default function MoodLabArena() {
       setStStreak(0);
       const msg = ST_DEATH_MSGS[Math.floor(Math.random()*ST_DEATH_MSGS.length)];
       setStComment(msg);
-      playFx("error");
+      playFx("eliminated");
       triggerFlash("miss");
       setCommentary("YOU HAVE BEEN ELIMINATED!");
       if(stageRole) showMC("wrong");
@@ -10132,6 +10120,7 @@ export default function MoodLabArena() {
     setPcHolding(true);
     pcPuffStart.current = Date.now();
     setPcPuffTime(0);
+    playFx("clock_tick_precise");
     if(pcPuffInterval.current) clearInterval(pcPuffInterval.current);
     pcPuffInterval.current = setInterval(()=>{
       const elapsed = (Date.now() - pcPuffStart.current) / 1000;
@@ -10742,7 +10731,7 @@ export default function MoodLabArena() {
     setPaPhase("reveal");
     setCommentary("Round " + (roundNum+1) + ": " + prize.emoji + " " + prize.name + "!");
     setPaComment("Get ready to bid...");
-    playFx("select");
+    playFx("auction_bid");
     setTimeout(() => {
       setPaPhase("bidding");
       setCommentary("BIDDING OPEN! Longest puff wins... but DON'T blinker!");
@@ -10765,7 +10754,7 @@ export default function MoodLabArena() {
         setPaHolding(false);
         setPaDisqualified(true);
         setPaBidTime(elapsed);
-        playFx("error");
+        playFx("disqualified");
         triggerFlash("blinker");
         setScreenShake(true);
         setTimeout(()=>setScreenShake(false),500);
@@ -10818,13 +10807,14 @@ export default function MoodLabArena() {
     setPaWinner(winner);
     setPaShowGavel(true);
     setPaPhase("result");
+    playFx("auction_gavel");
     if(winner && winner.isYou) {
       const prize = PA_PRIZES[Math.min(paRound, PA_PRIZES.length-1)];
       setPaTotalWon(t => t + prize.value);
       setCoins(c => c + prize.value);
       triggerFlash("goal");
       spawnConfetti(30);
-      playFx("goal");
+      playFx("coin_collect");
       setCommentary("YOU WIN! " + prize.emoji + " " + prize.name + "! Bid: " + dur.toFixed(2) + "s");
       setPaComment("SOLD to the champion puffer! +" + prize.value + " coins!");
       if(stageRole) showMC("correct",{points:String(prize.value)});
