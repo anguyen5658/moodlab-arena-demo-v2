@@ -8716,7 +8716,7 @@ export default function MoodLabArena() {
       {id:"luck",label:"Luck",emoji:"🎰"},
       {id:"table",label:"Table",emoji:"🃏"},
       {id:"mystery",label:"Mystery",emoji:"✨"},
-      {id:"bets",label:"Arena Bets",emoji:"🏇"},
+      {id:"recent",label:"Recent",emoji:"📜"},
     ];
     const sportsGames = FORTUNE_GAMES.filter(g=>g.cat==="sportsbook");
     const luckGames = FORTUNE_GAMES.filter(g=>g.cat==="luck");
@@ -8767,32 +8767,50 @@ export default function MoodLabArena() {
           <span style={{fontSize:14,color:C.text2}}>←</span>
           <span style={{fontSize:11,fontWeight:600,color:C.text2}}>Lobby</span>
         </div>
-        <div style={{textAlign:"center",marginBottom:6}}>
-          <div style={{fontSize:28,fontWeight:900,color:C.gold,letterSpacing:2,textShadow:`0 0 30px ${C.gold}60, 0 0 60px ${C.gold}30`,fontFamily:"Georgia, serif"}}>THE FORTUNE</div>
-          <div style={{fontSize:10,color:C.text2,fontWeight:600,letterSpacing:3,marginTop:2}}>FORTUNE FAVORS THE BOLD</div>
-        </div>
-        {/* Decorative emoji strip */}
-        <div style={{display:"flex",justifyContent:"center",gap:8,marginBottom:4,opacity:0.3}}>
-          {["🔮","♠️","♥️","♦️","♣️","🥠","🎁"].map((e,i)=>(
-            <span key={i} style={{fontSize:12}}>{e}</span>
-          ))}
-        </div>
       </div>
+      {/* HERO AUTO-SLIDER */}
+      {(()=>{
+        const featGame = FORTUNE_GAMES[Math.floor(tick/16) % FORTUNE_GAMES.length];
+        const heroSlides = [
+          {emoji:"🏆",title:`Daily Jackpot: ${fortuneJackpot.toLocaleString()}`,sub:"Play any game to grow the pot!",color:C.gold,badge:"LIVE"},
+          {emoji:featGame.emoji,title:featGame.name,sub:featGame.desc,color:featGame.color||C.gold,badge:"PLAY"},
+          {emoji:"🍀",title:fortuneLuckyHour?"LUCKY HOUR LIVE!":"Lucky Hour",sub:fortuneLuckyHour?"2x ALL WINS right now!":"Coming soon...",color:C.lime,badge:fortuneLuckyHour?"2x":""},
+          {emoji:"🔮",title:"Fortune Teller",sub:"15 yes/no predictions. Blinker = 3x risk!",color:C.purple,badge:"HOT"},
+        ];
+        const slideIdx = Math.floor(tick/4) % heroSlides.length;
+        const slide = heroSlides[slideIdx];
+        return (
+          <div onClick={()=>{if(slide.badge==="PLAY")launchGame(featGame);else if(slide.badge==="HOT")launchGame(FORTUNE_GAMES[0]);}} style={{padding:"0 14px",marginBottom:10,cursor:"pointer"}}>
+            <div style={{padding:"14px 16px",borderRadius:16,position:"relative",overflow:"hidden",
+              background:`linear-gradient(135deg, ${slide.color}12, ${slide.color}04)`,
+              border:`1px solid ${slide.color}20`,
+            }}>
+              <div style={{position:"absolute",top:0,right:0,width:"40%",height:"100%",background:`radial-gradient(circle at 80% 50%, ${slide.color}15, transparent 70%)`,pointerEvents:"none"}}/>
+              <div style={{display:"flex",alignItems:"center",gap:12,position:"relative",zIndex:1}}>
+                <div style={{fontSize:32,filter:`drop-shadow(0 0 8px ${slide.color}60)`}}>{slide.emoji}</div>
+                <div style={{flex:1}}>
+                  <div style={{display:"flex",alignItems:"center",gap:6}}>
+                    <div style={{fontSize:15,fontWeight:900,color:C.text}}>{slide.title}</div>
+                    {slide.badge && <span style={{fontSize:6,fontWeight:900,padding:"2px 6px",borderRadius:4,
+                      background:slide.badge==="LIVE"||slide.badge==="HOT"?`${C.red}18`:`${C.green}12`,
+                      color:slide.badge==="LIVE"||slide.badge==="HOT"?C.red:C.green,
+                      border:`1px solid ${slide.badge==="LIVE"||slide.badge==="HOT"?C.red:C.green}25`,
+                    }}>{slide.badge}</span>}
+                  </div>
+                  <div style={{fontSize:10,color:C.text3,marginTop:2}}>{slide.sub}</div>
+                </div>
+              </div>
+              {/* Slide dots */}
+              <div style={{display:"flex",gap:4,justifyContent:"center",marginTop:8}}>
+                {heroSlides.map((_,i)=>(
+                  <div key={i} style={{width:i===slideIdx?16:5,height:5,borderRadius:3,background:i===slideIdx?slide.color:`${C.text3}30`,transition:"all 0.3s"}}/>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
-      {/* BALANCE STRIP */}
-      <div style={{padding:"0 14px",marginBottom:8}}>
-        <div style={{display:"flex",alignItems:"center",gap:8,padding:"10px 14px",borderRadius:14,background:`linear-gradient(135deg, ${C.gold}08, rgba(52,211,153,0.04))`,border:`1px solid ${C.gold}20`,position:"relative",overflow:"hidden"}}>
-          <div style={{position:"absolute",top:0,right:0,width:80,height:"100%",background:`linear-gradient(90deg, transparent, ${C.gold}06)`,pointerEvents:"none"}}/>
-          <span style={{fontSize:18}}>🪙</span>
-          <div style={{flex:1}}>
-            <div style={{fontSize:8,color:C.text3,fontWeight:700,letterSpacing:1}}>BALANCE</div>
-            <div style={{fontSize:20,fontWeight:900,color:C.gold,letterSpacing:0.5}}>12,580</div>
-          </div>
-          <div style={{padding:"4px 10px",borderRadius:100,background:`${C.green}12`,border:`1px solid ${C.green}25`}}>
-            <span style={{fontSize:8,fontWeight:800,color:C.green}}>🔥 Hot Streak: 5 wins</span>
-          </div>
-        </div>
-      </div>
 
       {/* DAILY JACKPOT BANNER */}
       <div style={{padding:"0 14px",marginBottom:8}}>
@@ -8811,19 +8829,26 @@ export default function MoodLabArena() {
         </div>
       </div>}
 
-      {/* FORTUNE LEVEL BADGE */}
-      <div style={{padding:"0 14px",marginBottom:8}}>
-        <div style={{display:"flex",alignItems:"center",gap:8,padding:"8px 12px",borderRadius:12,background:`${C.gold}04`,border:`1px solid ${C.gold}12`}}>
-          <span style={{fontSize:14}}>{(FORTUNE_LEVELS.find(l=>l.name===fortuneLevel.level)||FORTUNE_LEVELS[1]).emoji}</span>
-          <div style={{flex:1}}>
-            <div style={{fontSize:9,fontWeight:800,color:(FORTUNE_LEVELS.find(l=>l.name===fortuneLevel.level)||FORTUNE_LEVELS[1]).color}}>{fortuneLevel.level}</div>
-            <div style={{width:"100%",height:4,borderRadius:2,background:`${C.text3}15`,marginTop:3}}>
-              <div style={{width:`${fortuneLevel.progress}%`,height:"100%",borderRadius:2,background:`linear-gradient(90deg, ${C.gold}, ${C.orange})`,transition:"width 0.5s"}}/>
+      {/* FORTUNE FEED BAR — auto-cycling */}
+      {(()=>{
+        const fortuneFeedItems = [
+          "🔮 CloudChaser predicted Brazil correctly!",
+          "🎰 PuffQueen hit JACKPOT on Slots! +1,000",
+          "🌿 Gorilla Glue won Strain Battle 52%-48%",
+          "🪙 Coin Flip streak: THC_Tony at 7 in a row!",
+          "🃏 BlinkerBetty hit Blackjack! Natural 21!",
+        ];
+        const fortuneFeedIdx = Math.floor(tick/3) % fortuneFeedItems.length;
+        return (
+          <div style={{padding:"0 14px",marginBottom:8}}>
+            <div style={{display:"flex",alignItems:"center",gap:6,padding:"5px 12px",borderRadius:100,
+              background:`${C.gold}06`,border:`1px solid ${C.gold}10`,transition:"all 0.5s ease"}}>
+              <div style={{width:4,height:4,borderRadius:"50%",background:C.green,animation:"pulse 1.5s infinite"}}/>
+              <span style={{fontSize:9,color:C.text2,fontWeight:600,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{fortuneFeedItems[fortuneFeedIdx]}</span>
             </div>
           </div>
-          <span style={{fontSize:7,color:C.text3,fontWeight:700}}>{fortuneLevel.progress}% to next</span>
-        </div>
-      </div>
+        );
+      })()}
 
       {/* STAT STRIP */}
       <div style={{padding:"0 14px",marginBottom:8}}>
@@ -8894,53 +8919,6 @@ export default function MoodLabArena() {
             ))}
           </div>
 
-          {/* WC Predictions sub-section */}
-          <div style={{fontSize:10,fontWeight:800,color:C.gold,letterSpacing:2,marginBottom:8}}>⚽ WC MATCH BETS</div>
-          {ORACLE_WC_MATCHES.slice(0,3).map((m,i)=>(
-            <div key={m.id} onClick={()=>{setGameActive({id:"matchpredictor",name:"Match Predictor",emoji:"📊",color:"#3B82F6"});startMatchPredictor();}} style={{
-              display:"flex",alignItems:"center",padding:"10px 12px",borderRadius:12,marginBottom:6,cursor:"pointer",
-              background:`${C.green}04`,border:`1px solid ${C.green}12`,
-            }}>
-              <div style={{flex:1}}>
-                <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:3}}>
-                  <span style={{fontSize:14}}>{m.homeFlag}</span>
-                  <span style={{fontSize:11,fontWeight:700,color:C.text}}>{m.home}</span>
-                  <span style={{fontSize:9,color:C.text3}}>vs</span>
-                  <span style={{fontSize:11,fontWeight:700,color:C.text}}>{m.away}</span>
-                  <span style={{fontSize:14}}>{m.awayFlag}</span>
-                  {m.hot && <span style={{fontSize:6,fontWeight:900,color:C.red,padding:"1px 4px",borderRadius:3,background:`${C.red}15`}}>HOT</span>}
-                </div>
-                <div style={{display:"flex",alignItems:"center",gap:4}}>
-                  <span style={{fontSize:8,color:C.cyan,fontWeight:700}}>{m.predictions.home}%</span>
-                  <div style={{flex:1,height:4,borderRadius:2,background:`${C.text3}15`,overflow:"hidden",display:"flex"}}>
-                    <div style={{width:`${m.predictions.home}%`,background:C.cyan}}/>
-                    <div style={{width:`${m.predictions.draw}%`,background:C.gold}}/>
-                    <div style={{width:`${m.predictions.away}%`,background:C.red}}/>
-                  </div>
-                  <span style={{fontSize:8,color:C.red,fontWeight:700}}>{m.predictions.away}%</span>
-                </div>
-              </div>
-              <div style={{padding:"4px 10px",borderRadius:8,background:`${C.green}12`,border:`1px solid ${C.green}20`}}>
-                <span style={{fontSize:8,fontWeight:800,color:C.green}}>BET</span>
-              </div>
-            </div>
-          ))}
-
-          {/* Just for Fun sub-section */}
-          <div style={{fontSize:10,fontWeight:800,color:C.cyan,letterSpacing:2,marginTop:12,marginBottom:8}}>🎮 JUST FOR FUN</div>
-          {ORACLE_FUN_PREDS.slice(0,3).map((p,i)=>(
-            <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",borderRadius:12,marginBottom:6,
-              background:`${p.color}04`,border:`1px solid ${p.color}12`,cursor:"pointer"}}>
-              <span style={{fontSize:20}}>{p.emoji}</span>
-              <div style={{flex:1}}>
-                <div style={{fontSize:10,fontWeight:700,color:C.text}}>{p.question}</div>
-                <div style={{fontSize:8,color:p.color,fontWeight:700,marginTop:2}}>Top: {p.topAnswer} · {p.votes} votes</div>
-              </div>
-              <div style={{padding:"4px 8px",borderRadius:6,background:`${p.color}12`,border:`1px solid ${p.color}20`}}>
-                <span style={{fontSize:7,fontWeight:800,color:p.color}}>BET</span>
-              </div>
-            </div>
-          ))}
         </div>}
 
         {/* LUCK TAB */}
@@ -9018,71 +8996,31 @@ export default function MoodLabArena() {
           </div>
         </div>}
 
-        {/* ARENA BETS TAB */}
-        {oracleHubTab==="bets" && <div style={{marginBottom:4}}>
-          <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:10}}>
-            <span style={{fontSize:13}}>🏇</span>
-            <span style={{fontSize:11,fontWeight:900,color:C.text,letterSpacing:1.5}}>ARENA BETS</span>
-            <span style={{fontSize:7,color:C.text3,marginLeft:"auto"}}>{betsGames.length+FORTUNE_GAMES.length} total games</span>
-          </div>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-            {betsGames.map((g,i)=>(
-              <div key={i} onClick={()=>launchGame(g)} style={{padding:"14px 12px",borderRadius:14,cursor:"pointer",textAlign:"center",position:"relative",overflow:"hidden",
-                background:`radial-gradient(ellipse at 50% 0%, ${g.color}10, rgba(255,255,255,0.01) 70%)`,border:`1px solid ${g.color}18`,transition:"all 0.3s",
-                animation:`fadeIn 0.3s ease ${i*0.06}s both`,
-              }}>
-                <div style={{fontSize:28,marginBottom:4,filter:`drop-shadow(0 0 8px ${g.color}50)`}}>{g.emoji}</div>
-                <div style={{fontSize:11,fontWeight:800,color:g.color}}>{g.name}</div>
-                <div style={{fontSize:7,color:C.text3,marginTop:1}}>{g.desc}</div>
-                <div style={{fontSize:7,fontWeight:700,color:C.lime,marginTop:3}}>PLAY NOW</div>
+        {/* RECENT TAB */}
+        {oracleHubTab==="recent" && (
+          <div>
+            <div style={{fontSize:9,fontWeight:800,color:C.gold,letterSpacing:1,marginBottom:8}}>RECENT ACTIVITY</div>
+            {[
+              {game:"Fortune Teller",result:"Won",emoji:"🔮",coins:"+50",time:"2m ago",color:C.green},
+              {game:"Puff Slots",result:"Bust",emoji:"🎰",coins:"-20",time:"8m ago",color:C.red},
+              {game:"Coin Flip",result:"Won 3x",emoji:"🪙",coins:"+150",time:"15m ago",color:C.gold},
+              {game:"Strain Battle",result:"Voted",emoji:"🌿",coins:"+10",time:"22m ago",color:C.green},
+              {game:"Blackjack",result:"21!",emoji:"🃏",coins:"+200",time:"30m ago",color:C.gold},
+              {game:"Mystery Box",result:"Rare!",emoji:"🎁",coins:"+300",time:"45m ago",color:C.purple},
+            ].map((r,i)=>(
+              <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 10px",borderRadius:10,marginBottom:4,
+                background:`${r.color}04`,border:`1px solid ${r.color}10`}}>
+                <span style={{fontSize:16}}>{r.emoji}</span>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:10,fontWeight:700,color:C.text}}>{r.game}</div>
+                  <div style={{fontSize:8,color:C.text3}}>{r.result} · {r.time}</div>
+                </div>
+                <span style={{fontSize:10,fontWeight:800,color:r.color}}>{r.coins}</span>
               </div>
             ))}
           </div>
-          {/* All Fortune Games section */}
-          <div style={{marginTop:14}}>
-            <div style={{fontSize:9,fontWeight:800,color:C.gold,letterSpacing:1.5,marginBottom:8}}>ALL {FORTUNE_GAMES.length} FORTUNE GAMES</div>
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:6}}>
-              {FORTUNE_GAMES.map((g,i)=>(
-                <div key={i} onClick={()=>launchGame(g)} style={{padding:"10px 6px",borderRadius:12,cursor:"pointer",textAlign:"center",position:"relative",overflow:"hidden",
-                  background:`radial-gradient(ellipse at 50% 0%, ${g.color}10, rgba(255,255,255,0.01) 70%)`,border:`1px solid ${g.color}18`,transition:"all 0.3s",
-                  animation:`fadeIn 0.3s ease ${i*0.03}s both`,
-                }}>
-                  <div style={{fontSize:20,marginBottom:2,filter:`drop-shadow(0 0 6px ${g.color}50)`}}>{g.emoji}</div>
-                  <div style={{fontSize:8,fontWeight:800,color:g.color}}>{g.name}</div>
-                  <div style={{fontSize:6,color:C.text3,marginTop:1}}>{g.type}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>}
+        )}
 
-        {/* RECENT BETS */}
-        <div style={{marginTop:12,marginBottom:14}}>
-          <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:8}}>
-            <span style={{fontSize:11}}>📜</span>
-            <span style={{fontSize:10,fontWeight:800,color:C.text3,letterSpacing:1}}>RECENT BETS</span>
-          </div>
-          <div style={{borderRadius:14,overflow:"hidden",border:`1px solid ${C.gold}12`,background:`${C.gold}03`}}>
-            {recentBets.slice(0,6).map((p,i)=>(
-              <div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 12px",
-                borderBottom:i<5?`1px solid ${C.border}`:"none",
-              }}>
-                <div style={{width:18,height:18,borderRadius:5,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,
-                  background:p.result==="correct"?`${C.green}15`:p.result==="wrong"?`${C.red}15`:`${C.gold}12`,
-                  color:p.result==="correct"?C.green:p.result==="wrong"?C.red:C.gold,fontWeight:800,
-                }}>{p.result==="correct"?"✓":p.result==="wrong"?"✗":"⏳"}</div>
-                <div style={{flex:1,minWidth:0}}>
-                  <div style={{fontSize:10,fontWeight:700,color:C.text,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{p.q}</div>
-                  <div style={{fontSize:8,color:C.text3}}>Bet: {p.ans}</div>
-                </div>
-                <div style={{textAlign:"right"}}>
-                  <div style={{fontSize:9,fontWeight:700,color:p.result==="correct"?C.green:p.result==="wrong"?C.red:C.text3}}>{p.coins}</div>
-                  <div style={{fontSize:7,color:C.text3}}>{p.time}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
 
       </div>
       <div style={{height:80}}/>
@@ -9426,20 +9364,15 @@ export default function MoodLabArena() {
         <div style={{position:"absolute",top:30,right:20,fontSize:40,opacity:0.03,transform:"rotate(8deg)"}}>🥇</div>
         <div style={{position:"absolute",top:80,left:"40%",fontSize:35,opacity:0.02}}>👑</div>
       </div>
-      {/* ZONE HERO - Trophy Room Header */}
-      <div style={{padding:"0 14px",marginBottom:16}}>
-        <div onClick={()=>{playFx("back");setZone(null);setSelectedGame(null);setArenaView("hub");}} style={{display:"inline-flex",alignItems:"center",gap:6,cursor:"pointer",marginBottom:12,padding:"6px 12px",borderRadius:8,background:`${C.text3}06`,border:`1px solid ${C.border}`}}>
-          <span style={{fontSize:14,color:C.text2}}>←</span>
-          <span style={{fontSize:11,fontWeight:600,color:C.text2}}>Arena</span>
-        </div>
-        <div style={{display:"flex",alignItems:"center",gap:10}}>
-          <div style={{fontSize:36,filter:`drop-shadow(0 0 16px ${C.gold}60)`,animation:"wallFloat 3s ease-in-out infinite alternate"}}>🏆</div>
-          <div>
-            <div style={{fontSize:22,fontWeight:900,color:C.gold,letterSpacing:-0.3,textShadow:`0 0 20px ${C.gold}30`}}>The Wall</div>
-            <div style={{fontSize:10,color:C.text3,letterSpacing:2,fontWeight:600,textTransform:"uppercase"}}>YOUR LEGACY  ·  YOUR GLORY</div>
+      {/* ZONE HEADER — Clean inline */}
+      <div style={{padding:"0 14px",marginBottom:8}}>
+        <div style={{display:"flex",alignItems:"center",gap:12}}>
+          <div onClick={()=>{playFx("back");setZone(null);setSelectedGame(null);setArenaView("hub");}} style={{display:"inline-flex",alignItems:"center",gap:6,cursor:"pointer",padding:"6px 12px",borderRadius:8,background:`${C.text3}06`,border:`1px solid ${C.border}`,flexShrink:0}}>
+            <span style={{fontSize:14,color:C.text2}}>←</span>
+            <span style={{fontSize:11,fontWeight:600,color:C.text2}}>Arena</span>
           </div>
+          <div style={{fontSize:9,color:C.gold,letterSpacing:2,fontWeight:700,textAlign:"center",flex:1}}>YOUR LEGACY · YOUR GLORY</div>
         </div>
-        <div style={{height:1,marginTop:12,background:`linear-gradient(90deg, transparent, ${C.gold}20, ${C.gold}35, ${C.gold}20, transparent)`}}/>
       </div>
 
       {/* ═══ QUICK FEED BAR ═══ */}
@@ -9451,13 +9384,13 @@ export default function MoodLabArena() {
         </div>
       </div>
 
-      {/* ═══ CHAMPIONS PODIUM ═══ */}
+      {/* ═══ CHAMPION SPOTLIGHT ═══ */}
       <div style={{padding:"0 14px",marginBottom:8}}>
         <div style={{borderRadius:16,padding:"14px 10px 10px",
           background:`linear-gradient(135deg, ${C.gold}0A, rgba(255,180,0,0.04), ${C.gold}06)`,
           border:`1px solid ${C.gold}20`,boxShadow:`0 0 30px ${C.gold}08`}}>
           <div style={{textAlign:"center",marginBottom:10}}>
-            <div style={{fontSize:10,fontWeight:900,color:C.gold,letterSpacing:3,textShadow:`0 0 12px ${C.gold}40`}}>CHAMPIONS PODIUM</div>
+            <div style={{fontSize:10,fontWeight:900,color:C.gold,letterSpacing:3,textShadow:`0 0 12px ${C.gold}40`}}>CHAMPION SPOTLIGHT</div>
             <div style={{fontSize:7,color:C.text3,letterSpacing:1,marginTop:2}}>Latest Tournament Winners</div>
           </div>
           <div style={{display:"flex",alignItems:"flex-end",gap:4,justifyContent:"center"}}>
