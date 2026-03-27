@@ -1149,6 +1149,21 @@ export default function MoodLabArena() {
   const ppRaf = useRef(null);
   const ppG = useRef({bx:50,by:50,dx:2,dy:1.5,py:50,ay:50,rally:0,trail:[],scoreY:0,scoreA:0,paused:false,smash:false,lastT:0});
 
+  // ── Price is Puff ──
+  const [pipPhase, setPipPhase] = useState(null); // null|"intro"|"product"|"guessing"|"reveal"|"result"
+  const [pipProduct, setPipProduct] = useState(null);
+  const [pipRound, setPipRound] = useState(0);
+  const [pipGuess, setPipGuess] = useState(0);
+  const [pipPuffing, setPipPuffing] = useState(false);
+  const [pipScore, setPipScore] = useState(0);
+  const [pipResults, setPipResults] = useState([]);
+  const [pipAiGuesses, setPipAiGuesses] = useState([]);
+  const [pipComment, setPipComment] = useState("");
+  const [pipIntroStep, setPipIntroStep] = useState(0);
+  const [pipUsedProducts, setPipUsedProducts] = useState([]);
+  const pipPuffStart = useRef(0);
+  const pipPuffInterval = useRef(null);
+
   // ── Rhythm Puff ──
   const [rpPhase, setRpPhase] = useState(null); // null|"intro"|"playing"|"result"
   const [rpNotes, setRpNotes] = useState([]);
@@ -2712,7 +2727,7 @@ export default function MoodLabArena() {
       setMatchmaking({game,mode,stage:"searching",input});
       setTimeout(()=>{
         setMatchmaking(p=>p?{...p,stage:"found",opp:mode==="ai"?"🤖 AI Bot":mode==="random"?"🎲 Player_847":"👫 Minh"}:null);
-        setTimeout(()=>{setMatchmaking(null);setGameActive({...game,activeInput:input});if(game.id==="wildwest")startDuel();if(game.id==="finalkick"||game.id==="finalkick2"||game.id==="finalkick3"){startKick(game.id);startMatchIntro(kickOpponent.current);}if(game.id==="balloon")startBalloonPop();if(game.id==="russian")startRussianRoulette();if(game.id==="puffpong")startPuffPong();if(game.id==="rhythm")startRhythmPuff();if(game.id==="tugofwar")startTugOfWar();if(game.id==="hotpotato")startHotPotato();if(game.id==="hooked")startHooked();if(game.id==="rps")startRps();if(game.id==="survivaltrivia")startSurvivalTrivia();if(game.id==="puffclock")startPuffClock();if(game.id==="beatdrop")startBeatDrop();if(game.id==="pufflimbo")startPuffLimbo();if(game.id==="puffderby")startPuffDerby();if(game.id==="higherlower")startHigherLower();if(game.id==="simonpuffs")startSimonPuffs();if(game.id==="puffauction")startPuffAuction();if(game.id==="vibecheck")vcStartGame();if(game.id==="pricepuff"){notify("The Price is Puff starting!",C.green);}},800);
+        setTimeout(()=>{setMatchmaking(null);setGameActive({...game,activeInput:input});if(game.id==="wildwest")startDuel();if(game.id==="finalkick"||game.id==="finalkick2"||game.id==="finalkick3"){startKick(game.id);startMatchIntro(kickOpponent.current);}if(game.id==="balloon")startBalloonPop();if(game.id==="russian")startRussianRoulette();if(game.id==="puffpong")startPuffPong();if(game.id==="rhythm")startRhythmPuff();if(game.id==="tugofwar")startTugOfWar();if(game.id==="hotpotato")startHotPotato();if(game.id==="hooked")startHooked();if(game.id==="rps")startRps();if(game.id==="survivaltrivia")startSurvivalTrivia();if(game.id==="puffclock")startPuffClock();if(game.id==="beatdrop")startBeatDrop();if(game.id==="pufflimbo")startPuffLimbo();if(game.id==="puffderby")startPuffDerby();if(game.id==="higherlower")startHigherLower();if(game.id==="simonpuffs")startSimonPuffs();if(game.id==="puffauction")startPuffAuction();if(game.id==="vibecheck")vcStartGame();if(game.id==="pricepuff")startPriceIsPuff();},800);
       },mode==="ai"?400:1200);
     });
   };
@@ -7164,14 +7179,13 @@ export default function MoodLabArena() {
     const z = Z[zKey];
     const taglines = {arcade:"PLAY · COMPETE · WIN",stage:"WATCH · PLAY · WIN",oracle:"PUFF YOUR FORTUNE",wall:"YOUR LEGACY · YOUR GLORY",worldcup:"PLAY · PREDICT · CELEBRATE"};
     return (
-      <div style={{padding:"0 14px",marginBottom:12}}>
-        <div onClick={()=>{playFx("back");setZone(null);setSelectedGame(null);setArenaView("hub");}} style={{display:"inline-flex",alignItems:"center",gap:6,cursor:"pointer",marginBottom:10,padding:"6px 12px",borderRadius:8,background:`${C.text3}06`,border:`1px solid ${C.border}`}}>
-          <span style={{fontSize:14,color:C.text2}}>←</span>
-          <span style={{fontSize:11,fontWeight:600,color:C.text2}}>Lobby</span>
-        </div>
-        <div style={{display:"flex",alignItems:"center",gap:8}}>
-          <div style={{fontSize:24,filter:`drop-shadow(0 0 10px ${z.primary}50)`}}>{z.icon}</div>
-          <div style={{fontSize:10,color:z.primary,letterSpacing:2,fontWeight:700}}>{taglines[zKey]||z.sub}</div>
+      <div style={{padding:"0 14px",marginBottom:8}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+          <div onClick={()=>{playFx("back");setZone(null);setSelectedGame(null);setArenaView("hub");}} style={{display:"inline-flex",alignItems:"center",gap:6,cursor:"pointer",padding:"6px 12px",borderRadius:8,background:`${C.text3}06`,border:`1px solid ${C.border}`}}>
+            <span style={{fontSize:14,color:C.text2}}>←</span>
+            <span style={{fontSize:11,fontWeight:600,color:C.text2}}>Lobby</span>
+          </div>
+          <div style={{fontSize:9,color:z.primary,letterSpacing:2,fontWeight:700,textAlign:"right"}}>{taglines[zKey]||z.sub}</div>
         </div>
       </div>
     );
@@ -7514,7 +7528,7 @@ export default function MoodLabArena() {
       else if(g.id==="survivaltrivia"){setGameActive({id:"survivaltrivia",name:"Survival Trivia",emoji:"🏆",color:C.purple});startSurvivalTrivia();}
       else if(g.id==="simonpuffs"){setGameActive({id:"simonpuffs",name:"Simon Puffs",emoji:"🔴",color:C.red});startSimonPuffs();}
       else if(g.id==="puffauction"){setGameActive({id:"puffauction",name:"Puff Auction",emoji:"🔨",color:C.lime});startPuffAuction();}
-      else if(g.id==="pricepuff"){setGameActive({id:"pricepuff",name:"The Price is Puff",emoji:"💰",color:C.green});notify("The Price is Puff starting!",C.green);}
+      else if(g.id==="pricepuff"){setGameActive({id:"pricepuff",name:"The Price is Puff",emoji:"💰",color:C.green});startPriceIsPuff();}
       else notify(g.name+" starting soon!",g.color);
     };
     const dotCycle = Math.floor(tick*2) % 24;
@@ -9699,7 +9713,7 @@ export default function MoodLabArena() {
       if(gameActive) {
         cleanupAllGames();
         setGameActive(null);setKickState(null);setIsFK2Mode(false);isFK2Ref.current=false;setIsFK3Mode(false);isFK3Ref.current=false;
-        setBpPhase(null);setRrPhase(null);setPpPhase(null);setRpPhase(null);setTowPhase(null);
+        setBpPhase(null);setRrPhase(null);setPpPhase(null);setRpPhase(null);setTowPhase(null);setPipPhase(null);
         setHpPhase(null);setHookPhase(null);setRpsPhase(null);setStPhase(null);setPcPhase(null);setDuelPhase("menu");
         setSpPhase(null);setPaPhase(null);setBdPhase(null);setPlPhase(null);setPdPhase(null);setHlPhase(null);
         setSlotsPhase(null);setBjPhase(null);setCfPhase(null);setCrapsPhase(null);
@@ -9812,6 +9826,8 @@ export default function MoodLabArena() {
       const r=sc.renderer;if(r){r.dispose();r.forceContextLoss();r.domElement.remove();}
       threeSceneRef.current=null;
     }
+    // Price is Puff
+    if(pipPuffInterval.current){clearInterval(pipPuffInterval.current);pipPuffInterval.current=null;}
     // Spin & Win
     if(swTickRef.current){clearInterval(swTickRef.current);swTickRef.current=null;}
     // Vibe Check
@@ -9828,6 +9844,175 @@ export default function MoodLabArena() {
     setMatchIntro(null);
     setCommentatorText(""); setPuffBubbles([]); setAudienceBubbles([]);
     setConfettiParticles([]); setSmokeParticles([]);
+  };
+
+  // ═══════════════════════════════════════════════════════════════
+  // PRICE IS PUFF — Full Game Engine
+  // ═══════════════════════════════════════════════════════════════
+  const PIP_PRODUCTS = [
+    {name:"Cali Clear Cart (1g)", emoji:"💨", price:45, category:"Cannabis"},
+    {name:"Rolling Papers (King Size)", emoji:"📜", price:8, category:"Accessories"},
+    {name:"Glass Bong (12 inch)", emoji:"🫧", price:120, category:"Glass"},
+    {name:"Grinder (4 piece)", emoji:"⚙️", price:35, category:"Accessories"},
+    {name:"Edible Gummies (10pk)", emoji:"🍬", price:25, category:"Edibles"},
+    {name:"Dab Rig Kit", emoji:"🔥", price:180, category:"Glass"},
+    {name:"Pre-Roll Pack (5pk)", emoji:"🌿", price:30, category:"Flower"},
+    {name:"Vape Battery", emoji:"🔋", price:20, category:"Devices"},
+    {name:"Quarter Oz Premium", emoji:"🌿", price:80, category:"Flower"},
+    {name:"CBD Tincture", emoji:"💧", price:50, category:"Wellness"},
+  ];
+  const PIP_ROUNDS = 5;
+  const PIP_PRICE_PER_SEC = 30; // duration(s) × 30 = price guess
+
+  const PIP_AI_PLAYERS = [
+    {name:"SmokeBot", emoji:"🤖"},
+    {name:"PuffMaster", emoji:"🎯"},
+    {name:"CloudChaser", emoji:"☁️"},
+  ];
+
+  const startPriceIsPuff = () => {
+    setPipPhase("intro");
+    setPipRound(0);
+    setPipScore(0);
+    setPipResults([]);
+    setPipProduct(null);
+    setPipGuess(0);
+    setPipPuffing(false);
+    setPipAiGuesses([]);
+    setPipComment("");
+    setPipIntroStep(0);
+    setPipUsedProducts([]);
+    playFx("crowd");
+    setCommentary("Welcome to The Price is Puff!");
+    setTimeout(()=>setPipIntroStep(1),400);
+    setTimeout(()=>setPipIntroStep(2),1000);
+    setTimeout(()=>setPipIntroStep(3),1800);
+    setTimeout(()=>{
+      setPipIntroStep(4);
+      playFx("whistle");
+    },2600);
+    setTimeout(()=>{
+      pipStartRound(0, []);
+    },3400);
+  };
+
+  const pipStartRound = (roundNum, usedSoFar) => {
+    // Pick a random unused product
+    const available = PIP_PRODUCTS.filter((_,i) => !usedSoFar.includes(i));
+    const idx = PIP_PRODUCTS.indexOf(available[Math.floor(Math.random()*available.length)]);
+    const product = PIP_PRODUCTS[idx];
+    const newUsed = [...usedSoFar, idx];
+    setPipUsedProducts(newUsed);
+    setPipProduct(product);
+    setPipRound(roundNum);
+    setPipGuess(0);
+    setPipPuffing(false);
+    setPipAiGuesses([]);
+    setPipComment("");
+    setPipPhase("product");
+    setCommentary(`Round ${roundNum+1}: What's the price of ${product.name}?`);
+    playFx("tap");
+    // After 2s, transition to guessing
+    setTimeout(()=>{
+      setPipPhase("guessing");
+      setCommentary("HOLD TO PUFF your price guess! Longer = higher!");
+    },2000);
+  };
+
+  const pipStartPuff = () => {
+    if(pipPhase !== "guessing" || pipPuffing) return;
+    setPipPuffing(true);
+    setPipGuess(0);
+    pipPuffStart.current = Date.now();
+    playFx("tap");
+    pipPuffInterval.current = setInterval(()=>{
+      const elapsed = (Date.now() - pipPuffStart.current) / 1000;
+      const guess = Math.round(elapsed * PIP_PRICE_PER_SEC);
+      setPipGuess(Math.min(guess, 300)); // cap at $300
+    },50);
+  };
+
+  const pipStopPuff = () => {
+    if(!pipPuffing) return;
+    setPipPuffing(false);
+    if(pipPuffInterval.current){clearInterval(pipPuffInterval.current);pipPuffInterval.current=null;}
+    const elapsed = (Date.now() - pipPuffStart.current) / 1000;
+    const finalGuess = Math.min(Math.round(elapsed * PIP_PRICE_PER_SEC), 300);
+    setPipGuess(finalGuess);
+    // Generate AI guesses — they try to be somewhat close
+    const realPrice = pipProduct.price;
+    const aiGuesses = PIP_AI_PLAYERS.map(ai => {
+      const variance = (Math.random()-0.4) * realPrice * 0.6;
+      const aiGuess = Math.max(1, Math.round(realPrice + variance));
+      return {...ai, guess: aiGuess};
+    });
+    setPipAiGuesses(aiGuesses);
+    // Reveal
+    setPipPhase("reveal");
+    playFx("crowd");
+    // Determine winner
+    const allGuesses = [{name:"You", emoji:"🎮", guess:finalGuess}, ...aiGuesses];
+    const validGuesses = allGuesses.filter(g => g.guess <= realPrice);
+    let roundWinner = null;
+    let roundCoins = 0;
+    if(validGuesses.length > 0) {
+      validGuesses.sort((a,b) => b.guess - a.guess); // closest without going over
+      roundWinner = validGuesses[0].name;
+    }
+    const playerOver = finalGuess > realPrice;
+    const playerExact = finalGuess === realPrice;
+    if(roundWinner === "You") {
+      roundCoins = playerExact ? 50 : 25;
+      setPipComment(playerExact ? "EXACT PRICE! JACKPOT! 🎰💰" : "WINNER! Closest without going over! 🏆");
+      triggerFlash("goal"); playFx("goal");
+      setCommentary(playerExact ? "UNBELIEVABLE! Exact price nailed!" : "Great guess! You win this round!");
+    } else if(playerOver) {
+      setPipComment(`TOO HIGH! You guessed $${finalGuess} — real price $${realPrice} 📈`);
+      setCommentary("Overbid! The price was lower!");
+      playFx("miss");
+    } else {
+      const winnerObj = allGuesses.find(g=>g.name===roundWinner);
+      setPipComment(`${roundWinner} wins! Their $${winnerObj?.guess||"?"} was closer! 😤`);
+      setCommentary(`${roundWinner} takes this round!`);
+      playFx("miss");
+    }
+    setPipScore(prev => prev + roundCoins);
+    setPipResults(prev => [...prev, {
+      product: pipProduct,
+      guess: finalGuess,
+      realPrice: realPrice,
+      winner: roundWinner,
+      coins: roundCoins,
+      over: playerOver,
+      exact: playerExact,
+    }]);
+    // After reveal, move to next round or final result
+    setTimeout(()=>{
+      const nextRound = pipRound + 1;
+      if(nextRound >= PIP_ROUNDS) {
+        setPipPhase("result");
+        playFx("crowd");
+        setCommentary("That's the show! Let's see how you did!");
+        triggerConfetti();
+      } else {
+        pipStartRound(nextRound, pipUsedProducts.length > 0 ? [...pipUsedProducts] : []);
+      }
+    },3500);
+  };
+
+  const pipCleanup = () => {
+    setPipPhase(null);
+    setPipProduct(null);
+    setPipRound(0);
+    setPipGuess(0);
+    setPipPuffing(false);
+    setPipScore(0);
+    setPipResults([]);
+    setPipAiGuesses([]);
+    setPipComment("");
+    setPipIntroStep(0);
+    setPipUsedProducts([]);
+    if(pipPuffInterval.current){clearInterval(pipPuffInterval.current);pipPuffInterval.current=null;}
   };
 
   // ═══════════════════════════════════════════════════════════════
@@ -16389,7 +16574,7 @@ const startSimonPuffs = () => {
             {/* ═══ STAGE SHOW — ROLE SELECTION ═══ */}
             <div style={{width:"100%",maxWidth:320,display:"flex",flexDirection:"column",gap:8,marginBottom:16}}>
               <div style={{fontSize:10,fontWeight:800,color:C.gold,letterSpacing:2,textAlign:"center",marginBottom:4}}>CHOOSE YOUR ROLE</div>
-              <div onClick={()=>{playFx("select");setStageRole("contestant");setSelectedGame(null);const g=selectedGame;showMC("intro",{show:g.name});if(g.id==="vibecheck")vcStartGame();else if(g.id==="higherlower"){setGameActive({id:"higherlower",name:"Higher or Lower",emoji:"📊",color:C.cyan});startHigherLower();}else if(g.id==="survivaltrivia"){setGameActive({id:"survivaltrivia",name:"Survival Trivia",emoji:"🏆",color:C.purple});startSurvivalTrivia();}else if(g.id==="simonpuffs"){setGameActive({id:"simonpuffs",name:"Simon Puffs",emoji:"🔴",color:C.red});startSimonPuffs();}else if(g.id==="puffauction"){setGameActive({id:"puffauction",name:"Puff Auction",emoji:"🔨",color:C.lime});startPuffAuction();}else if(g.id==="pricepuff"){setGameActive({id:"pricepuff",name:"The Price is Puff",emoji:"💰",color:C.green});notify("The Price is Puff starting!",C.green);}}} style={{
+              <div onClick={()=>{playFx("select");setStageRole("contestant");setSelectedGame(null);const g=selectedGame;showMC("intro",{show:g.name});if(g.id==="vibecheck")vcStartGame();else if(g.id==="higherlower"){setGameActive({id:"higherlower",name:"Higher or Lower",emoji:"📊",color:C.cyan});startHigherLower();}else if(g.id==="survivaltrivia"){setGameActive({id:"survivaltrivia",name:"Survival Trivia",emoji:"🏆",color:C.purple});startSurvivalTrivia();}else if(g.id==="simonpuffs"){setGameActive({id:"simonpuffs",name:"Simon Puffs",emoji:"🔴",color:C.red});startSimonPuffs();}else if(g.id==="puffauction"){setGameActive({id:"puffauction",name:"Puff Auction",emoji:"🔨",color:C.lime});startPuffAuction();}else if(g.id==="pricepuff"){setGameActive({id:"pricepuff",name:"The Price is Puff",emoji:"💰",color:C.green});startPriceIsPuff();}}} style={{
                 display:"flex",alignItems:"center",gap:12,padding:"14px 16px",borderRadius:14,cursor:"pointer",
                 background:`linear-gradient(135deg, ${C.gold}12, ${C.gold}05)`,border:`1px solid ${C.gold}25`,
               }}>
@@ -16400,7 +16585,7 @@ const startSimonPuffs = () => {
                 </div>
                 <div style={{fontSize:14,color:`${C.gold}60`}}>›</div>
               </div>
-              <div onClick={()=>{playFx("select");setStageRole("audience");setSelectedGame(null);const g=selectedGame;showMC("intro",{show:g.name});if(g.id==="vibecheck")vcStartGame();else if(g.id==="higherlower"){setGameActive({id:"higherlower",name:"Higher or Lower",emoji:"📊",color:C.cyan});startHigherLower();}else if(g.id==="survivaltrivia"){setGameActive({id:"survivaltrivia",name:"Survival Trivia",emoji:"🏆",color:C.purple});startSurvivalTrivia();}else if(g.id==="simonpuffs"){setGameActive({id:"simonpuffs",name:"Simon Puffs",emoji:"🔴",color:C.red});startSimonPuffs();}else if(g.id==="puffauction"){setGameActive({id:"puffauction",name:"Puff Auction",emoji:"🔨",color:C.lime});startPuffAuction();}else if(g.id==="pricepuff"){setGameActive({id:"pricepuff",name:"The Price is Puff",emoji:"💰",color:C.green});notify("The Price is Puff starting!",C.green);}}} style={{
+              <div onClick={()=>{playFx("select");setStageRole("audience");setSelectedGame(null);const g=selectedGame;showMC("intro",{show:g.name});if(g.id==="vibecheck")vcStartGame();else if(g.id==="higherlower"){setGameActive({id:"higherlower",name:"Higher or Lower",emoji:"📊",color:C.cyan});startHigherLower();}else if(g.id==="survivaltrivia"){setGameActive({id:"survivaltrivia",name:"Survival Trivia",emoji:"🏆",color:C.purple});startSurvivalTrivia();}else if(g.id==="simonpuffs"){setGameActive({id:"simonpuffs",name:"Simon Puffs",emoji:"🔴",color:C.red});startSimonPuffs();}else if(g.id==="puffauction"){setGameActive({id:"puffauction",name:"Puff Auction",emoji:"🔨",color:C.lime});startPuffAuction();}else if(g.id==="pricepuff"){setGameActive({id:"pricepuff",name:"The Price is Puff",emoji:"💰",color:C.green});startPriceIsPuff();}}} style={{
                 display:"flex",alignItems:"center",gap:12,padding:"14px 16px",borderRadius:14,cursor:"pointer",
                 background:`${C.text3}06`,border:`1px solid ${C.text3}15`,
               }}>
