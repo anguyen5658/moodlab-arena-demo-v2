@@ -6900,7 +6900,8 @@ export default function MoodLabArena() {
     const upcomingShows = SHOW_GAMES.filter(g=>!onAirShows.find(s=>s.id===g.id));
     const launchShowFromHub = (g) => {
       playFx("select");
-      assignStageRole(g);
+      setStageRole("contestant");
+      startShowGame(g);
     };
     const startShowGame = (g) => {
       showMC("intro", {show:g.name});
