@@ -1193,6 +1193,43 @@ export default function MoodLabArena() {
   const [stEliminated, setStEliminated] = useState(false);
   const [stStreak, setStStreak] = useState(0);
   const [stQuestion, setStQuestion] = useState(null);
+
+  // ── Simon Puffs ──
+  const [spPhase, setSpPhase] = useState(null);
+  const [spPattern, setSpPattern] = useState([]);
+  const [spPlayerPattern, setSpPlayerPattern] = useState([]);
+  const [spRound, setSpRound] = useState(0);
+  const [spScore, setSpScore] = useState(0);
+  const [spResult, setSpResult] = useState(null);
+  const [spAlive, setSpAlive] = useState(true);
+  const [spCurrentShow, setSpCurrentShow] = useState(-1);
+  const [spShowingPattern, setSpShowingPattern] = useState(false);
+  const [spPuffing, setSpPuffing] = useState(false);
+  const [spPuffTime, setSpPuffTime] = useState(0);
+  const [spComment, setSpComment] = useState("");
+  const [spIntroStep, setSpIntroStep] = useState(0);
+  const [spBestRound, setSpBestRound] = useState(0);
+  const [spPlayersLeft, setSpPlayersLeft] = useState(20);
+  const spPuffStart = useRef(0);
+  const spTimerRef = useRef(null);
+  const spShowRef = useRef(null);
+
+  // ── Puff Auction ──
+  const [paPhase, setPaPhase] = useState(null);
+  const [paPrize, setPaPrize] = useState(null);
+  const [paHolding, setPaHolding] = useState(false);
+  const [paBidTime, setPaBidTime] = useState(0);
+  const [paRound, setPaRound] = useState(0);
+  const [paDisqualified, setPaDisqualified] = useState(false);
+  const [paBids, setPaBids] = useState([]);
+  const [paWinner, setPaWinner] = useState(null);
+  const [paTotalWon, setPaTotalWon] = useState(0);
+  const [paComment, setPaComment] = useState("");
+  const [paIntroStep, setPaIntroStep] = useState(0);
+  const [paShowGavel, setPaShowGavel] = useState(false);
+  const paTimerRef = useRef(null);
+  const paPuffRef = useRef(null);
+  const paRoundRef = useRef(0);
   const [stCorrect, setStCorrect] = useState(null);
   const [stFinalMode, setStFinalMode] = useState(false);
   const [stComment, setStComment] = useState("");
