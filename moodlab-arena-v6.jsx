@@ -10448,6 +10448,35 @@ export default function MoodLabArena() {
       }}>✕</button>
   );
 
+  // ── Stage Break Detection — audience always sees chat, contestant only during breaks ──
+  const isStageBreak = (gameId) => {
+    if(stageRole !== "contestant") return true; // audience always sees chat
+    // Contestant only sees chat during break/result phases
+    if(gameId === "vibecheck") return vcPhase === "reveal" || vcPhase === "result";
+    if(gameId === "survivaltrivia") return stPhase === "reveal" || stPhase === "result" || stPhase === "winner";
+    if(gameId === "simonpuffs") return spPhase === "eliminated" || spPhase === "final" || spPhase === "judging";
+    if(gameId === "puffauction") return paPhase === "reveal" || paPhase === "result" || paPhase === "final";
+    if(gameId === "higherlower") return hlPhase === "result";
+    if(gameId === "pricepuff") return true; // always visible for this game
+    return false;
+  };
+
+  // ── Simulated Audience Chat for Stage Games ──
+  useEffect(() => {
+    if(!gameActive || !stageRole || !SHOW_GAMES.find(s=>s.id===gameActive.id)) return;
+    const chatInterval = setInterval(() => {
+      const msgs = [
+        "Go go go! 🔥", "This is intense!", "LOL 😂", "No way! 💀",
+        "The crowd is going wild!", "Puff harder! 💨", "What a play!",
+        "I predicted this! 🔮", "Chat is exploding rn 🤯", "W contestant! 👑",
+      ];
+      const bots = ["Fan_42","PuffQueen","BlazedPanda","NeonQueen","THC_Tony"];
+      const msg = {u:bots[Math.floor(Math.random()*bots.length)], m:msgs[Math.floor(Math.random()*msgs.length)], c:C.cyan, t:Date.now()};
+      setSideChat(p=>({...p, you:[...p.you.slice(-15), msg]}));
+    }, 4000 + Math.random()*3000);
+    return () => clearInterval(chatInterval);
+  }, [gameActive?.id, stageRole]);
+
   // ── Reusable Game Chat Panel — can be dropped into any game render ──
   const renderGameChatPanel = (gameName) => (
     <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:300,maxHeight:"30%",display:"flex",flexDirection:"column"}}>
@@ -14002,6 +14031,15 @@ export default function MoodLabArena() {
                 </div>
               )}
             </div>
+            {/* Stage Show Chat -- visible for audience always, contestant during breaks only */}
+            {stageRole && isStageBreak("survivaltrivia") && renderGameChatPanel("SURVIVAL TRIVIA")}
+            {stageRole === "contestant" && isStageBreak("survivaltrivia") && (
+              <div style={{position:"fixed",bottom:280,left:0,right:0,zIndex:290,textAlign:"center",animation:"fadeIn 0.3s ease",pointerEvents:"none"}}>
+                <span style={{padding:"6px 16px",borderRadius:100,fontSize:9,fontWeight:700,background:C.gold+"15",border:"1px solid "+C.gold+"25",color:C.gold,backdropFilter:"blur(8px)"}}>
+                  ☕ BREAK TIME — Chat with the audience!
+                </span>
+              </div>
+            )}
           </div>
         );
       }
@@ -14483,7 +14521,16 @@ export default function MoodLabArena() {
             <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse at 50% 20%, rgba(160,80,255,.15) 0%, transparent 60%)",pointerEvents:"none"}}/>
             <div style={{position:"absolute",top:"10%",left:"20%",width:200,height:200,borderRadius:"50%",background:"radial-gradient(circle, rgba(192,132,252,.08), transparent 70%)",pointerEvents:"none",animation:"pulse 4s infinite"}}/>
             <div style={{position:"absolute",top:"30%",right:"10%",width:150,height:150,borderRadius:"50%",background:"radial-gradient(circle, rgba(0,229,255,.06), transparent 70%)",pointerEvents:"none",animation:"pulse 3s infinite 1s"}}/>
-            {renderGameChatPanel("SIMON PUFFS")}
+            {/* Stage Show Chat -- visible for audience always, contestant during breaks only */}
+            {stageRole && isStageBreak("simonpuffs") && renderGameChatPanel("SIMON PUFFS")}
+            {stageRole === "contestant" && isStageBreak("simonpuffs") && (
+              <div style={{position:"fixed",bottom:280,left:0,right:0,zIndex:290,textAlign:"center",animation:"fadeIn 0.3s ease",pointerEvents:"none"}}>
+                <span style={{padding:"6px 16px",borderRadius:100,fontSize:9,fontWeight:700,background:C.gold+"15",border:"1px solid "+C.gold+"25",color:C.gold,backdropFilter:"blur(8px)"}}>
+                  ☕ BREAK TIME — Chat with the audience!
+                </span>
+              </div>
+            )}
+            {!stageRole && renderGameChatPanel("SIMON PUFFS")}
             {overlayBack(()=>{spEndGame();})}
             <div style={{display:"flex",flexDirection:"column",alignItems:"center",maxWidth:380,width:"100%",padding:"50px 16px 16px",gap:8,zIndex:10,margin:"0 auto",height:"100%"}}>
               <div style={{fontSize:16,fontWeight:900,letterSpacing:4,color:C.purple,textShadow:"0 0 20px rgba(192,132,252,.5)"}}>
@@ -14642,7 +14689,16 @@ export default function MoodLabArena() {
             {confettiParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size*0.6,background:p.color,borderRadius:1,transform:"rotate("+p.rot+"deg)",zIndex:210,pointerEvents:"none",animation:"confettiFall 1.5s ease-out forwards"}}/>))}
             <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse at 50% 30%, rgba(255,215,0,.08) 0%, transparent 60%)",pointerEvents:"none"}}/>
             <div style={{position:"absolute",top:"5%",left:"50%",transform:"translateX(-50%)",width:300,height:300,borderRadius:"50%",background:"radial-gradient(circle, rgba(255,215,0,.06), transparent 70%)",pointerEvents:"none"}}/>
-            {renderGameChatPanel("PUFF AUCTION")}
+            {/* Stage Show Chat -- visible for audience always, contestant during breaks only */}
+            {stageRole && isStageBreak("puffauction") && renderGameChatPanel("PUFF AUCTION")}
+            {stageRole === "contestant" && isStageBreak("puffauction") && (
+              <div style={{position:"fixed",bottom:280,left:0,right:0,zIndex:290,textAlign:"center",animation:"fadeIn 0.3s ease",pointerEvents:"none"}}>
+                <span style={{padding:"6px 16px",borderRadius:100,fontSize:9,fontWeight:700,background:C.gold+"15",border:"1px solid "+C.gold+"25",color:C.gold,backdropFilter:"blur(8px)"}}>
+                  ☕ BREAK TIME — Chat with the audience!
+                </span>
+              </div>
+            )}
+            {!stageRole && renderGameChatPanel("PUFF AUCTION")}
             {overlayBack(()=>{paEndGame();})}
             <div style={{display:"flex",flexDirection:"column",alignItems:"center",maxWidth:380,width:"100%",padding:"50px 16px 16px",gap:8,zIndex:10,margin:"0 auto",height:"100%"}}>
               <div style={{fontSize:16,fontWeight:900,letterSpacing:4,color:C.gold,textShadow:"0 0 20px rgba(255,215,0,.4)"}}>
@@ -14791,7 +14847,16 @@ export default function MoodLabArena() {
             {screenFlash&&<div style={{position:"absolute",inset:0,zIndex:200,pointerEvents:"none",opacity:0,background:screenFlash==="goal"?"rgba(0,255,100,0.25)":"rgba(255,50,50,0.25)",animation:"flashOverlay 0.4s ease forwards"}}/>}
             {confettiParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size*0.6,background:p.color,borderRadius:1,transform:"rotate("+p.rot+"deg)",zIndex:210,pointerEvents:"none",animation:"confettiFall 1.5s ease-out forwards"}}/>))}
             {overlayBack(hlCleanup)}
-            {renderGameChatPanel("HIGHER OR LOWER")}
+            {/* Stage Show Chat -- visible for audience always, contestant during breaks only */}
+            {stageRole && isStageBreak("higherlower") && renderGameChatPanel("HIGHER OR LOWER")}
+            {stageRole === "contestant" && isStageBreak("higherlower") && (
+              <div style={{position:"fixed",bottom:280,left:0,right:0,zIndex:290,textAlign:"center",animation:"fadeIn 0.3s ease",pointerEvents:"none"}}>
+                <span style={{padding:"6px 16px",borderRadius:100,fontSize:9,fontWeight:700,background:C.gold+"15",border:"1px solid "+C.gold+"25",color:C.gold,backdropFilter:"blur(8px)"}}>
+                  ☕ BREAK TIME — Chat with the audience!
+                </span>
+              </div>
+            )}
+            {!stageRole && renderGameChatPanel("HIGHER OR LOWER")}
             <div style={{display:"flex",flexDirection:"column",alignItems:"center",maxWidth:380,width:"100%",padding:"50px 16px 20px",gap:6,zIndex:10,flex:1,overflowY:"auto",margin:"0 auto"}}>
               <div style={{textAlign:"center",marginBottom:4}}><div style={{fontSize:18,fontWeight:900,letterSpacing:3,background:"linear-gradient(135deg, "+C.cyan+", "+C.purple+")",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>{isR?"FINAL SCORE":"HIGHER OR LOWER"}</div><div style={{fontSize:9,color:C.text3}}>Round {Math.min(hlRound,10)}/10 | Score: {hlScore} | Streak: {hlStreak} {se}</div></div>
               <div style={{display:"flex",alignItems:"center",gap:8,width:"90%",maxWidth:280,marginBottom:8}}><div style={{fontSize:10,fontWeight:800,color:C.cyan,minWidth:20}}>{hlScore}</div><div style={{flex:1,height:4,borderRadius:2,background:"rgba(255,255,255,0.06)",overflow:"hidden"}}><div style={{height:"100%",width:Math.min(100,hlStreak*10)+"%",background:"linear-gradient(90deg,"+C.cyan+","+C.gold+(hlStreak>=5?","+C.red:"")+")",borderRadius:2,transition:"width 0.3s"}}/></div><div style={{fontSize:10,fontWeight:800,color:hlStreak>=5?C.red:hlStreak>=3?C.gold:C.text3}}>x{hlStreak}</div></div>
