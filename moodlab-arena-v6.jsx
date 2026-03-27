@@ -16588,22 +16588,10 @@ const startSimonPuffs = () => {
         );
       }
 
-      // Generic game
-      return (
-        <div style={overlayStyle}>
-          <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",textAlign:"center",padding:20}}>
-            <div style={{fontSize:56,marginBottom:16}}>{gameActive.emoji}</div>
-            <div style={{fontSize:20,fontWeight:900,color:C.text,marginBottom:6}}>{gameActive.name}</div>
-            <div style={{fontSize:12,color:C.text3,marginBottom:20}}>Game in progress...</div>
-            <div onClick={()=>puffLockIn(()=>{setCoins(c=>c+30);notify("🎮 +30 coins!",C.green);setGameActive(null);})} style={{padding:"12px 28px",borderRadius:12,cursor:"pointer",background:`${C.cyan}15`,border:`1px solid ${C.cyan}30`,fontSize:14,fontWeight:800,color:C.cyan}}>💨 Puff to Win</div>
-          </div>
-        </div>
-      );
-    }
     // ═══════════════════════════════════════════════════════════════
     // PRICE IS PUFF — Render (Gold/Green Price is Right Theme)
     // ═══════════════════════════════════════════════════════════════
-    if(gameActive && gameActive.id==="pricepuff" && pipPhase) {
+    if(gameActive.id==="pricepuff" && pipPhase) {
       const isIntroP = pipPhase==="intro";
       const isProduct = pipPhase==="product";
       const isGuessing = pipPhase==="guessing";
@@ -16780,6 +16768,19 @@ const startSimonPuffs = () => {
                 </div>
               </div>
             )}
+          </div>
+        </div>
+      );
+    }
+
+      // Generic game
+      return (
+        <div style={overlayStyle}>
+          <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",textAlign:"center",padding:20}}>
+            <div style={{fontSize:56,marginBottom:16}}>{gameActive.emoji}</div>
+            <div style={{fontSize:20,fontWeight:900,color:C.text,marginBottom:6}}>{gameActive.name}</div>
+            <div style={{fontSize:12,color:C.text3,marginBottom:20}}>Game in progress...</div>
+            <div onClick={()=>puffLockIn(()=>{setCoins(c=>c+30);notify("🎮 +30 coins!",C.green);setGameActive(null);})} style={{padding:"12px 28px",borderRadius:12,cursor:"pointer",background:`${C.cyan}15`,border:`1px solid ${C.cyan}30`,fontSize:14,fontWeight:800,color:C.cyan}}>💨 Puff to Win</div>
           </div>
         </div>
       );
