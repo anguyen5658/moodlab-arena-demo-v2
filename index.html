@@ -44,7 +44,7 @@
 </head>
 <body>
   <div id="root"></div>
-  <button id="back-btn" onclick="window.location.reload()">←</button>
+  <button id="back-btn" onclick="if(window.__moodlabGoBack){window.__moodlabGoBack();}else{window.location.reload();}">←</button>
   <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>

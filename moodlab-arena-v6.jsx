@@ -9108,33 +9108,54 @@ export default function MoodLabArena() {
   // MUST run on every render to keep fresh closure (no useCallback, no stale state)
   useEffect(()=>{
     window.__moodlabGoBack = () => {
-      cleanupAllGames();
-      // Reset EVERYTHING — nuclear clear all state
-      setGameActive(null);setKickState(null);setIsFK2Mode(false);isFK2Ref.current=false;setIsFK3Mode(false);isFK3Ref.current=false;
-      setBpPhase(null);setRrPhase(null);setPpPhase(null);setRpPhase(null);setTowPhase(null);
-      setHpPhase(null);setHookPhase(null);setRpsPhase(null);setStPhase(null);setPcPhase(null);setDuelPhase("menu");
-      setSpPhase(null);setPaPhase(null);setBdPhase(null);setPlPhase(null);setPdPhase(null);setHlPhase(null);
-      setMatchmaking(null);setSelectedGame(null);setSwPhase(null);setFanMode(null);setFanTeam(null);setFanDevice(null);
-      setShowVibeCheck(false);setVcPhase(null);setVcEliminated(false);setVcCorrectStreak(0);setVcPuffAnswer(null);setVcTimer(10);if(vcTimerRef.current){clearInterval(vcTimerRef.current);vcTimerRef.current=null;}setDimLights(false);setScreenShake(false);setScreenFlash(null);setStageRole(null);setMcVisible(false);
-      setMatchIntro(null);setCommentatorText("");setPuffBubbles([]);setAudienceBubbles([]);
-      setConfettiParticles([]);setSmokeParticles([]);setLiveSpectators([]);setSpectatorTicker([]);setCrowdEnergy(0);setCrowdEruption(false);
-      try{setWcPhase(null);setWcTeam(null);setWcTournament(null);setWcBracket(null);setWcFinalResult(null);setWcMatchday(0);setWcGroupResult(null);setWcDrawAnim(false);setWcDeviceInput(null);}catch(e){}
-      setCbPhase(null);setCbQuestion(null);setCbAnswer(null);setCbResult(null);setCbPuffing(false);
-      setSbPhase(null);setSbMatchup(null);setSbVote(null);setSbResults(null);
-      setMpPhase(null);setMpMatch(null);setMpPrediction(null);
-      setDpPhase(null);setDpPicks([]);setDpAnswered([]);setDpResults([]);setDpAnswer(null);
-      setSlotsPhase(null);setSlotsSpinning(false);setSlotsWin(0);setSlotsRound(0);setSlotsBonusRound(false);
-      setBjPhase(null);setBjPlayerHand([]);setBjDealerHand([]);setBjResult(null);setBjPuffing(false);
-      setCfPhase(null);setCfChoice(null);setCfResult(null);setCfPuffing(false);setCfFlipping(false);
-      setCrapsPhase(null);setCrapsDice([1,1]);setCrapsRolling(false);setCrapsPoint(null);setCrapsResult(null);setCrapsPuffing(false);
-      setMbPhase(null);setMbBoxes([]);setMbPicked(null);setMbRevealed(false);setMbPrize(null);setMbRound(0);setMbScore(0);
-      setScPhase(null);setScCard([]);setScRevealed([false,false,false,false,false,false]);setScCurrentIdx(null);setScPrize(null);setScRound(0);setScScore(0);
-      setFcPhase(null);setFcFortune("");setFcCoins(0);setFcCracking(false);setFcRound(0);setFcScore(0);setFcGolden(false);
-      setTmPhase(null);setTmGrid([]);setTmRevealed(Array(16).fill(false));setTmTreasures(0);setTmBombs(0);setTmCoins(0);setTmGameOver(false);setTmSelected(null);setTmXray(false);setTmXrayTiles([]);setTmScore(0);
+      // SMART BACK: Go back ONE step based on current screen
+      // Priority: game playing → game selection → zone hub → zone welcome → arena home
+
+      // 1. In a game (gameActive is set) → go back to game selection or zone hub
+      if(gameActive) {
+        cleanupAllGames();
+        setGameActive(null);setKickState(null);setIsFK2Mode(false);isFK2Ref.current=false;setIsFK3Mode(false);isFK3Ref.current=false;
+        setBpPhase(null);setRrPhase(null);setPpPhase(null);setRpPhase(null);setTowPhase(null);
+        setHpPhase(null);setHookPhase(null);setRpsPhase(null);setStPhase(null);setPcPhase(null);setDuelPhase("menu");
+        setSpPhase(null);setPaPhase(null);setBdPhase(null);setPlPhase(null);setPdPhase(null);setHlPhase(null);
+        setSlotsPhase(null);setBjPhase(null);setCfPhase(null);setCrapsPhase(null);
+        setMbPhase(null);setScPhase(null);setFcPhase(null);setTmPhase(null);
+        setDimLights(false);setScreenShake(false);setScreenFlash(null);setStageRole(null);setMcVisible(false);
+        setMatchIntro(null);setCommentatorText("");setPuffBubbles([]);setAudienceBubbles([]);
+        setConfettiParticles([]);setSmokeParticles([]);setLiveSpectators([]);setCrowdEruption(false);
+        return;
+      }
+      // 2. In matchmaking → cancel matchmaking
+      if(matchmaking) { setMatchmaking(null); return; }
+      // 3. Viewing a game detail (selectedGame) → back to zone hub
+      if(selectedGame) { setSelectedGame(null); return; }
+      // 4. In Vibe Check or Spin & Win overlay → back to zone hub
+      if(showVibeCheck) { setShowVibeCheck(false);setVcPhase(null);if(vcTimerRef.current){clearInterval(vcTimerRef.current);vcTimerRef.current=null;} return; }
+      if(swPhase) { setSwPhase(null); return; }
+      // 5. In fan mode → go back through fan flow
+      if(fanMode) { setFanMode(null);setFanTeam(null);setFanDevice(null); return; }
+      // 6. In WC tournament flow → go back through WC phases
+      if(wcPhase) {
+        if(wcPhase==="result") { setWcPhase(null);setWcTeam(null);setWcTournament(null);setWcBracket(null);setWcFinalResult(null);setWcMatchday(0); return; }
+        if(wcPhase==="knockout") { setWcPhase("group_stage"); return; }
+        if(wcPhase==="group_stage") { setWcPhase(null);setWcTeam(null);setWcTournament(null); return; }
+        if(wcPhase==="group_draw") { setWcPhase("team_select"); return; }
+        if(wcPhase==="team_select"||wcPhase==="team_select_quick") { setWcPhase(null);setWcTeam(null); return; }
+        setWcPhase(null);setWcTeam(null);setWcTournament(null);setWcBracket(null);setWcFinalResult(null); return;
+      }
+      // 7. In halftime mini-game → close it
+      if(halftimeGame) { setHalftimeGame(null); return; }
+      // 8. In puff event → close it
+      if(puffEvent) { closePuffEvent(); return; }
+      // 9. In a zone hub → go back to zone welcome (arenaView)
+      if(zone) { setZone(null);setArenaView("hub"); return; }
+      // 10. Viewing a zone welcome (arenaView is set to a zone) → go back to arena home
+      if(arenaView && arenaView !== "hub") { setArenaView("hub"); return; }
+      // 11. Already at arena home → do nothing (or could switch tabs)
     };
     // Show/hide the HTML back button
     const btn = document.getElementById('back-btn');
-    if(btn) btn.style.display = (gameActive||matchmaking||selectedGame||wcPhase||fanMode||showVibeCheck) ? 'block' : 'none';
+    if(btn) btn.style.display = (gameActive||matchmaking||selectedGame||wcPhase||fanMode||showVibeCheck||swPhase||halftimeGame||puffEvent||zone||(arenaView&&arenaView!=="hub")) ? 'block' : 'none';
   });
 
   const cleanupAllGames = () => {
