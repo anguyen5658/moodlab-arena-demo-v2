@@ -9155,7 +9155,7 @@ export default function MoodLabArena() {
     };
     // Show/hide the HTML back button
     const btn = document.getElementById('back-btn');
-    if(btn) btn.style.display = (gameActive||matchmaking||selectedGame||wcPhase||fanMode||showVibeCheck||swPhase||halftimeGame||puffEvent||(arenaView&&arenaView!=="hub"&&!zone)) ? 'block' : 'none';
+    if(btn) btn.style.display = (gameActive||matchmaking||selectedGame||wcPhase||fanMode||showVibeCheck||swPhase||halftimeGame||puffEvent) ? 'block' : 'none';
   });
 
   const cleanupAllGames = () => {
