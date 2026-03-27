@@ -19296,7 +19296,7 @@ export default function MoodLabArena() {
 
       {/* Header — always visible across all pages */}
       <div style={{padding:"12px 14px 4px",display:"flex",justifyContent:"space-between",alignItems:"center",position:"relative",zIndex:20}}>
-        <div style={{fontSize:9,fontWeight:600,color:C.text3,letterSpacing:1.5}}>{(tab==="arena"&&!zone&&arenaView==="hub")?"Powered by ":""}<span style={{fontWeight:800,color:C.text2,letterSpacing:1}}>Powered by <span style={{fontWeight:900,letterSpacing:2}}>MOOD LAB</span></span></div>
+        <div style={{fontSize:9,fontWeight:600,color:C.text3,letterSpacing:1.5}}><span style={{fontWeight:800,color:C.text2,letterSpacing:1}}>Powered by <span style={{fontWeight:900,letterSpacing:2}}>MOOD LAB</span></span></div>
         <div style={{display:"flex",gap:5,alignItems:"center"}}>
           {/* Input method button */}
           <div onClick={()=>setShowInputPanel(true)} style={{display:"flex",alignItems:"center",gap:4,padding:"3px 10px",borderRadius:100,cursor:"pointer",...LG.pill,border:`1px solid ${activeInput.color}${inputPulse?"50":"18"}`,transition:"all 0.3s",boxShadow:inputPulse?`0 0 10px ${activeInput.color}25`:LG.pill.boxShadow}}>
