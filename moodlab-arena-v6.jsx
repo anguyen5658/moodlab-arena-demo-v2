@@ -26,8 +26,8 @@ const ARENA_VIDEOS = {
 
 // ── ZONE COLORS ──
 const Z = {
-  arcade: { primary:"#00E5FF", glow:"rgba(0,229,255,0.35)", dim:"rgba(0,229,255,0.08)", name:"The Arcade", icon:"🎮", sub:"12 Action Games" },
-  stage:  { primary:"#FFD93D", glow:"rgba(255,217,61,0.35)", dim:"rgba(255,217,61,0.08)", name:"The Stage", icon:"🎪", sub:"11 Live Shows" },
+  arcade: { primary:"#00E5FF", glow:"rgba(0,229,255,0.35)", dim:"rgba(0,229,255,0.08)", name:"The Arcade", icon:"🎮", sub:"16 Action Games" },
+  stage:  { primary:"#FFD93D", glow:"rgba(255,217,61,0.35)", dim:"rgba(255,217,61,0.08)", name:"The Stage", icon:"🎪", sub:"7 Live Shows" },
   oracle: { primary:"#FFD93D", glow:"rgba(255,217,61,0.35)", dim:"rgba(255,217,61,0.08)", name:"The Fortune", icon:"🔮", sub:"16 Fortune Games" },
   wall:   { primary:"#FB923C", glow:"rgba(251,146,60,0.35)", dim:"rgba(251,146,60,0.08)", name:"The Wall", icon:"🏆", sub:"Rankings & Glory" },
   worldcup:{ primary:"#FFD93D", glow:"rgba(255,217,61,0.35)", dim:"rgba(255,217,61,0.08)", name:"World Cup 2026", icon:"⚽", sub:"Limited Event" },
@@ -143,6 +143,10 @@ const PLAY_GAMES = [
   { id:"tugofwar", name:"Tug of War", emoji:"💪", players:"2-8", time:"30s-1m", type:"Team", color:C.blue, desc:"2 team puff liên tục. Bên mạnh hơn thắng.", hot:true, inputs:["puff","button"] },
   { id:"hooked", name:"Hooked", emoji:"🎣", players:"1", time:"2-5m", type:"Skill", color:C.blue, desc:"Stack fishing! Puff to reel in fish. Control your suction!", inputs:["puff","button"] },
   { id:"rps", name:"Puff RPS", emoji:"✊", players:"2", time:"1-2m", type:"Strategy", color:C.purple, desc:"Rock Paper Scissors with Puff Power!", hot:true, inputs:["puff","button"] },
+  { id:"beatdrop", name:"Beat Drop", emoji:"🎧", players:"1", time:"3-5m", type:"Music", color:C.pink, desc:"Hold your puff until the beat drops. Release on time!", inputs:["puff"] },
+  { id:"puffclock", name:"Puff Clock", emoji:"⏱️", players:"1-100+", time:"3-5m", type:"Precision", color:C.orange, desc:"Puff for EXACTLY the target time. Closest wins!", inputs:["puff"] },
+  { id:"pufflimbo", name:"Puff Limbo", emoji:"🎪", players:"1-50", time:"3-5m", type:"Endurance", color:C.orange, desc:"Target puff gets longer each round. Survive the blinker!", inputs:["puff"] },
+  { id:"puffderby", name:"Puff Derby", emoji:"🏇", players:"6", time:"2-3m", type:"Racing", color:C.green, desc:"Pick a horse. Spam puff to make it run!", inputs:["puff"] },
 ];
 
 const SHOW_GAMES = [
@@ -151,12 +155,8 @@ const SHOW_GAMES = [
   { id:"higherlower", name:"Higher or Lower", emoji:"📊", players:"1-100+", time:"5-10m", type:"Knowledge", color:C.cyan, desc:"Đoán số tiếp theo cao hay thấp. Streak = thưởng lớn.", live:true, inputs:["puff","tap"] },
   { id:"pricepuff", name:"The Price is Puff", emoji:"💰", players:"2-50+", time:"5-10m", type:"Knowledge", color:C.green, desc:"Đoán giá sản phẩm. Gần nhất thắng.", live:true, inputs:["puff","tap"] },
   { id:"survivaltrivia", name:"Survival Trivia", emoji:"🏆", players:"2-100+", time:"5-15m", type:"Trivia", color:C.purple, desc:"Answer correctly or get eliminated. Last one standing wins!", live:true, inputs:["puff","tap"] },
-  { id:"puffclock", name:"Puff Clock", emoji:"⏱️", players:"1-50+", time:"3-8m", type:"Precision", color:C.orange, desc:"Stop the clock at the exact time. Precision puffing!", live:true, inputs:["puff","button"] },
   { id:"simonpuffs", name:"Simon Puffs", emoji:"🔴", players:"1-50+", time:"3-8m", type:"Memory", color:C.red, desc:"Remember the pattern, repeat with puffs. Memory master!", live:true, inputs:["puff","button"] },
   { id:"puffauction", name:"Puff Auction", emoji:"🔨", players:"2-50+", time:"3-8m", type:"Strategy", color:C.lime, desc:"Bid with your lungs! Biggest puff wins the auction.", live:true, inputs:["puff","button"] },
-  { id:"beatdrop", name:"Beat Drop", emoji:"🎧", players:"1-50+", time:"2-5m", type:"Music", color:C.pink, desc:"Feel the beat, drop at the right moment. Rhythm + timing!", live:true, inputs:["puff","button"] },
-  { id:"pufflimbo", name:"Puff Limbo", emoji:"🎪", players:"1-50+", time:"3-8m", type:"Endurance", color:C.orange, desc:"How low can you go? Precise puffs under the bar!", live:true, inputs:["puff","button"] },
-  { id:"puffderby", name:"Puff Derby", emoji:"🏇", players:"1-50+", time:"2-5m", type:"Racing", color:C.green, desc:"Pick a horse, puff to boost! Race to the finish line.", live:true, inputs:["puff","button"] },
 ];
 
 const MC_LINES = {
@@ -476,7 +476,7 @@ const ACHIEVEMENTS = [
   {id:"sweet_spot", name:"Sweet Spot Merchant", desc:"Hit 50 perfect puffs", emoji:"🎯", color:C.green, rare:false},
   {id:"marathon", name:"Puff Marathon", desc:"Puff for 420 total seconds", emoji:"🏃", color:C.orange, rare:true},
   {id:"streak_7", name:"Weekly Warrior", desc:"7-day puff streak", emoji:"🔥", color:C.orange, rare:true},
-  {id:"all_games", name:"Arcade Master", desc:"Play all 12 games", emoji:"🎮", color:C.purple, rare:true},
+  {id:"all_games", name:"Arcade Master", desc:"Play all 16 games", emoji:"🎮", color:C.purple, rare:true},
   {id:"tournament_win", name:"Champion", desc:"Win any tournament", emoji:"👑", color:C.gold, rare:true},
   {id:"crowd_surfer", name:"Crowd Surfer", desc:"Trigger 10 Puff Waves", emoji:"🌊", color:C.blue, rare:true},
   {id:"legend", name:"Living Legend", desc:"Reach Legendary rank", emoji:"⭐", color:C.gold, rare:true},
@@ -6667,7 +6667,7 @@ export default function MoodLabArena() {
     const hotGames = PLAY_GAMES.filter(g=>g.hot);
     const hotIdx = Math.floor(Date.now()/4000) % Math.max(hotGames.length,1);
     const featuredGame = hotGames[hotIdx] || PLAY_GAMES[0];
-    const playerCounts = {finalkick:2100,finalkick2:356,finalkick3:198,wildwest:720,russian:167,balloon:145,puffpong:289,rhythm:134,tugofwar:312,hotpotato:890,hooked:410,rps:540};
+    const playerCounts = {finalkick:2100,finalkick2:356,finalkick3:198,wildwest:720,russian:167,balloon:145,puffpong:289,rhythm:134,tugofwar:312,hotpotato:890,hooked:410,rps:540,beatdrop:245,puffclock:310,pufflimbo:178,puffderby:420};
     const totalPlaying = Object.values(playerCounts).reduce((a,b)=>a+b,0);
     const arcadeTournaments = [
       {name:"FK1 World Cup 2026",emoji:"🏆",game:"Final Kick",prize:"50,000 coins",color:C.gold,status:"LIVE",players:312,round:"Round of 16",bracket:[8,4,2,1],currentRound:1},
@@ -6907,14 +6907,11 @@ export default function MoodLabArena() {
       showMC("intro", {show:g.name});
       if(g.id==="vibecheck") vcStartGame();
       else if(g.id==="spinwin"){setSelectedGame(g);swStartGame();}
-      else if(g.id==="beatdrop"){setGameActive({id:"beatdrop",name:"Beat Drop",emoji:"🎧",color:C.pink});startBeatDrop();}
-      else if(g.id==="pufflimbo"){setGameActive({id:"pufflimbo",name:"Puff Limbo",emoji:"🎪",color:C.orange});startPuffLimbo();}
-      else if(g.id==="puffderby"){setGameActive({id:"puffderby",name:"Puff Derby",emoji:"🏇",color:C.green});startPuffDerby();}
       else if(g.id==="higherlower"){setGameActive({id:"higherlower",name:"Higher or Lower",emoji:"📊",color:C.cyan});startHigherLower();}
       else if(g.id==="survivaltrivia"){setGameActive({id:"survivaltrivia",name:"Survival Trivia",emoji:"🏆",color:C.purple});startSurvivalTrivia();}
-      else if(g.id==="puffclock"){setGameActive({id:"puffclock",name:"Puff Clock",emoji:"⏱️",color:C.orange});startPuffClock();}
       else if(g.id==="simonpuffs"){setGameActive({id:"simonpuffs",name:"Simon Puffs",emoji:"🔴",color:C.red});startSimonPuffs();}
       else if(g.id==="puffauction"){setGameActive({id:"puffauction",name:"Puff Auction",emoji:"🔨",color:C.lime});startPuffAuction();}
+      else if(g.id==="pricepuff"){setGameActive({id:"pricepuff",name:"The Price is Puff",emoji:"💰",color:C.green});notify("The Price is Puff starting!",C.green);}
       else notify(g.name+" starting soon!",g.color);
     };
     const dotCycle = Math.floor(tick*2) % 24;
