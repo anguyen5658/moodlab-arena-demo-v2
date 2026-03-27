@@ -9721,7 +9721,7 @@ export default function MoodLabArena() {
         setSpPhase(null);setPaPhase(null);setBdPhase(null);setPlPhase(null);setPdPhase(null);setHlPhase(null);
         setSlotsPhase(null);setBjPhase(null);setCfPhase(null);setCrapsPhase(null);
         setMbPhase(null);setScPhase(null);setFcPhase(null);setTmPhase(null);
-        setDimLights(false);setScreenShake(false);setScreenFlash(null);setStageRole(null);setMcVisible(false);
+        setDimLights(false);setScreenShake(false);setScreenFlash(null);setStageRole(null);setMcVisible(false);setStageElim(null);
         setMatchIntro(null);setCommentatorText("");setPuffBubbles([]);setAudienceBubbles([]);
         setConfettiParticles([]);setSmokeParticles([]);setLiveSpectators([]);setCrowdEruption(false);
         return;
@@ -9731,7 +9731,7 @@ export default function MoodLabArena() {
       // 3. Viewing a game detail (selectedGame) → back to zone hub
       if(selectedGame) { setSelectedGame(null); return; }
       // 4. In Vibe Check or Spin & Win overlay → back to zone hub
-      if(showVibeCheck) { setShowVibeCheck(false);setVcPhase(null);if(vcTimerRef.current){clearInterval(vcTimerRef.current);vcTimerRef.current=null;} return; }
+      if(showVibeCheck) { setShowVibeCheck(false);setVcPhase(null);setStageElim(null);if(vcTimerRef.current){clearInterval(vcTimerRef.current);vcTimerRef.current=null;} return; }
       if(swPhase) { setSwPhase(null); return; }
       // 5. In fan mode → go back through fan flow
       if(fanMode) { setFanMode(null);setFanTeam(null);setFanDevice(null); return; }
@@ -10061,6 +10061,8 @@ export default function MoodLabArena() {
       playFx("miss");
     }
     setPipScore(prev => prev + roundCoins);
+    const pipAccuracy = playerOver ? 0 : Math.max(0, 100 - Math.abs(finalGuess - realPrice));
+    elimRound(pipAccuracy);
     setPipResults(prev => [...prev, {
       product: pipProduct,
       guess: finalGuess,
@@ -10099,6 +10101,7 @@ export default function MoodLabArena() {
     setPipIntroStep(0);
     setPipUsedProducts([]);
     if(pipPuffInterval.current){clearInterval(pipPuffInterval.current);pipPuffInterval.current=null;}
+    setStageElim(null);
   };
 
   // ═══════════════════════════════════════════════════════════════
@@ -10514,7 +10517,7 @@ export default function MoodLabArena() {
     if(stTimerRef.current){clearInterval(stTimerRef.current);stTimerRef.current=null;}
     setStPhase(null);
     setGameActive(null);
-    setStageRole(null);setMcVisible(false);
+    setStageRole(null);setMcVisible(false);setStageElim(null);
   };
 
   // ===============================================================
@@ -11149,7 +11152,7 @@ const startSimonPuffs = () => {
     if(earned > 0) { setCoins(c => c + earned); notify("+"+earned+" coins!", C.green); }
     setSpPhase(null);
     setGameActive(null);
-    setStageRole(null);setMcVisible(false);
+    setStageRole(null);setMcVisible(false);setStageElim(null);
   };
 
   // =====================================================================
@@ -11229,6 +11232,7 @@ const startSimonPuffs = () => {
         setTimeout(()=>setScreenShake(false),500);
         setCommentary("BLINKER! DISQUALIFIED! Over " + PA_BLINKER_THRESHOLD + "s!");
         setPaComment("The greed got you! DISQUALIFIED!");
+        elimRound(0);
         setTimeout(() => {
           const aiBids = [];
           const numAi = 3 + Math.floor(Math.random()*4);
@@ -11287,10 +11291,12 @@ const startSimonPuffs = () => {
       setCommentary("YOU WIN! " + prize.emoji + " " + prize.name + "! Bid: " + dur.toFixed(2) + "s");
       setPaComment("SOLD to the champion puffer! +" + prize.value + " coins!");
       if(stageRole) showMC("correct",{points:String(prize.value)});
+      elimRound(dur * 20);
     } else {
       setCommentary("Outbid! " + (winner?winner.name:"Nobody") + " wins with " + (winner?winner.time.toFixed(2):"0") + "s!");
       setPaComment("Better luck next round! Your bid: " + dur.toFixed(2) + "s");
       if(stageRole) showMC("wrong");
+      elimRound(dur * 20);
     }
     setTimeout(() => {
       if(paRound < PA_PRIZES.length - 1) {
@@ -11306,7 +11312,7 @@ const startSimonPuffs = () => {
     if(paPuffInterval.current){clearInterval(paPuffInterval.current);paPuffInterval.current=null;}
     setPaPhase(null);
     setGameActive(null);
-    setStageRole(null);setMcVisible(false);
+    setStageRole(null);setMcVisible(false);setStageElim(null);
   };
 
   const PD_HORSE_EMOJIS = ["\uD83D\uDC0E","\uD83C\uDFC7","\uD83E\uDD84","\uD83D\uDC34","\uD83C\uDFA0","\uD83D\uDC2A"];
@@ -11320,9 +11326,9 @@ const startSimonPuffs = () => {
   const pdCleanup = () => { if(pdAiRef.current){clearInterval(pdAiRef.current);pdAiRef.current=null;}if(pdTimerRef.current){clearInterval(pdTimerRef.current);pdTimerRef.current=null;}setPdPhase(null);setGameActive(null);setStageRole(null);setMcVisible(false); };
   const hlPickRandom = () => { const av=HL_STATS.filter((_,i)=>!hlUsedRef.current.includes(i));if(av.length===0){hlUsedRef.current=[];return HL_STATS[Math.floor(Math.random()*HL_STATS.length)];}const pk=av[Math.floor(Math.random()*av.length)];hlUsedRef.current=[...hlUsedRef.current,HL_STATS.indexOf(pk)];return pk; };
   const startHigherLower = () => { if(stageRole === "contestant") initStageElim(); hlUsedRef.current=[];const f=hlPickRandom();const s=hlPickRandom();setHlCurrent(f);setHlNext(s);setHlStreak(0);setHlBestStreak(0);setHlScore(0);setHlRound(1);setHlRevealing(false);setHlRevealNum(0);setHlPuffStart(null);setHlPhase("playing");setCommentary("Higher or Lower?");playFx("crowd"); };
-  const hlGuess = (guess) => { if(hlPhase!=="playing"||hlRevealing||!hlNext)return;setHlRevealing(true);setHlPuffStart(null);playFx("tap");const target=hlNext.value;let step=0;const rid=setInterval(()=>{step++;setHlRevealNum(Math.round(target*(1-Math.pow(1-step/20,3))));if(step>=20){clearInterval(rid);setHlRevealNum(target);const actual=hlNext.value>hlCurrent.value?"higher":hlNext.value<hlCurrent.value?"lower":guess;const correct=guess===actual||hlNext.value===hlCurrent.value;setTimeout(()=>{if(correct){const ns=hlStreak+1;const pts=10*ns;setHlStreak(ns);setHlBestStreak(b=>Math.max(b,ns));setHlScore(s=>s+pts);setCommentary("CORRECT! +"+pts);playFx("select");triggerFlash("goal");setHlPhase("correct");if(stageRole)showMC("correct",{points:String(pts)});}else{setHlStreak(0);setCommentary("WRONG! It was "+actual.toUpperCase());playFx("whistle");triggerFlash("miss");if(stageRole)showMC("wrong");setScreenShake(true);setTimeout(()=>setScreenShake(false),400);setHlPhase("wrong");}setTimeout(()=>{const nr=hlRound+1;if(nr>10){setCoins(c=>c+Math.max(10,Math.floor(hlScore/2)));setHlPhase("result");setCommentary("Game over! Score: "+hlScore);if(hlBestStreak>=5)setConfettiParticles(Array.from({length:20},(_,i)=>({id:Date.now()+i,x:Math.random()*100,y:-10-Math.random()*20,size:4+Math.random()*4,color:[C.cyan,C.gold,C.green,C.pink][i%4],rot:Math.random()*360})));}else{setHlRound(nr);setHlCurrent(hlNext);setHlNext(hlPickRandom());setHlRevealing(false);setHlRevealNum(0);setHlPhase("playing");setCommentary("Round "+nr+"/10");}},1800);},600);}},40); };
+  const hlGuess = (guess) => { if(hlPhase!=="playing"||hlRevealing||!hlNext)return;setHlRevealing(true);setHlPuffStart(null);playFx("tap");const target=hlNext.value;let step=0;const rid=setInterval(()=>{step++;setHlRevealNum(Math.round(target*(1-Math.pow(1-step/20,3))));if(step>=20){clearInterval(rid);setHlRevealNum(target);const actual=hlNext.value>hlCurrent.value?"higher":hlNext.value<hlCurrent.value?"lower":guess;const correct=guess===actual||hlNext.value===hlCurrent.value;setTimeout(()=>{if(correct){const ns=hlStreak+1;const pts=10*ns;setHlStreak(ns);setHlBestStreak(b=>Math.max(b,ns));setHlScore(s=>s+pts);setCommentary("CORRECT! +"+pts);playFx("select");triggerFlash("goal");setHlPhase("correct");if(stageRole)showMC("correct",{points:String(pts)});elimRound(100);}else{setHlStreak(0);setCommentary("WRONG! It was "+actual.toUpperCase());playFx("whistle");triggerFlash("miss");if(stageRole)showMC("wrong");setScreenShake(true);setTimeout(()=>setScreenShake(false),400);setHlPhase("wrong");elimRound(0);}setTimeout(()=>{const nr=hlRound+1;if(nr>10){setCoins(c=>c+Math.max(10,Math.floor(hlScore/2)));setHlPhase("result");setCommentary("Game over! Score: "+hlScore);if(hlBestStreak>=5)setConfettiParticles(Array.from({length:20},(_,i)=>({id:Date.now()+i,x:Math.random()*100,y:-10-Math.random()*20,size:4+Math.random()*4,color:[C.cyan,C.gold,C.green,C.pink][i%4],rot:Math.random()*360})));}else{setHlRound(nr);setHlCurrent(hlNext);setHlNext(hlPickRandom());setHlRevealing(false);setHlRevealNum(0);setHlPhase("playing");setCommentary("Round "+nr+"/10");}},1800);},600);}},40); };
   const hlHandlePuff = (isLong) => { hlGuess(isLong?"higher":"lower"); };
-  const hlCleanup = () => { setHlPhase(null);setGameActive(null);setHlRevealing(false);setHlPuffStart(null);hlUsedRef.current=[];setStageRole(null);setMcVisible(false); };
+  const hlCleanup = () => { setHlPhase(null);setGameActive(null);setHlRevealing(false);setHlPuffStart(null);hlUsedRef.current=[];setStageRole(null);setMcVisible(false);setStageElim(null); };
   const overlayBack = (onClose) => (
     <button type="button" data-back="true" onClick={()=>{cleanupAllGames();onClose();}}
       style={{position:"absolute",top:12,left:12,zIndex:9999,width:40,height:40,borderRadius:20,
@@ -14823,6 +14829,7 @@ const startSimonPuffs = () => {
           <div style={{...overlayStyle,background:"rgba(15,0,0,0.97)"}}>
             {overlayBack(stEndGame)}
             <div style={{flex:1,display:"flex",flexDirection:"column",padding:16,paddingTop:56}}>
+              {renderContestantGrid()}
               {/* Header */}
               <div style={{textAlign:"center",marginBottom:12}}>
                 <div style={{fontSize:14,fontWeight:900,color:C.red,letterSpacing:2,textTransform:"uppercase"}}>
@@ -15419,6 +15426,7 @@ const startSimonPuffs = () => {
             {!stageRole && renderGameChatPanel("SIMON PUFFS")}
             {overlayBack(()=>{spEndGame();})}
             <div style={{display:"flex",flexDirection:"column",alignItems:"center",maxWidth:380,width:"100%",padding:"50px 16px 16px",gap:8,zIndex:10,margin:"0 auto",height:"100%"}}>
+              {renderContestantGrid()}
               <div style={{fontSize:16,fontWeight:900,letterSpacing:4,color:C.purple,textShadow:"0 0 20px rgba(192,132,252,.5)"}}>
                 {"\uD83C\uDFAD"} SIMON PUFFS
               </div>
@@ -15587,6 +15595,7 @@ const startSimonPuffs = () => {
             {!stageRole && renderGameChatPanel("PUFF AUCTION")}
             {overlayBack(()=>{paEndGame();})}
             <div style={{display:"flex",flexDirection:"column",alignItems:"center",maxWidth:380,width:"100%",padding:"50px 16px 16px",gap:8,zIndex:10,margin:"0 auto",height:"100%"}}>
+              {renderContestantGrid()}
               <div style={{fontSize:16,fontWeight:900,letterSpacing:4,color:C.gold,textShadow:"0 0 20px rgba(255,215,0,.4)"}}>
                 {"\uD83C\uDFAF"} PUFF AUCTION
               </div>
@@ -15744,6 +15753,7 @@ const startSimonPuffs = () => {
             )}
             {!stageRole && renderGameChatPanel("HIGHER OR LOWER")}
             <div style={{display:"flex",flexDirection:"column",alignItems:"center",maxWidth:380,width:"100%",padding:"50px 16px 20px",gap:6,zIndex:10,flex:1,overflowY:"auto",margin:"0 auto"}}>
+              {renderContestantGrid()}
               <div style={{textAlign:"center",marginBottom:4}}><div style={{fontSize:18,fontWeight:900,letterSpacing:3,background:"linear-gradient(135deg, "+C.cyan+", "+C.purple+")",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>{isR?"FINAL SCORE":"HIGHER OR LOWER"}</div><div style={{fontSize:9,color:C.text3}}>Round {Math.min(hlRound,10)}/10 | Score: {hlScore} | Streak: {hlStreak} {se}</div></div>
               <div style={{display:"flex",alignItems:"center",gap:8,width:"90%",maxWidth:280,marginBottom:8}}><div style={{fontSize:10,fontWeight:800,color:C.cyan,minWidth:20}}>{hlScore}</div><div style={{flex:1,height:4,borderRadius:2,background:"rgba(255,255,255,0.06)",overflow:"hidden"}}><div style={{height:"100%",width:Math.min(100,hlStreak*10)+"%",background:"linear-gradient(90deg,"+C.cyan+","+C.gold+(hlStreak>=5?","+C.red:"")+")",borderRadius:2,transition:"width 0.3s"}}/></div><div style={{fontSize:10,fontWeight:800,color:hlStreak>=5?C.red:hlStreak>=3?C.gold:C.text3}}>x{hlStreak}</div></div>
               {!isR&&hlCurrent&&hlNext&&(<div style={{display:"flex",gap:10,width:"100%",justifyContent:"center",animation:"fadeIn 0.3s ease"}}><div style={{flex:1,maxWidth:160,padding:"16px 10px",borderRadius:16,textAlign:"center",background:"linear-gradient(135deg, "+C.cyan+"15, "+C.cyan+"05)",border:"1px solid "+C.cyan+"30"}}><div style={{fontSize:8,fontWeight:700,color:C.text3,textTransform:"uppercase",marginBottom:8}}>Current</div><div style={{fontSize:10,color:C.text2,marginBottom:10,minHeight:36,display:"flex",alignItems:"center",justifyContent:"center"}}>{hlCurrent.topic}</div><div style={{fontSize:28,fontWeight:900,color:C.cyan,textShadow:"0 0 20px "+C.cyan+"40"}}>{hlCurrent.display}</div></div><div style={{flex:1,maxWidth:160,padding:"16px 10px",borderRadius:16,textAlign:"center",background:hlRevealing?"linear-gradient(135deg, "+((isC||isW)?(isC?C.green:C.red):C.gold)+"15, "+((isC||isW)?(isC?C.green:C.red):C.gold)+"05)":"linear-gradient(135deg, "+C.purple+"15, "+C.purple+"05)",border:"1px solid "+(hlRevealing?(isC?C.green:isW?C.red:C.gold):C.purple)+"30",transition:"all 0.3s"}}><div style={{fontSize:8,fontWeight:700,color:C.text3,textTransform:"uppercase",marginBottom:8}}>Next</div><div style={{fontSize:10,color:C.text2,marginBottom:10,minHeight:36,display:"flex",alignItems:"center",justifyContent:"center"}}>{hlNext.topic}</div>{hlRevealing?<div style={{fontSize:28,fontWeight:900,color:isC?C.green:isW?C.red:C.gold,animation:"countPulse 0.5s ease"}}>{hlNext.display}</div>:<div style={{fontSize:28,fontWeight:900,color:C.purple,animation:"pulse 1.5s infinite"}}>?</div>}</div></div>)}
@@ -16610,6 +16620,7 @@ const startSimonPuffs = () => {
           {stageRole && renderGameChatPanel("PRICE IS PUFF")}
           {overlayBack(pipCleanup)}
           <div style={{display:"flex",flexDirection:"column",alignItems:"center",maxWidth:380,width:"100%",padding:"50px 16px 20px",gap:8,zIndex:10,flex:1,margin:"0 auto",overflowY:"auto"}}>
+            {renderContestantGrid()}
             {/* Title */}
             <div style={{fontSize:20,fontWeight:900,letterSpacing:4,background:"linear-gradient(135deg, #FFD700, #4CAF50, #FFD700)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",textAlign:"center"}}>THE PRICE IS PUFF</div>
             {/* Round tracker */}
@@ -20363,10 +20374,12 @@ const startSimonPuffs = () => {
       setVcScore(s=>s+100+(vcTimer*10));
       setVcCorrectStreak(s=>s+1);
       setVcStreak(s=>s+1);
+      elimRound(100+(vcTimer*10));
     } else {
       setVcCorrectStreak(0);
       setVcStreak(0);
       if(!vcEliminated){ setVcEliminated(true); }
+      elimRound(0);
     }
     setTimeout(()=>{
       setVcPhase("reveal");
@@ -20448,6 +20461,8 @@ const startSimonPuffs = () => {
             {vcCorrectStreak>=2 && <span style={{fontSize:11,color:C.orange,fontWeight:700}}>🔥 {vcCorrectStreak}</span>}
           </div>
         </div>
+
+        {renderContestantGrid()}
 
         {/* Player count bar */}
         <div style={{padding:"0 16px 8px",display:"flex",alignItems:"center",gap:8}}>
