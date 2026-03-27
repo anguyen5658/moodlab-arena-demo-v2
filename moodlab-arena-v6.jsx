@@ -7183,12 +7183,12 @@ export default function MoodLabArena() {
     const taglines = {arcade:"PLAY · COMPETE · WIN",stage:"WATCH · PLAY · WIN",oracle:"PUFF YOUR FORTUNE",wall:"YOUR LEGACY · YOUR GLORY",worldcup:"PLAY · PREDICT · CELEBRATE"};
     return (
       <div style={{padding:"0 14px",marginBottom:8}}>
-        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-          <div onClick={()=>{playFx("back");setZone(null);setSelectedGame(null);setArenaView("hub");}} style={{display:"inline-flex",alignItems:"center",gap:6,cursor:"pointer",padding:"6px 12px",borderRadius:8,background:`${C.text3}06`,border:`1px solid ${C.border}`}}>
+        <div style={{display:"flex",alignItems:"center",gap:12}}>
+          <div onClick={()=>{playFx("back");setZone(null);setSelectedGame(null);setArenaView("hub");}} style={{display:"inline-flex",alignItems:"center",gap:6,cursor:"pointer",padding:"6px 12px",borderRadius:8,background:`${C.text3}06`,border:`1px solid ${C.border}`,flexShrink:0}}>
             <span style={{fontSize:14,color:C.text2}}>←</span>
             <span style={{fontSize:11,fontWeight:600,color:C.text2}}>Lobby</span>
           </div>
-          <div style={{fontSize:9,color:z.primary,letterSpacing:2,fontWeight:700,textAlign:"right"}}>{taglines[zKey]||z.sub}</div>
+          <div style={{fontSize:9,color:z.primary,letterSpacing:2,fontWeight:700,textAlign:"center",flex:1}}>{taglines[zKey]||z.sub}</div>
         </div>
       </div>
     );
@@ -9954,6 +9954,7 @@ export default function MoodLabArena() {
   ];
 
   const startPriceIsPuff = () => {
+    if(stageRole === "contestant") initStageElim();
     setPipPhase("intro");
     setPipRound(0);
     setPipScore(0);
@@ -10367,6 +10368,7 @@ export default function MoodLabArena() {
   ];
 
   const startSurvivalTrivia = () => {
+    if(stageRole === "contestant") initStageElim();
     const avatarList = [];
     const emojis = ["\uD83D\uDE24","\uD83D\uDE0E","\uD83E\uDD74","\uD83E\uDD29","\uD83D\uDE08","\uD83D\uDC7D","\uD83E\uDD16","\uD83D\uDC7B","\uD83D\uDC38","\uD83C\uDF1A","\uD83E\uDD8A","\uD83D\uDC80","\uD83E\uDDE0","\uD83D\uDC51","\uD83D\uDD25","\uD83D\uDCA8","\uD83C\uDF3F","\uD83C\uDF55","\uD83C\uDFAE","\uD83C\uDFB5"];
     for(let i=0;i<100;i++) avatarList.push({id:i,emoji:emojis[i%emojis.length],alive:true,name:"Player_"+(100+i)});
@@ -10476,6 +10478,7 @@ export default function MoodLabArena() {
       setCoins(c=>c+streakBonus);
       notify("Correct! +"+streakBonus+" coins",C.green);
       if(stageRole) showMC("correct", {points:String(streakBonus)});
+      elimRound(100);
     } else {
       setStEliminated(true);
       setStStreak(0);
@@ -10485,6 +10488,7 @@ export default function MoodLabArena() {
       triggerFlash("miss");
       setCommentary("YOU HAVE BEEN ELIMINATED!");
       if(stageRole) showMC("wrong");
+      elimRound(0);
     }
 
     setTimeout(()=>{
@@ -11006,6 +11010,7 @@ export default function MoodLabArena() {
 
   
 const startSimonPuffs = () => {
+    if(stageRole === "contestant") initStageElim();
     setSpPhase("intro");
     setSpPattern([]);
     setSpPlayerPattern([]);
@@ -11108,6 +11113,7 @@ const startSimonPuffs = () => {
         setSpPlayersLeft(p => Math.max(1, Math.floor(p * (0.6 + Math.random()*0.2))));
         playFx("goal");
         if(stageRole) showMC("correct",{points:String(roundScore)});
+        elimRound(100);
         setTimeout(() => {
           if(spRound >= 10) {
             setSpPhase("final");
@@ -11132,6 +11138,7 @@ const startSimonPuffs = () => {
       setCommentary("WRONG! You puffed " + puffType + " but needed " + expected + "!");
       setSpComment("Eliminated at Round " + spRound + "! You lasted " + spRound + " rounds.");
       if(stageRole) showMC("wrong");
+      elimRound(0);
     }
   };
 
@@ -11152,6 +11159,7 @@ const startSimonPuffs = () => {
   const PA_DANGER_ZONE = 4.5;
 
   const startPuffAuction = () => {
+    if(stageRole === "contestant") initStageElim();
     setPaPhase("intro");
     setPaRound(0);
     setPaBids([]);
@@ -11311,7 +11319,7 @@ const startSimonPuffs = () => {
   const pdEndRace = (pi) => { if(pdAiRef.current){clearInterval(pdAiRef.current);pdAiRef.current=null;}if(pdTimerRef.current){clearInterval(pdTimerRef.current);pdTimerRef.current=null;}const fin=[...pdFinishRef.current];const rem=[0,1,2,3,4,5].filter(i=>!fin.includes(i));rem.sort((a,b)=>pdPosRef.current[b]-pdPosRef.current[a]);const fo=[...fin,...rem];setPdFinishOrder(fo);pdFinishRef.current=fo;const place=fo.indexOf(pi)+1;setCoins(c=>c+([0,500,300,150,75,30,10][place]||10));setPdPhase("result");if(place===1){setCommentary(PD_HORSE_NAMES[pi]+" WINS!");triggerFlash("goal");playFx("crowd");if(stageRole)showMC("correct",{points:"500"});setConfettiParticles(Array.from({length:30},(_,i)=>({id:Date.now()+i,x:Math.random()*100,y:-10-Math.random()*20,size:4+Math.random()*4,color:[C.green,C.gold,C.cyan,C.pink][i%4],rot:Math.random()*360})));}else if(place<=3){setCommentary("Top 3!");playFx("select");}else{setCommentary("Better luck next time!");playFx("tap");} };
   const pdCleanup = () => { if(pdAiRef.current){clearInterval(pdAiRef.current);pdAiRef.current=null;}if(pdTimerRef.current){clearInterval(pdTimerRef.current);pdTimerRef.current=null;}setPdPhase(null);setGameActive(null);setStageRole(null);setMcVisible(false); };
   const hlPickRandom = () => { const av=HL_STATS.filter((_,i)=>!hlUsedRef.current.includes(i));if(av.length===0){hlUsedRef.current=[];return HL_STATS[Math.floor(Math.random()*HL_STATS.length)];}const pk=av[Math.floor(Math.random()*av.length)];hlUsedRef.current=[...hlUsedRef.current,HL_STATS.indexOf(pk)];return pk; };
-  const startHigherLower = () => { hlUsedRef.current=[];const f=hlPickRandom();const s=hlPickRandom();setHlCurrent(f);setHlNext(s);setHlStreak(0);setHlBestStreak(0);setHlScore(0);setHlRound(1);setHlRevealing(false);setHlRevealNum(0);setHlPuffStart(null);setHlPhase("playing");setCommentary("Higher or Lower?");playFx("crowd"); };
+  const startHigherLower = () => { if(stageRole === "contestant") initStageElim(); hlUsedRef.current=[];const f=hlPickRandom();const s=hlPickRandom();setHlCurrent(f);setHlNext(s);setHlStreak(0);setHlBestStreak(0);setHlScore(0);setHlRound(1);setHlRevealing(false);setHlRevealNum(0);setHlPuffStart(null);setHlPhase("playing");setCommentary("Higher or Lower?");playFx("crowd"); };
   const hlGuess = (guess) => { if(hlPhase!=="playing"||hlRevealing||!hlNext)return;setHlRevealing(true);setHlPuffStart(null);playFx("tap");const target=hlNext.value;let step=0;const rid=setInterval(()=>{step++;setHlRevealNum(Math.round(target*(1-Math.pow(1-step/20,3))));if(step>=20){clearInterval(rid);setHlRevealNum(target);const actual=hlNext.value>hlCurrent.value?"higher":hlNext.value<hlCurrent.value?"lower":guess;const correct=guess===actual||hlNext.value===hlCurrent.value;setTimeout(()=>{if(correct){const ns=hlStreak+1;const pts=10*ns;setHlStreak(ns);setHlBestStreak(b=>Math.max(b,ns));setHlScore(s=>s+pts);setCommentary("CORRECT! +"+pts);playFx("select");triggerFlash("goal");setHlPhase("correct");if(stageRole)showMC("correct",{points:String(pts)});}else{setHlStreak(0);setCommentary("WRONG! It was "+actual.toUpperCase());playFx("whistle");triggerFlash("miss");if(stageRole)showMC("wrong");setScreenShake(true);setTimeout(()=>setScreenShake(false),400);setHlPhase("wrong");}setTimeout(()=>{const nr=hlRound+1;if(nr>10){setCoins(c=>c+Math.max(10,Math.floor(hlScore/2)));setHlPhase("result");setCommentary("Game over! Score: "+hlScore);if(hlBestStreak>=5)setConfettiParticles(Array.from({length:20},(_,i)=>({id:Date.now()+i,x:Math.random()*100,y:-10-Math.random()*20,size:4+Math.random()*4,color:[C.cyan,C.gold,C.green,C.pink][i%4],rot:Math.random()*360})));}else{setHlRound(nr);setHlCurrent(hlNext);setHlNext(hlPickRandom());setHlRevealing(false);setHlRevealNum(0);setHlPhase("playing");setCommentary("Round "+nr+"/10");}},1800);},600);}},40); };
   const hlHandlePuff = (isLong) => { hlGuess(isLong?"higher":"lower"); };
   const hlCleanup = () => { setHlPhase(null);setGameActive(null);setHlRevealing(false);setHlPuffStart(null);hlUsedRef.current=[];setStageRole(null);setMcVisible(false); };
@@ -20328,6 +20336,7 @@ const startSimonPuffs = () => {
 
   // Vibe Check V2 - Full Game Show
   const vcStartGame = () => {
+    if(stageRole === "contestant") initStageElim();
     setShowVibeCheck(true);
     setVcPhase("intro");
     setVcPlayers(100);
