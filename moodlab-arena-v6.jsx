@@ -16603,7 +16603,7 @@ const startSimonPuffs = () => {
     // ═══════════════════════════════════════════════════════════════
     // PRICE IS PUFF — Render (Gold/Green Price is Right Theme)
     // ═══════════════════════════════════════════════════════════════
-    if(gameActive.id==="pricepuff" && pipPhase) {
+    if(gameActive && gameActive.id==="pricepuff" && pipPhase) {
       const isIntroP = pipPhase==="intro";
       const isProduct = pipPhase==="product";
       const isGuessing = pipPhase==="guessing";
