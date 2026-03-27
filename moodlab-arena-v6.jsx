@@ -11342,6 +11342,7 @@ const startSimonPuffs = () => {
 
   // ── Stage Break Detection — audience always sees chat, contestant only during breaks ──
   const isStageBreak = (gameId) => {
+    if(!gameActive) return false;
     if(stageRole !== "contestant") return true; // audience always sees chat
     // Contestant only sees chat during break/result phases
     if(gameId === "vibecheck") return vcPhase === "reveal" || vcPhase === "result";
@@ -11472,6 +11473,7 @@ const startSimonPuffs = () => {
 
   // Game detail / matchmaking
   const renderGameOverlay = () => {
+    try {
     if(matchmaking) {
       const gc = matchmaking.game.color;
       const pool = getDevicePool();
