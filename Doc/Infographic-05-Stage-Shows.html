@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mood Lab Arena — Stage Shows (6) | Infographic 05</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+  :root {
+    --gold: #FFD93D;
+    --gold-dim: #FFD93D88;
+    --gold-glow: #FFD93D33;
+    --bg: #0a0a0f;
+    --bg2: #12121a;
+    --bg3: #1a1a28;
+    --card: #14141f;
+    --border: #2a2a3a;
+    --text: #e8e8f0;
+    --text-dim: #8888aa;
+    --cyan: #00E5FF;
+    --green: #4CAF50;
+    --purple: #BA68C8;
+    --red: #FF5252;
+    --lime: #AEEA00;
+    --pink: #FF80AB;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', system-ui, sans-serif;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* === HEADER === */
+  .hero {
+    position: relative;
+    padding: 60px 24px 48px;
+    text-align: center;
+    overflow: hidden;
+    border-bottom: 1px solid var(--border);
+    background:
+      radial-gradient(ellipse 80% 50% at 50% 0%, var(--gold-glow) 0%, transparent 70%),
+      var(--bg);
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  }
+  .hero-badge {
+    display: inline-block;
+    background: var(--gold);
+    color: #000;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 5px 18px;
+    border-radius: 20px;
+    margin-bottom: 20px;
+  }
+  .hero h1 {
+    font-size: clamp(28px, 5vw, 52px);
+    font-weight: 900;
+    letter-spacing: -1px;
+    background: linear-gradient(135deg, var(--gold) 0%, #fff 50%, var(--gold) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 8px;
+  }
+  .hero .subtitle {
+    font-size: 15px;
+    color: var(--text-dim);
+    font-weight: 400;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+  .hero-stats {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin-top: 32px;
+    flex-wrap: wrap;
+  }
+  .hero-stat {
+    text-align: center;
+  }
+  .hero-stat .num {
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--gold);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .hero-stat .label {
+    font-size: 11px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-top: 2px;
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  /* === SECTION HEADERS === */
+  .section-header {
+    text-align: center;
+    padding: 56px 20px 32px;
+  }
+  .section-header h2 {
+    font-size: clamp(22px, 3.5vw, 34px);
+    font-weight: 800;
+    color: var(--gold);
+    margin-bottom: 6px;
+  }
+  .section-header p {
+    color: var(--text-dim);
+    font-size: 14px;
+  }
+
+  /* === STAGE SYSTEM PANEL === */
+  .system-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 20px;
+    padding: 0 20px 40px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .sys-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    position: relative;
+    overflow: hidden;
+  }
+  .sys-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--gold);
+  }
+  .sys-card h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--gold);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .sys-card h3 .icon {
+    width: 32px;
+    height: 32px;
+    background: var(--gold-glow);
+    border: 1px solid var(--gold-dim);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+  .sys-card ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .sys-card li {
+    font-size: 13px;
+    color: var(--text);
+    padding-left: 18px;
+    position: relative;
+    line-height: 1.5;
+  }
+  .sys-card li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 8px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--gold);
+  }
+
+  /* Elimination flow */
+  .elim-flow {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 16px;
+    padding: 14px;
+    background: var(--bg);
+    border-radius: 10px;
+    border: 1px solid var(--border);
+  }
+  .elim-step {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+    color: var(--gold);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .elim-arrow {
+    color: var(--text-dim);
+    font-size: 14px;
+  }
+
+  /* MC Lines */
+  .mc-line {
+    background: var(--bg);
+    border-left: 3px solid var(--gold);
+    border-radius: 0 8px 8px 0;
+    padding: 10px 14px;
+    margin-top: 8px;
+    font-size: 12px;
+    font-style: italic;
+    color: var(--text-dim);
+  }
+  .mc-line .mc-cat {
+    font-style: normal;
+    font-weight: 600;
+    color: var(--gold);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+    display: block;
+  }
+  .mc-categories {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 14px;
+  }
+  .mc-cat-tag {
+    font-size: 10px;
+    font-weight: 600;
+    background: var(--gold-glow);
+    border: 1px solid var(--gold-dim);
+    color: var(--gold);
+    padding: 3px 10px;
+    border-radius: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* AI name tags */
+  .ai-names {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+  }
+  .ai-name {
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    padding: 3px 10px;
+    border-radius: 6px;
+    color: var(--cyan);
+  }
+
+  /* Role badges */
+  .roles-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+  }
+  .role-badge {
+    flex: 1;
+    min-width: 140px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    text-align: center;
+  }
+  .role-badge .role-icon {
+    font-size: 22px;
+    margin-bottom: 6px;
+  }
+  .role-badge .role-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--gold);
+    margin-bottom: 4px;
+  }
+  .role-badge .role-desc {
+    font-size: 11px;
+    color: var(--text-dim);
+    line-height: 1.4;
+  }
+
+  /* === GAME CARDS === */
+  .shows-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 24px;
+    padding: 0 20px 60px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .show-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    overflow: hidden;
+    position: relative;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .show-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+  }
+
+  .show-header {
+    padding: 24px 24px 16px;
+    position: relative;
+  }
+  .show-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+  }
+  .show-card[data-color="gold"] .show-header::before { background: var(--gold); }
+  .show-card[data-color="cyan"] .show-header::before { background: var(--cyan); }
+  .show-card[data-color="green"] .show-header::before { background: var(--green); }
+  .show-card[data-color="purple"] .show-header::before { background: var(--purple); }
+  .show-card[data-color="red"] .show-header::before { background: var(--red); }
+  .show-card[data-color="lime"] .show-header::before { background: var(--lime); }
+
+  .show-number {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .show-card[data-color="gold"] .show-number { color: var(--gold); }
+  .show-card[data-color="cyan"] .show-number { color: var(--cyan); }
+  .show-card[data-color="green"] .show-number { color: var(--green); }
+  .show-card[data-color="purple"] .show-number { color: var(--purple); }
+  .show-card[data-color="red"] .show-number { color: var(--red); }
+  .show-card[data-color="lime"] .show-number { color: var(--lime); }
+
+  .show-title {
+    font-size: 24px;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .show-title .emoji {
+    font-size: 28px;
+  }
+  .show-genre {
+    font-size: 12px;
+    color: var(--text-dim);
+    font-weight: 500;
+  }
+
+  .show-meta {
+    display: flex;
+    gap: 8px;
+    padding: 0 24px;
+    flex-wrap: wrap;
+  }
+  .meta-tag {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 6px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .show-body {
+    padding: 18px 24px 24px;
+  }
+
+  .show-body h4 {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 10px;
+    margin-top: 16px;
+  }
+  .show-card[data-color="gold"] .show-body h4 { color: var(--gold); }
+  .show-card[data-color="cyan"] .show-body h4 { color: var(--cyan); }
+  .show-card[data-color="green"] .show-body h4 { color: var(--green); }
+  .show-card[data-color="purple"] .show-body h4 { color: var(--purple); }
+  .show-card[data-color="red"] .show-body h4 { color: var(--red); }
+  .show-card[data-color="lime"] .show-body h4 { color: var(--lime); }
+
+  .show-body h4:first-child { margin-top: 0; }
+
+  .show-body ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .show-body li {
+    font-size: 13px;
+    color: var(--text);
+    padding-left: 16px;
+    position: relative;
+    line-height: 1.5;
+  }
+  .show-body li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 8px;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+  }
+  .show-card[data-color="gold"] li::before { background: var(--gold); }
+  .show-card[data-color="cyan"] li::before { background: var(--cyan); }
+  .show-card[data-color="green"] li::before { background: var(--green); }
+  .show-card[data-color="purple"] li::before { background: var(--purple); }
+  .show-card[data-color="red"] li::before { background: var(--red); }
+  .show-card[data-color="lime"] li::before { background: var(--lime); }
+
+  /* Special detail boxes inside cards */
+  .detail-box {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-top: 12px;
+  }
+  .detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 0;
+    font-size: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .detail-row:last-child { border-bottom: none; }
+  .detail-row .dl { color: var(--text-dim); }
+  .detail-row .dv {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    font-size: 11px;
+  }
+
+  /* Puff types visual */
+  .puff-types {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+  }
+  .puff-type {
+    flex: 1;
+    min-width: 90px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px;
+    text-align: center;
+  }
+  .puff-type .pt-name {
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 2px;
+  }
+  .puff-type .pt-dur {
+    font-size: 10px;
+    color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .puff-type .pt-bar {
+    height: 4px;
+    border-radius: 2px;
+    margin-top: 6px;
+  }
+  .puff-type.short .pt-name { color: var(--cyan); }
+  .puff-type.short .pt-bar { background: var(--cyan); width: 30%; }
+  .puff-type.medium .pt-name { color: var(--gold); }
+  .puff-type.medium .pt-bar { background: var(--gold); width: 60%; }
+  .puff-type.long .pt-name { color: var(--pink); }
+  .puff-type.long .pt-bar { background: var(--pink); width: 100%; }
+
+  /* Auction items */
+  .auction-items {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+  }
+  .auction-item {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 5px 10px;
+    border-radius: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.3px;
+  }
+  .auction-item.common {
+    background: #2a2a3a;
+    border: 1px solid #3a3a4a;
+    color: var(--text-dim);
+  }
+  .auction-item.rare {
+    background: rgba(186, 104, 200, 0.15);
+    border: 1px solid rgba(186, 104, 200, 0.4);
+    color: var(--purple);
+  }
+  .auction-item.legendary {
+    background: rgba(255, 217, 61, 0.1);
+    border: 1px solid var(--gold-dim);
+    color: var(--gold);
+    animation: legendaryPulse 2s ease-in-out infinite;
+  }
+  @keyframes legendaryPulse {
+    0%, 100% { box-shadow: 0 0 0 rgba(255,217,61,0); }
+    50% { box-shadow: 0 0 12px rgba(255,217,61,0.25); }
+  }
+
+  /* === FOOTER === */
+  .footer {
+    text-align: center;
+    padding: 40px 20px;
+    border-top: 1px solid var(--border);
+    color: var(--text-dim);
+    font-size: 12px;
+  }
+  .footer span {
+    color: var(--gold);
+    font-weight: 600;
+  }
+
+  /* === RESPONSIVE === */
+  @media (max-width: 720px) {
+    .shows-grid, .system-grid { grid-template-columns: 1fr; }
+    .hero { padding: 40px 16px 32px; }
+    .hero-stats { gap: 24px; }
+    .elim-flow { justify-content: center; }
+    .roles-row { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ HERO ============ -->
+<header class="hero">
+  <div class="hero-badge">Infographic 05</div>
+  <h1>MOOD LAB ARENA &mdash; Stage Shows</h1>
+  <p class="subtitle">Developer Guide &middot; 6 Live Elimination Shows</p>
+  <div class="hero-stats">
+    <div class="hero-stat">
+      <div class="num">6</div>
+      <div class="label">Stage Shows</div>
+    </div>
+    <div class="hero-stat">
+      <div class="num">8</div>
+      <div class="label">Players / Show</div>
+    </div>
+    <div class="hero-stat">
+      <div class="num">7</div>
+      <div class="label">AI Contestants</div>
+    </div>
+    <div class="hero-stat">
+      <div class="num">3</div>
+      <div class="label">Core Systems</div>
+    </div>
+  </div>
+</header>
+
+<!-- ============ STAGE SYSTEM ============ -->
+<div class="section-header">
+  <h2>Stage System Architecture</h2>
+  <p>Core systems powering every Stage show</p>
+</div>
+
+<div class="system-grid">
+
+  <!-- Elimination Engine -->
+  <div class="sys-card">
+    <h3><span class="icon">&#9881;</span> Elimination Engine</h3>
+    <ul>
+      <li>8 players per show &mdash; 1 human + 7 AI contestants</li>
+      <li>Each round: worst performer or wrong answer is eliminated</li>
+      <li>Last player standing wins the show</li>
+      <li>Elimination animation + MC commentary on every out</li>
+    </ul>
+    <div style="margin-top:14px">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-dim);margin-bottom:8px;">AI Contestant Names</div>
+      <div class="ai-names">
+        <span class="ai-name">Blaze_420</span>
+        <span class="ai-name">CloudNine</span>
+        <span class="ai-name">Puff_Queen</span>
+        <span class="ai-name">KushMaster</span>
+        <span class="ai-name">HazeRunner</span>
+        <span class="ai-name">ChillWave</span>
+        <span class="ai-name">TerpLord</span>
+      </div>
+    </div>
+    <div style="margin-top:16px">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-dim);margin-bottom:8px;">Elimination Flow</div>
+      <div class="elim-flow">
+        <span class="elim-step">8 Players</span>
+        <span class="elim-arrow">&rarr;</span>
+        <span class="elim-step">Round N</span>
+        <span class="elim-arrow">&rarr;</span>
+        <span class="elim-step">Wrong / Worst</span>
+        <span class="elim-arrow">&rarr;</span>
+        <span class="elim-step" style="color:var(--red);border-color:var(--red);">Eliminated</span>
+        <span class="elim-arrow">&rarr;</span>
+        <span class="elim-step">Repeat</span>
+        <span class="elim-arrow">&rarr;</span>
+        <span class="elim-step" style="color:var(--gold);border-color:var(--gold);">Winner!</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- MC Commentary -->
+  <div class="sys-card">
+    <h3><span class="icon">&#127908;</span> MC Commentary System</h3>
+    <ul>
+      <li>Dynamic AI MC commentator drives every show</li>
+      <li>Lines keyed to <code style="color:var(--cyan);font-family:'JetBrains Mono',monospace;font-size:12px;">MC_LINES</code> config</li>
+      <li>Template variables: <code style="color:var(--cyan);font-family:'JetBrains Mono',monospace;font-size:12px;">{show}</code>, <code style="color:var(--cyan);font-family:'JetBrains Mono',monospace;font-size:12px;">{player}</code>, <code style="color:var(--cyan);font-family:'JetBrains Mono',monospace;font-size:12px;">{round}</code></li>
+    </ul>
+    <div style="margin-top:14px">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-dim);margin-bottom:8px;">Line Categories</div>
+      <div class="mc-categories">
+        <span class="mc-cat-tag">intro</span>
+        <span class="mc-cat-tag">contestant_pick</span>
+        <span class="mc-cat-tag">round_start</span>
+        <span class="mc-cat-tag">correct</span>
+        <span class="mc-cat-tag">wrong</span>
+        <span class="mc-cat-tag">audience_react</span>
+        <span class="mc-cat-tag">finale</span>
+      </div>
+    </div>
+    <div class="mc-line">
+      <span class="mc-cat">intro</span>
+      "Ladies and gentlemen, welcome to {show}!"
+    </div>
+    <div class="mc-line" style="margin-top:6px">
+      <span class="mc-cat">wrong</span>
+      "Ohhh no! {player} is OUT of here!"
+    </div>
+  </div>
+
+  <!-- Role System -->
+  <div class="sys-card" style="grid-column: 1 / -1; max-width: 100%;">
+    <h3><span class="icon">&#128101;</span> Role System</h3>
+    <ul>
+      <li>Players choose a role when joining a Stage show</li>
+      <li>Break-time chat available between rounds for all participants</li>
+    </ul>
+    <div class="roles-row">
+      <div class="role-badge">
+        <div class="role-icon">&#127918;</div>
+        <div class="role-name">Contestant</div>
+        <div class="role-desc">Play the game directly. Answer questions, puff to compete, and try to survive elimination.</div>
+      </div>
+      <div class="role-badge">
+        <div class="role-icon">&#128064;</div>
+        <div class="role-name">Audience</div>
+        <div class="role-desc">Watch the show live. React with puff reactions, vote for favorites, and chat between rounds.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ============ 6 SHOWS ============ -->
+<div class="section-header">
+  <h2>The 6 Stage Shows</h2>
+  <p>Each show uses the Stage system with unique mechanics</p>
+</div>
+
+<div class="shows-grid">
+
+  <!-- 1. Vibe Check -->
+  <div class="show-card" data-color="gold">
+    <div class="show-header">
+      <div class="show-number">Show 01</div>
+      <div class="show-title"><span class="emoji">&#129504;</span> Vibe Check</div>
+      <div class="show-genre">Trivia &middot; Multiple Choice</div>
+    </div>
+    <div class="show-meta">
+      <span class="meta-tag">1&ndash;100+ Players</span>
+      <span class="meta-tag">5&ndash;15 min</span>
+      <span class="meta-tag" style="color:var(--gold);">Gold</span>
+    </div>
+    <div class="show-body">
+      <h4>Mechanics</h4>
+      <ul>
+        <li>Multiple choice trivia &mdash; 4 answer options per question</li>
+        <li>10-second timer per question</li>
+        <li>Wrong answer = immediately eliminated from the show</li>
+        <li>Streak multiplier for consecutive correct answers</li>
+      </ul>
+      <h4>Topics</h4>
+      <ul>
+        <li>World Cup trivia, general knowledge, pop culture</li>
+      </ul>
+      <div class="detail-box">
+        <div class="detail-row">
+          <span class="dl">Answer Options</span>
+          <span class="dv" style="color:var(--gold);">4 choices</span>
+        </div>
+        <div class="detail-row">
+          <span class="dl">Timer</span>
+          <span class="dv" style="color:var(--gold);">10s</span>
+        </div>
+        <div class="detail-row">
+          <span class="dl">Elimination</span>
+          <span class="dv" style="color:var(--red);">Wrong = OUT</span>
+        </div>
+        <div class="detail-row">
+          <span class="dl">Bonus</span>
+          <span class="dv" style="color:var(--gold);">Streak x</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Higher or Lower -->
+  <div class="show-card" data-color="cyan">
+    <div class="show-header">
+      <div class="show-number">Show 02</div>
+      <div class="show-title"><span class="emoji">&#128202;</span> Higher or Lower</div>
+      <div class="show-genre">Knowledge &middot; Estimation</div>
+    </div>
+    <div class="show-meta">
+      <span class="meta-tag">1&ndash;100+ Players</span>
+      <span class="meta-tag">5&ndash;10 min</span>
+      <span class="meta-tag" style="color:var(--cyan);">Cyan</span>
+    </div>
+    <div class="show-body">
+      <h4>Mechanics</h4>
+      <ul>
+        <li>Is the next number higher or lower than the current?</li>
+        <li>Streak bonus for consecutive correct guesses</li>
+        <li>Difficulty increases each round</li>
+      </ul>
+      <h4>Topics</h4>
+      <ul>
+        <li>Populations, distances, prices, statistics</li>
+      </ul>
+      <div class="detail-box">
+        <div class="detail-row">
+          <span class="dl">Choices</span>
+          <span class="dv" style="color:var(--cyan);">Higher / Lower</span>
+        </div>
+        <div class="detail-row">
+          <span class="dl">Scaling</span>
+          <span class="dv" style="color:var(--cyan);">Harder each round</span>
+        </div>
+        <div class="detail-row">
+          <span class="dl">Bonus</span>
+          <span class="dv" style="color:var(--cyan);">Streak +</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Price is Puff -->
+  <div class="show-card" data-color="green">
+    <div class="show-header">
+      <div class="show-number">Show 03</div>
+      <div class="show-title"><span class="emoji">&#128176;</span> Price is Puff</div>
+      <div class="show-genre">Knowledge &middot; Price Guessing</div>
+    </div>
+    <div class="show-meta">
+      <span class="meta-tag">2&ndash;50+ Players</span>
+      <span class="meta-tag">5&ndash;10 min</span>
+      <span class="meta-tag" style="color:var(--green);">Green</span>
+    </div>
+    <div class="show-body">
+      <h4>Mechanics</h4>
+      <ul>
+        <li>Real product shown with hidden price tag</li>
+        <li>Puff controls price slider &mdash; longer puff = higher guess</li>
+        <li>Closest guess to the real price wins the round</li>
+        <li>AI contestants make their own guesses too</li>
+      </ul>
+      <h4>Products</h4>
+      <ul>
+        <li>Cannabis items, tech gadgets, food &amp; drinks</li>
+      </ul>
+      <div class="detail-box">
+        <div class="detail-row">
+          <span class="dl">Input</span>
+          <span class="dv" style="color:var(--green);">Puff = Slider</span>
+        </div>
+        <div class="detail-row">
+          <span class="dl">Win Condition</span>
+          <span class="dv" style="color:var(--green);">Closest Guess</span>
+        </div>
+        <div class="detail-row">
+          <span class="dl">AI Contestants</span>
+          <span class="dv" style="color:var(--green);">Also guess</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. Survival Trivia -->
+  <div class="show-card" data-color="purple">
+    <div class="show-header">
+      <div class="show-number">Show 04</div>
+      <div class="show-title"><span class="emoji">&#127942;</span> Survival Trivia</div>
+      <div class="show-genre">Trivia &middot; Progressive Difficulty</div>
+    </div>
+    <div class="show-meta">
+      <span class="meta-tag">2&ndash;100+ Players</span>
+      <span class="meta-tag">5&ndash;15 min</span>
+      <span class="meta-tag" style="color:var(--purple);">Purple</span>
+    </div>
+    <div class="show-body">
+      <h4>Mechanics</h4>
+      <ul>
+        <li>Progressive difficulty &mdash; questions get harder each round</li>
+        <li>Wrong answer = immediate elimination</li>
+        <li>Final mode: 1v1 showdown between last two standing</li>
+      </ul>
+      <div class="detail-box">
+        <div class="detail-row">
+          <span class="dl">Difficulty</span>
+          <span class="dv" style="color:var(--purple);">Progressive</span>
+        </div>
+        <div class="detail-row">
+          <span class="dl">Elimination</span>
+          <span class="dv" style="color:var(--red);">Wrong = OUT</span>
+        </div>
+        <div class="detail-row">
+          <span class="dl">Final Mode</span>
+          <span class="dv" style="color:var(--purple);">1 v 1</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. Simon Puffs -->
+  <div class="show-card" data-color="red">
+    <div class="show-header">
+      <div class="show-number">Show 05</div>
+      <div class="show-title"><span class="emoji">&#128308;</span> Simon Puffs</div>
+      <div class="show-genre">Memory &middot; Pattern Repeat</div>
+    </div>
+    <div class="show-meta">
+      <span class="meta-tag">1&ndash;50+ Players</span>
+      <span class="meta-tag">3&ndash;8 min</span>
+      <span class="meta-tag" style="color:var(--red);">Red</span>
+    </div>
+    <div class="show-body">
+      <h4>Mechanics</h4>
+      <ul>
+        <li>Pattern shown: sequence of Short / Medium / Long puffs</li>
+        <li>Player must repeat the pattern with actual puffs</li>
+        <li>Sequence grows each round (1 puff up to 10 puffs)</li>
+        <li>Comedy MC commentary every round</li>
+      </ul>
+      <h4>3 Puff Types</h4>
+      <div class="puff-types">
+        <div class="puff-type short">
+          <div class="pt-name">Short</div>
+          <div class="pt-dur">&lt; 1s</div>
+          <div class="pt-bar"></div>
+        </div>
+        <div class="puff-type medium">
+          <div class="pt-name">Medium</div>
+          <div class="pt-dur">1 &ndash; 2.5s</div>
+          <div class="pt-bar"></div>
+        </div>
+        <div class="puff-type long">
+          <div class="pt-name">Long</div>
+          <div class="pt-dur">2.5s+</div>
+          <div class="pt-bar"></div>
+        </div>
+      </div>
+      <div class="detail-box" style="margin-top:14px">
+        <div class="detail-row">
+          <span class="dl">Start Length</span>
+          <span class="dv" style="color:var(--red);">1 puff</span>
+        </div>
+        <div class="detail-row">
+          <span class="dl">Max Length</span>
+          <span class="dv" style="color:var(--red);">10 puffs</span>
+        </div>
+        <div class="detail-row">
+          <span class="dl">Input</span>
+          <span class="dv" style="color:var(--red);">Real puffs</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. Puff Auction -->
+  <div class="show-card" data-color="lime">
+    <div class="show-header">
+      <div class="show-number">Show 06</div>
+      <div class="show-title"><span class="emoji">&#128296;</span> Puff Auction</div>
+      <div class="show-genre">Strategy &middot; Bidding</div>
+    </div>
+    <div class="show-meta">
+      <span class="meta-tag">2&ndash;50+ Players</span>
+      <span class="meta-tag">3&ndash;8 min</span>
+      <span class="meta-tag" style="color:var(--lime);">Lime</span>
+    </div>
+    <div class="show-body">
+      <h4>Mechanics</h4>
+      <ul>
+        <li>Prize shown (100&ndash;1000 coins or rare badges)</li>
+        <li>Everyone puffs simultaneously &mdash; biggest puff wins</li>
+        <li><strong style="color:var(--red);">Over-puff = DISQUALIFIED</strong></li>
+        <li>Prize rarities: Common, Rare, Legendary</li>
+      </ul>
+      <h4>5 Auction Items</h4>
+      <div class="auction-items">
+        <span class="auction-item common">100 Coins</span>
+        <span class="auction-item common">200 Coins</span>
+        <span class="auction-item rare">Rare Badge</span>
+        <span class="auction-item common">500 Coins</span>
+        <span class="auction-item legendary">MYSTERY BOX</span>
+      </div>
+      <div class="detail-box" style="margin-top:14px">
+        <div class="detail-row">
+          <span class="dl">Input</span>
+          <span class="dv" style="color:var(--lime);">Puff duration</span>
+        </div>
+        <div class="detail-row">
+          <span class="dl">Win Condition</span>
+          <span class="dv" style="color:var(--lime);">Biggest puff</span>
+        </div>
+        <div class="detail-row">
+          <span class="dl">Risk</span>
+          <span class="dv" style="color:var(--red);">Over-puff = DQ</span>
+        </div>
+        <div class="detail-row">
+          <span class="dl">Items / Auction</span>
+          <span class="dv" style="color:var(--lime);">5</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ============ FOOTER ============ -->
+<footer class="footer">
+  <span>Mood Lab Arena</span> &middot; Stage Shows Developer Guide &middot; Infographic 05
+</footer>
+
+</body>
+</html>

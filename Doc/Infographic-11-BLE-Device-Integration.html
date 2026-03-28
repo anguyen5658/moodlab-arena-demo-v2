@@ -1,0 +1,1137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mood Lab Arena — BLE Device Integration</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #050510;
+    --surface: #0a0a1a;
+    --surface2: #10102a;
+    --border: #1a1a3a;
+    --text: #e0e0f0;
+    --text-dim: #8888aa;
+    --cyan: #00E5FF;
+    --gold: #FFD93D;
+    --green: #7FFF00;
+    --red: #FF4444;
+    --purple: #A855F7;
+    --blue: #3B82F6;
+    --gray: #6B7280;
+  }
+
+  html { font-size: 16px; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', system-ui, sans-serif;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  .page {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 40px 32px 60px;
+  }
+
+  /* ── Header ── */
+  .header {
+    text-align: center;
+    margin-bottom: 56px;
+    padding-bottom: 40px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+  .header::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 200px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+  }
+  .badge {
+    display: inline-block;
+    background: rgba(0,229,255,0.08);
+    border: 1px solid rgba(0,229,255,0.25);
+    color: var(--cyan);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 6px 18px;
+    border-radius: 20px;
+    margin-bottom: 20px;
+  }
+  .header h1 {
+    font-size: 2.2rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+    background: linear-gradient(135deg, #fff 0%, var(--cyan) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .header .subtitle {
+    color: var(--text-dim);
+    font-size: 0.95rem;
+    font-weight: 400;
+  }
+
+  /* ── BLE Logo Animation ── */
+  .ble-logo {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 24px;
+    position: relative;
+  }
+  .ble-logo svg { width: 100%; height: 100%; }
+  .ble-ring {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    border-radius: 50%;
+    border: 1px solid rgba(0,229,255,0.2);
+    animation: blePulse 3s ease-in-out infinite;
+  }
+  .ble-ring:nth-child(2) { width: 100px; height: 100px; animation-delay: 0.5s; }
+  .ble-ring:nth-child(3) { width: 130px; height: 130px; animation-delay: 1s; }
+  .ble-ring:nth-child(4) { width: 160px; height: 160px; animation-delay: 1.5s; }
+  @keyframes blePulse {
+    0%, 100% { opacity: 0.15; transform: translate(-50%,-50%) scale(0.95); }
+    50% { opacity: 0.5; transform: translate(-50%,-50%) scale(1.05); }
+  }
+
+  /* ── Sections ── */
+  .section {
+    margin-bottom: 48px;
+  }
+  .section-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--cyan);
+    margin-bottom: 12px;
+  }
+  .section-label::before {
+    content: '';
+    width: 16px;
+    height: 1px;
+    background: var(--cyan);
+  }
+  .section h2 {
+    font-size: 1.45rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin-bottom: 20px;
+  }
+  .section p {
+    color: var(--text-dim);
+    font-size: 0.9rem;
+    max-width: 700px;
+    margin-bottom: 20px;
+  }
+
+  /* ── Concept Card ── */
+  .concept-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin-bottom: 8px;
+  }
+  .concept-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+    transition: border-color 0.3s, transform 0.2s;
+  }
+  .concept-card:hover {
+    border-color: rgba(0,229,255,0.35);
+    transform: translateY(-2px);
+  }
+  .concept-icon {
+    font-size: 2rem;
+    margin-bottom: 12px;
+  }
+  .concept-card h3 {
+    font-size: 0.85rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+    color: var(--cyan);
+  }
+  .concept-card span {
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    line-height: 1.4;
+  }
+
+  /* ── Tables ── */
+  .table-wrap {
+    overflow-x: auto;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+  }
+  thead th {
+    background: var(--surface2);
+    color: var(--cyan);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 14px 16px;
+    text-align: left;
+    white-space: nowrap;
+    border-bottom: 1px solid var(--border);
+  }
+  tbody td {
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    vertical-align: middle;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: rgba(0,229,255,0.03); }
+  .mono {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    color: var(--cyan);
+  }
+  .tag {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 10px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+  }
+  .tag-gold { background: rgba(255,217,61,0.12); color: var(--gold); border: 1px solid rgba(255,217,61,0.25); }
+  .tag-cyan { background: rgba(0,229,255,0.1); color: var(--cyan); border: 1px solid rgba(0,229,255,0.25); }
+  .tag-gray { background: rgba(107,114,128,0.15); color: var(--gray); border: 1px solid rgba(107,114,128,0.3); }
+  .tag-green { background: rgba(127,255,0,0.1); color: var(--green); border: 1px solid rgba(127,255,0,0.25); }
+  .tag-purple { background: rgba(168,85,247,0.1); color: var(--purple); border: 1px solid rgba(168,85,247,0.25); }
+  .tag-blue { background: rgba(59,130,246,0.1); color: var(--blue); border: 1px solid rgba(59,130,246,0.25); }
+
+  /* ── Flow Chart ── */
+  .flow-chart {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 32px;
+    position: relative;
+    overflow: hidden;
+  }
+  .flow-chart::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--cyan), var(--blue), var(--purple));
+  }
+  .flow-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    position: relative;
+  }
+  .flow-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    position: relative;
+    padding-bottom: 24px;
+  }
+  .flow-step:last-child { padding-bottom: 0; }
+  .flow-connector {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 40px;
+    position: relative;
+  }
+  .flow-dot {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #fff;
+    background: linear-gradient(135deg, var(--cyan), var(--blue));
+    box-shadow: 0 0 16px rgba(0,229,255,0.25);
+    position: relative;
+    z-index: 2;
+    flex-shrink: 0;
+  }
+  .flow-line {
+    width: 2px;
+    flex: 1;
+    min-height: 20px;
+    background: linear-gradient(to bottom, var(--cyan), rgba(0,229,255,0.1));
+    position: absolute;
+    top: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 0;
+  }
+  .flow-step:last-child .flow-line { display: none; }
+  .flow-content {
+    flex: 1;
+    padding-top: 6px;
+  }
+  .flow-content h4 {
+    font-size: 0.9rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .flow-content p {
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    margin-bottom: 0;
+  }
+  .flow-substeps {
+    margin-top: 10px;
+    padding: 12px 16px;
+    background: rgba(0,229,255,0.04);
+    border-left: 2px solid rgba(0,229,255,0.3);
+    border-radius: 0 8px 8px 0;
+  }
+  .flow-substeps .substep {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--text-dim);
+    padding: 3px 0;
+  }
+  .flow-substeps .substep span {
+    color: var(--cyan);
+    font-weight: 600;
+  }
+
+  /* ── Data Flow Diagram ── */
+  .data-flow {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 32px;
+    overflow-x: auto;
+  }
+  .data-flow-chain {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    min-width: 800px;
+    justify-content: center;
+    flex-wrap: nowrap;
+  }
+  .data-node {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    text-align: center;
+    min-width: 110px;
+    transition: border-color 0.3s, transform 0.2s;
+    flex-shrink: 0;
+  }
+  .data-node:hover {
+    border-color: rgba(0,229,255,0.4);
+    transform: translateY(-2px);
+  }
+  .data-node .node-icon { font-size: 1.4rem; margin-bottom: 6px; }
+  .data-node .node-label {
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.3;
+  }
+  .data-node .node-detail {
+    font-size: 0.6rem;
+    color: var(--text-dim);
+    margin-top: 3px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .data-arrow {
+    font-size: 1.2rem;
+    color: var(--cyan);
+    padding: 0 6px;
+    flex-shrink: 0;
+    opacity: 0.6;
+  }
+
+  /* ── Compatibility Matrix ── */
+  .compat-table td { text-align: center; font-size: 0.78rem; }
+  .compat-table td:first-child { text-align: left; font-weight: 600; }
+  .compat-yes { color: var(--green); }
+  .compat-no { color: var(--red); opacity: 0.5; }
+  .compat-some { color: var(--gold); }
+  .compat-note {
+    display: block;
+    font-size: 0.62rem;
+    color: var(--text-dim);
+    font-weight: 400;
+  }
+
+  /* ── Input Mode Cards ── */
+  .input-modes {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  .mode-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+    transition: border-color 0.3s, transform 0.2s;
+  }
+  .mode-card:hover {
+    border-color: rgba(0,229,255,0.35);
+    transform: translateY(-2px);
+  }
+  .mode-icon { font-size: 2rem; margin-bottom: 10px; }
+  .mode-card h3 {
+    font-size: 0.9rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .mode-card p {
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    margin-bottom: 0;
+    max-width: none;
+  }
+
+  /* ── Fallback Section ── */
+  .fallback-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+  }
+  .fallback-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    transition: border-color 0.3s;
+  }
+  .fallback-card:hover {
+    border-color: rgba(255,68,68,0.3);
+  }
+  .fallback-icon {
+    font-size: 1.6rem;
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,68,68,0.08);
+    border-radius: 10px;
+  }
+  .fallback-card h4 {
+    font-size: 0.85rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .fallback-card p {
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    margin-bottom: 0;
+    max-width: none;
+  }
+  .fallback-arrow {
+    color: var(--cyan);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  /* ── Pool Visual ── */
+  .pool-visual {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .pool-card {
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s;
+  }
+  .pool-card:hover { transform: translateY(-3px); }
+  .pool-card.pool-select {
+    background: linear-gradient(135deg, rgba(255,217,61,0.08), rgba(255,217,61,0.02));
+    border: 1px solid rgba(255,217,61,0.25);
+  }
+  .pool-card.pool-standard {
+    background: linear-gradient(135deg, rgba(0,229,255,0.08), rgba(0,229,255,0.02));
+    border: 1px solid rgba(0,229,255,0.25);
+  }
+  .pool-card.pool-open {
+    background: linear-gradient(135deg, rgba(107,114,128,0.1), rgba(107,114,128,0.03));
+    border: 1px solid rgba(107,114,128,0.3);
+  }
+  .pool-tier {
+    font-size: 0.65rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .pool-select .pool-tier { color: var(--gold); }
+  .pool-standard .pool-tier { color: var(--cyan); }
+  .pool-open .pool-tier { color: var(--gray); }
+  .pool-multiplier {
+    font-size: 2rem;
+    font-weight: 800;
+    margin-bottom: 6px;
+  }
+  .pool-select .pool-multiplier { color: var(--gold); }
+  .pool-standard .pool-multiplier { color: var(--cyan); }
+  .pool-open .pool-multiplier { color: var(--gray); }
+  .pool-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 14px;
+  }
+  .pool-stat {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.72rem;
+    padding: 4px 0;
+    border-top: 1px solid rgba(255,255,255,0.04);
+  }
+  .pool-stat-label { color: var(--text-dim); }
+  .pool-stat-value { font-weight: 600; font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; }
+
+  /* ── Session Input ── */
+  .session-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px 28px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  .session-icon {
+    font-size: 2rem;
+    width: 56px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,229,255,0.06);
+    border: 1px solid rgba(0,229,255,0.15);
+    border-radius: 12px;
+    flex-shrink: 0;
+  }
+  .session-details { flex: 1; }
+  .session-details h3 { font-size: 0.95rem; font-weight: 700; margin-bottom: 4px; }
+  .session-details ul {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 20px;
+  }
+  .session-details li {
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    position: relative;
+    padding-left: 14px;
+  }
+  .session-details li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--cyan);
+    opacity: 0.5;
+  }
+
+  /* ── Footer ── */
+  .footer {
+    margin-top: 60px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    text-align: center;
+    color: var(--text-dim);
+    font-size: 0.72rem;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 768px) {
+    .page { padding: 24px 16px 40px; }
+    .header h1 { font-size: 1.5rem; }
+    .concept-grid { grid-template-columns: 1fr 1fr; }
+    .pool-visual { grid-template-columns: 1fr; }
+    .input-modes { grid-template-columns: 1fr; }
+    .data-flow { padding: 20px 16px; }
+    .data-flow-chain { min-width: 600px; }
+    .flow-chart { padding: 24px 20px; }
+    .session-box { flex-direction: column; text-align: center; }
+    .session-details ul { justify-content: center; }
+    .fallback-grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 480px) {
+    .concept-grid { grid-template-columns: 1fr; }
+    .data-flow-chain { min-width: 500px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ── HEADER ── -->
+  <header class="header">
+    <div class="ble-logo">
+      <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="40" cy="40" r="36" stroke="rgba(0,229,255,0.2)" stroke-width="1.5"/>
+        <circle cx="40" cy="40" r="24" stroke="rgba(0,229,255,0.35)" stroke-width="1"/>
+        <!-- Bluetooth Symbol -->
+        <path d="M40 16 L40 64 M40 16 L56 32 L40 48 M40 64 L56 48 L40 32" stroke="#00E5FF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="40" cy="40" r="4" fill="#00E5FF" opacity="0.6"/>
+      </svg>
+      <div class="ble-ring"></div>
+      <div class="ble-ring"></div>
+      <div class="ble-ring"></div>
+      <div class="ble-ring"></div>
+    </div>
+    <div class="badge">Developer Guide &middot; Infographic 11</div>
+    <h1>MOOD LAB ARENA &mdash; BLE Device Integration</h1>
+    <p class="subtitle">Cannabis vape device as game controller &middot; Web Bluetooth API &middot; Real-time puff measurement</p>
+  </header>
+
+  <!-- ── 1. THE CONCEPT ── -->
+  <section class="section">
+    <div class="section-label">01 &mdash; The Concept</div>
+    <h2>Vape Device = Game Controller</h2>
+    <p>Mood Lab Arena transforms a cannabis vape device into a game controller. Connected via the Web Bluetooth API (BLE), puff duration is measured in real-time and mapped to in-game actions. Partnership with Cali Clear vape brand.</p>
+    <div class="concept-grid">
+      <div class="concept-card">
+        <div class="concept-icon">🎮</div>
+        <h3>Game Controller</h3>
+        <span>Vape device sends puff data that drives gameplay mechanics</span>
+      </div>
+      <div class="concept-card">
+        <div class="concept-icon">📡</div>
+        <h3>Web Bluetooth API</h3>
+        <span>BLE connection via browser-native GATT protocol</span>
+      </div>
+      <div class="concept-card">
+        <div class="concept-icon">⏱️</div>
+        <h3>Real-Time Measurement</h3>
+        <span>Puff duration captured in milliseconds, normalized to power %</span>
+      </div>
+      <div class="concept-card">
+        <div class="concept-icon">🌿</div>
+        <h3>Cali Clear Partner</h3>
+        <span>Official hardware partner with Standard and Select device lines</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 2. DEVICE MODELS ── -->
+  <section class="section">
+    <div class="section-label">02 &mdash; Device Models</div>
+    <h2>Supported Hardware</h2>
+    <p>Six device configurations spanning two pools plus a fallback tap-only mode for users without hardware.</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Model ID</th>
+            <th>Name</th>
+            <th>Short</th>
+            <th>Pool</th>
+            <th>Emoji</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="mono">cc_s1</span></td>
+            <td>Cali Clear Season 1</td>
+            <td>CC S1</td>
+            <td><span class="tag tag-cyan">Standard</span></td>
+            <td>📱</td>
+          </tr>
+          <tr>
+            <td><span class="mono">cc_s2</span></td>
+            <td>Cali Clear Season 2</td>
+            <td>CC S2</td>
+            <td><span class="tag tag-cyan">Standard</span></td>
+            <td>📱</td>
+          </tr>
+          <tr>
+            <td><span class="mono">cc_s3</span></td>
+            <td>Cali Clear Season 3</td>
+            <td>CC S3</td>
+            <td><span class="tag tag-cyan">Standard</span></td>
+            <td>📱</td>
+          </tr>
+          <tr>
+            <td><span class="mono">cc_sel1</span></td>
+            <td>Cali Clear Select S1</td>
+            <td>CC Select S1</td>
+            <td><span class="tag tag-gold">Select</span></td>
+            <td>✨</td>
+          </tr>
+          <tr>
+            <td><span class="mono">cc_sel2</span></td>
+            <td>Cali Clear Select S2</td>
+            <td>CC Select S2</td>
+            <td><span class="tag tag-gold">Select</span></td>
+            <td>✨</td>
+          </tr>
+          <tr>
+            <td><span class="mono">none</span></td>
+            <td>No Device</td>
+            <td>Tap Only</td>
+            <td><span class="tag tag-gray">Open</span></td>
+            <td>👆</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ── 3. DEVICE POOLS ── -->
+  <section class="section">
+    <div class="section-label">03 &mdash; Device Pools</div>
+    <h2>Pool Tiers &amp; Reward Scaling</h2>
+    <p>Higher pool = harder AI opponents but bigger rewards. Pool assignment is determined by connected device model.</p>
+    <div class="pool-visual">
+      <div class="pool-card pool-select">
+        <div class="pool-tier">Select Pool</div>
+        <div class="pool-multiplier">2&times;</div>
+        <div style="font-size:0.78rem; color:var(--text-dim);">Reward Multiplier</div>
+        <div class="pool-stats">
+          <div class="pool-stat">
+            <span class="pool-stat-label">AI Save %</span>
+            <span class="pool-stat-value" style="color:var(--gold)">38%</span>
+          </div>
+          <div class="pool-stat">
+            <span class="pool-stat-label">AI Score %</span>
+            <span class="pool-stat-value" style="color:var(--gold)">58%</span>
+          </div>
+        </div>
+      </div>
+      <div class="pool-card pool-standard">
+        <div class="pool-tier">Standard Pool</div>
+        <div class="pool-multiplier">1.5&times;</div>
+        <div style="font-size:0.78rem; color:var(--text-dim);">Reward Multiplier</div>
+        <div class="pool-stats">
+          <div class="pool-stat">
+            <span class="pool-stat-label">AI Save %</span>
+            <span class="pool-stat-value" style="color:var(--cyan)">30%</span>
+          </div>
+          <div class="pool-stat">
+            <span class="pool-stat-label">AI Score %</span>
+            <span class="pool-stat-value" style="color:var(--cyan)">50%</span>
+          </div>
+        </div>
+      </div>
+      <div class="pool-card pool-open">
+        <div class="pool-tier">Open Pool</div>
+        <div class="pool-multiplier">1&times;</div>
+        <div style="font-size:0.78rem; color:var(--text-dim);">Reward Multiplier</div>
+        <div class="pool-stats">
+          <div class="pool-stat">
+            <span class="pool-stat-label">AI Save %</span>
+            <span class="pool-stat-value" style="color:var(--gray)">20%</span>
+          </div>
+          <div class="pool-stat">
+            <span class="pool-stat-label">AI Score %</span>
+            <span class="pool-stat-value" style="color:var(--gray)">40%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 4. BLE CONNECTION FLOW ── -->
+  <section class="section">
+    <div class="section-label">04 &mdash; BLE Connection Flow</div>
+    <h2>Connection &amp; Calibration Sequence</h2>
+    <div class="flow-chart">
+      <div class="flow-steps">
+        <div class="flow-step">
+          <div class="flow-connector">
+            <div class="flow-dot">1</div>
+            <div class="flow-line"></div>
+          </div>
+          <div class="flow-content">
+            <h4>User Taps "Connect Device"</h4>
+            <p><span class="mono">showBlePopup = true</span> &mdash; BLE connection modal is displayed</p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-connector">
+            <div class="flow-dot">2</div>
+            <div class="flow-line"></div>
+          </div>
+          <div class="flow-content">
+            <h4>Browser BLE Scan Dialog</h4>
+            <p>Native browser Bluetooth device picker is triggered. User selects their Cali Clear device.</p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-connector">
+            <div class="flow-dot">3</div>
+            <div class="flow-line"></div>
+          </div>
+          <div class="flow-content">
+            <h4>Device Connected</h4>
+            <p><span class="mono">bleConnected = true</span> &mdash; GATT server connection established.</p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-connector">
+            <div class="flow-dot">4</div>
+            <div class="flow-line"></div>
+          </div>
+          <div class="flow-content">
+            <h4>Device Calibration</h4>
+            <p><span class="mono">showDeviceOptimize = true</span> &mdash; 4-stage calibration from 0-100%.</p>
+            <div class="flow-substeps">
+              <div class="substep"><span>Stage 0:</span> "Detecting device..."</div>
+              <div class="substep"><span>Stage 1:</span> "Calibrating sensors..."</div>
+              <div class="substep"><span>Stage 2:</span> "Optimizing response..."</div>
+              <div class="substep"><span>Stage 3:</span> "Testing connection..."</div>
+            </div>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-connector">
+            <div class="flow-dot">5</div>
+            <div class="flow-line"></div>
+          </div>
+          <div class="flow-content">
+            <h4>Session Input Configured</h4>
+            <p><span class="mono">sessionInput</span> set based on device capabilities. Input type selector is available.</p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-connector">
+            <div class="flow-dot" style="background: linear-gradient(135deg, var(--green), #00b300); box-shadow: 0 0 16px rgba(127,255,0,0.3);">&#10003;</div>
+          </div>
+          <div class="flow-content">
+            <h4 style="color: var(--green);">Ready to Play!</h4>
+            <p>Device is calibrated and input mode is set. User can launch any compatible game.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 5. INPUT TYPES ── -->
+  <section class="section">
+    <div class="section-label">05 &mdash; Input Types</div>
+    <h2>Available Input Methods</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>Icon</th>
+            <th>Label</th>
+            <th>Description</th>
+            <th>Hardware Required</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="mono">puff</span></td>
+            <td style="font-size:1.2rem">💨</td>
+            <td><strong>Puff</strong></td>
+            <td>Real vape puff &mdash; full heating cycle</td>
+            <td><span class="tag tag-green">MIC + Heating ON</span></td>
+          </tr>
+          <tr>
+            <td><span class="mono">dry_puff</span></td>
+            <td style="font-size:1.2rem">🌀</td>
+            <td><strong>Dry Puff</strong></td>
+            <td>Microphone airflow detection only</td>
+            <td><span class="tag tag-blue">Heating OFF</span></td>
+          </tr>
+          <tr>
+            <td><span class="mono">button</span></td>
+            <td style="font-size:1.2rem">🔘</td>
+            <td><strong>Button</strong></td>
+            <td>Physical button press on device</td>
+            <td><span class="tag tag-purple">BLE button signal</span></td>
+          </tr>
+          <tr>
+            <td><span class="mono">tap</span></td>
+            <td style="font-size:1.2rem">👆</td>
+            <td><strong>Tap</strong></td>
+            <td>Screen touch &mdash; universal fallback</td>
+            <td><span class="tag tag-gray">None (fallback)</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ── 6. INPUT MODE SYSTEM ── -->
+  <section class="section">
+    <div class="section-label">06 &mdash; Input Mode System</div>
+    <h2>How Input Selection Works</h2>
+    <div class="input-modes">
+      <div class="mode-card">
+        <div class="mode-icon">🤖</div>
+        <h3>Auto Mode</h3>
+        <p>App auto-selects the optimal input type per game based on device capabilities</p>
+      </div>
+      <div class="mode-card">
+        <div class="mode-icon">📌</div>
+        <h3>Fixed Mode</h3>
+        <p>Always use one chosen input type across all games, regardless of game preference</p>
+      </div>
+      <div class="mode-card">
+        <div class="mode-icon">❓</div>
+        <h3>Ask Mode</h3>
+        <p>Prompt the user before each game to choose their preferred input method</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 7. SESSION INPUT ── -->
+  <section class="section">
+    <div class="section-label">07 &mdash; Session Input</div>
+    <h2>Persistent Input State</h2>
+    <div class="session-box">
+      <div class="session-icon">🔄</div>
+      <div class="session-details">
+        <h3><span class="mono">sessionInput</span> State</h3>
+        <ul>
+          <li>Remembered across games within a session</li>
+          <li>User selects once on Arena home screen</li>
+          <li>Input pulse animation draws attention to selector</li>
+          <li>No repeated device selection prompts per game</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 8. PUFF DATA FLOW ── -->
+  <section class="section">
+    <div class="section-label">08 &mdash; Puff Data Flow</div>
+    <h2>From Puff to Game Action</h2>
+    <p>The full signal path from physical device interaction to in-game mechanics.</p>
+    <div class="data-flow">
+      <div class="data-flow-chain">
+        <div class="data-node">
+          <div class="node-icon">📱</div>
+          <div class="node-label">BLE Device</div>
+          <div class="node-detail">Hardware</div>
+        </div>
+        <div class="data-arrow">&rarr;</div>
+        <div class="data-node">
+          <div class="node-icon">📡</div>
+          <div class="node-label">Web Bluetooth</div>
+          <div class="node-detail">Browser API</div>
+        </div>
+        <div class="data-arrow">&rarr;</div>
+        <div class="data-node">
+          <div class="node-icon">🔗</div>
+          <div class="node-label">GATT Service</div>
+          <div class="node-detail">Characteristic</div>
+        </div>
+        <div class="data-arrow">&rarr;</div>
+        <div class="data-node">
+          <div class="node-icon">⏱️</div>
+          <div class="node-label">Puff Duration</div>
+          <div class="node-detail">milliseconds</div>
+        </div>
+        <div class="data-arrow">&rarr;</div>
+        <div class="data-node">
+          <div class="node-icon">📊</div>
+          <div class="node-label">Normalize</div>
+          <div class="node-detail">0-100% power</div>
+        </div>
+        <div class="data-arrow">&rarr;</div>
+        <div class="data-node">
+          <div class="node-icon">🎯</div>
+          <div class="node-label">Sweet Spot</div>
+          <div class="node-detail">Check range</div>
+        </div>
+        <div class="data-arrow">&rarr;</div>
+        <div class="data-node" style="border-color: rgba(0,229,255,0.4);">
+          <div class="node-icon">🎮</div>
+          <div class="node-label">Game Action</div>
+          <div class="node-detail">kick, inflate...</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 9. GAME INPUT COMPATIBILITY ── -->
+  <section class="section">
+    <div class="section-label">09 &mdash; Game Input Compatibility</div>
+    <h2>Compatibility Matrix</h2>
+    <p>Which input types are supported by each game. Green = full support, red = not supported.</p>
+    <div class="table-wrap">
+      <table class="compat-table">
+        <thead>
+          <tr>
+            <th>Game</th>
+            <th>💨 Puff</th>
+            <th>🔘 Button</th>
+            <th>👆 Tap</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Final Kick</td>
+            <td class="compat-yes">&#10003; <span class="compat-note">Power</span></td>
+            <td class="compat-yes">&#10003; <span class="compat-note">Alt power</span></td>
+            <td class="compat-yes">&#10003; <span class="compat-note">Zone + save</span></td>
+          </tr>
+          <tr>
+            <td>FK2</td>
+            <td class="compat-yes">&#10003; <span class="compat-note">X+Y aim</span></td>
+            <td class="compat-yes">&#10003; <span class="compat-note">Alt aim</span></td>
+            <td class="compat-no">&#10007;</td>
+          </tr>
+          <tr>
+            <td>FK3</td>
+            <td class="compat-yes">&#10003; <span class="compat-note">X+Y 3D</span></td>
+            <td class="compat-yes">&#10003; <span class="compat-note">Alt aim</span></td>
+            <td class="compat-no">&#10007;</td>
+          </tr>
+          <tr>
+            <td>Wild West</td>
+            <td class="compat-yes">&#10003; <span class="compat-note">Draw speed</span></td>
+            <td class="compat-yes">&#10003; <span class="compat-note">Alt draw</span></td>
+            <td class="compat-yes">&#10003; <span class="compat-note">Draw</span></td>
+          </tr>
+          <tr>
+            <td>Balloon Pop</td>
+            <td class="compat-yes">&#10003; <span class="compat-note">Inflate</span></td>
+            <td class="compat-yes">&#10003; <span class="compat-note">Alt inflate</span></td>
+            <td class="compat-no">&#10007;</td>
+          </tr>
+          <tr>
+            <td>Puff Pong</td>
+            <td class="compat-yes">&#10003; <span class="compat-note">Paddle up</span></td>
+            <td class="compat-no">&#10007;</td>
+            <td class="compat-yes">&#10003; <span class="compat-note">Tap paddle</span></td>
+          </tr>
+          <tr>
+            <td>Rhythm Puff</td>
+            <td class="compat-yes">&#10003; <span class="compat-note">On-beat</span></td>
+            <td class="compat-no">&#10007;</td>
+            <td class="compat-no">&#10007;</td>
+          </tr>
+          <tr>
+            <td>Tug of War</td>
+            <td class="compat-yes">&#10003; <span class="compat-note">Pull force</span></td>
+            <td class="compat-yes">&#10003; <span class="compat-note">Alt pull</span></td>
+            <td class="compat-no">&#10007;</td>
+          </tr>
+          <tr>
+            <td>Hooked</td>
+            <td class="compat-yes">&#10003; <span class="compat-note">Reel suction</span></td>
+            <td class="compat-yes">&#10003; <span class="compat-note">Alt reel</span></td>
+            <td class="compat-no">&#10007;</td>
+          </tr>
+          <tr>
+            <td>Puff RPS</td>
+            <td class="compat-yes">&#10003; <span class="compat-note">Power bonus</span></td>
+            <td class="compat-yes">&#10003; <span class="compat-note">Alt power</span></td>
+            <td class="compat-no">&#10007;</td>
+          </tr>
+          <tr>
+            <td>All Fortune</td>
+            <td class="compat-yes">&#10003; <span class="compat-note">Primary</span></td>
+            <td class="compat-no">&#10007;</td>
+            <td class="compat-no">&#10007;</td>
+          </tr>
+          <tr>
+            <td>All Stage</td>
+            <td class="compat-yes">&#10003; <span class="compat-note">Primary</span></td>
+            <td class="compat-some">&#9679; <span class="compat-note">Some</span></td>
+            <td class="compat-some">&#9679; <span class="compat-note">Some</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ── 10. FALLBACK BEHAVIOR ── -->
+  <section class="section">
+    <div class="section-label">10 &mdash; Fallback Behavior</div>
+    <h2>Graceful Degradation</h2>
+    <p>The system never blocks gameplay. Every failure state falls back to tap mode so users can always play.</p>
+    <div class="fallback-grid">
+      <div class="fallback-card">
+        <div class="fallback-icon">📵</div>
+        <div>
+          <h4>No BLE Device</h4>
+          <p><span class="fallback-arrow">&rarr;</span> Tap mode (Open pool, 1&times; rewards)</p>
+        </div>
+      </div>
+      <div class="fallback-card">
+        <div class="fallback-icon">🔌</div>
+        <div>
+          <h4>BLE Disconnects Mid-Game</h4>
+          <p><span class="fallback-arrow">&rarr;</span> Auto-switch to tap, game continues seamlessly</p>
+        </div>
+      </div>
+      <div class="fallback-card">
+        <div class="fallback-icon">🌐</div>
+        <div>
+          <h4>Browser Doesn't Support BLE</h4>
+          <p><span class="fallback-arrow">&rarr;</span> Tap-only mode, no BLE UI elements shown</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── FOOTER ── -->
+  <footer class="footer">
+    Mood Lab Arena &mdash; BLE Device Integration &middot; Developer Guide &middot; Infographic 11
+  </footer>
+
+</div>
+</body>
+</html>

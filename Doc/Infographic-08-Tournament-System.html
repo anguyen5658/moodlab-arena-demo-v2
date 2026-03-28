@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mood Lab Arena — Tournament & World Cup System</title>
+<style>
+  /* ── Reset & Base ── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #050510;
+    --bg2: #0a0a1a;
+    --bg3: #111128;
+    --cyan: #00E5FF;
+    --gold: #FFD93D;
+    --pink: #FF4D8D;
+    --purple: #C084FC;
+    --orange: #FB923C;
+    --green: #34D399;
+    --red: #F87171;
+    --blue: #60A5FA;
+    --white: #f0f0f8;
+    --dim: #8888aa;
+    --glass: rgba(255,255,255,0.04);
+    --glass-border: rgba(255,255,255,0.08);
+    --radius: 16px;
+    --radius-sm: 10px;
+  }
+  html { font-size: 15px; }
+  body {
+    background: var(--bg);
+    color: var(--white);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', Roboto, sans-serif;
+    line-height: 1.6;
+    padding: 0;
+    min-height: 100vh;
+  }
+
+  /* ── Page Container ── */
+  .page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 48px 32px 40px;
+  }
+
+  /* ── Header ── */
+  .header {
+    text-align: center;
+    margin-bottom: 48px;
+    position: relative;
+  }
+  .header::after {
+    content: '';
+    display: block;
+    width: 200px;
+    height: 3px;
+    margin: 24px auto 0;
+    background: linear-gradient(90deg, var(--gold), var(--orange), var(--red));
+    border-radius: 2px;
+  }
+  .header .badge {
+    display: inline-block;
+    padding: 4px 16px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    background: rgba(255,217,61,0.1);
+    color: var(--gold);
+    border: 1px solid rgba(255,217,61,0.2);
+    margin-bottom: 16px;
+  }
+  .header h1 {
+    font-size: 2.2rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    background: linear-gradient(135deg, var(--gold), var(--orange));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.2;
+  }
+  .header .sub {
+    color: var(--dim);
+    font-size: 0.85rem;
+    margin-top: 8px;
+  }
+
+  /* ── Section ── */
+  .section {
+    margin-bottom: 40px;
+  }
+  .section-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .section-num {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+  }
+  .section-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+  }
+  .section-sub {
+    color: var(--dim);
+    font-size: 0.8rem;
+    margin-top: 2px;
+  }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 16px;
+  }
+  .card-title {
+    font-weight: 700;
+    font-size: 1rem;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* ── Grid layouts ── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+
+  /* ── Flag Grid ── */
+  .confed-section {
+    margin-bottom: 16px;
+  }
+  .confed-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    padding-left: 4px;
+  }
+  .flag-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .flag-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    white-space: nowrap;
+  }
+  .flag-chip .emoji { font-size: 1rem; }
+
+  /* ── Table ── */
+  .table-wrap {
+    overflow-x: auto;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--glass-border);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+  }
+  th {
+    text-align: left;
+    padding: 10px 14px;
+    background: rgba(255,255,255,0.06);
+    font-weight: 700;
+    font-size: 0.7rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--dim);
+    border-bottom: 1px solid var(--glass-border);
+  }
+  td {
+    padding: 9px 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+
+  /* ── Flow Diagram ── */
+  .flow {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 16px 0;
+  }
+  .flow-step {
+    padding: 8px 18px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-align: center;
+    white-space: nowrap;
+  }
+  .flow-arrow {
+    color: var(--dim);
+    font-size: 1.1rem;
+    padding: 0 6px;
+  }
+
+  /* ── Bracket Visual ── */
+  .bracket-container {
+    padding: 24px 0;
+    overflow-x: auto;
+  }
+  .bracket {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-width: 700px;
+  }
+  .bracket-round {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  .bracket-round-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 4px;
+  }
+  .bracket-match {
+    width: 90px;
+    border: 1px solid var(--glass-border);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .bracket-team {
+    padding: 4px 8px;
+    font-size: 0.65rem;
+    font-weight: 600;
+    background: rgba(255,255,255,0.04);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .bracket-team:last-child { border-bottom: none; }
+  .bracket-team.winner { background: rgba(255,217,61,0.12); color: var(--gold); }
+  .bracket-connector {
+    width: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  .bracket-connector::before {
+    content: '';
+    display: block;
+    width: 20px;
+    height: 1px;
+    background: var(--glass-border);
+  }
+
+  /* ── Group Tables ── */
+  .group-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+  .group-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-sm);
+    padding: 12px;
+  }
+  .group-letter {
+    font-weight: 800;
+    font-size: 0.85rem;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 2px solid;
+  }
+  .group-team {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 0;
+    font-size: 0.78rem;
+  }
+  .group-team .emoji { font-size: 0.95rem; }
+
+  /* ── Prize Badges ── */
+  .prize-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+  .prize-card {
+    text-align: center;
+    padding: 20px 12px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--glass-border);
+    background: var(--glass);
+  }
+  .prize-icon { font-size: 2rem; margin-bottom: 8px; }
+  .prize-pts { font-size: 1.3rem; font-weight: 800; }
+  .prize-coins { font-size: 0.82rem; margin-top: 2px; }
+  .prize-label { font-size: 0.7rem; color: var(--dim); margin-top: 6px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
+
+  /* ── Team Themed ── */
+  .themed-game {
+    margin-bottom: 12px;
+  }
+  .themed-game-title {
+    font-weight: 700;
+    font-size: 0.82rem;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .themed-teams {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+  .team-tag {
+    padding: 3px 9px;
+    border-radius: 5px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+
+  /* ── Live Match ── */
+  .live-box {
+    background: linear-gradient(135deg, rgba(255,77,141,0.08), rgba(192,132,252,0.08));
+    border: 1px solid rgba(255,77,141,0.2);
+    border-radius: var(--radius);
+    padding: 24px;
+  }
+  .live-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 12px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    background: rgba(255,77,141,0.15);
+    color: var(--pink);
+    border: 1px solid rgba(255,77,141,0.3);
+    margin-bottom: 12px;
+  }
+  .live-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--pink);
+    animation: pulse 1.5s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+  .live-feature {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 0;
+  }
+  .live-icon {
+    width: 28px; height: 28px;
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+  }
+  .live-feature-text {
+    font-size: 0.82rem;
+  }
+  .live-feature-text strong { display: block; margin-bottom: 2px; }
+  .live-feature-text span { color: var(--dim); font-size: 0.78rem; }
+
+  /* ── Cooldown ── */
+  .info-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-top: 8px;
+  }
+
+  /* ── Chip colors ── */
+  .c-gold { color: var(--gold); }
+  .c-cyan { color: var(--cyan); }
+  .c-pink { color: var(--pink); }
+  .c-purple { color: var(--purple); }
+  .c-orange { color: var(--orange); }
+  .c-green { color: var(--green); }
+  .c-red { color: var(--red); }
+  .c-blue { color: var(--blue); }
+  .bg-gold { background: rgba(255,217,61,0.1); border-color: rgba(255,217,61,0.2); }
+  .bg-cyan { background: rgba(0,229,255,0.1); border-color: rgba(0,229,255,0.2); }
+  .bg-pink { background: rgba(255,77,141,0.1); border-color: rgba(255,77,141,0.2); }
+  .bg-purple { background: rgba(192,132,252,0.1); border-color: rgba(192,132,252,0.2); }
+  .bg-orange { background: rgba(251,146,60,0.1); border-color: rgba(251,146,60,0.2); }
+  .bg-green { background: rgba(52,211,153,0.1); border-color: rgba(52,211,153,0.2); }
+
+  /* ── Footer ── */
+  .footer {
+    text-align: center;
+    padding: 32px 0 16px;
+    border-top: 1px solid var(--glass-border);
+    margin-top: 32px;
+    color: var(--dim);
+    font-size: 0.75rem;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 900px) {
+    .grid-2, .grid-3, .group-grid, .prize-grid { grid-template-columns: 1fr 1fr; }
+    .grid-4 { grid-template-columns: 1fr 1fr; }
+    .header h1 { font-size: 1.7rem; }
+  }
+  @media (max-width: 600px) {
+    .page { padding: 24px 16px; }
+    .grid-2, .grid-3, .group-grid, .prize-grid, .grid-4 { grid-template-columns: 1fr; }
+    .header h1 { font-size: 1.4rem; }
+    .bracket { min-width: 500px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ════ HEADER ════ -->
+  <div class="header">
+    <div class="badge">Developer Guide &middot; Infographic 08</div>
+    <h1>MOOD LAB ARENA &mdash; Tournament &amp; World Cup System</h1>
+    <div class="sub">FK World Cup 2026 &bull; Game-Specific Tournaments &bull; Themed Teams &bull; Prize Structure &bull; Live Matches</div>
+  </div>
+
+  <!-- ════ SECTION 1: WORLD CUP ════ -->
+  <div class="section">
+    <div class="section-head">
+      <div class="section-num" style="background:rgba(255,217,61,0.15);color:var(--gold);">1</div>
+      <div>
+        <div class="section-title c-gold">World Cup 2026 Tournaments</div>
+        <div class="section-sub">FK Games Only &mdash; 50 National Teams &bull; 12 Groups &bull; Full Knockout</div>
+      </div>
+    </div>
+
+    <!-- WC Flow -->
+    <div class="card">
+      <div class="card-title">Tournament Flow</div>
+      <div class="flow">
+        <div class="flow-step" style="background:rgba(0,229,255,0.12);color:var(--cyan);border:1px solid rgba(0,229,255,0.25);">Pick Team</div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step" style="background:rgba(52,211,153,0.12);color:var(--green);border:1px solid rgba(52,211,153,0.25);">Group Stage</div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step" style="background:rgba(192,132,252,0.12);color:var(--purple);border:1px solid rgba(192,132,252,0.25);">R32</div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step" style="background:rgba(192,132,252,0.12);color:var(--purple);border:1px solid rgba(192,132,252,0.25);">R16</div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step" style="background:rgba(251,146,60,0.12);color:var(--orange);border:1px solid rgba(251,146,60,0.25);">QF</div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step" style="background:rgba(255,77,141,0.12);color:var(--pink);border:1px solid rgba(255,77,141,0.25);">SF</div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step" style="background:rgba(255,217,61,0.15);color:var(--gold);border:1px solid rgba(255,217,61,0.3);">FINAL</div>
+      </div>
+      <div style="text-align:center;">
+        <div class="info-pill" style="background:rgba(255,77,141,0.1);color:var(--pink);border:1px solid rgba(255,77,141,0.2);">
+          <span style="font-size:1rem;">&#9201;</span> 6-hour cooldown between tournament runs
+        </div>
+      </div>
+    </div>
+
+    <!-- 50 National Teams -->
+    <div class="card">
+      <div class="card-title">50 National Teams (WC_TEAMS)</div>
+
+      <div class="confed-section">
+        <div class="confed-label c-cyan">CONCACAF (3)</div>
+        <div class="flag-grid">
+          <div class="flag-chip"><span class="emoji">&#127482;&#127480;</span> USA</div>
+          <div class="flag-chip"><span class="emoji">&#127474;&#127485;</span> Mexico</div>
+          <div class="flag-chip"><span class="emoji">&#127464;&#127462;</span> Canada</div>
+        </div>
+      </div>
+
+      <div class="confed-section">
+        <div class="confed-label c-green">CONMEBOL (7)</div>
+        <div class="flag-grid">
+          <div class="flag-chip"><span class="emoji">&#127463;&#127479;</span> Brazil</div>
+          <div class="flag-chip"><span class="emoji">&#127462;&#127479;</span> Argentina</div>
+          <div class="flag-chip"><span class="emoji">&#127464;&#127476;</span> Colombia</div>
+          <div class="flag-chip"><span class="emoji">&#127482;&#127486;</span> Uruguay</div>
+          <div class="flag-chip"><span class="emoji">&#127466;&#127464;</span> Ecuador</div>
+          <div class="flag-chip"><span class="emoji">&#127477;&#127466;</span> Peru</div>
+          <div class="flag-chip"><span class="emoji">&#127477;&#127486;</span> Paraguay</div>
+        </div>
+      </div>
+
+      <div class="confed-section">
+        <div class="confed-label c-blue">UEFA (18)</div>
+        <div class="flag-grid">
+          <div class="flag-chip"><span class="emoji">&#127465;&#127466;</span> Germany</div>
+          <div class="flag-chip"><span class="emoji">&#127467;&#127479;</span> France</div>
+          <div class="flag-chip"><span class="emoji">&#127988;&#917607;&#917602;&#917605;&#917614;&#917607;&#917631;</span> England</div>
+          <div class="flag-chip"><span class="emoji">&#127466;&#127480;</span> Spain</div>
+          <div class="flag-chip"><span class="emoji">&#127477;&#127481;</span> Portugal</div>
+          <div class="flag-chip"><span class="emoji">&#127475;&#127473;</span> Netherlands</div>
+          <div class="flag-chip"><span class="emoji">&#127463;&#127466;</span> Belgium</div>
+          <div class="flag-chip"><span class="emoji">&#127470;&#127481;</span> Italy</div>
+          <div class="flag-chip"><span class="emoji">&#127469;&#127479;</span> Croatia</div>
+          <div class="flag-chip"><span class="emoji">&#127465;&#127472;</span> Denmark</div>
+          <div class="flag-chip"><span class="emoji">&#127464;&#127469;</span> Switzerland</div>
+          <div class="flag-chip"><span class="emoji">&#127462;&#127481;</span> Austria</div>
+          <div class="flag-chip"><span class="emoji">&#127479;&#127480;</span> Serbia</div>
+          <div class="flag-chip"><span class="emoji">&#127477;&#127473;</span> Poland</div>
+          <div class="flag-chip"><span class="emoji">&#127988;&#917607;&#917602;&#917619;&#917603;&#917620;&#917631;</span> Scotland</div>
+          <div class="flag-chip"><span class="emoji">&#127988;&#917607;&#917602;&#917623;&#917612;&#917619;&#917631;</span> Wales</div>
+          <div class="flag-chip"><span class="emoji">&#127481;&#127479;</span> Turkey</div>
+          <div class="flag-chip"><span class="emoji">&#127482;&#127462;</span> Ukraine</div>
+        </div>
+      </div>
+
+      <div class="confed-section">
+        <div class="confed-label c-orange">AFC (10)</div>
+        <div class="flag-grid">
+          <div class="flag-chip"><span class="emoji">&#127471;&#127477;</span> Japan</div>
+          <div class="flag-chip"><span class="emoji">&#127472;&#127479;</span> South Korea</div>
+          <div class="flag-chip"><span class="emoji">&#127462;&#127482;</span> Australia</div>
+          <div class="flag-chip"><span class="emoji">&#127480;&#127462;</span> Saudi Arabia</div>
+          <div class="flag-chip"><span class="emoji">&#127470;&#127479;</span> Iran</div>
+          <div class="flag-chip"><span class="emoji">&#127478;&#127462;</span> Qatar</div>
+          <div class="flag-chip"><span class="emoji">&#127470;&#127478;</span> Iraq</div>
+          <div class="flag-chip"><span class="emoji">&#127482;&#127487;</span> Uzbekistan</div>
+          <div class="flag-chip"><span class="emoji">&#127470;&#127465;</span> Indonesia</div>
+          <div class="flag-chip"><span class="emoji">&#127463;&#127469;</span> Bahrain</div>
+        </div>
+      </div>
+
+      <div class="confed-section">
+        <div class="confed-label c-pink">CAF (9)</div>
+        <div class="flag-grid">
+          <div class="flag-chip"><span class="emoji">&#127474;&#127462;</span> Morocco</div>
+          <div class="flag-chip"><span class="emoji">&#127480;&#127475;</span> Senegal</div>
+          <div class="flag-chip"><span class="emoji">&#127475;&#127468;</span> Nigeria</div>
+          <div class="flag-chip"><span class="emoji">&#127466;&#127468;</span> Egypt</div>
+          <div class="flag-chip"><span class="emoji">&#127464;&#127474;</span> Cameroon</div>
+          <div class="flag-chip"><span class="emoji">&#127487;&#127462;</span> South Africa</div>
+          <div class="flag-chip"><span class="emoji">&#127474;&#127473;</span> Mali</div>
+          <div class="flag-chip"><span class="emoji">&#127464;&#127465;</span> DR Congo</div>
+          <div class="flag-chip"><span class="emoji">&#127464;&#127470;</span> Ivory Coast</div>
+        </div>
+      </div>
+
+      <div class="grid-2" style="margin-top:8px;">
+        <div class="confed-section" style="margin-bottom:0;">
+          <div class="confed-label c-purple">OFC (1)</div>
+          <div class="flag-grid">
+            <div class="flag-chip"><span class="emoji">&#127475;&#127487;</span> New Zealand</div>
+          </div>
+        </div>
+        <div class="confed-section" style="margin-bottom:0;">
+          <div class="confed-label c-gold">BONUS (2)</div>
+          <div class="flag-grid">
+            <div class="flag-chip" style="border-color:rgba(255,217,61,0.25);"><span class="emoji">&#127483;&#127475;</span> Vietnam</div>
+            <div class="flag-chip" style="border-color:rgba(255,217,61,0.25);"><span class="emoji">&#127464;&#127475;</span> China</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Group Stage -->
+    <div class="card">
+      <div class="card-title">12 Groups (A&ndash;L) &mdash; 4 Teams Each</div>
+      <div class="group-grid">
+        <div class="group-card"><div class="group-letter" style="border-color:var(--cyan);">Group A</div><div class="group-team"><span class="emoji">&#127482;&#127480;</span> USA</div><div class="group-team"><span class="emoji">&#127474;&#127462;</span> Morocco</div><div class="group-team"><span class="emoji">&#127464;&#127469;</span> Switzerland</div><div class="group-team"><span class="emoji">&#127475;&#127487;</span> New Zealand</div></div>
+        <div class="group-card"><div class="group-letter" style="border-color:var(--green);">Group B</div><div class="group-team"><span class="emoji">&#127463;&#127479;</span> Brazil</div><div class="group-team"><span class="emoji">&#127471;&#127477;</span> Japan</div><div class="group-team"><span class="emoji">&#127475;&#127468;</span> Nigeria</div><div class="group-team"><span class="emoji">&#127466;&#127464;</span> Ecuador</div></div>
+        <div class="group-card"><div class="group-letter" style="border-color:var(--purple);">Group C</div><div class="group-team"><span class="emoji">&#127462;&#127479;</span> Argentina</div><div class="group-team"><span class="emoji">&#127465;&#127472;</span> Denmark</div><div class="group-team"><span class="emoji">&#127466;&#127468;</span> Egypt</div><div class="group-team"><span class="emoji">&#127477;&#127486;</span> Paraguay</div></div>
+        <div class="group-card"><div class="group-letter" style="border-color:var(--orange);">Group D</div><div class="group-team"><span class="emoji">&#127467;&#127479;</span> France</div><div class="group-team"><span class="emoji">&#127472;&#127479;</span> South Korea</div><div class="group-team"><span class="emoji">&#127464;&#127474;</span> Cameroon</div><div class="group-team"><span class="emoji">&#127462;&#127481;</span> Austria</div></div>
+        <div class="group-card"><div class="group-letter" style="border-color:var(--pink);">Group E</div><div class="group-team"><span class="emoji">&#127466;&#127480;</span> Spain</div><div class="group-team"><span class="emoji">&#127462;&#127482;</span> Australia</div><div class="group-team"><span class="emoji">&#127480;&#127475;</span> Senegal</div><div class="group-team"><span class="emoji">&#127477;&#127466;</span> Peru</div></div>
+        <div class="group-card"><div class="group-letter" style="border-color:var(--gold);">Group F</div><div class="group-team"><span class="emoji">&#127465;&#127466;</span> Germany</div><div class="group-team"><span class="emoji">&#127474;&#127485;</span> Mexico</div><div class="group-team"><span class="emoji">&#127480;&#127462;</span> Saudi Arabia</div><div class="group-team"><span class="emoji">&#127464;&#127470;</span> Ivory Coast</div></div>
+        <div class="group-card"><div class="group-letter" style="border-color:var(--cyan);">Group G</div><div class="group-team"><span class="emoji">&#127477;&#127481;</span> Portugal</div><div class="group-team"><span class="emoji">&#127464;&#127476;</span> Colombia</div><div class="group-team"><span class="emoji">&#127470;&#127479;</span> Iran</div><div class="group-team"><span class="emoji">&#127487;&#127462;</span> South Africa</div></div>
+        <div class="group-card"><div class="group-letter" style="border-color:var(--green);">Group H</div><div class="group-team"><span class="emoji">&#127988;&#917607;&#917602;&#917605;&#917614;&#917607;&#917631;</span> England</div><div class="group-team"><span class="emoji">&#127482;&#127486;</span> Uruguay</div><div class="group-team"><span class="emoji">&#127478;&#127462;</span> Qatar</div><div class="group-team"><span class="emoji">&#127474;&#127473;</span> Mali</div></div>
+        <div class="group-card"><div class="group-letter" style="border-color:var(--purple);">Group I</div><div class="group-team"><span class="emoji">&#127475;&#127473;</span> Netherlands</div><div class="group-team"><span class="emoji">&#127470;&#127478;</span> Iraq</div><div class="group-team"><span class="emoji">&#127464;&#127465;</span> DR Congo</div><div class="group-team"><span class="emoji">&#127483;&#127475;</span> Vietnam</div></div>
+        <div class="group-card"><div class="group-letter" style="border-color:var(--orange);">Group J</div><div class="group-team"><span class="emoji">&#127463;&#127466;</span> Belgium</div><div class="group-team"><span class="emoji">&#127481;&#127479;</span> Turkey</div><div class="group-team"><span class="emoji">&#127482;&#127487;</span> Uzbekistan</div><div class="group-team"><span class="emoji">&#127464;&#127475;</span> China</div></div>
+        <div class="group-card"><div class="group-letter" style="border-color:var(--pink);">Group K</div><div class="group-team"><span class="emoji">&#127470;&#127481;</span> Italy</div><div class="group-team"><span class="emoji">&#127469;&#127479;</span> Croatia</div><div class="group-team"><span class="emoji">&#127470;&#127465;</span> Indonesia</div><div class="group-team"><span class="emoji">&#127463;&#127469;</span> Bahrain</div></div>
+        <div class="group-card"><div class="group-letter" style="border-color:var(--gold);">Group L</div><div class="group-team"><span class="emoji">&#127479;&#127480;</span> Serbia</div><div class="group-team"><span class="emoji">&#127477;&#127473;</span> Poland</div><div class="group-team"><span class="emoji">&#127482;&#127462;</span> Ukraine</div><div class="group-team"><span class="emoji">&#127464;&#127462;</span> Canada</div></div>
+      </div>
+    </div>
+
+    <!-- WC Bracket Visual -->
+    <div class="card">
+      <div class="card-title">Knockout Bracket (Simplified)</div>
+      <div class="bracket-container">
+        <div class="bracket">
+          <div class="bracket-round">
+            <div class="bracket-round-label">Round of 32</div>
+            <div class="bracket-match"><div class="bracket-team">1A vs 2B</div><div class="bracket-team">1C vs 2D</div></div>
+            <div class="bracket-match"><div class="bracket-team">1E vs 2F</div><div class="bracket-team">1G vs 2H</div></div>
+            <div class="bracket-match"><div class="bracket-team">1I vs 2J</div><div class="bracket-team">1K vs 2L</div></div>
+            <div class="bracket-match"><div class="bracket-team">2A vs 1B</div><div class="bracket-team">2C vs 1D</div></div>
+          </div>
+          <div class="bracket-connector"></div>
+          <div class="bracket-round">
+            <div class="bracket-round-label">Round of 16</div>
+            <div class="bracket-match"><div class="bracket-team">W1 vs W2</div><div class="bracket-team">W3 vs W4</div></div>
+            <div class="bracket-match"><div class="bracket-team">W5 vs W6</div><div class="bracket-team">W7 vs W8</div></div>
+          </div>
+          <div class="bracket-connector"></div>
+          <div class="bracket-round">
+            <div class="bracket-round-label">Quarter-Final</div>
+            <div class="bracket-match"><div class="bracket-team">QF 1</div><div class="bracket-team">QF 2</div></div>
+            <div class="bracket-match"><div class="bracket-team">QF 3</div><div class="bracket-team">QF 4</div></div>
+          </div>
+          <div class="bracket-connector"></div>
+          <div class="bracket-round">
+            <div class="bracket-round-label">Semi-Final</div>
+            <div class="bracket-match"><div class="bracket-team">SF 1</div><div class="bracket-team">SF 2</div></div>
+          </div>
+          <div class="bracket-connector"></div>
+          <div class="bracket-round">
+            <div class="bracket-round-label" style="color:var(--gold);">Final</div>
+            <div class="bracket-match" style="border-color:rgba(255,217,61,0.3);"><div class="bracket-team winner">Champion</div><div class="bracket-team">Runner-up</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WC Prizes -->
+    <div class="card">
+      <div class="card-title">World Cup Prizes</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+        <div class="prize-card" style="border-color:rgba(255,217,61,0.25);">
+          <div class="prize-icon">&#127942;</div>
+          <div class="prize-pts c-gold">50,000 pts</div>
+          <div class="prize-coins c-gold">+ 500 coins</div>
+          <div class="prize-label">Champion</div>
+        </div>
+        <div class="prize-card" style="border-color:rgba(192,132,252,0.2);">
+          <div class="prize-icon">&#129352;</div>
+          <div class="prize-pts c-purple">25,000 pts</div>
+          <div class="prize-coins c-purple">+ 250 coins</div>
+          <div class="prize-label">Runner-up</div>
+        </div>
+        <div class="prize-card" style="border-color:rgba(251,146,60,0.2);">
+          <div class="prize-icon">&#129353;</div>
+          <div class="prize-pts c-orange">10,000 pts</div>
+          <div class="prize-coins c-orange">+ 100 coins</div>
+          <div class="prize-label">Third Place</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ SECTION 2: GAME-SPECIFIC TOURNAMENTS ════ -->
+  <div class="section">
+    <div class="section-head">
+      <div class="section-num" style="background:rgba(0,229,255,0.15);color:var(--cyan);">2</div>
+      <div>
+        <div class="section-title c-cyan">Game-Specific Tournaments</div>
+        <div class="section-sub">Each arcade game has its own unique tournament format</div>
+      </div>
+    </div>
+
+    <div class="card" style="padding:0;">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Game</th>
+              <th>Tournament Name</th>
+              <th>Format</th>
+              <th>Duration</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Wild West</td><td style="color:var(--gold);">The Outlaw Circuit &#129312;</td><td>16P Single Elimination</td><td>~30m</td></tr>
+            <tr><td>Russian R.</td><td style="color:var(--red);">The Underground &#127922;</td><td>Survival (4 Tables &rarr; Final)</td><td>~20m</td></tr>
+            <tr><td>Balloon Pop</td><td style="color:var(--pink);">Puff Fest &#127880;</td><td>3 Heats + Final</td><td>~15m</td></tr>
+            <tr><td>Puff Pong</td><td style="color:var(--cyan);">Neon League &#127955;</td><td>Swiss (4 Rounds + Final)</td><td>~25m</td></tr>
+            <tr><td>Rhythm Puff</td><td style="color:var(--purple);">Tour de Puff &#127925;</td><td>Score Chase (3 Songs)</td><td>~15m</td></tr>
+            <tr><td>Tug of War</td><td style="color:var(--orange);">The Puff Games &#128170;</td><td>Round Robin (4 Teams)</td><td>~20m</td></tr>
+            <tr><td>Hot Potato</td><td style="color:var(--red);">Bomb Squad Cup &#128163;</td><td>Heats + Grand Final</td><td>~15m</td></tr>
+            <tr><td>RPS</td><td style="color:var(--green);">Dojo Championship &#9994;</td><td>Double Elimination (16P)</td><td>~30m</td></tr>
+            <tr><td>Hooked</td><td style="color:var(--blue);">Deep Sea Masters &#127907;</td><td>Catch Comp (3 Sessions)</td><td>~10m</td></tr>
+            <tr><td>Beat Drop</td><td style="color:var(--purple);">The Drop Zone &#127911;</td><td>Score Chase (3 Songs)</td><td>~15m</td></tr>
+            <tr><td>Puff Clock</td><td style="color:var(--cyan);">Time Masters &#9201;</td><td>Precision (5 Rounds)</td><td>~20m</td></tr>
+            <tr><td>Puff Limbo</td><td style="color:var(--pink);">Limbo Legends &#127914;</td><td>Survival (7 Rounds)</td><td>~15m</td></tr>
+            <tr><td>Puff Derby</td><td style="color:var(--gold);">Grand Derby &#127943;</td><td>Race Series (3 Races)</td><td>~10m</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ SECTION 3: THEMED TEAMS ════ -->
+  <div class="section">
+    <div class="section-head">
+      <div class="section-num" style="background:rgba(192,132,252,0.15);color:var(--purple);">3</div>
+      <div>
+        <div class="section-title c-purple">Themed Teams (GAME_TEAMS)</div>
+        <div class="section-sub">6 themed teams per game &mdash; not countries!</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="themed-game"><div class="themed-game-title"><span>&#129312;</span> Wild West</div><div class="themed-teams"><span class="team-tag">Puff Bandits</span><span class="team-tag">Blinker Boys</span><span class="team-tag">Smoke Signal Posse</span><span class="team-tag">Cactus Cartel</span><span class="team-tag">Gold Rush Gang</span><span class="team-tag">Tumbleweeds</span></div></div>
+      <div class="themed-game"><div class="themed-game-title"><span>&#127922;</span> Russian Roulette</div><div class="themed-teams"><span class="team-tag">Lucky Lungs</span><span class="team-tag">Dead Man's Puff</span><span class="team-tag">Chamber of Smoke</span><span class="team-tag">Trigger Happy</span><span class="team-tag">Six Shooters</span><span class="team-tag">The Last Puff</span></div></div>
+      <div class="themed-game"><div class="themed-game-title"><span>&#127880;</span> Balloon Pop</div><div class="themed-teams"><span class="team-tag">Pop Stars</span><span class="team-tag">Burst Brigade</span><span class="team-tag">Helium Heroes</span><span class="team-tag">Cloud Poppers</span><span class="team-tag">Balloon Busters</span><span class="team-tag">Air Heads</span></div></div>
+      <div class="themed-game"><div class="themed-game-title"><span>&#127955;</span> Puff Pong</div><div class="themed-teams"><span class="team-tag">Spin Doctors</span><span class="team-tag">Net Ninjas</span><span class="team-tag">Paddle Punks</span><span class="team-tag">Smash Squad</span><span class="team-tag">Rally Rebels</span><span class="team-tag">Table Titans</span></div></div>
+      <div class="themed-game"><div class="themed-game-title"><span>&#127925;</span> Rhythm Puff</div><div class="themed-teams"><span class="team-tag">Beat Breathers</span><span class="team-tag">Rhythm Riders</span><span class="team-tag">Flow Masters</span><span class="team-tag">Groove Goblins</span><span class="team-tag">Tempo Tribe</span><span class="team-tag">Sync Squad</span></div></div>
+      <div class="themed-game"><div class="themed-game-title"><span>&#128170;</span> Tug of War</div><div class="themed-teams"><span class="team-tag">Iron Lungs</span><span class="team-tag">Pull Force</span><span class="team-tag">Drag Kings</span><span class="team-tag">Rope Burners</span><span class="team-tag">Tension Crew</span><span class="team-tag">Tug Lords</span></div></div>
+      <div class="themed-game"><div class="themed-game-title"><span>&#128163;</span> Hot Potato</div><div class="themed-teams"><span class="team-tag">Bomb Dodgers</span><span class="team-tag">Hot Hands</span><span class="team-tag">Fuse Runners</span><span class="team-tag">Blast Zone</span><span class="team-tag">Tick Tock Crew</span><span class="team-tag">Detonators</span></div></div>
+      <div class="themed-game"><div class="themed-game-title"><span>&#9994;</span> RPS</div><div class="themed-teams"><span class="team-tag">Stone Temple Puffers</span><span class="team-tag">Paper Trail Gang</span><span class="team-tag">Scissor Sensei</span><span class="team-tag">Blinker Dojo</span><span class="team-tag">Rock Solid Crew</span><span class="team-tag">Paper Chasers</span></div></div>
+      <div class="themed-game"><div class="themed-game-title"><span>&#127907;</span> Hooked</div><div class="themed-teams"><span class="team-tag">Reel Deal</span><span class="team-tag">Deep Divers</span><span class="team-tag">Hook Line Crew</span><span class="team-tag">Catch Kings</span><span class="team-tag">Bait Squad</span><span class="team-tag">Tide Chasers</span></div></div>
+      <div class="themed-game"><div class="themed-game-title"><span>&#127911;</span> Beat Drop</div><div class="themed-teams"><span class="team-tag">Bass Heads</span><span class="team-tag">Drop Squad</span><span class="team-tag">Frequency Freaks</span><span class="team-tag">Sub Sonic</span><span class="team-tag">Waveform Crew</span><span class="team-tag">Beat Bombers</span></div></div>
+      <div class="themed-game"><div class="themed-game-title"><span>&#9201;</span> Puff Clock</div><div class="themed-teams"><span class="team-tag">Clock Blockers</span><span class="team-tag">Time Bandits</span><span class="team-tag">Second Hand</span><span class="team-tag">Chrono Crew</span><span class="team-tag">Tick Tacticians</span><span class="team-tag">Hour Glass</span></div></div>
+      <div class="themed-game"><div class="themed-game-title"><span>&#127914;</span> Puff Limbo</div><div class="themed-teams"><span class="team-tag">Low Riders</span><span class="team-tag">Bend Masters</span><span class="team-tag">Limbo Kings</span><span class="team-tag">Bar Breakers</span><span class="team-tag">Flex Crew</span><span class="team-tag">Under Dogs</span></div></div>
+      <div class="themed-game"><div class="themed-game-title"><span>&#127943;</span> Puff Derby</div><div class="themed-teams"><span class="team-tag">Speed Puffs</span><span class="team-tag">Track Stars</span><span class="team-tag">Lane Blazers</span><span class="team-tag">Derby Demons</span><span class="team-tag">Finish Line Gang</span><span class="team-tag">Turbo Crew</span></div></div>
+    </div>
+  </div>
+
+  <!-- ════ SECTION 4: PRIZE STRUCTURE ════ -->
+  <div class="section">
+    <div class="section-head">
+      <div class="section-num" style="background:rgba(52,211,153,0.15);color:var(--green);">4</div>
+      <div>
+        <div class="section-title c-green">Prize Structure (Per Tournament)</div>
+        <div class="section-sub">Game-specific tournaments &mdash; label varies per game</div>
+      </div>
+    </div>
+
+    <div class="prize-grid">
+      <div class="prize-card" style="border-color:rgba(255,217,61,0.25);">
+        <div class="prize-icon">&#129351;</div>
+        <div class="prize-pts c-gold">30,000 pts</div>
+        <div class="prize-coins c-gold">+ 800 coins</div>
+        <div class="prize-label">Gold</div>
+      </div>
+      <div class="prize-card" style="border-color:rgba(192,132,252,0.2);">
+        <div class="prize-icon">&#129352;</div>
+        <div class="prize-pts c-purple">15,000 pts</div>
+        <div class="prize-coins c-purple">+ 400 coins</div>
+        <div class="prize-label">Silver</div>
+      </div>
+      <div class="prize-card" style="border-color:rgba(251,146,60,0.2);">
+        <div class="prize-icon">&#129353;</div>
+        <div class="prize-pts c-orange">7,500 pts</div>
+        <div class="prize-coins c-orange">+ 200 coins</div>
+        <div class="prize-label">Bronze</div>
+      </div>
+      <div class="prize-card" style="border-color:rgba(255,255,255,0.1);">
+        <div class="prize-icon" style="opacity:0.5;">4</div>
+        <div class="prize-pts c-dim" style="color:var(--dim);">3,000 pts</div>
+        <div class="prize-coins" style="color:var(--dim);">+ 100 coins</div>
+        <div class="prize-label">4th Place</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ SECTION 5: LIVE MATCHES ════ -->
+  <div class="section">
+    <div class="section-head">
+      <div class="section-num" style="background:rgba(255,77,141,0.15);color:var(--pink);">5</div>
+      <div>
+        <div class="section-title c-pink">Live Matches (WC Zone)</div>
+        <div class="section-sub">Simulated real-time match experience</div>
+      </div>
+    </div>
+
+    <div class="live-box">
+      <div class="live-badge"><div class="live-dot"></div> LIVE MATCH</div>
+
+      <div class="grid-2">
+        <div>
+          <div class="live-feature">
+            <div class="live-icon" style="background:rgba(52,211,153,0.15);color:var(--green);">&#9917;</div>
+            <div class="live-feature-text"><strong>Simulated Real-Time Matches</strong><span>Ball-by-ball action with realistic timing and pacing</span></div>
+          </div>
+          <div class="live-feature">
+            <div class="live-icon" style="background:rgba(255,217,61,0.15);color:var(--gold);">&#127183;</div>
+            <div class="live-feature-text"><strong>Live Events</strong><span>Goals, yellow/red cards, substitutions, halftime whistle</span></div>
+          </div>
+        </div>
+        <div>
+          <div class="live-feature">
+            <div class="live-icon" style="background:rgba(0,229,255,0.15);color:var(--cyan);">&#128065;</div>
+            <div class="live-feature-text"><strong>Viewer Count Simulation</strong><span>Dynamic viewer numbers that rise/fall with match intensity</span></div>
+          </div>
+          <div class="live-feature">
+            <div class="live-icon" style="background:rgba(192,132,252,0.15);color:var(--purple);">&#128197;</div>
+            <div class="live-feature-text"><strong>Next Event Preview</strong><span>Upcoming match cards with team info and kickoff countdown</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ FOOTER ════ -->
+  <div class="footer">
+    Mood Lab Arena &mdash; Tournament & World Cup System &bull; Infographic 08 &bull; Internal Dev Reference
+  </div>
+
+</div>
+</body>
+</html>

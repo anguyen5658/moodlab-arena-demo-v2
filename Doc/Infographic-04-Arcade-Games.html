@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mood Lab Arena — Arcade Games (16) · Infographic 04</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+  :root {
+    --bg: #0a0a0f;
+    --card-bg: #12121a;
+    --card-border: #1e1e2e;
+    --text: #e2e2e8;
+    --text-dim: #8888a0;
+    --text-bright: #ffffff;
+    --cyan: #00d4ff;
+    --gold: #ffd700;
+    --purple: #a855f7;
+    --orange: #ff8c00;
+    --red: #ef4444;
+    --pink: #f472b6;
+    --green: #22c55e;
+    --blue: #3b82f6;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, sans-serif;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+
+  .page {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 40px 24px 60px;
+  }
+
+  /* ── Header ── */
+  .header {
+    text-align: center;
+    margin-bottom: 48px;
+    position: relative;
+  }
+  .header::after {
+    content: '';
+    display: block;
+    width: 120px;
+    height: 3px;
+    background: linear-gradient(90deg, var(--cyan), var(--purple), var(--gold));
+    margin: 20px auto 0;
+    border-radius: 2px;
+  }
+  .header h1 {
+    font-size: clamp(28px, 4vw, 44px);
+    font-weight: 900;
+    letter-spacing: -1px;
+    background: linear-gradient(135deg, #fff 0%, #a0a0c0 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .header .subtitle {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-dim);
+    margin-top: 6px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+  .header .count-badge {
+    display: inline-block;
+    margin-top: 14px;
+    padding: 4px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    background: rgba(168, 85, 247, 0.15);
+    border: 1px solid rgba(168, 85, 247, 0.3);
+    color: var(--purple);
+  }
+
+  /* ── Legend ── */
+  .legend {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 36px;
+    padding: 14px 20px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text-dim);
+    font-weight: 500;
+  }
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+
+  /* ── Grid ── */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+
+  /* ── Game Card ── */
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 0;
+    overflow: hidden;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    position: relative;
+  }
+  .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+
+  /* Top accent bar */
+  .card-accent {
+    height: 4px;
+    width: 100%;
+  }
+
+  .card-body {
+    padding: 20px 22px 18px;
+  }
+
+  /* Card header row */
+  .card-head {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+  .card-emoji {
+    font-size: 36px;
+    line-height: 1;
+    flex-shrink: 0;
+    filter: drop-shadow(0 2px 6px rgba(0,0,0,0.4));
+  }
+  .card-title-area {
+    flex: 1;
+    min-width: 0;
+  }
+  .card-name {
+    font-size: 17px;
+    font-weight: 800;
+    color: var(--text-bright);
+    line-height: 1.2;
+  }
+  .card-code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    opacity: 0.5;
+    margin-left: 6px;
+  }
+
+  /* Meta row */
+  .card-meta {
+    display: flex;
+    gap: 8px;
+    margin-top: 6px;
+    flex-wrap: wrap;
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+  }
+  .badge-type {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.08);
+    color: var(--text);
+  }
+  .badge-players {
+    background: rgba(59,130,246,0.12);
+    border: 1px solid rgba(59,130,246,0.2);
+    color: #93bbfc;
+  }
+  .badge-time {
+    background: rgba(34,197,94,0.1);
+    border: 1px solid rgba(34,197,94,0.2);
+    color: #86efac;
+  }
+
+  /* Number badge top-right */
+  .card-num {
+    position: absolute;
+    top: 14px;
+    right: 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-dim);
+    opacity: 0.35;
+  }
+
+  /* Sections */
+  .card-section {
+    margin-top: 12px;
+  }
+  .card-section-title {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 5px;
+    opacity: 0.5;
+  }
+  .card-section p, .card-section li {
+    font-size: 12.5px;
+    color: var(--text);
+    line-height: 1.55;
+  }
+  .card-section ul {
+    list-style: none;
+    padding: 0;
+  }
+  .card-section li {
+    position: relative;
+    padding-left: 14px;
+  }
+  .card-section li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 7px;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    opacity: 0.6;
+  }
+
+  /* Puff control highlight */
+  .puff-box {
+    margin-top: 10px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.025);
+    border: 1px dashed rgba(255,255,255,0.08);
+  }
+  .puff-box .puff-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .puff-box .puff-label::before {
+    content: '💨';
+    font-size: 12px;
+  }
+  .puff-box p {
+    font-size: 12px;
+    color: var(--text);
+    line-height: 1.5;
+  }
+  .mono {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    background: rgba(255,255,255,0.06);
+    padding: 1px 5px;
+    border-radius: 4px;
+  }
+
+  /* Color-specific accents */
+  .c-cyan .card-accent { background: var(--cyan); }
+  .c-cyan .card-name { color: var(--cyan); }
+  .c-cyan li::before { background: var(--cyan); }
+  .c-cyan .puff-label { color: var(--cyan); }
+
+  .c-gold .card-accent { background: var(--gold); }
+  .c-gold .card-name { color: var(--gold); }
+  .c-gold li::before { background: var(--gold); }
+  .c-gold .puff-label { color: var(--gold); }
+
+  .c-purple .card-accent { background: var(--purple); }
+  .c-purple .card-name { color: var(--purple); }
+  .c-purple li::before { background: var(--purple); }
+  .c-purple .puff-label { color: var(--purple); }
+
+  .c-orange .card-accent { background: var(--orange); }
+  .c-orange .card-name { color: var(--orange); }
+  .c-orange li::before { background: var(--orange); }
+  .c-orange .puff-label { color: var(--orange); }
+
+  .c-red .card-accent { background: var(--red); }
+  .c-red .card-name { color: var(--red); }
+  .c-red li::before { background: var(--red); }
+  .c-red .puff-label { color: var(--red); }
+
+  .c-pink .card-accent { background: var(--pink); }
+  .c-pink .card-name { color: var(--pink); }
+  .c-pink li::before { background: var(--pink); }
+  .c-pink .puff-label { color: var(--pink); }
+
+  .c-green .card-accent { background: var(--green); }
+  .c-green .card-name { color: var(--green); }
+  .c-green li::before { background: var(--green); }
+  .c-green .puff-label { color: var(--green); }
+
+  .c-blue .card-accent { background: var(--blue); }
+  .c-blue .card-name { color: var(--blue); }
+  .c-blue li::before { background: var(--blue); }
+  .c-blue .puff-label { color: var(--blue); }
+
+  /* ── Footer ── */
+  .footer {
+    text-align: center;
+    margin-top: 48px;
+    padding-top: 24px;
+    border-top: 1px solid var(--card-border);
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+  .footer strong {
+    color: var(--text);
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 800px) {
+    .grid { grid-template-columns: 1fr; }
+    .page { padding: 24px 14px 40px; }
+  }
+
+  /* ── Print ── */
+  @media print {
+    body { background: #fff; color: #111; }
+    .card { break-inside: avoid; border-color: #ddd; background: #fafafa; }
+    .card:hover { transform: none; box-shadow: none; }
+    .header h1 { -webkit-text-fill-color: #111; background: none; }
+    .card-name { -webkit-text-fill-color: initial !important; }
+    .puff-box { border-style: solid; }
+    .footer { border-color: #ccc; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Header -->
+  <header class="header">
+    <h1>MOOD LAB ARENA &mdash; Arcade Games (16)</h1>
+    <div class="subtitle">Developer Guide &middot; Infographic 04</div>
+    <div class="count-badge">16 GAMES &middot; 7 GENRES &middot; 1&ndash;100+ PLAYERS</div>
+  </header>
+
+  <!-- Legend -->
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--cyan)"></div>Skill</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--gold)"></div>Precision</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--purple)"></div>3D / Strategy / Rhythm</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--orange)"></div>Luck</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div>Luck (High Stakes)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--pink)"></div>Strategy</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>Realtime Skill</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div>Team / Solo</div>
+  </div>
+
+  <!-- Game Grid -->
+  <div class="grid">
+
+    <!-- 1. Final Kick -->
+    <div class="card c-cyan">
+      <div class="card-accent"></div>
+      <div class="card-body">
+        <div class="card-num">#01</div>
+        <div class="card-head">
+          <div class="card-emoji">&#9917;</div>
+          <div class="card-title-area">
+            <div class="card-name">Final Kick <span class="card-code">FK1</span></div>
+            <div class="card-meta">
+              <span class="badge badge-type">Skill</span>
+              <span class="badge badge-players">2P</span>
+              <span class="badge badge-time">1-2m</span>
+            </div>
+          </div>
+        </div>
+        <div class="card-section">
+          <div class="card-section-title">Game Flow</div>
+          <ul>
+            <li>Choose zone (tap 3&times;2 grid) &rarr; Hold puff for power &rarr; Ball flies</li>
+            <li>AI keeper dives to block. Best of 5 rounds</li>
+            <li>Save phase: Keeper POV &rarr; Swipe/tap to dive direction</li>
+            <li>Sweet spot puff = perfect kick with max accuracy</li>
+          </ul>
+        </div>
+        <div class="puff-box">
+          <div class="puff-label">Puff Control</div>
+          <p>Hold puff to charge shot power. Sweet spot zone gives perfect accuracy. Tap grid to aim, then puff to execute.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Final Kick 2 -->
+    <div class="card c-gold">
+      <div class="card-accent"></div>
+      <div class="card-body">
+        <div class="card-num">#02</div>
+        <div class="card-head">
+          <div class="card-emoji">&#9917;&#128293;</div>
+          <div class="card-title-area">
+            <div class="card-name">Final Kick 2 <span class="card-code">FK2</span></div>
+            <div class="card-meta">
+              <span class="badge badge-type">Precision</span>
+              <span class="badge badge-players">2P</span>
+              <span class="badge badge-time">2-3m</span>
+            </div>
+          </div>
+        </div>
+        <div class="card-section">
+          <div class="card-section-title">Game Flow</div>
+          <ul>
+            <li>Puff 1 sets X-axis &rarr; Puff 2 sets Y-axis &rarr; Zone = X+Y</li>
+            <li>X: <span class="mono">0-33%=L</span> <span class="mono">34-66%=C</span> <span class="mono">67-100%=R</span></li>
+            <li>Y: <span class="mono">0-50%=Bottom</span> <span class="mono">51-100%=Top</span></li>
+            <li>OOB: <span class="mono">X&lt;10% or X&gt;90%</span> = wide, <span class="mono">Y&gt;95%</span> = over bar</li>
+          </ul>
+        </div>
+        <div class="puff-box">
+          <div class="puff-label">Puff Control</div>
+          <p>Double-puff system: first puff = horizontal aim (X-axis %), second puff = vertical aim (Y-axis %). Precision determines zone placement.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. Final Kick 3D -->
+    <div class="card c-purple">
+      <div class="card-accent"></div>
+      <div class="card-body">
+        <div class="card-num">#03</div>
+        <div class="card-head">
+          <div class="card-emoji">&#9917;&#127760;</div>
+          <div class="card-title-area">
+            <div class="card-name">Final Kick 3D <span class="card-code">FK3</span></div>
+            <div class="card-meta">
+              <span class="badge badge-type">3D Precision</span>
+              <span class="badge badge-players">2P</span>
+              <span class="badge badge-time">2-3m</span>
+            </div>
+          </div>
+        </div>
+        <div class="card-section">
+          <div class="card-section-title">Game Flow</div>
+          <ul>
+            <li>Three.js 3D behind-the-ball camera perspective</li>
+            <li>Double puff (X+Y) mapped into 3D perspective</li>
+            <li>Save phase: 3D keeper POV with glove movement</li>
+            <li>Full 3D rendering with stadium environment</li>
+          </ul>
+        </div>
+        <div class="puff-box">
+          <div class="puff-label">Puff Control</div>
+          <p>Same double-puff X+Y as FK2, but rendered in full 3D. Puff aiming translates to 3D ball trajectory behind the ball.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. Hot Potato -->
+    <div class="card c-orange">
+      <div class="card-accent"></div>
+      <div class="card-body">
+        <div class="card-num">#04</div>
+        <div class="card-head">
+          <div class="card-emoji">&#128163;</div>
+          <div class="card-title-area">
+            <div class="card-name">Hot Potato</div>
+            <div class="card-meta">
+              <span class="badge badge-type">Luck</span>
+              <span class="badge badge-players">3-8P</span>
+              <span class="badge badge-time">1-3m</span>
+            </div>
+          </div>
+        </div>
+        <div class="card-section">
+          <div class="card-section-title">Game Flow</div>
+          <ul>
+            <li>Bomb jumps between players, hidden countdown timer</li>
+            <li>Timer decreases each round &mdash; tension rises</li>
+            <li>Last player alive wins</li>
+            <li>Visual: fuse burning + explosion particle FX</li>
+          </ul>
+        </div>
+        <div class="puff-box">
+          <div class="puff-label">Puff Control</div>
+          <p>Puff to pass the bomb to the next player as fast as possible. Faster puff = quicker pass. Don't hold the bomb when it blows!</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. Russian Roulette -->
+    <div class="card c-red">
+      <div class="card-accent"></div>
+      <div class="card-body">
+        <div class="card-num">#05</div>
+        <div class="card-head">
+          <div class="card-emoji">&#127922;</div>
+          <div class="card-title-area">
+            <div class="card-name">Russian Roulette</div>
+            <div class="card-meta">
+              <span class="badge badge-type">Luck</span>
+              <span class="badge badge-players">2-6P</span>
+              <span class="badge badge-time">1-2m</span>
+            </div>
+          </div>
+        </div>
+        <div class="card-section">
+          <div class="card-section-title">Game Flow</div>
+          <ul>
+            <li>6 chambers, 1 bullet. Take turns pulling trigger</li>
+            <li>Cylinder spins between turns for randomness</li>
+            <li>Power puff = dodge mechanic (reduces hit chance)</li>
+            <li>Tension meter + heartbeat visualization FX</li>
+          </ul>
+        </div>
+        <div class="puff-box">
+          <div class="puff-label">Puff Control</div>
+          <p>Puff to pull the trigger. Power puff activates dodge (reduced hit chance). Tension meter builds with heartbeat visual.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6. Wild West Duel -->
+    <div class="card c-gold">
+      <div class="card-accent"></div>
+      <div class="card-body">
+        <div class="card-num">#06</div>
+        <div class="card-head">
+          <div class="card-emoji">&#129312;</div>
+          <div class="card-title-area">
+            <div class="card-name">Wild West Duel</div>
+            <div class="card-meta">
+              <span class="badge badge-type">Reaction</span>
+              <span class="badge badge-players">2P</span>
+              <span class="badge badge-time">1-2m</span>
+            </div>
+          </div>
+        </div>
+        <div class="card-section">
+          <div class="card-section-title">Game Flow</div>
+          <ul>
+            <li>Best of 5 rounds. Staredown phase builds tension</li>
+            <li>"DRAW!" prompt &rarr; puff fastest wins. Reaction in ms</li>
+            <li>Puff meter fills for bonus score multiplier</li>
+            <li>AI opponents speed range: <span class="mono">280-450ms</span></li>
+          </ul>
+        </div>
+        <div class="puff-box">
+          <div class="puff-label">Puff Control</div>
+          <p>Wait for "DRAW!" then puff as fast as possible. Reaction time measured in ms. Stronger puff = bonus multiplier on hit.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 7. Balloon Pop -->
+    <div class="card c-pink">
+      <div class="card-accent"></div>
+      <div class="card-body">
+        <div class="card-num">#07</div>
+        <div class="card-head">
+          <div class="card-emoji">&#127880;</div>
+          <div class="card-title-area">
+            <div class="card-name">Balloon Pop</div>
+            <div class="card-meta">
+              <span class="badge badge-type">Strategy</span>
+              <span class="badge badge-players">2-8P</span>
+              <span class="badge badge-time">1-3m</span>
+            </div>
+          </div>
+        </div>
+        <div class="card-section">
+          <div class="card-section-title">Game Flow</div>
+          <ul>
+            <li>Hidden pop threshold (random each round)</li>
+            <li>Hold puff = inflate balloon. Release = stop</li>
+            <li>Min puff = 5 units per turn (must commit!)</li>
+            <li>Balloon color shifts with danger level</li>
+          </ul>
+        </div>
+        <div class="puff-box">
+          <div class="puff-label">Puff Control</div>
+          <p>Hold puff to inflate the balloon. Release to stop. Minimum 5 units per turn required. Pop = eliminated. Risk vs. reward each turn.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 8. Puff Pong -->
+    <div class="card c-green">
+      <div class="card-accent"></div>
+      <div class="card-body">
+        <div class="card-num">#08</div>
+        <div class="card-head">
+          <div class="card-emoji">&#127955;</div>
+          <div class="card-title-area">
+            <div class="card-name">Puff Pong</div>
+            <div class="card-meta">
+              <span class="badge badge-type">Skill</span>
+              <span class="badge badge-players">2P</span>
+              <span class="badge badge-time">1-2m</span>
+            </div>
+          </div>
+        </div>
+        <div class="card-section">
+          <div class="card-section-title">Game Flow</div>
+          <ul>
+            <li>Real-time pong running at 60fps</li>
+            <li>Rally counter &mdash; speed increases with rallies</li>
+            <li>Smash shots available for power returns</li>
+            <li>Trail effects and ball glow on speed-up</li>
+          </ul>
+        </div>
+        <div class="puff-box">
+          <div class="puff-label">Puff Control</div>
+          <p>Puff = move paddle up. Release = gravity pulls paddle down. Continuous breath control for positioning. Timing is everything.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 9. Rhythm Puff -->
+    <div class="card c-purple">
+      <div class="card-accent"></div>
+      <div class="card-body">
+        <div class="card-num">#09</div>
+        <div class="card-head">
+          <div class="card-emoji">&#127925;</div>
+          <div class="card-title-area">
+            <div class="card-name">Rhythm Puff</div>
+            <div class="card-meta">
+              <span class="badge badge-type">Rhythm</span>
+              <span class="badge badge-players">1-4P</span>
+              <span class="badge badge-time">1-3m</span>
+            </div>
+          </div>
+        </div>
+        <div class="card-section">
+          <div class="card-section-title">Game Flow</div>
+          <ul>
+            <li>3 lanes, notes fall from top. Puff on beat to score</li>
+            <li>Combo multiplier: <span class="mono">1&times; &rarr; 10&times;+</span></li>
+            <li>Ratings: Perfect / Good / Miss per note</li>
+            <li>Blinker = mega note bonus. Speed ramps up</li>
+          </ul>
+        </div>
+        <div class="puff-box">
+          <div class="puff-label">Puff Control</div>
+          <p>Puff in time with falling notes across 3 lanes. Precision timing = Perfect rating. Combo builds multiplier. Blinker triggers mega bonus.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 10. Tug of War -->
+    <div class="card c-blue">
+      <div class="card-accent"></div>
+      <div class="card-body">
+        <div class="card-num">#10</div>
+        <div class="card-head">
+          <div class="card-emoji">&#128170;</div>
+          <div class="card-title-area">
+            <div class="card-name">Tug of War</div>
+            <div class="card-meta">
+              <span class="badge badge-type">Team</span>
+              <span class="badge badge-players">2-8P</span>
+              <span class="badge badge-time">30s-1m</span>
+            </div>
+          </div>
+        </div>
+        <div class="card-section">
+          <div class="card-section-title">Game Flow</div>
+          <ul>
+            <li>Position range: <span class="mono">0&ndash;100</span> (50 = center)</li>
+            <li>Surge mechanic &mdash; save up for power burst</li>
+            <li>30s timer. Sudden death if tied at end</li>
+            <li>Rope strain visual + crowd hype meter FX</li>
+          </ul>
+        </div>
+        <div class="puff-box">
+          <div class="puff-label">Puff Control</div>
+          <p>Spam puff to pull rope toward your side. Faster puffs = more force. Surge mechanic stores energy for a power burst release.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 11. Hooked -->
+    <div class="card c-blue">
+      <div class="card-accent"></div>
+      <div class="card-body">
+        <div class="card-num">#11</div>
+        <div class="card-head">
+          <div class="card-emoji">&#127907;</div>
+          <div class="card-title-area">
+            <div class="card-name">Hooked</div>
+            <div class="card-meta">
+              <span class="badge badge-type">Skill</span>
+              <span class="badge badge-players">1P</span>
+              <span class="badge badge-time">2-5m</span>
+            </div>
+          </div>
+        </div>
+        <div class="card-section">
+          <div class="card-section-title">Game Flow</div>
+          <ul>
+            <li>Fish tiers: Common <span class="mono">&#128031; 10pts</span> &middot; Rare <span class="mono">&#127887; 25pts</span> &middot; Legend <span class="mono">&#128009; 60pts</span></li>
+            <li>Zone-based catching &mdash; keep fish in catch zone</li>
+            <li>Watch line tension! Snap = lost fish</li>
+            <li>8 fish types with unique movement behaviors</li>
+          </ul>
+        </div>
+        <div class="puff-box">
+          <div class="puff-label">Puff Control</div>
+          <p>Puff = reel in (suction force). Manage puff intensity to control line tension. Too hard = line snaps. Keep fish in catch zone to land them.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 12. Puff RPS -->
+    <div class="card c-purple">
+      <div class="card-accent"></div>
+      <div class="card-body">
+        <div class="card-num">#12</div>
+        <div class="card-head">
+          <div class="card-emoji">&#9994;</div>
+          <div class="card-title-area">
+            <div class="card-name">Puff RPS</div>
+            <div class="card-meta">
+              <span class="badge badge-type">Strategy</span>
+              <span class="badge badge-players">2P</span>
+              <span class="badge badge-time">1-2m</span>
+            </div>
+          </div>
+        </div>
+        <div class="card-section">
+          <div class="card-section-title">Game Flow</div>
+          <ul>
+            <li>Choose Rock / Paper / Scissors</li>
+            <li>Then puff for power &mdash; bonus points on win</li>
+            <li>Best of 5. Streak bonus for consecutive wins</li>
+            <li>6 AI opponents with different play styles</li>
+          </ul>
+        </div>
+        <div class="puff-box">
+          <div class="puff-label">Puff Control</div>
+          <p>After choosing R/P/S, puff determines power level. Stronger puff = more bonus points when you win. Streak bonus stacks.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 13. Beat Drop -->
+    <div class="card c-purple">
+      <div class="card-accent"></div>
+      <div class="card-body">
+        <div class="card-num">#13</div>
+        <div class="card-head">
+          <div class="card-emoji">&#127911;</div>
+          <div class="card-title-area">
+            <div class="card-name">Beat Drop</div>
+            <div class="card-meta">
+              <span class="badge badge-type">Music</span>
+              <span class="badge badge-players">1P</span>
+              <span class="badge badge-time">3-5m</span>
+            </div>
+          </div>
+        </div>
+        <div class="card-section">
+          <div class="card-section-title">Game Flow</div>
+          <ul>
+            <li>Music builds toward a beat drop moment</li>
+            <li>Hold puff continuously through the build-up</li>
+            <li>Release puff on the exact beat drop for max score</li>
+            <li>Early/late release = point penalties</li>
+          </ul>
+        </div>
+        <div class="puff-box">
+          <div class="puff-label">Puff Control</div>
+          <p>Hold a continuous puff through the build-up. Release at the exact beat drop moment. Timing precision determines score. Penalties for early/late.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 14. Puff Clock -->
+    <div class="card c-gold">
+      <div class="card-accent"></div>
+      <div class="card-body">
+        <div class="card-num">#14</div>
+        <div class="card-head">
+          <div class="card-emoji">&#9201;</div>
+          <div class="card-title-area">
+            <div class="card-name">Puff Clock</div>
+            <div class="card-meta">
+              <span class="badge badge-type">Precision</span>
+              <span class="badge badge-players">1-100+P</span>
+              <span class="badge badge-time">3-5m</span>
+            </div>
+          </div>
+        </div>
+        <div class="card-section">
+          <div class="card-section-title">Game Flow</div>
+          <ul>
+            <li>Target: puff for exactly X seconds (no display)</li>
+            <li>Results show <span class="mono">&plusmn; deviation</span> from target</li>
+            <li><span class="mono">4.20s</span> round = special! Worth double points</li>
+            <li>Leaderboard: closest to target time wins</li>
+          </ul>
+        </div>
+        <div class="puff-box">
+          <div class="puff-label">Puff Control</div>
+          <p>Hold puff for a precise duration matching the target time. No timer visible. Internal clock only. Closest to target wins. Supports 100+ players.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 15. Puff Limbo -->
+    <div class="card c-orange">
+      <div class="card-accent"></div>
+      <div class="card-body">
+        <div class="card-num">#15</div>
+        <div class="card-head">
+          <div class="card-emoji">&#127914;</div>
+          <div class="card-title-area">
+            <div class="card-name">Puff Limbo</div>
+            <div class="card-meta">
+              <span class="badge badge-type">Endurance</span>
+              <span class="badge badge-players">1-50P</span>
+              <span class="badge badge-time">3-5m</span>
+            </div>
+          </div>
+        </div>
+        <div class="card-section">
+          <div class="card-section-title">Game Flow</div>
+          <ul>
+            <li>Round 1: <span class="mono">3.0s</span> puff target duration</li>
+            <li>Progression: <span class="mono">3.0 &rarr; 3.5 &rarr; 4.0 &rarr; 4.2 &rarr; 4.5 &rarr; 4.7 &rarr; 5.0s</span></li>
+            <li>Fall short of target = eliminated</li>
+            <li>Final round <span class="mono">5.0s</span> = BLINKER territory!</li>
+          </ul>
+        </div>
+        <div class="puff-box">
+          <div class="puff-label">Puff Control</div>
+          <p>Hold puff for at least the target duration each round. Rounds get progressively longer. Fail to hold long enough = eliminated. Endurance test!</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 16. Puff Derby -->
+    <div class="card c-green">
+      <div class="card-accent"></div>
+      <div class="card-body">
+        <div class="card-num">#16</div>
+        <div class="card-head">
+          <div class="card-emoji">&#127943;</div>
+          <div class="card-title-area">
+            <div class="card-name">Puff Derby</div>
+            <div class="card-meta">
+              <span class="badge badge-type">Racing</span>
+              <span class="badge badge-players">6P</span>
+              <span class="badge badge-time">2-3m</span>
+            </div>
+          </div>
+        </div>
+        <div class="card-section">
+          <div class="card-section-title">Game Flow</div>
+          <ul>
+            <li>Pick 1 of 6 horses before race starts</li>
+            <li>Spam puff to make your horse run faster</li>
+            <li>Watch stamina meter &mdash; burnout slows you down</li>
+            <li>3 races total. Cumulative position = final rank</li>
+          </ul>
+        </div>
+        <div class="puff-box">
+          <div class="puff-label">Puff Control</div>
+          <p>Rapid puffs = horse speed. But watch stamina! Over-puffing causes burnout. Pace your puffs across 3 races for best total rank.</p>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /grid -->
+
+  <!-- Footer -->
+  <div class="footer">
+    <strong>Mood Lab Arena</strong> &middot; Infographic 04 &middot; Arcade Games Reference &middot; 16 Games &middot; Dev Team Meeting
+    <br>Generated 2026-03-27
+  </div>
+
+</div><!-- /page -->
+</body>
+</html>

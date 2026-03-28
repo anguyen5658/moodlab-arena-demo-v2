@@ -1775,7 +1775,7 @@ export default function MoodLabArena() {
   useEffect(() => { const t=setInterval(()=>setMainStage(p=>(p+1)%3),5000); return()=>clearInterval(t); }, []);
   // Fortune jackpot growing + lucky hour system
   useEffect(()=>{if(tick%30===0)setFortuneJackpot(j=>j+Math.floor(Math.random()*50)+10);},[tick]);
-  useEffect(()=>{if(tick%300===0&&Math.random()<0.1)setFortuneLuckyHour(true);if(fortuneLuckyHour&&tick%3600===0)setFortuneLuckyHour(false);},[tick,fortuneLuckyHour]);
+  useEffect(()=>{if(tick%300===0&&Math.random()<0.1){setFortuneLuckyHour(true);playFx("lucky_hour");}if(fortuneLuckyHour&&tick%3600===0)setFortuneLuckyHour(false);},[tick,fortuneLuckyHour]);
   // tickerOffset now driven by CSS animation (tickerScroll) — no React re-renders
 
   // ── Live Spectator Engine ──
@@ -2674,7 +2674,7 @@ export default function MoodLabArena() {
       const bot=CHAT_BOTS[Math.floor(Math.random()*CHAT_BOTS.length)];
       const msg=CHAT_MSGS[Math.floor(Math.random()*CHAT_MSGS.length)];
       const colors=[C.pink,C.cyan,C.gold,C.purple,C.orange,C.green];
-      setChatMessages(p=>[...p.slice(-20),{u:bot,m:msg,c:colors[Math.floor(Math.random()*colors.length)],t:Date.now()}]);
+      setChatMessages(p=>[...p.slice(-20),{u:bot,m:msg,c:colors[Math.floor(Math.random()*colors.length)],t:Date.now()}]); playFx("chat_message");
     }, 4000+Math.random()*3000);
     return()=>clearInterval(i);
   }, []);
@@ -2794,7 +2794,7 @@ export default function MoodLabArena() {
     setTimeout(()=>{
       setDuelIntroStage("go");
       setCommentary("DUEL! May the fastest draw win!");
-      triggerFlash("goal"); playFx("crowd");
+      triggerFlash("goal"); playFx("countdown_go"); playFx("crowd");
     },4500);
     setTimeout(()=>{
       setDuelIntroStage(null);
@@ -2991,6 +2991,7 @@ export default function MoodLabArena() {
     const result = {win, you:reactionMs, ai:aiTime, puffDur:puffDuration, bonus, bonusCoins, bonusLabel};
     setDuelResult(result);
     setDuelPhase("result");
+    playFx("gunshot");
 
     // Muzzle flash
     if(win) { setDuelMuzzleFlash("left"); } else { setDuelMuzzleFlash("right"); }
@@ -3225,6 +3226,10 @@ export default function MoodLabArena() {
         case "success":
           tone(523, "sine", 0, 0.1, 0.1);
           tone(784, "sine", 0.08, 0.15, 0.1);
+          break;
+        case "puff":
+          tone(80, "sawtooth", 0, 0.15, 0.12);
+          noise(0, 0.15, 0.06);
           break;
         case "miss":
           tone(300, "sawtooth", 0, 0.1, 0.08, 150);
@@ -4436,6 +4441,7 @@ export default function MoodLabArena() {
     if(hookGameLoop.current){clearInterval(hookGameLoop.current);hookGameLoop.current=null;}
   };
   const hookCastLine = () => {
+    playFx("fishing_cast");
     setHookPhase("waiting");setHookComment("Line in the water... wait for a bite! 🎣");setHookFish(null);
     setHookCatchProgress(0);setHookLineTension(0);setHookEscapeTimer(0);setHookSuction(0);
     hookSuctionRef.current=0;setHookInZoneTime(0);setHookTotalBiteTime(0);
@@ -4511,7 +4517,7 @@ export default function MoodLabArena() {
       triggerFlash("miss");playFx("error");return;
     }
     if(hookPhase!=="bite") return;
-    hookHoldingRef.current=true;setHookHolding(true);
+    hookHoldingRef.current=true;setHookHolding(true);playFx("fishing_reel");
   };
   const hookStopPuff = () => {
     hookHoldingRef.current=false;setHookHolding(false);
@@ -4555,7 +4561,7 @@ export default function MoodLabArena() {
     setTimeout(()=>{
       setMatchIntro({stage:"go",count:0});
       setCommentary("⚽ KICK OFF! Let the game begin!");
-      triggerFlash("goal"); playFx("crowd");
+      triggerFlash("goal"); playFx("countdown_go"); playFx("crowd");
     },4500);
     setTimeout(()=>setMatchIntro(null),5200);
   };
@@ -4829,7 +4835,7 @@ export default function MoodLabArena() {
         if(isGoal) {
           setKickScore(s=>({...s,you:s.you+1}));
           setKickStats(s=>({...s,goals:s.goals+1,perfects:bothSweet?s.perfects+1:s.perfects}));
-          playFx("win"); playFx("crowd"); triggerFlash("goal"); triggerShake(); spawnConfetti(40); spawnSmoke(5);
+          playFx("win"); playFx("crowd"); if(gameActive?.wcMode) playFx("vuvuzela"); triggerFlash("goal"); triggerShake(); spawnConfetti(40); spawnSmoke(5);
           if(bothSweet) setCommentary(pick(["WHAT A GOAL! DOUBLE PRECISION! 🎯🎯","TOP BINS! Both axes PERFECT!","CLINICAL! The crowd erupts!","DOUBLE PUFF MASTERY! UNSTOPPABLE! 🔥","Surgeon-level aim on BOTH axes! 💉","X-Y PERFECT! The keeper had NO CHANCE!"]));
           else setCommentary(pick(["GOAL! Good aim!","It's in! The keeper couldn't reach it!","GOLAZO! Nice placement!"]));
         } else {
@@ -4966,7 +4972,7 @@ export default function MoodLabArena() {
         const pts = bonusMult;
         setKickScore(s=>({...s, you:s.you+pts}));
         setKickStats(s=>({...s, goals:s.goals+1, perfects:puffZone==="perfect"?s.perfects+1:s.perfects}));
-        playFx("win"); playFx("crowd");
+        playFx("win"); playFx("crowd"); if(gameActive?.wcMode) playFx("vuvuzela");
         triggerFlash("goal"); triggerShake(); spawnConfetti(40); spawnSmoke(5);
         setCommentary(pick(["WHAT A GOAL! The stadium ERUPTS! 🏟️🔥","The net RIPPLES! Keeper is STUNNED!","CLINICAL FINISH! The crowd goes WILD!","TOP BINS! Absolute SCENES in the stadium! 📸"]));
         const bonusTag = kickBonusActive ? " (×2 BONUS! 💰)" : "";
@@ -5173,7 +5179,7 @@ export default function MoodLabArena() {
     const mult = pool.rewardMult;
     const isWc = gameActive?.wcMode;
     let reward = 0;
-    if(kickScore.you > kickScore.ai) { reward = Math.round((isWc ? 20 : 80) * mult); notify(`⚽ YOU WIN! +${reward} coins!`,C.green); playFx("win"); }
+    if(kickScore.you > kickScore.ai) { reward = Math.round((isWc ? 20 : 80) * mult); notify(`⚽ YOU WIN! +${reward} coins!`,C.green); playFx("win"); if(isWc) playFx("goal_horn"); }
     else if(kickScore.you < kickScore.ai) { reward = Math.round((isWc ? 5 : 10) * mult); notify(`😢 +${reward} coins`,C.red); playFx("lose"); }
     else { reward = Math.round((isWc ? 10 : 30) * mult); notify(`🤝 Draw! +${reward} coins`,C.gold); }
     setCoins(c=>c+reward);
@@ -5307,7 +5313,7 @@ export default function MoodLabArena() {
 
   const wcStartGroupMatch = (matchIdx) => {
     if(!wcTournament || wcTournament.groupMatches[matchIdx].played) return;
-    playFx("select");
+    playFx("select"); playFx("referee_whistle");
     // Start game — store context for callback
     const opp = wcTournament.groupMatches[matchIdx].opp;
     kickOpponent.current = {
@@ -5418,7 +5424,7 @@ export default function MoodLabArena() {
 
   const wcStartKnockoutMatch = () => {
     if(!wcBracket || wcBracket.currentRound >= wcBracket.rounds.length) return;
-    playFx("select");
+    playFx("select"); playFx("referee_whistle");
     const opp = wcBracket.opponents[wcBracket.currentRound];
     kickOpponent.current = {
       name: opp.name,
@@ -5821,6 +5827,7 @@ export default function MoodLabArena() {
       setSwSpinning(false);
       setSwRound(currentRound);
       setSwPhase("result");
+      playFx("wheel_stop");
 
       if(prize.label === "BUST") {
         setSwShowBust(true);
@@ -6170,7 +6177,7 @@ export default function MoodLabArena() {
     const zoneMap = {arcade:Z.arcade,stage:Z.stage,oracle:Z.oracle,wall:Z.wall,worldcup:Z.worldcup};
     const z = zoneMap[viewKey];
     if (!z) return null;
-    const enterZone = viewKey === "worldcup" ? ()=>{playFx("nav");setZone("worldcup");setArenaView("worldcup");} : ()=>{playFx("nav");setZone(viewKey);setArenaView("hub");};
+    const enterZone = viewKey === "worldcup" ? ()=>{playFx("nav");playFx("stadium_roar");setZone("worldcup");setArenaView("worldcup");} : ()=>{playFx("nav");setZone(viewKey);setArenaView("hub");};
 
     return (
       <div style={{position:"fixed",inset:0,overflow:"hidden"}}>
@@ -7666,7 +7673,7 @@ export default function MoodLabArena() {
       setSelectedGame(g);
     };
     const startShowGame = (g) => {
-      showMC("intro", {show:g.name});
+      showMC("intro", {show:g.name}); playFx("show_intro");
       if(g.id==="vibecheck"){setGameActive({id:"vibecheck",name:"Vibe Check",emoji:"🧠",color:C.gold});vcStartGame();}
       // spinwin moved to Fortune
       else if(g.id==="higherlower"){setGameActive({id:"higherlower",name:"Higher or Lower",emoji:"📊",color:C.cyan});startHigherLower();}
@@ -8238,7 +8245,7 @@ export default function MoodLabArena() {
     setTimeout(()=>{
       // Check for natural blackjack
       if(pTotal===21) {
-        setCommentary("BLACKJACK! Natural 21!");
+        setCommentary("BLACKJACK! Natural 21!"); playFx("blackjack");
         bjResolve(pHand,dHand,true);
       } else {
         setBjPhase("player_turn");
@@ -8321,7 +8328,7 @@ export default function MoodLabArena() {
     let result,winAmt=0;
     if(isNatural&&pTotal===21) {
       if(dTotal===21){result="push";setCommentary("Both Blackjack! Push!");}
-      else{result="blackjack";winAmt=Math.floor(bet*2.5);setCommentary("BLACKJACK! 2.5x payout!");spawnConfetti(40);triggerFlash("goal");}
+      else{result="blackjack";winAmt=Math.floor(bet*2.5);setCommentary("BLACKJACK! 2.5x payout!");playFx("blackjack");spawnConfetti(40);triggerFlash("goal");}
     } else if(pTotal>21) {
       result="bust";setCommentary("BUST! You lose "+bet);
     } else if(dTotal>21) {
@@ -8444,6 +8451,7 @@ export default function MoodLabArena() {
     setCrapsPuffing(true);
     crapsPuffStart.current = Date.now();
     setCrapsRolling(true);
+    playFx("dice_shake");
     setCommentary("Rolling...");
   };
   const crapsHandlePuffEnd = () => {
@@ -8832,7 +8840,7 @@ export default function MoodLabArena() {
       }
     } else if(tileType==="bomb") {
       setTmBombs(b=>b+1);
-      playFx("whistle");triggerFlash("red");
+      playFx("bomb_hit");triggerFlash("red");
       const lostCoins = Math.floor(tmCoins/2);
       setCommentary("BOOM! Lost "+lostCoins+" coins!");
       setTmGameOver(true);
@@ -10401,7 +10409,7 @@ export default function MoodLabArena() {
       }
       setRpsResult(result);
       setRpsPointsAwarded(pts);
-      setRpsStreak(prev => result==="win" ? prev+1 : 0); // use updater to avoid stale closure
+      setRpsStreak(prev => { const ns = result==="win" ? prev+1 : 0; if(ns===5) playFx("streak_fire"); return ns; }); // use updater to avoid stale closure
       setRpsScore(prev => {
         const ns = {...prev};
         if(result==="win") ns.you += pts;
@@ -10572,6 +10580,7 @@ export default function MoodLabArena() {
     stTimerRef.current = setInterval(()=>{
       t--;
       setStTimer(t);
+      if(t<=3 && t>0) playFx("timer_urgent");
       if(t<=0){
         clearInterval(stTimerRef.current);
         stTimerRef.current=null;
@@ -10613,9 +10622,10 @@ export default function MoodLabArena() {
 
     if(isCorrect) {
       setStStreak(s=>s+1);
+      if(stStreak+1===5) playFx("streak_fire");
       const msg = ST_SURVIVE_MSGS[Math.floor(Math.random()*ST_SURVIVE_MSGS.length)];
       setStComment(msg);
-      playFx("correct_ding");
+      playFx("correct_ding"); if(eliminated>=10) playFx("crowd_ooh");
       setCommentary(eliminated+" players eliminated! "+newAlive+" remain.");
       const streakBonus = (stStreak+1) >= 5 ? 50 : (stStreak+1) >= 3 ? 25 : 10;
       setCoins(c=>c+streakBonus);
@@ -10624,10 +10634,11 @@ export default function MoodLabArena() {
       elimRound(100);
     } else {
       setStEliminated(true);
+      if(stStreak>=2) playFx("streak_break");
       setStStreak(0);
       const msg = ST_DEATH_MSGS[Math.floor(Math.random()*ST_DEATH_MSGS.length)];
       setStComment(msg);
-      playFx("eliminated");
+      playFx("eliminated"); playFx("crowd_gasp");
       triggerFlash("miss");
       setCommentary("YOU HAVE BEEN ELIMINATED!");
       if(stageRole) showMC("wrong");
@@ -10642,7 +10653,7 @@ export default function MoodLabArena() {
       if(newAlive <= 1) {
         setStPhase("winner");
         setStComment("YOU ARE THE LAST ONE STANDING!");
-        playFx("crowd");
+        playFx("reveal_drumroll"); playFx("crowd");
         triggerFlash("goal");
         setCoins(c=>c+500);
         notify("SOLE SURVIVOR! +500 coins!",C.gold);
@@ -10754,7 +10765,7 @@ export default function MoodLabArena() {
       setCoins(c=>c+420);
       notify("PERFECT 4.20! +420 coins!",C.gold);
       triggerFlash("goal");
-      playFx("crowd");
+      playFx("crowd"); playFx("achievement");
     }
 
     setPcResults(prev=>[...prev,roundResult]);
@@ -10915,6 +10926,7 @@ export default function MoodLabArena() {
     setBdFakeDropped(false);
     setBdPhase("building");
     setCommentary("Song " + (roundNum + 1) + ": " + song.name + " -- BUILDING...");
+    playFx("beat_buildup");
     bdPlayBuildAudio(buildTime);
     const startT = Date.now();
     bdBuildInterval.current = setInterval(() => {
@@ -10992,7 +11004,7 @@ export default function MoodLabArena() {
       if (diff <= 0.2) { pts = 100; label = "PERFECT -- ON THE BEAT!"; playFx("goal"); triggerFlash("goal"); spawnConfetti(40, [C.pink, C.purple, C.gold]); if(stageRole) showMC("correct",{points:"100"}); }
       else if (diff <= 0.5) { pts = 75; label = "GREAT"; playFx("success"); if(stageRole) showMC("correct",{points:"75"}); }
       else if (diff <= 1.0) { pts = 50; label = "GOOD"; playFx("select"); }
-      else if (releaseT > dropT) { pts = 10; label = "LATE -- The party's over bro"; playFx("save"); if(stageRole) showMC("wrong"); }
+      else if (releaseT > dropT) { pts = 10; label = "LATE -- The party's over bro"; playFx("miss"); if(stageRole) showMC("wrong"); }
       else { pts = 0; label = "EARLY -- Too soon!"; playFx("error"); if(stageRole) showMC("wrong"); }
     }
     if (isBlinker && pts >= 50) { pts += 50; label += " + BLINKER LEGENDARY!"; playFx("crowd"); }
@@ -11060,6 +11072,7 @@ export default function MoodLabArena() {
     setPlHolding(false);
     setPlSurvived(true);
     setPlPhase("ready");
+    if(roundNum > 0) playFx("limbo_bar_raise");
     const dangerMsg = target >= 4.5 ? " -- you can feel the blinker calling your name" : target >= 4.0 ? " -- getting serious now" : "";
     setCommentary("Round " + (roundNum + 1) + ": Hold for " + target.toFixed(1) + "s" + dangerMsg);
     if (target >= 4.5) playFx("charge");
@@ -11206,7 +11219,7 @@ const startSimonPuffs = () => {
     pattern.forEach((p, idx) => {
       setTimeout(() => {
         setSpCurrentShow(idx);
-        playFx("crowd");
+        playFx(p.type==="short"?"pattern_tone_1":p.type==="medium"?"pattern_tone_2":"pattern_tone_3");
       }, delay);
       const showDur = p.type==="short"?600:p.type==="medium"?1200:2000;
       delay += showDur + 400;
@@ -11465,11 +11478,11 @@ const startSimonPuffs = () => {
   const pdPickHorse = (idx) => { setPdPlayerHorse(idx);playFx("select");setCommentary(PD_HORSE_NAMES[idx]+" selected!");setPdPhase("countdown");let c=3;const cd=setInterval(()=>{c--;if(c<=0){clearInterval(cd);setPdPhase("racing");setCommentary("AND THEY'RE OFF!");playFx("whistle");triggerFlash("goal");pdStartRace(idx);}},800); };
   const pdStartRace = (pi) => { pdPosRef.current=[0,0,0,0,0,0];pdFinishRef.current=[];pdStaminaRef.current=100;pdLastPuff.current=Date.now();let tl=30;setPdRaceTime(30);pdAiRef.current=setInterval(()=>{if(Date.now()-pdLastPuff.current>500){pdStaminaRef.current=Math.min(100,pdStaminaRef.current+0.4);setPdStamina(Math.round(pdStaminaRef.current));}const np=[...pdPosRef.current];for(let i=0;i<6;i++){if(i===pi||pdFinishRef.current.includes(i))continue;const p=PD_AI[i];let mv=p.bs*(0.6+Math.random()*0.8);if(Math.random()<p.bc)mv+=p.bz;if(Math.random()<p.rc)mv=0;if(np[i]>70)mv*=1.2;if(np[i]>90)mv*=1.1;np[i]=Math.min(100,np[i]+mv*0.16);if(np[i]>=100&&!pdFinishRef.current.includes(i)){pdFinishRef.current=[...pdFinishRef.current,i];setPdFinishOrder([...pdFinishRef.current]);}}if(np[pi]>=100&&!pdFinishRef.current.includes(pi)){pdFinishRef.current=[...pdFinishRef.current,pi];setPdFinishOrder([...pdFinishRef.current]);}pdPosRef.current=np;setPdPositions([...np]);if(pdFinishRef.current.length>=6)pdEndRace(pi);},50);pdTimerRef.current=setInterval(()=>{tl--;setPdRaceTime(tl);if(tl<=10&&tl>0)setCommentary(tl+" seconds!");if(tl<=0)pdEndRace(pi);},1000); };
   const pdPuff = () => { if(pdPhase!=="racing"||pdPlayerHorse===null)return;const idx=pdPlayerHorse;pdLastPuff.current=Date.now();setPdPuffCount(p=>p+1);playFx("horse_gallop");let boost=3+Math.random()*2;if(pdStaminaRef.current<=0){boost=1;}else{pdStaminaRef.current=Math.max(0,pdStaminaRef.current-5);setPdStamina(Math.round(pdStaminaRef.current));}const np=[...pdPosRef.current];np[idx]=Math.min(100,np[idx]+boost);pdPosRef.current=np;setPdPositions([...np]);if(np[idx]>=100&&!pdFinishRef.current.includes(idx)){pdFinishRef.current=[...pdFinishRef.current,idx];setPdFinishOrder([...pdFinishRef.current]);} };
-  const pdEndRace = (pi) => { if(pdAiRef.current){clearInterval(pdAiRef.current);pdAiRef.current=null;}if(pdTimerRef.current){clearInterval(pdTimerRef.current);pdTimerRef.current=null;}const fin=[...pdFinishRef.current];const rem=[0,1,2,3,4,5].filter(i=>!fin.includes(i));rem.sort((a,b)=>pdPosRef.current[b]-pdPosRef.current[a]);const fo=[...fin,...rem];setPdFinishOrder(fo);pdFinishRef.current=fo;const place=fo.indexOf(pi)+1;setCoins(c=>c+([0,500,300,150,75,30,10][place]||10));setPdPhase("result");if(place===1){setCommentary(PD_HORSE_NAMES[pi]+" WINS!");triggerFlash("goal");playFx("crowd");if(stageRole)showMC("correct",{points:"500"});setConfettiParticles(Array.from({length:30},(_,i)=>({id:Date.now()+i,x:Math.random()*100,y:-10-Math.random()*20,size:4+Math.random()*4,color:[C.green,C.gold,C.cyan,C.pink][i%4],rot:Math.random()*360})));}else if(place<=3){setCommentary("Top 3!");playFx("select");}else{setCommentary("Better luck next time!");playFx("tap");} };
+  const pdEndRace = (pi) => { if(pdAiRef.current){clearInterval(pdAiRef.current);pdAiRef.current=null;}if(pdTimerRef.current){clearInterval(pdTimerRef.current);pdTimerRef.current=null;}const fin=[...pdFinishRef.current];const rem=[0,1,2,3,4,5].filter(i=>!fin.includes(i));rem.sort((a,b)=>pdPosRef.current[b]-pdPosRef.current[a]);const fo=[...fin,...rem];setPdFinishOrder(fo);pdFinishRef.current=fo;const place=fo.indexOf(pi)+1;setCoins(c=>c+([0,500,300,150,75,30,10][place]||10));setPdPhase("result");if(place===1){setCommentary(PD_HORSE_NAMES[pi]+" WINS!");triggerFlash("goal");playFx("crowd");playFx("horse_whinny");if(stageRole)showMC("correct",{points:"500"});setConfettiParticles(Array.from({length:30},(_,i)=>({id:Date.now()+i,x:Math.random()*100,y:-10-Math.random()*20,size:4+Math.random()*4,color:[C.green,C.gold,C.cyan,C.pink][i%4],rot:Math.random()*360})));}else if(place<=3){setCommentary("Top 3!");playFx("select");}else{setCommentary("Better luck next time!");playFx("tap");} };
   const pdCleanup = () => { if(pdAiRef.current){clearInterval(pdAiRef.current);pdAiRef.current=null;}if(pdTimerRef.current){clearInterval(pdTimerRef.current);pdTimerRef.current=null;}setPdPhase(null);setGameActive(null);setStageRole(null);setMcVisible(false); };
   const hlPickRandom = () => { const av=HL_STATS.filter((_,i)=>!hlUsedRef.current.includes(i));if(av.length===0){hlUsedRef.current=[];return HL_STATS[Math.floor(Math.random()*HL_STATS.length)];}const pk=av[Math.floor(Math.random()*av.length)];hlUsedRef.current=[...hlUsedRef.current,HL_STATS.indexOf(pk)];return pk; };
   const startHigherLower = () => { if(stageRole === "contestant") initStageElim(); hlUsedRef.current=[];const f=hlPickRandom();const s=hlPickRandom();setHlCurrent(f);setHlNext(s);setHlStreak(0);setHlBestStreak(0);setHlScore(0);setHlRound(1);setHlRevealing(false);setHlRevealNum(0);setHlPuffStart(null);setHlPhase("playing");setCommentary("Higher or Lower?");playFx("crowd"); };
-  const hlGuess = (guess) => { if(hlPhase!=="playing"||hlRevealing||!hlNext)return;setHlRevealing(true);setHlPuffStart(null);playFx("tap");const target=hlNext.value;let step=0;const rid=setInterval(()=>{step++;setHlRevealNum(Math.round(target*(1-Math.pow(1-step/20,3))));if(step>=20){clearInterval(rid);setHlRevealNum(target);const actual=hlNext.value>hlCurrent.value?"higher":hlNext.value<hlCurrent.value?"lower":guess;const correct=guess===actual||hlNext.value===hlCurrent.value;setTimeout(()=>{if(correct){const ns=hlStreak+1;const pts=10*ns;setHlStreak(ns);setHlBestStreak(b=>Math.max(b,ns));setHlScore(s=>s+pts);setCommentary("CORRECT! +"+pts);playFx("select");triggerFlash("goal");setHlPhase("correct");if(stageRole)showMC("correct",{points:String(pts)});elimRound(100);}else{setHlStreak(0);setCommentary("WRONG! It was "+actual.toUpperCase());playFx("whistle");triggerFlash("miss");if(stageRole)showMC("wrong");setScreenShake(true);setTimeout(()=>setScreenShake(false),400);setHlPhase("wrong");elimRound(0);}setTimeout(()=>{const nr=hlRound+1;if(nr>10){setCoins(c=>c+Math.max(10,Math.floor(hlScore/2)));setHlPhase("result");setCommentary("Game over! Score: "+hlScore);if(hlBestStreak>=5)setConfettiParticles(Array.from({length:20},(_,i)=>({id:Date.now()+i,x:Math.random()*100,y:-10-Math.random()*20,size:4+Math.random()*4,color:[C.cyan,C.gold,C.green,C.pink][i%4],rot:Math.random()*360})));}else{setHlRound(nr);setHlCurrent(hlNext);setHlNext(hlPickRandom());setHlRevealing(false);setHlRevealNum(0);setHlPhase("playing");setCommentary("Round "+nr+"/10");}},1800);},600);}},40); };
+  const hlGuess = (guess) => { if(hlPhase!=="playing"||hlRevealing||!hlNext)return;setHlRevealing(true);setHlPuffStart(null);playFx("tap");const target=hlNext.value;let step=0;const rid=setInterval(()=>{step++;setHlRevealNum(Math.round(target*(1-Math.pow(1-step/20,3))));if(step>=20){clearInterval(rid);setHlRevealNum(target);const actual=hlNext.value>hlCurrent.value?"higher":hlNext.value<hlCurrent.value?"lower":guess;const correct=guess===actual||hlNext.value===hlCurrent.value;setTimeout(()=>{if(correct){const ns=hlStreak+1;const pts=10*ns;setHlStreak(ns);if(ns===5) playFx("streak_fire");setHlBestStreak(b=>Math.max(b,ns));setHlScore(s=>s+pts);setCommentary("CORRECT! +"+pts);playFx("select");triggerFlash("goal");setHlPhase("correct");if(stageRole)showMC("correct",{points:String(pts)});elimRound(100);}else{if(hlStreak>=2) playFx("streak_break");setHlStreak(0);setCommentary("WRONG! It was "+actual.toUpperCase());playFx("whistle");triggerFlash("miss");if(stageRole)showMC("wrong");setScreenShake(true);setTimeout(()=>setScreenShake(false),400);setHlPhase("wrong");elimRound(0);}setTimeout(()=>{const nr=hlRound+1;if(nr>10){setCoins(c=>c+Math.max(10,Math.floor(hlScore/2)));setHlPhase("result");setCommentary("Game over! Score: "+hlScore);if(hlBestStreak>=5)setConfettiParticles(Array.from({length:20},(_,i)=>({id:Date.now()+i,x:Math.random()*100,y:-10-Math.random()*20,size:4+Math.random()*4,color:[C.cyan,C.gold,C.green,C.pink][i%4],rot:Math.random()*360})));}else{setHlRound(nr);setHlCurrent(hlNext);setHlNext(hlPickRandom());setHlRevealing(false);setHlRevealNum(0);setHlPhase("playing");setCommentary("Round "+nr+"/10");}},1800);},600);}},40); };
   const hlHandlePuff = (isLong) => { hlGuess(isLong?"higher":"lower"); };
   const hlCleanup = () => { setHlPhase(null);setGameActive(null);setHlRevealing(false);setHlPuffStart(null);hlUsedRef.current=[];setStageRole(null);setMcVisible(false);setStageElim(null); };
   const overlayBack = (onClose) => (
@@ -20519,8 +20532,10 @@ const startSimonPuffs = () => {
       setVcScore(s=>s+100+(vcTimer*10));
       setVcCorrectStreak(s=>s+1);
       setVcStreak(s=>s+1);
+      if(vcStreak+1===5) playFx("streak_fire");
       elimRound(100+(vcTimer*10));
     } else {
+      if(vcStreak>=2) playFx("streak_break");
       setVcCorrectStreak(0);
       setVcStreak(0);
       if(!vcEliminated){ setVcEliminated(true); }
@@ -20544,6 +20559,7 @@ const startSimonPuffs = () => {
             setTimeout(()=>vcAnswerQuestion(-1), 100);
             return 0;
           }
+          if(t<=4 && t>1) playFx("timer_urgent");
           return t-1;
         });
       },1000);

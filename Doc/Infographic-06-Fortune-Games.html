@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mood Lab Arena — Fortune Games (12)</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@700;800;900&display=swap');
+
+  :root {
+    --gold: #FFD93D;
+    --gold-dim: #B8960A;
+    --gold-bright: #FFE873;
+    --bg-dark: #0A0A0F;
+    --bg-card: #12121A;
+    --bg-card-hover: #1A1A25;
+    --border: #1E1E2E;
+    --text: #E8E8F0;
+    --text-dim: #8888A0;
+    --accent-purple: #9B59B6;
+    --accent-green: #2ECC71;
+    --accent-blue: #3498DB;
+    --accent-red: #E74C3C;
+    --accent-orange: #F39C12;
+    --accent-pink: #E91E9E;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg-dark);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, sans-serif;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* === HERO === */
+  .hero {
+    position: relative;
+    text-align: center;
+    padding: 80px 24px 60px;
+    background:
+      radial-gradient(ellipse 60% 40% at 50% 0%, rgba(255,217,61,0.12) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 50% at 20% 80%, rgba(155,89,182,0.06) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 50% at 80% 80%, rgba(52,152,219,0.06) 0%, transparent 60%);
+    border-bottom: 1px solid var(--border);
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  }
+  .hero-badge {
+    display: inline-block;
+    padding: 6px 20px;
+    border: 1px solid var(--gold-dim);
+    border-radius: 100px;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 24px;
+    background: rgba(255,217,61,0.05);
+  }
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(32px, 5vw, 56px);
+    font-weight: 900;
+    color: #fff;
+    letter-spacing: -1px;
+    margin-bottom: 8px;
+  }
+  .hero h1 span { color: var(--gold); }
+  .hero .subtitle {
+    font-size: 14px;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .hero-stats {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin-top: 36px;
+    flex-wrap: wrap;
+  }
+  .hero-stat {
+    text-align: center;
+  }
+  .hero-stat .num {
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--gold);
+    display: block;
+  }
+  .hero-stat .lbl {
+    font-size: 11px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* === SECTION HEADERS === */
+  .section {
+    padding: 60px 0 40px;
+  }
+  .section-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 12px;
+    padding: 4px 14px;
+    border: 1px solid rgba(255,217,61,0.2);
+    border-radius: 4px;
+    background: rgba(255,217,61,0.04);
+  }
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(24px, 3vw, 36px);
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 8px;
+  }
+  .section-desc {
+    color: var(--text-dim);
+    font-size: 14px;
+    max-width: 600px;
+  }
+
+  /* === FORTUNE TIER TABLE === */
+  .tier-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 12px;
+    margin-top: 28px;
+  }
+  .tier-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 16px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s, border-color 0.3s;
+  }
+  .tier-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--tier-color);
+  }
+  .tier-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--tier-color);
+  }
+  .tier-emoji {
+    font-size: 32px;
+    display: block;
+    margin-bottom: 8px;
+  }
+  .tier-name {
+    font-weight: 700;
+    font-size: 13px;
+    color: #fff;
+    margin-bottom: 4px;
+  }
+  .tier-req {
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+  .tier-req strong {
+    color: var(--tier-color);
+    font-weight: 600;
+  }
+
+  /* === SYSTEM FEATURES === */
+  .features-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+    margin-top: 28px;
+  }
+  .feature-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    transition: border-color 0.3s;
+  }
+  .feature-card:hover { border-color: var(--gold-dim); }
+  .feature-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+  .feature-card h4 {
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 4px;
+  }
+  .feature-card p {
+    font-size: 12px;
+    color: var(--text-dim);
+    line-height: 1.5;
+  }
+
+  /* === GAME CARDS === */
+  .games-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 16px;
+    margin-top: 28px;
+  }
+  .game-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 0;
+    overflow: hidden;
+    transition: transform 0.2s, border-color 0.3s, box-shadow 0.3s;
+  }
+  .game-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--game-accent);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3), 0 0 20px color-mix(in srgb, var(--game-accent) 15%, transparent);
+  }
+  .game-header {
+    padding: 20px 20px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+  .game-header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .game-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    background: color-mix(in srgb, var(--game-accent) 12%, transparent);
+    border: 1px solid color-mix(in srgb, var(--game-accent) 25%, transparent);
+  }
+  .game-name {
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
+  }
+  .game-type {
+    font-size: 11px;
+    color: var(--game-accent);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+  }
+  .game-badges {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+  .badge {
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    background: rgba(255,255,255,0.06);
+    color: var(--text-dim);
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  .badge-time { color: var(--accent-blue); border-color: rgba(52,152,219,0.2); background: rgba(52,152,219,0.08); }
+  .badge-1p { color: var(--accent-green); border-color: rgba(46,204,113,0.2); background: rgba(46,204,113,0.08); }
+
+  .game-body {
+    padding: 0 20px 20px;
+  }
+  .game-body ul {
+    list-style: none;
+    padding: 0;
+  }
+  .game-body li {
+    font-size: 12.5px;
+    color: var(--text-dim);
+    padding: 5px 0;
+    padding-left: 16px;
+    position: relative;
+    line-height: 1.45;
+  }
+  .game-body li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 11px;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--game-accent);
+    opacity: 0.6;
+  }
+  .game-highlight {
+    color: var(--gold-bright);
+    font-weight: 600;
+  }
+
+  /* === GAME CATEGORY DIVIDERS === */
+  .category-divider {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 40px 0 4px;
+  }
+  .category-divider .line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, var(--border), transparent);
+  }
+  .category-divider .line:last-child {
+    background: linear-gradient(270deg, var(--border), transparent);
+  }
+  .category-divider .label {
+    font-size: 12px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    white-space: nowrap;
+    font-weight: 600;
+  }
+
+  /* === FOOTER === */
+  .footer {
+    text-align: center;
+    padding: 48px 24px;
+    border-top: 1px solid var(--border);
+    margin-top: 60px;
+  }
+  .footer p {
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+  .footer .brand {
+    color: var(--gold);
+    font-weight: 700;
+  }
+
+  /* === RESPONSIVE === */
+  @media (max-width: 720px) {
+    .games-grid { grid-template-columns: 1fr; }
+    .hero { padding: 50px 20px 40px; }
+    .hero-stats { gap: 24px; }
+    .features-row { grid-template-columns: 1fr; }
+    .tier-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+  @media (max-width: 480px) {
+    .tier-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<!-- ==================== HERO ==================== -->
+<header class="hero">
+  <div class="hero-badge">Infographic 06</div>
+  <h1>MOOD LAB ARENA — <span>Fortune Games</span></h1>
+  <p class="subtitle">Developer Guide &middot; 12 Games &middot; Fortune Zone System</p>
+  <div class="hero-stats">
+    <div class="hero-stat"><span class="num">12</span><span class="lbl">Fortune Games</span></div>
+    <div class="hero-stat"><span class="num">6</span><span class="lbl">Player Tiers</span></div>
+    <div class="hero-stat"><span class="num">1P</span><span class="lbl">All Single Player</span></div>
+    <div class="hero-stat"><span class="num">1-5m</span><span class="lbl">Session Length</span></div>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- ==================== FORTUNE LEVEL SYSTEM ==================== -->
+  <section class="section">
+    <div class="section-label">System</div>
+    <h2 class="section-title">Fortune Level System</h2>
+    <p class="section-desc">6 progression tiers based on total coins wagered. Each tier unlocks higher bet limits and exclusive game features.</p>
+
+    <div class="tier-grid">
+      <div class="tier-card" style="--tier-color:#CD7F32">
+        <span class="tier-emoji">&#x1F949;</span>
+        <div class="tier-name">Bronze Gambler</div>
+        <div class="tier-req"><strong>0</strong> coins wagered</div>
+      </div>
+      <div class="tier-card" style="--tier-color:#C0C0C0">
+        <span class="tier-emoji">&#x1F948;</span>
+        <div class="tier-name">Silver Gambler</div>
+        <div class="tier-req"><strong>1,000</strong> coins wagered</div>
+      </div>
+      <div class="tier-card" style="--tier-color:#FFD700">
+        <span class="tier-emoji">&#x1F947;</span>
+        <div class="tier-name">Gold Gambler</div>
+        <div class="tier-req"><strong>5,000</strong> coins wagered</div>
+      </div>
+      <div class="tier-card" style="--tier-color:#E5E4E2">
+        <span class="tier-emoji">&#x1F48E;</span>
+        <div class="tier-name">Platinum Player</div>
+        <div class="tier-req"><strong>15,000</strong> coins wagered</div>
+      </div>
+      <div class="tier-card" style="--tier-color:#B9F2FF">
+        <span class="tier-emoji">&#x1F4A0;</span>
+        <div class="tier-name">Diamond Dealer</div>
+        <div class="tier-req"><strong>50,000</strong> coins wagered</div>
+      </div>
+      <div class="tier-card" style="--tier-color:#FFD700">
+        <span class="tier-emoji">&#x1F451;</span>
+        <div class="tier-name">High Roller</div>
+        <div class="tier-req"><strong>200,000</strong> coins wagered</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== SYSTEM FEATURES ==================== -->
+  <section class="section" style="padding-top:0">
+    <div class="section-label">Features</div>
+    <h2 class="section-title">Zone Mechanics</h2>
+    <p class="section-desc">Core systems that power the Fortune Zone experience.</p>
+
+    <div class="features-row">
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(231,76,60,0.12);color:#E74C3C">&#x1F3B0;</div>
+        <div>
+          <h4>Daily Jackpot</h4>
+          <p>Growing counter starting at ~47,382 coins. Increases over time, resets when won. Drives daily engagement and return visits.</p>
+        </div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(243,156,18,0.12);color:#F39C12">&#x2728;</div>
+        <div>
+          <h4>Lucky Hour</h4>
+          <p>Random 2x multiplier on all wins during a surprise hour window. Unpredictable timing creates excitement and urgency.</p>
+        </div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(52,152,219,0.12);color:#3498DB">&#x1F4CB;</div>
+        <div>
+          <h4>Hub Tabs</h4>
+          <p>Two main navigation tabs: <strong style="color:#fff">Sportsbook</strong> (WC predictions) and <strong style="color:#fff">Fortune Games</strong> (12 casino-style games).</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== ALL 12 GAMES ==================== -->
+  <section class="section" style="padding-top:20px">
+    <div class="section-label">12 Games</div>
+    <h2 class="section-title">Fortune Games Catalog</h2>
+    <p class="section-desc">Every game in the Fortune Zone. Categorized by type: Prediction, Voting, Sports, Daily, and Fortune (casino).</p>
+
+    <!-- PREDICTION / VOTE / SPORTS / DAILY -->
+    <div class="category-divider">
+      <div class="line"></div>
+      <div class="label">Prediction &middot; Vote &middot; Sports &middot; Daily</div>
+      <div class="line"></div>
+    </div>
+
+    <div class="games-grid">
+
+      <!-- 1. Crystal Ball -->
+      <div class="game-card" style="--game-accent:#9B59B6">
+        <div class="game-header">
+          <div class="game-header-left">
+            <div class="game-icon">&#x1F52E;</div>
+            <div><div class="game-name">Crystal Ball</div><div class="game-type">Prediction</div></div>
+          </div>
+          <div class="game-badges">
+            <span class="badge badge-1p">1P</span>
+            <span class="badge badge-time">1-2m</span>
+          </div>
+        </div>
+        <div class="game-body">
+          <ul>
+            <li>Yes/No questions on fun, quirky topics</li>
+            <li><span class="game-highlight">Puff to shake</span> the crystal ball</li>
+            <li>Ball reveals answer with mystical animation</li>
+            <li>15 prediction questions in rotation</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- 2. Strain Battle -->
+      <div class="game-card" style="--game-accent:#2ECC71">
+        <div class="game-header">
+          <div class="game-header-left">
+            <div class="game-icon">&#x1F33F;</div>
+            <div><div class="game-name">Strain Battle</div><div class="game-type">Vote</div></div>
+          </div>
+          <div class="game-badges">
+            <span class="badge badge-1p">1P</span>
+            <span class="badge badge-time">2-3m</span>
+          </div>
+        </div>
+        <div class="game-body">
+          <ul>
+            <li>Two cannabis strains face off head-to-head</li>
+            <li>16 strains: OG Kush, Blue Dream, GSC, Sour Diesel&hellip;</li>
+            <li>Each has THC%, type (Indica/Sativa/Hybrid), effects, flavor</li>
+            <li><span class="game-highlight">Vote by puffing</span> for your choice</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- 3. Match Predictor -->
+      <div class="game-card" style="--game-accent:#3498DB">
+        <div class="game-header">
+          <div class="game-header-left">
+            <div class="game-icon">&#x1F4CA;</div>
+            <div><div class="game-name">Match Predictor</div><div class="game-type">Sports</div></div>
+          </div>
+          <div class="game-badges">
+            <span class="badge badge-1p">1P</span>
+            <span class="badge badge-time">1-2m</span>
+          </div>
+        </div>
+        <div class="game-body">
+          <ul>
+            <li>8 World Cup matches available to predict</li>
+            <li>Predict outcome: Win / Draw / Lose</li>
+            <li>See community prediction percentages live</li>
+            <li>Points awarded for correct predictions</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- 4. Daily Picks -->
+      <div class="game-card" style="--game-accent:#F39C12">
+        <div class="game-header">
+          <div class="game-header-left">
+            <div class="game-icon">&#x1F4C5;</div>
+            <div><div class="game-name">Daily Picks</div><div class="game-type">Daily</div></div>
+          </div>
+          <div class="game-badges">
+            <span class="badge badge-1p">1P</span>
+            <span class="badge badge-time">2-3m</span>
+          </div>
+        </div>
+        <div class="game-body">
+          <ul>
+            <li>3 questions per day (morning / afternoon / night)</li>
+            <li>Yes/No or A vs B question format</li>
+            <li><span class="game-highlight">Streak multiplier</span> for consecutive daily play</li>
+            <li>Categories: crypto, cannabis, sports, culture</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- FORTUNE (CASINO) GAMES -->
+    <div class="category-divider">
+      <div class="line"></div>
+      <div class="label">Fortune &middot; Casino Games</div>
+      <div class="line"></div>
+    </div>
+
+    <div class="games-grid">
+
+      <!-- 5. Puff Slots -->
+      <div class="game-card" style="--game-accent:#E74C3C">
+        <div class="game-header">
+          <div class="game-header-left">
+            <div class="game-icon">&#x1F3B0;</div>
+            <div><div class="game-name">Puff Slots</div><div class="game-type">Fortune</div></div>
+          </div>
+          <div class="game-badges">
+            <span class="badge badge-1p">1P</span>
+            <span class="badge badge-time">2-3m</span>
+          </div>
+        </div>
+        <div class="game-body">
+          <ul>
+            <li>Classic 3-reel slot machine</li>
+            <li><span class="game-highlight">Puff to spin</span> each reel individually</li>
+            <li>Match symbols across reels to win coins</li>
+            <li>Multiple symbol tiers with varying payouts</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- 6. Puff Blackjack -->
+      <div class="game-card" style="--game-accent:#1ABC9C">
+        <div class="game-header">
+          <div class="game-header-left">
+            <div class="game-icon">&#x1F0CF;</div>
+            <div><div class="game-name">Puff Blackjack</div><div class="game-type">Fortune</div></div>
+          </div>
+          <div class="game-badges">
+            <span class="badge badge-1p">1P</span>
+            <span class="badge badge-time">3-5m</span>
+          </div>
+        </div>
+        <div class="game-body">
+          <ul>
+            <li>Classic 21 blackjack card game</li>
+            <li><span class="game-highlight">Puff = Hit</span> (draw a card)</li>
+            <li><span class="game-highlight">Hold / No puff = Stand</span></li>
+            <li>Standard blackjack rules apply</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- 7. Coin Flip -->
+      <div class="game-card" style="--game-accent:#F1C40F">
+        <div class="game-header">
+          <div class="game-header-left">
+            <div class="game-icon">&#x1FA99;</div>
+            <div><div class="game-name">Coin Flip</div><div class="game-type">Fortune</div></div>
+          </div>
+          <div class="game-badges">
+            <span class="badge badge-1p">1P</span>
+            <span class="badge badge-time">1-2m</span>
+          </div>
+        </div>
+        <div class="game-body">
+          <ul>
+            <li>50/50 heads or tails gamble</li>
+            <li><span class="game-highlight">Puff confidence multiplier</span> &mdash; longer puff = higher bet</li>
+            <li>Simple, fast, and addictive loop</li>
+            <li>Instant result with coin flip animation</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- 8. Craps & Clouds -->
+      <div class="game-card" style="--game-accent:#E67E22">
+        <div class="game-header">
+          <div class="game-header-left">
+            <div class="game-icon">&#x1F3B2;</div>
+            <div><div class="game-name">Craps &amp; Clouds</div><div class="game-type">Fortune</div></div>
+          </div>
+          <div class="game-badges">
+            <span class="badge badge-1p">1P</span>
+            <span class="badge badge-time">2-3m</span>
+          </div>
+        </div>
+        <div class="game-body">
+          <ul>
+            <li>Dice game with puff-based control</li>
+            <li><span class="game-highlight">Puff duration controls roll force</span></li>
+            <li>Standard craps rules, simplified for mobile</li>
+            <li>Satisfying dice roll physics and feedback</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- 9. Mystery Box -->
+      <div class="game-card" style="--game-accent:#E91E9E">
+        <div class="game-header">
+          <div class="game-header-left">
+            <div class="game-icon">&#x1F381;</div>
+            <div><div class="game-name">Mystery Box</div><div class="game-type">Fortune</div></div>
+          </div>
+          <div class="game-badges">
+            <span class="badge badge-1p">1P</span>
+            <span class="badge badge-time">2-3m</span>
+          </div>
+        </div>
+        <div class="game-body">
+          <ul>
+            <li>3 mystery boxes presented on screen</li>
+            <li>Tap to select one box</li>
+            <li><span class="game-highlight">Puff to reveal</span> what's inside</li>
+            <li>Prizes: coins, badges, or multipliers</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- 10. Scratch & Puff -->
+      <div class="game-card" style="--game-accent:#8E44AD">
+        <div class="game-header">
+          <div class="game-header-left">
+            <div class="game-icon">&#x1F3AB;</div>
+            <div><div class="game-name">Scratch &amp; Puff</div><div class="game-type">Fortune</div></div>
+          </div>
+          <div class="game-badges">
+            <span class="badge badge-1p">1P</span>
+            <span class="badge badge-time">2-3m</span>
+          </div>
+        </div>
+        <div class="game-body">
+          <ul>
+            <li>6 scratch areas on a digital card</li>
+            <li><span class="game-highlight">Puff to scratch</span> each area</li>
+            <li>Match 3 identical symbols = win prize</li>
+            <li>Different symbol rarities control prize tiers</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- 11. Fortune Cookie -->
+      <div class="game-card" style="--game-accent:#FFD93D">
+        <div class="game-header">
+          <div class="game-header-left">
+            <div class="game-icon">&#x1F960;</div>
+            <div><div class="game-name">Fortune Cookie</div><div class="game-type">Fortune</div></div>
+          </div>
+          <div class="game-badges">
+            <span class="badge badge-1p">1P</span>
+            <span class="badge badge-time">1-2m</span>
+          </div>
+        </div>
+        <div class="game-body">
+          <ul>
+            <li><span class="game-highlight">Puff to crack open</span> the fortune cookie</li>
+            <li>Reveals a wisdom quote + coin prize</li>
+            <li><span class="game-highlight">Blinker puff = GOLDEN COOKIE</span> (rare!)</li>
+            <li>Golden cookie yields a big bonus prize</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- 12. Treasure Map -->
+      <div class="game-card" style="--game-accent:#2ECC71">
+        <div class="game-header">
+          <div class="game-header-left">
+            <div class="game-icon">&#x1F5FA;&#xFE0F;</div>
+            <div><div class="game-name">Treasure Map</div><div class="game-type">Fortune</div></div>
+          </div>
+          <div class="game-badges">
+            <span class="badge badge-1p">1P</span>
+            <span class="badge badge-time">3-5m</span>
+          </div>
+        </div>
+        <div class="game-body">
+          <ul>
+            <li>16-tile grid (4x4) treasure hunt</li>
+            <li>Tap tile to select, <span class="game-highlight">puff to dig</span></li>
+            <li>Find 3 treasures = big win / Hit 3 bombs = game over</li>
+            <li>X-ray power-up: peek at nearby tiles</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+</div>
+
+<!-- ==================== FOOTER ==================== -->
+<footer class="footer">
+  <p><span class="brand">Mood Lab Arena</span> &middot; Fortune Games Developer Infographic &middot; Infographic 06</p>
+  <p style="margin-top:6px;font-size:11px;color:#555">12 games &middot; 6 tiers &middot; All single-player &middot; Puff-controlled</p>
+</footer>
+
+</body>
+</html>
