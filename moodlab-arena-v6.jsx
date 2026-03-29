@@ -951,6 +951,14 @@ const TICKER_ITEMS = [
 ];
 
 
+// ── WEB BLUETOOTH — Cali Clear device UUIDs ──
+const BLE_SERVICE_UUID     = "0000ffe0-0000-1000-8000-00805f9b34fb";
+const BLE_WRITE_CHAR_UUID  = "0000ffe5-0000-1000-8000-00805f9b34fb"; // reserved for future commands
+const BLE_NOTIFY_CHAR_UUID = "0000ffe6-0000-1000-8000-00805f9b34fb";
+// Notification payloads (6 bytes each)
+const BLE_PUFF_START = [0xb4, 0xb4, 0x02, 0x00, 0x04, 0x4b]; // heating   → puff starts
+const BLE_PUFF_STOP  = [0xb4, 0xb5, 0x02, 0x00, 0x05, 0x4b]; // cancelled → puff stops
+
 // ═══════════════════════════════════
 // MAIN COMPONENT
 // ═══════════════════════════════════
@@ -1459,6 +1467,13 @@ export default function MoodLabArena() {
   const [showBlePopup, setShowBlePopup] = useState(false);
   const [bleConnected, setBleConnected] = useState(false);
   const [bleScanning, setBleScanning] = useState(false);
+  // BLE refs — stable across renders, safe to use inside event listeners
+  const btDeviceRef      = useRef(null); // BluetoothDevice
+  const btCharNotify     = useRef(null); // notify characteristic
+  const btPuffDown       = useRef(null); // active game puff-start handler
+  const btPuffUp         = useRef(null); // active game puff-stop handler
+  const btPuffEventDown  = useRef(null); // puffEvent system puff-start handler
+  const btPuffEventUp    = useRef(null); // puffEvent system puff-stop handler
 
   // ── Universal Puff Action Bar ──
   const [universalSweetSpot, setUniversalSweetSpot] = useState({min:55, max:80});
@@ -6411,6 +6426,94 @@ export default function MoodLabArena() {
       return { ...prev, data: newData };
     });
   };
+
+  // ── WEB BLUETOOTH — real device connection ──
+  const connectBle = async () => {
+    if (!navigator.bluetooth) {
+      notify("Web Bluetooth not supported in this browser", C.red);
+      return;
+    }
+    try {
+      setBleScanning(true);
+      const device = await navigator.bluetooth.requestDevice({
+        filters: [{ services: [BLE_SERVICE_UUID] }],
+      });
+      btDeviceRef.current = device;
+
+      device.addEventListener("gattserverdisconnected", () => {
+        setBleConnected(false);
+        btCharNotify.current = null;
+        notify("Device disconnected", C.orange);
+      });
+
+      const server  = await device.gatt.connect();
+      const service = await server.getPrimaryService(BLE_SERVICE_UUID);
+      const charNotify = await service.getCharacteristic(BLE_NOTIFY_CHAR_UUID);
+      btCharNotify.current = charNotify;
+
+      charNotify.addEventListener("characteristicvaluechanged", (e) => {
+        const dv = e.target.value;
+        const b  = Array.from({ length: dv.byteLength }, (_, i) => dv.getUint8(i));
+        const match = (template) => b.length === template.length && template.every((v, i) => b[i] === v);
+        if      (match(BLE_PUFF_START)) { btPuffDown.current?.();  btPuffEventDown.current?.(); }
+        else if (match(BLE_PUFF_STOP))  { btPuffUp.current?.();    btPuffEventUp.current?.();   }
+      });
+
+      await charNotify.startNotifications();
+      setBleScanning(false);
+      setBleConnected(true);
+      playFx("success");
+      setShowBlePopup(false);
+      // Launch existing Device Optimization screen
+      setShowDeviceOptimize(true); setOptimizeProgress(0); setOptimizeStage(0);
+      let prog = 0;
+      const optInterval = setInterval(() => {
+        prog += 2.5;
+        if (prog >= 100) { clearInterval(optInterval); prog = 100; }
+        setOptimizeProgress(prog);
+        if (prog >= 20 && prog < 22) setOptimizeStage(1);
+        else if (prog >= 40 && prog < 42) setOptimizeStage(2);
+        else if (prog >= 60 && prog < 62) setOptimizeStage(3);
+        else if (prog >= 80 && prog < 82) setOptimizeStage(4);
+      }, 100);
+    } catch (err) {
+      setBleScanning(false);
+      if (err.name !== "NotFoundError") { // NotFoundError = user cancelled picker
+        notify("BLE error: " + err.message, C.red);
+      }
+    }
+  };
+
+  const disconnectBle = () => {
+    if (btDeviceRef.current?.gatt?.connected) btDeviceRef.current.gatt.disconnect();
+    setBleConnected(false);
+    btCharNotify.current = null;
+  };
+
+  // Keep BT puff refs in sync with whichever game is currently active.
+  // Updated every render so the notification handler always calls the freshest closure.
+  (() => {
+    const id = gameActive?.id;
+    let down = null, up = null;
+    if (id === "finalkick" || id === "finalkick2" || id === "finalkick3") { down = kickStartCharge;  up = kickStopCharge;  }
+    else if (id === "balloon")     { down = bpStartCharge;  up = bpStopCharge;   }
+    else if (id === "russian")     { down = rrStartPuff;    up = rrStopPuff;     }
+    else if (id === "wildwest")    { down = duelShoot;      up = duelReleasePuff;}
+    else if (id === "hotpotato")   { down = hpStartPuff;    up = hpStopPuff;     }
+    else if (id === "hooked")      { down = hookStartPuff;  up = hookStopPuff;   }
+    else if (id === "rps")         { down = rpsStartPuff;   up = rpsStopPuff;    }
+    else if (id === "puffclock")   { down = pcStartPuff;    up = pcStopPuff;     }
+    else if (id === "beatdrop")    { down = bdStartHold;    up = bdReleaseHold;  }
+    else if (id === "pufflimbo")   { down = plStartPuff;    up = plReleasePuff;  }
+    else if (id === "simonpuffs")  { down = spStartPuff;    up = spEndPuff;      }
+    else if (id === "puffauction") { down = paStartBid;     up = paEndBid;       }
+    else if (id === "pricepuff")   { down = pipStartPuff;   up = pipStopPuff;    }
+    btPuffDown.current = down;
+    btPuffUp.current   = up;
+    // puffEvent handlers are always live regardless of active game
+    btPuffEventDown.current = puffEventHoldDown;
+    btPuffEventUp.current   = puffEventHoldUp;
+  })();
 
   const closePuffEvent = () => {
     if (puffEventRef.current) clearInterval(puffEventRef.current);
@@ -20783,26 +20886,10 @@ const startSimonPuffs = () => {
           {devices.map((d,i)=>(
             <div key={i} onClick={()=>{
               if(!d.connected){
-                playFx("select");setBleScanning(true);
-                setTimeout(()=>{
-                  setBleScanning(false);setBleConnected(true);playFx("success");
-                  setShowBlePopup(false);
-                  // Launch Device Optimization screen
-                  setShowDeviceOptimize(true);setOptimizeProgress(0);setOptimizeStage(0);
-                  let prog = 0;
-                  const optInterval = setInterval(()=>{
-                    prog += 2.5; // 40 steps over 4s (100ms interval)
-                    if(prog >= 100){
-                      clearInterval(optInterval);
-                      prog = 100;
-                    }
-                    setOptimizeProgress(prog);
-                    if(prog >= 20 && prog < 22) setOptimizeStage(1);
-                    else if(prog >= 40 && prog < 42) setOptimizeStage(2);
-                    else if(prog >= 60 && prog < 62) setOptimizeStage(3);
-                    else if(prog >= 80 && prog < 82) setOptimizeStage(4);
-                  }, 100);
-                },2000);
+                playFx("select");
+                connectBle();
+              } else {
+                disconnectBle();
               }
             }} style={{
               display:"flex",alignItems:"center",gap:10,padding:"10px 12px",borderRadius:12,marginBottom:6,cursor:"pointer",
@@ -20823,8 +20910,8 @@ const startSimonPuffs = () => {
 
           {/* Scan button */}
           <div onClick={()=>{
-            playFx("tap");setBleScanning(true);
-            setTimeout(()=>{setBleScanning(false);notify("🔍 Scan complete",C.cyan);},2500);
+            playFx("tap");
+            connectBle();
           }} style={{
             padding:"10px 0",borderRadius:12,textAlign:"center",cursor:"pointer",marginTop:6,
             background:bleScanning?`${C.cyan}12`:`rgba(255,255,255,0.03)`,border:`1px solid ${bleScanning?C.cyan+"30":C.border}`,
