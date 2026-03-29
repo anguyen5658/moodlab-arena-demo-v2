@@ -6458,17 +6458,17 @@ export default function MoodLabArena() {
         const hex = b.map(v => v.toString(16).padStart(2, "0")).join(" ");
         const match = (template) => b.length === template.length && template.every((v, i) => b[i] === v);
         if (match(BLE_PUFF_START)) {
-          console.log("[BLE] PUFF START →", hex);
+          // console.log("[BLE] PUFF START →", hex);
           setBtPuffActive(true);
           btPuffDown.current?.();
           btPuffEventDown.current?.();
         } else if (match(BLE_PUFF_STOP)) {
-          console.log("[BLE] PUFF STOP  →", hex);
+          // console.log("[BLE] PUFF STOP  →", hex);
           setBtPuffActive(false);
           btPuffUp.current?.();
           btPuffEventUp.current?.();
         } else {
-          console.log("[BLE] unknown packet →", hex);
+          // console.log("[BLE] unknown packet →", hex);
         }
       });
 
@@ -6521,6 +6521,12 @@ export default function MoodLabArena() {
     else if (id === "simonpuffs")  { down = spStartPuff;    up = spEndPuff;      }
     else if (id === "puffauction") { down = paStartBid;     up = paEndBid;       }
     else if (id === "pricepuff")   { down = pipStartPuff;   up = pipStopPuff;    }
+    // tap-based games: start fires the action, stop is unused
+    else if (id === "tugofwar")    { down = towPuff;        up = null;           }
+    else if (id === "puffderby")   { down = pdPuff;         up = null;           }
+    else if (id === "rhythm")      { down = rpPuffHit;      up = null;           }
+    // hold-based: puffUp moves paddle down, puffRelease lets it drift
+    else if (id === "puffpong")    { down = ppPuffUp;       up = ppPuffRelease;  }
     btPuffDown.current = down;
     btPuffUp.current   = up;
     // puffEvent handlers are always live regardless of active game
