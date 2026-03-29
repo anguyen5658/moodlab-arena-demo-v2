@@ -1,78 +1,12 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Mood Lab Arena</title>
-  <style>
-    *{margin:0;padding:0;box-sizing:border-box}
-    html,body{background:#050510;overflow:hidden;height:100%;width:100%}
-    #root{
-      width:430px;height:932px;
-      position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
-      overflow:hidden;border-radius:0;
-      background:#050510;
-    }
-    @media(max-width:430px){
-      #root{width:100%;height:100%;top:0;left:0;transform:none;position:relative;}
-    }
-    @media(min-width:431px){
-      #root{border-radius:40px;box-shadow:0 0 80px rgba(0,0,0,0.8),0 0 0 8px #1a1a2e,0 0 0 10px #333;}
-    }
-    #back-btn{
-      display:none;
-      position:fixed;top:10px;left:10px;
-      z-index:2147483647;
-      width:36px;height:36px;border-radius:18px;
-      background:rgba(10,14,30,0.9);
-      border:1px solid rgba(255,255,255,0.2);
-      color:#E8EBF6;font-size:18px;line-height:36px;text-align:center;
-      cursor:pointer;
-      -webkit-appearance:none;
-      -webkit-tap-highlight-color:transparent;
-      backdrop-filter:blur(10px);
-      box-shadow:0 3px 12px rgba(0,0,0,0.6);
-      font-family:-apple-system,sans-serif;
-      touch-action:manipulation;
-      padding:0;margin:0;outline:none;
-    }
-    #back-btn:active{background:rgba(0,229,255,0.2);border-color:rgba(0,229,255,0.5);}
-    @media(min-width:431px){
-      #back-btn{top:calc(50% - 466px + 10px);left:calc(50% - 215px + 10px);}
-    }
-  </style>
-</head>
-<body>
-  <div id="root"></div>
-  <button id="back-btn" onclick="if(window.__moodlabGoBack){window.__moodlabGoBack();}else{window.location.reload();}">←</button>
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <script>
-    fetch('moodlab-arena-v6.jsx?v=' + Date.now())
-      .then(r => r.text())
-      .then(jsx => {
-        const code = jsx.replace(
-          /import\s*\{[^}]+\}\s*from\s*["']react["'];?/,
-          'const { useState, useRef, useEffect, useCallback } = React;'
-        ).replace(
-          /export\s+default\s+function/,
-          'function'
-        );
-        const transformed = Babel.transform(code, {
-          presets: ['react'],
-          filename: 'moodlab-arena-v6.jsx',
-        }).code;
-        const fn = new Function('React', 'ReactDOM', transformed + '\nreturn MoodLabArena;');
-        const App = fn(React, ReactDOM);
-        ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
-      })
-      .catch(err => {
-        document.getElementById('root').innerHTML =
-          '<pre style="color:#ff4444;padding:20px;font-size:14px;">Error loading app:\n' + err.message + '</pre>';
-        console.error(err);
-      });
-  </script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Mood Lab Arena</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
 </html>

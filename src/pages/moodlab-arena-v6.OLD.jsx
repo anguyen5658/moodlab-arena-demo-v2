@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import * as THREE from "three";
 
 // ═══════════════════════════════════════════════════════════════
 // MOOD LAB — ARENA EXPERIENCE v6.2
@@ -9657,12 +9658,6 @@ export default function MoodLabArena() {
 
       </div>
       {/* CSS keyframes for Wall animations */}
-      <style>{`
-        @keyframes wallFloat { 0%{transform:translateY(0)} 100%{transform:translateY(-4px)} }
-        @keyframes wallPulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
-        @keyframes wallTrophy { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(-6px)} }
-        @keyframes wallParticle { 0%{transform:translateY(0) scale(1);opacity:0.15} 100%{transform:translateY(-20px) scale(1.3);opacity:0.3} }
-      `}</style>
       <div style={{height:80}}/>
     </div>
     );
@@ -13897,7 +13892,7 @@ const startSimonPuffs = () => {
             {confettiParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size*0.6,background:p.color,borderRadius:1,transform:`rotate(${p.rot}deg)`,zIndex:210,pointerEvents:"none",animation:`confettiFall ${1.5+Math.random()}s ease-out forwards`}}/>))}
             {/* EXPLOSION DEBRIS */}
             {bpPopping && [...Array(14)].map((_,i)=>{const angle=(i/14)*360;const dist=60+Math.random()*80;const dx=Math.cos(angle*Math.PI/180)*dist;const dy=Math.sin(angle*Math.PI/180)*dist;return <div key={"debris"+i} style={{position:"absolute",left:"50%",top:"40%",width:6+Math.random()*8,height:4+Math.random()*6,background:["#FF4D8D","#FFD93D","#00E5FF","#C084FC","#FB923C","#FF4444","#34D399"][i%7],borderRadius:2,zIndex:205,pointerEvents:"none",animation:"bpDebris 0.8s ease-out forwards",transform:`translate(${dx}px, ${dy}px) rotate(${Math.random()*360}deg)`,opacity:0}}/>;})}
-            <div style={{display:"flex",flexDirection:"column",alignItems:"center",position:"relative",display:"flex",flexDirection:"column",alignItems:"center",width:"100%",height:"100%",padding:"48px 16px 20px",zIndex:10}}>
+            <div style={{display:"flex",flexDirection:"column",alignItems:"center",position:"relative",width:"100%",height:"100%",padding:"48px 16px 20px",zIndex:10}}>
               {/* BACK */}
               {renderGameChatPanel("BALLOON POP")}
               {/* INTRO */}
@@ -21514,96 +21509,6 @@ const startSimonPuffs = () => {
           })}
         </div>
       </div>
-
-      <style>{`
-        @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-        @keyframes scanLine{0%{transform:translateY(-100%)}100%{transform:translateY(20000%)}}
-        @keyframes spotlightSweep{0%{transform:translateX(-100%) rotate(15deg)}50%{transform:translateX(400%) rotate(15deg)}100%{transform:translateX(-100%) rotate(15deg)}}
-        @keyframes breathe{0%,100%{opacity:1;transform:scale(1) translateX(-50%)}50%{opacity:.7;transform:scale(1.05) translateX(-50%)}}
-        @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-        @keyframes sheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
-        @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-        @keyframes floatUp{0%{opacity:0;transform:translateY(0)}15%{opacity:0.8}85%{opacity:0.5}100%{opacity:0;transform:translateY(-400px)}}
-        @keyframes zoneEntry{from{opacity:0;transform:scale(0.92) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
-        @keyframes borderShift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
-        @keyframes lightSweep{0%{transform:translateX(-200%) skewX(-15deg)}100%{transform:translateX(400%) skewX(-15deg)}}
-        @keyframes jumbotronProgress{from{transform:scaleX(0)}to{transform:scaleX(1)}}
-        @keyframes portalParticle{0%{opacity:0;transform:translateY(0) scale(0.5)}20%{opacity:0.7;transform:translateY(-10px) scale(1)}100%{opacity:0;transform:translateY(-65px) scale(0.3)}}
-        @keyframes gridScan{0%{transform:translateY(100%)}100%{transform:translateY(-100%)}}
-        @keyframes energyPulse{0%,100%{transform:translate(-50%,-50%) scale(1);opacity:0.15}50%{transform:translate(-50%,-50%) scale(1.15);opacity:0.04}}
-        @keyframes gentleFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
-        @keyframes countPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
-        @keyframes arenaFadeIn{from{opacity:0;transform:translateY(15px) scale(0.97)}to{opacity:1;transform:translateY(0) scale(1)}}
-        @keyframes glowShift{0%,100%{box-shadow:0 0 40px rgba(0,229,255,0.06),0 0 80px rgba(255,217,61,0.03)}50%{box-shadow:0 0 60px rgba(192,132,252,0.06),0 0 100px rgba(255,77,141,0.03)}}
-        @keyframes neonFlicker{0%,18%,22%,25%,53%,57%,100%{opacity:1}20%{opacity:0.6}24%{opacity:0.8}55%{opacity:0.7}}
-        @keyframes ppNeonGlow{0%,100%{text-shadow:0 0 10px currentColor,0 0 30px currentColor,0 0 60px rgba(0,229,255,0.3)}50%{text-shadow:0 0 6px currentColor,0 0 20px currentColor,0 0 40px rgba(0,229,255,0.2)}}
-        @keyframes kioskRevealL{from{opacity:0;transform:perspective(1000px) rotateY(6deg) translateX(-20px)}to{opacity:1;transform:perspective(1000px) rotateY(1.5deg) translateX(0)}}
-        @keyframes kioskRevealR{from{opacity:0;transform:perspective(1000px) rotateY(-6deg) translateX(20px)}to{opacity:1;transform:perspective(1000px) rotateY(-1.5deg) translateX(0)}}
-        @keyframes neonSign{0%,100%{text-shadow:0 0 7px var(--nc),0 0 15px var(--nc),0 0 30px var(--nc)}50%{text-shadow:0 0 4px var(--nc),0 0 10px var(--nc),0 0 20px var(--nc)}}
-        @keyframes corridorPulse{0%,100%{opacity:0.5}50%{opacity:0.8}}
-        @keyframes walkFlash{0%{opacity:0}15%{opacity:1}85%{opacity:1}100%{opacity:0}}
-        @keyframes loadingImageReveal{0%{opacity:0;transform:scale(1.1)}60%{opacity:0.6;transform:scale(1.03)}100%{opacity:0.8;transform:scale(1)}}
-        @keyframes loadingTextReveal{0%{opacity:0;transform:translateY(10px)}100%{opacity:1;transform:translateY(0)}}
-        @keyframes loadingBar{0%{transform:scaleX(0)}100%{transform:scaleX(1)}}
-        @keyframes panelSlideUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
-        @keyframes glassFloatIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
-        @keyframes shake{0%,100%{transform:translateX(0)}10%{transform:translateX(-4px) rotate(-0.5deg)}30%{transform:translateX(4px) rotate(0.5deg)}50%{transform:translateX(-3px)}70%{transform:translateX(3px)}90%{transform:translateX(-1px)}}
-        @keyframes flashOverlay{0%{opacity:0.8}100%{opacity:0}}
-        @keyframes tickerScroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
-        @keyframes confettiFall{0%{transform:translateY(0) rotate(0deg);opacity:1}100%{transform:translateY(400px) translateX(40px) rotate(720deg);opacity:0}}
-        @keyframes smokeRise{0%{transform:scale(0.5) translateY(0);opacity:0.15}50%{opacity:0.08}100%{transform:scale(2.5) translateY(-150px);opacity:0}}
-        @keyframes puffWaveSweep{0%{transform:translateY(100%);opacity:0}20%{opacity:1}80%{opacity:0.6}100%{transform:translateY(-20%);opacity:0}}
-        @keyframes slideInLeft{from{transform:translateX(-80px);opacity:0}to{transform:translateX(0);opacity:1}}
-        @keyframes slideInRight{from{transform:translateX(80px);opacity:0}to{transform:translateX(0);opacity:1}}
-        @keyframes bubbleFloat{0%{transform:translateY(0) scale(1);opacity:0.6}50%{opacity:0.4}100%{transform:translateY(-200px) scale(0.3) translateX(20px);opacity:0}}
-        @keyframes duelHeartbeat{0%,100%{background:rgba(0,0,0,0);transform:scale(1)}50%{background:rgba(30,0,0,0.15);transform:scale(1.005)}}
-        @keyframes duelHeatShimmer{0%,100%{transform:scaleY(1)}50%{transform:scaleY(1.002) translateY(-0.5px)}}
-        @keyframes duelTumbleweed{0%{transform:translateX(-50px) rotate(0deg)}100%{transform:translateX(calc(100vw + 50px)) rotate(720deg)}}
-        @keyframes duelDust{0%,100%{transform:translateX(0) translateY(0);opacity:0.2}25%{transform:translateX(15px) translateY(-8px);opacity:0.5}50%{transform:translateX(30px) translateY(2px);opacity:0.3}75%{transform:translateX(10px) translateY(-5px);opacity:0.4}}
-        @keyframes duelBreathe{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.03);opacity:0.85}}
-        @keyframes duelSmoke{0%{transform:scale(0.5);opacity:0.6}100%{transform:scale(3) translateY(-40px);opacity:0}}
-        @keyframes duelCountdownPop{0%{transform:scale(2.5);opacity:0}30%{transform:scale(0.9);opacity:1}50%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
-        @keyframes duelRedPulse{0%,100%{opacity:0.15}50%{opacity:0.3}}
-        @keyframes duelDrawFlash{0%{transform:scale(3);opacity:0}100%{transform:scale(1);opacity:1}}
-        @keyframes atmosSmokeDrift{0%{transform:translateX(0) translateY(0) scale(1)}50%{transform:translateX(30px) translateY(-20px) scale(1.3)}100%{transform:translateX(-20px) translateY(10px) scale(0.9)}}
-        @keyframes atmosLightning{0%{opacity:0.12}50%{opacity:0}80%{opacity:0.06}100%{opacity:0}}
-        @keyframes atmosGoldFloat{0%{transform:translateY(0) scale(1);opacity:0.7}50%{transform:translateY(-15px) scale(1.2);opacity:1}100%{transform:translateY(0) scale(1);opacity:0.7}}
-        @keyframes atmosGoldPulse{0%,100%{opacity:1;text-shadow:0 0 10px currentColor}50%{opacity:0.6;text-shadow:0 0 20px currentColor,0 0 40px currentColor}}
-        @keyframes atmosEnergyPulse{0%,100%{filter:brightness(1) drop-shadow(0 0 4px currentColor)}50%{filter:brightness(1.3) drop-shadow(0 0 12px currentColor)}}
-        @keyframes duelEyeGlow{0%,100%{opacity:0.5;box-shadow:0 0 4px currentColor}50%{opacity:1;box-shadow:0 0 12px currentColor,0 0 24px currentColor}}
-        @keyframes duelMuzzle{0%{transform:scale(0.3);opacity:1}50%{transform:scale(1.5);opacity:0.8}100%{transform:scale(2);opacity:0}}
-        @keyframes duelStar{0%,100%{opacity:0.2}50%{opacity:0.8}}
-        @keyframes wwVulture{0%{transform:translateX(0) translateY(0)}25%{transform:translateX(30px) translateY(-10px)}50%{transform:translateX(60px) translateY(5px)}75%{transform:translateX(30px) translateY(-15px)}100%{transform:translateX(0) translateY(0)}}
-        @keyframes wwShootingStar{0%{transform:rotate(35deg) translateX(0);opacity:1}100%{transform:rotate(35deg) translateX(120px);opacity:0}}
-        @keyframes goalBurst{0%{transform:scale(0.3);opacity:0}40%{transform:scale(1.15);opacity:1}70%{transform:scale(0.95)}100%{transform:scale(1);opacity:1}}
-        @keyframes bpWobble{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2deg)}}
-        @keyframes bpWobbleFast{0%,100%{transform:rotate(-4deg) scale(1.02)}25%{transform:rotate(3deg) scale(0.98)}50%{transform:rotate(-3deg) scale(1.01)}75%{transform:rotate(4deg) scale(0.99)}}
-        @keyframes bpInflate{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
-        @keyframes bpExplode{0%{transform:scale(1);opacity:1}50%{transform:scale(2.5);opacity:0.8}100%{transform:scale(4);opacity:0}}
-        @keyframes rpParticleBurst{0%{transform:scale(1);opacity:1}50%{transform:scale(1.5) translateY(-15px);opacity:.6}100%{transform:scale(.3) translateY(-30px);opacity:0}}
-        @keyframes rpRatingPop{0%{transform:translateX(-50%) scale(0);opacity:0}30%{transform:translateX(-50%) scale(1.3);opacity:1}60%{transform:translateX(-50%) scale(.95);opacity:1}100%{transform:translateX(-50%) translateY(-20px) scale(.8);opacity:0}}
-        @keyframes rpNoteGlow{0%,100%{box-shadow:0 0 8px currentColor}50%{box-shadow:0 0 20px currentColor,0 0 30px currentColor}}
-        @keyframes rpLanePulse{0%,100%{opacity:.15}50%{opacity:.35}}
-        @keyframes hpBombPulse{0%,100%{transform:scale(1);filter:brightness(1)}50%{transform:scale(1.15);filter:brightness(1.3) drop-shadow(0 0 12px rgba(255,100,0,0.6))}}
-        @keyframes hpFuseBurn{0%{transform:scaleX(1)}100%{transform:scaleX(0)}}
-        @keyframes hpExplosion{0%{transform:scale(1);opacity:1}30%{transform:scale(2.5);opacity:1;filter:brightness(2)}60%{transform:scale(3);opacity:0.7}100%{transform:scale(4);opacity:0}}
-        @keyframes hpPassAnim{0%{transform:translateX(0)}50%{transform:translateX(10px) scale(1.2)}100%{transform:translateX(0)}}
-        @keyframes hookLineShake{0%,100%{transform:translateX(-50%) rotate(-1deg)}50%{transform:translateX(-50%) rotate(1deg)}}
-        @keyframes hookFishFight{0%,100%{transform:translateX(0) rotate(-3deg)}25%{transform:translateX(-8px) rotate(2deg)}50%{transform:translateX(5px) rotate(-2deg)}75%{transform:translateX(-3px) rotate(3deg)}}
-        @keyframes hookFishPull{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-4px) scale(1.05)}}
-        @keyframes specErupt{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
-        @keyframes specEruptFlash{0%{opacity:1}100%{opacity:0}}
-        @keyframes specTickerScroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
-        @keyframes puffReactFloat{0%{opacity:0;transform:translateY(0) scale(0.5)}10%{opacity:1;transform:translateY(-20px) scale(1)}50%{opacity:0.8;transform:translateY(-150px) scale(1.1)}100%{opacity:0;transform:translateY(-350px) scale(0.6)}}
-        @keyframes peCountdownPop{0%{transform:scale(2.5);opacity:0}30%{transform:scale(0.9);opacity:1}50%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
-        @keyframes peChainLink{0%{transform:scale(0) rotate(-180deg);opacity:0}60%{transform:scale(1.2) rotate(10deg);opacity:1}100%{transform:scale(1) rotate(0deg);opacity:1}}
-        @keyframes peMeterFill{0%{width:0%}100%{width:var(--fill-pct,50%)}}
-        @keyframes peGlowPulse{0%,100%{box-shadow:0 0 20px var(--glow-color,rgba(0,229,255,0.3))}50%{box-shadow:0 0 40px var(--glow-color,rgba(0,229,255,0.5)),0 0 60px var(--glow-color,rgba(0,229,255,0.2))}}
-        *{-webkit-tap-highlight-color:transparent;user-select:none;box-sizing:border-box}
-        input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
-        input[type=number]{-moz-appearance:textfield}
-        ::-webkit-scrollbar{width:2px;height:2px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.06);border-radius:2px}
-      `}</style>
     </div>
   );
 }
