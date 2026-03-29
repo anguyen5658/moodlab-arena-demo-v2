@@ -1467,6 +1467,7 @@ export default function MoodLabArena() {
   const [showBlePopup, setShowBlePopup] = useState(false);
   const [bleConnected, setBleConnected] = useState(false);
   const [bleScanning, setBleScanning] = useState(false);
+  const [btPuffActive, setBtPuffActive] = useState(false);
   // BLE refs — stable across renders, safe to use inside event listeners
   const btDeviceRef      = useRef(null); // BluetoothDevice
   const btCharNotify     = useRef(null); // notify characteristic
@@ -6454,9 +6455,21 @@ export default function MoodLabArena() {
       charNotify.addEventListener("characteristicvaluechanged", (e) => {
         const dv = e.target.value;
         const b  = Array.from({ length: dv.byteLength }, (_, i) => dv.getUint8(i));
+        const hex = b.map(v => v.toString(16).padStart(2, "0")).join(" ");
         const match = (template) => b.length === template.length && template.every((v, i) => b[i] === v);
-        if      (match(BLE_PUFF_START)) { btPuffDown.current?.();  btPuffEventDown.current?.(); }
-        else if (match(BLE_PUFF_STOP))  { btPuffUp.current?.();    btPuffEventUp.current?.();   }
+        if (match(BLE_PUFF_START)) {
+          console.log("[BLE] PUFF START →", hex);
+          setBtPuffActive(true);
+          btPuffDown.current?.();
+          btPuffEventDown.current?.();
+        } else if (match(BLE_PUFF_STOP)) {
+          console.log("[BLE] PUFF STOP  →", hex);
+          setBtPuffActive(false);
+          btPuffUp.current?.();
+          btPuffEventUp.current?.();
+        } else {
+          console.log("[BLE] unknown packet →", hex);
+        }
       });
 
       await charNotify.startNotifications();
@@ -21445,6 +21458,17 @@ const startSimonPuffs = () => {
         backgroundImage:`url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
       }}/>}
 
+      {/* BLE puff top-glow — lights up when device is heating */}
+      <div style={{
+        position:"fixed",top:0,left:0,right:0,height:220,
+        pointerEvents:"none",zIndex:250,
+        background:"linear-gradient(180deg, rgba(0,229,255,0.55) 0%, rgba(192,132,252,0.30) 35%, rgba(255,77,141,0.15) 65%, transparent 100%)",
+        opacity: btPuffActive ? 1 : 0,
+        transition: btPuffActive ? "opacity 0.18s ease-out" : "opacity 0.6s ease-in",
+        animation: btPuffActive ? "btPuffGlow 1.4s ease-in-out infinite alternate" : "none",
+        filter:"blur(1px)",
+      }}/>
+
       {renderAtmosphere()}
 
       {/* Notification */}
@@ -21686,6 +21710,7 @@ const startSimonPuffs = () => {
         @keyframes peChainLink{0%{transform:scale(0) rotate(-180deg);opacity:0}60%{transform:scale(1.2) rotate(10deg);opacity:1}100%{transform:scale(1) rotate(0deg);opacity:1}}
         @keyframes peMeterFill{0%{width:0%}100%{width:var(--fill-pct,50%)}}
         @keyframes peGlowPulse{0%,100%{box-shadow:0 0 20px var(--glow-color,rgba(0,229,255,0.3))}50%{box-shadow:0 0 40px var(--glow-color,rgba(0,229,255,0.5)),0 0 60px var(--glow-color,rgba(0,229,255,0.2))}}
+        @keyframes btPuffGlow{0%{background:linear-gradient(180deg,rgba(0,229,255,0.55) 0%,rgba(192,132,252,0.30) 35%,rgba(255,77,141,0.15) 65%,transparent 100%)}100%{background:linear-gradient(180deg,rgba(192,132,252,0.65) 0%,rgba(0,229,255,0.25) 35%,rgba(255,217,61,0.12) 65%,transparent 100%)}}
         *{-webkit-tap-highlight-color:transparent;user-select:none;box-sizing:border-box}
         input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
         input[type=number]{-moz-appearance:textfield}
