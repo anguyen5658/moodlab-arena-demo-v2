@@ -71,6 +71,48 @@ Inline React styles throughout. No CSS files, no CSS modules. Glass-morphism des
 - `coins` and `xp` are global currency; award them at the end of a game's result phase.
 - The live spectator ticker (`liveSpectators`, `floatingReactions`, `crowdEnergy`) is zone-agnostic and can be referenced from any zone.
 
+## Bluetooth Low Energy (BLE) integration
+
+The app connects to a Cali Clear vaporizer via Web Bluetooth API. Physical puffs replace the on-screen "HOLD TO PUFF" button.
+
+### Device protocol
+
+| Property | UUID |
+|---|---|
+| Service | `0000ffe0-0000-1000-8000-00805f9b34fb` |
+| Notify characteristic | `0000ffe6-0000-1000-8000-00805f9b34fb` |
+| Write characteristic | `0000ffe5-0000-1000-8000-00805f9b34fb` (reserved, unused) |
+
+Packets: `b4 b4 02 00 04 4b` = puff start, `b4 b5 02 00 05 4b` = puff stop.
+
+### Key state and refs (top of `MoodLabArena`)
+
+| Name | Type | Purpose |
+|---|---|---|
+| `btPuffActive` | state | drives the top glow overlay |
+| `btDeviceRef` | ref | `BluetoothDevice` handle for disconnect |
+| `btCharNotify` | ref | notify characteristic handle |
+| `btPuffDown` / `btPuffUp` | refs | active game's puff start/stop handlers |
+| `btPuffEventDown` / `btPuffEventUp` | refs | Puff Events system handlers (always wired) |
+| `btPuffTimeout` | ref | 15 s safety timer — stops puff if `PUFF_STOP` is never received |
+
+### Stale closure solution
+
+The `characteristicvaluechanged` listener is registered once at connect time. To avoid stale closures, a **per-render IIFE** (search for `Keep BT puff refs in sync`) writes the current game's handler closures into `btPuffDown`/`btPuffUp` refs on every render. The listener always reads from these refs, never from closed-over values.
+
+### Adding BLE support to a new game
+
+Find the IIFE block (search `Keep BT puff refs in sync`) and add a branch:
+
+```js
+else if (id === "mygame") { down = myGamePuffStart; up = myGamePuffStop; }
+```
+
+- Hold-based game: provide both `down` and `up`.
+- Tap-based game: provide only `down`, set `up = null`.
+
+See `Doc/BLE-Implementation.md` for the full list of wired games and remaining TODO items. The reusable hook lives in `ble/` (`bleUtils.js`, `useBleDevice.js`, `useBleArena.js`).
+
 ## Assets
 
 Static media lives in `assets/arena/`. Each zone has a matching `.png` (thumbnail) and `.mp4` (background video).
