@@ -5936,7 +5936,6 @@ export default function MoodLabArena() {
         setSwShowBust(true);
         setSwTotalWon(prev => Math.max(0, prev + actualValue));
         setCoins(c => Math.max(0, c + actualValue));
-        recordGameResult(false, 0, 8);
         playFx("lose");
         setTimeout(() => { try { playFx("laugh"); } catch(e) {} }, 300);
         triggerFlash("red");
@@ -5944,7 +5943,6 @@ export default function MoodLabArena() {
       } else if(prize.label === "JACKPOT") {
         setSwShowJackpot(true);
         setSwTotalWon(prev => prev + actualValue);
-        recordGameResult(actualValue > 0, 20, 20);
         playFx("jackpot_alarm");
         playFx("crowd");
         spawnConfetti(80, [C.gold, C.orange, "#fff", C.cyan, C.pink]);
@@ -5952,7 +5950,6 @@ export default function MoodLabArena() {
         notify("👑 JACKPOT! +" + actualValue + " coins!", C.gold);
       } else {
         setSwTotalWon(prev => prev + actualValue);
-        recordGameResult(actualValue > 0, 20, actualValue > 0 ? 20 : 8);
         playFx("win");
         spawnConfetti(20, [prize.color, C.gold]);
         notify(prize.emoji + " +" + actualValue + " coins!", prize.color);
@@ -5971,6 +5968,7 @@ export default function MoodLabArena() {
             notify("🌟 BONUS ROUND UNLOCKED!", C.gold);
           } else {
             setSwPhase("complete");
+            recordGameResult(newTotal > 0, newTotal > 0 ? 20 : 0, newTotal > 0 ? 20 : 8);
           }
         } else {
           setSwPhase("ready");
@@ -8042,7 +8040,6 @@ export default function MoodLabArena() {
         const pts = ans==="certain" ? 150 : 50;
         setCbScore(s=>s+pts);
         setCbStreak(s=>s+1);
-        recordGameResult(true, 20, 20);
         playFx("crowd");
         spawnConfetti(30);
         setCommentary(ans==="certain"?"BLINKER BONUS! 3x COINS! The Fortune pays out big!":"Correct! The Crystal Ball confirms your vision!");
@@ -8060,7 +8057,7 @@ export default function MoodLabArena() {
   };
   const cbNextRound = () => {
     const next = cbRound + 1;
-    if(next >= 5) { setCbPhase("complete"); return; }
+    if(next >= 5) { setCbPhase("complete"); recordGameResult(cbScore>0, cbScore>0?20:0, cbScore>0?20:8); return; }
     let q;
     do { q = CB_PREDICTIONS[Math.floor(Math.random()*CB_PREDICTIONS.length)]; } while(cbUsed.includes(q.q) && cbUsed.length < CB_PREDICTIONS.length);
     setCbUsed(u=>[...u,q.q]);
@@ -8113,11 +8110,10 @@ export default function MoodLabArena() {
     const pts = (vote==="left" && leftPct>50) || (vote==="right" && rightPct>50) ? 30 : 10;
     const correct = (vote==="left" && leftPct>50) || (vote==="right" && rightPct>50);
     setSbScore(s=>s+pts);
-    recordGameResult(correct, 20, correct ? 20 : 8);
   };
   const sbNextRound = () => {
     const next = sbRound + 1;
-    if(next >= 5) { setSbPhase("complete"); return; }
+    if(next >= 5) { setSbPhase("complete"); recordGameResult(sbScore>0, sbScore>0?20:0, sbScore>0?20:8); return; }
     setSbMatchup([sbMatchups[next][0],sbMatchups[next][1]]);
     setSbVote(null);
     setSbResults(null);
@@ -8169,14 +8165,14 @@ export default function MoodLabArena() {
       const pts = correct ? 100 : 0;
       setMpResults(prev=>[...prev,{match:mpMatch,prediction:pred,result:simResult,correct}]);
       setMpScore(s=>s+pts);
-      if(correct) { recordGameResult(correct, 20, 20); spawnConfetti(30); playFx("crowd"); setCommentary("Correct prediction! +20 coins!"); }
+      if(correct) { spawnConfetti(30); playFx("crowd"); setCommentary("Correct prediction! +20 coins!"); }
       else { setCommentary("Not this time... the result was: "+(simResult==="home"?"Home Win":simResult==="draw"?"Draw":"Away Win")); }
       setMpPhase("result"); setTimeout(()=>mpNextRound(), 2500);
     },2000);
   };
   const mpNextRound = () => {
     const next = mpRound + 1;
-    if(next >= 5) { setMpPhase("complete"); return; }
+    if(next >= 5) { setMpPhase("complete"); recordGameResult(mpScore>0, mpScore>0?20:0, mpScore>0?20:8); return; }
     const shuffled = [...MP_MATCHES].sort(()=>Math.random()-0.5);
     const nextMatch = shuffled.find(m=>!mpUsed.includes(m.id)) || shuffled[0];
     setMpUsed(u=>[...u,nextMatch.id]);
@@ -8233,7 +8229,6 @@ export default function MoodLabArena() {
       setDpAnswered(prev=>[...prev,ans]);
       if(correct) {
         setDpStreak(s=>s+1);
-        recordGameResult(correct, 20, 20);
         spawnConfetti(30);
         setCommentary(mult>1?"Streak bonus! "+mult+"x multiplier! +"+pts+" coins!":"Correct! +"+pts+" coins!");
       } else {
@@ -8248,7 +8243,7 @@ export default function MoodLabArena() {
           setDpPhase("pick");
         },1500);
       } else {
-        setTimeout(()=>setDpPhase("summary"),1500);
+        setTimeout(()=>{const wins=dpResults.filter(r=>r.correct).length+((correct)?1:0);setDpPhase("summary");recordGameResult(wins>0, wins>0?20:0, wins>0?20:8);},1500);
       }
     },1500);
   };
@@ -8506,14 +8501,14 @@ export default function MoodLabArena() {
     } else {
       result="push";setCommentary("Push! Both have "+pTotal);
     }
-    if(winAmt>0){recordGameResult(true, 20, 20);updateFortuneXP(winAmt);playFx("crowd");}
-    else if(result==="bust"||result==="lose"){recordGameResult(false, 0, 8);setCoins(c=>Math.max(0,c-bet));}
+    if(winAmt>0){updateFortuneXP(winAmt);playFx("crowd");}
+    else if(result==="bust"||result==="lose"){setCoins(c=>Math.max(0,c-bet));}
     setBjResult(result);setBjScore(s=>s+winAmt);setBjPhase("result");
     setTimeout(()=>bjNextRound(),2500);
   };
   const bjNextRound = () => {
     const next=bjRound+1;
-    if(next>=7){setBjPhase("complete");return;}
+    if(next>=7){setBjPhase("complete");recordGameResult(bjScore>0, bjScore>0?20:0, bjScore>0?20:8);return;}
     setBjRound(next);setBjBet(50);bjBetRef.current=50;setBjResult(null);
     bjDeal();
   };
@@ -8570,7 +8565,6 @@ export default function MoodLabArena() {
       if(won) {
         const winAmt = Math.floor(cfBet*mult);
         const cfW = fortuneLuckyHour?winAmt*2:winAmt;
-        recordGameResult(true, 20, 20);
         updateFortuneXP(cfW);
         setCfScore(s=>s+cfW);
         setCfStreak(s=>s+1);
@@ -8590,7 +8584,7 @@ export default function MoodLabArena() {
   };
   const cfNextRound = () => {
     const next=cfRound+1;
-    if(next>=8){setCfPhase("complete");return;}
+    if(next>=8){setCfPhase("complete");recordGameResult(cfScore>0, cfScore>0?20:0, cfScore>0?20:8);return;}
     setCfRound(next);setCfChoice(null);setCfResult(null);setCfPuffConfidence(0);setCfFlipping(false);
     setCfPhase("betting");
     setCommentary("Round "+(next+1)+"/8 — Pick heads or tails!");
@@ -8651,7 +8645,7 @@ export default function MoodLabArena() {
         // Come-out roll
         if(diceTotal===7||diceTotal===11) {
           const win = isBlinker?Math.floor(crapsBet*1.5):crapsBet;
-          setCrapsResult("win");recordGameResult(true, 20, 20);setCrapsScore(s=>s+win);
+          setCrapsResult("win");setCrapsScore(s=>s+win);
           spawnConfetti(20);playFx("crowd");
           setCommentary("NATURAL "+diceTotal+"! You WIN +"+win+"!");
         } else if(diceTotal===2||diceTotal===3||diceTotal===12) {
@@ -8668,7 +8662,7 @@ export default function MoodLabArena() {
         // Point phase
         if(diceTotal===crapsPoint) {
           const win = isBlinker?Math.floor(crapsBet*1.5):crapsBet;
-          setCrapsResult("win");recordGameResult(true, 20, 20);setCrapsScore(s=>s+win);
+          setCrapsResult("win");setCrapsScore(s=>s+win);
           spawnConfetti(30);playFx("crowd");triggerFlash("goal");
           setCommentary("HIT THE POINT! "+diceTotal+"! You WIN +"+win+"!");
           setCrapsPoint(null);
@@ -8688,7 +8682,7 @@ export default function MoodLabArena() {
   };
   const crapsNextRound = () => {
     const next=crapsRound+1;
-    if(next>=8){setCrapsPhase("complete");return;}
+    if(next>=8){setCrapsPhase("complete");recordGameResult(crapsScore>0, crapsScore>0?20:0, crapsScore>0?20:8);return;}
     setCrapsRound(next);setCrapsDice([1,1]);setCrapsResult(null);setCrapsHotDice(false);setCrapsPoint(null);
     setCrapsPhase("rolling");
     setCommentary("Round "+(next+1)+"/8 — Come-out roll! HOLD to puff!");
@@ -8747,7 +8741,7 @@ export default function MoodLabArena() {
       spawnConfetti(30);triggerFlash("goal");
     }
     setMbPrize(prize);setMbRevealed(true);setMbPhase("reveal");playFx("box_open");
-    if(prize.value>0){recordGameResult(true, 20, 20);setMbScore(s=>s+prize.value);}
+    if(prize.value>0){setMbScore(s=>s+prize.value);}
     if(prize.rarity==="legendary"){spawnConfetti(50);triggerFlash("goal");playFx("treasure_find");setCommentary("LEGENDARY! "+prize.emoji+" "+prize.name+"!");}
     else if(prize.rarity==="rare"){spawnConfetti(20);playFx("treasure_find");setCommentary("Rare find! "+prize.emoji+" "+prize.name);}
     else if(prize.value>0){playFx("coin_collect");setCommentary(prize.emoji+" "+prize.name+" -- nice!");}
@@ -8756,7 +8750,7 @@ export default function MoodLabArena() {
   };
   const mbNextRound = () => {
     const next=mbRound+1;
-    if(next>=5){setMbPhase("complete");return;}
+    if(next>=5){setMbPhase("complete");recordGameResult(mbScore>0, mbScore>0?20:0, mbScore>0?20:8);return;}
     setMbRound(next);setMbBoxes(mbGenerateBoxes());setMbPicked(null);setMbRevealed(false);setMbPrize(null);
     setMbPhase("pick");setCommentary("Round "+(next+1)+"/5 -- Pick a box!");
   };
@@ -8824,7 +8818,7 @@ export default function MoodLabArena() {
       if(bestSymbol && (bestCount+wilds>=3 || bestCount>=3)) {
         const payout = SC_PAYOUTS[bestSymbol]||(bestSymbol==="🌟"?500:50);
         setScPrize({symbol:bestSymbol,amount:payout});
-        setScScore(s=>s+payout);recordGameResult(payout > 0, 20, payout > 0 ? 20 : 8);
+        setScScore(s=>s+payout);
         spawnConfetti(40);triggerFlash("goal");playFx("crowd");
         setCommentary("WINNER! 3x "+bestSymbol+" = "+payout+" coins!");
       } else {
@@ -8836,7 +8830,7 @@ export default function MoodLabArena() {
   };
   const scNextRound = () => {
     const next=scRound+1;
-    if(next>=3){setScPhase("complete");return;}
+    if(next>=3){setScPhase("complete");recordGameResult(scScore>0, scScore>0?20:0, scScore>0?20:8);return;}
     setScRound(next);setScCard(scGenerateCard());setScRevealed([false,false,false,false,false,false]);
     setScCurrentIdx(null);setScMatches({});setScPrize(null);
     setScPhase("scratching");setCommentary("Card "+(next+1)+"/3 -- Scratch away!");
@@ -8909,14 +8903,14 @@ export default function MoodLabArena() {
     }
     const baseCoins = Math.floor(10 + Math.random()*190);
     const fcWin = isBlinker ? Math.floor(50 + Math.random()*450) : baseCoins;
-    setFcFortune(fortune);setFcCoins(fcWin);recordGameResult(true, 20, 20);setFcScore(s=>s+fcWin);
+    setFcFortune(fortune);setFcCoins(fcWin);setFcScore(s=>s+fcWin);
     setFcPhase("reading");
     setTimeout(()=>setFcPhase("result"),3000);
     setTimeout(()=>fcNextRound(),4500);
   };
   const fcNextRound = () => {
     const next=fcRound+1;
-    if(next>=5){setFcPhase("complete");return;}
+    if(next>=5){setFcPhase("complete");recordGameResult(fcScore>0, fcScore>0?20:0, fcScore>0?20:8);return;}
     setFcRound(next);setFcFortune("");setFcCoins(0);setFcCracking(false);setFcGolden(false);
     setFcPhase("holding");setCommentary("Cookie "+(next+1)+"/5 -- HOLD to crack!");
   };
@@ -10994,7 +10988,6 @@ export default function MoodLabArena() {
 
     if(!perfect) {
       const coins = error <= 0.10 ? 100 : error <= 0.25 ? 50 : error <= 0.50 ? 25 : error <= 1.0 ? 10 : 5;
-      recordGameResult(error <= 0.25, error <= 0.25 ? 80 : 12, error <= 0.25 ? 20 : 8);
       notify("+"+coins+" coins (error: "+error.toFixed(2)+"s)",error<=0.25?C.green:C.gold);
       if(stageRole) { if(error<=0.25) showMC("correct",{points:String(coins)}); else if(error>1.0) showMC("wrong"); }
     }
@@ -11027,6 +11020,8 @@ export default function MoodLabArena() {
       triggerFlash("goal");
       recordGameResult(true, 80, 20);
       notify("TOP 3 FINISH! +80 bonus coins!",C.gold);
+    } else {
+      recordGameResult(avgError <= 0.50, avgError <= 0.50 ? 30 : 10, avgError <= 0.50 ? 20 : 8);
     }
     if(stageRole) showMC("finale");
   };
