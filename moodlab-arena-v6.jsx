@@ -8254,6 +8254,8 @@ export default function MoodLabArena() {
       setFortuneLevel({level: names[newLevel] || names[0], progress, totalWagered: newXP});
       return newXP;
     });
+    // Fortune King badge: win 5,000+ coins in Fortune games
+    if(!earnedBadges.includes("fortuneking") && (fortuneXP + Math.abs(amount)) >= 5000) { setEarnedBadges(b => [...b, "fortuneking"]); const badge = LOYALTY_BADGES.find(b=>b.id==="fortuneking"); if(badge) setTimeout(()=>showAchievementPopup(badge), 800); }
   };
 
   // ═══════════════════════════════════════════════════════════════
@@ -10719,6 +10721,7 @@ export default function MoodLabArena() {
       triggerFlash("goal");
       setCoins(c=>c+500);
       notify("SURVIVOR! +500 coins!",C.gold);
+      if(!earnedBadges.includes("showchamp")) { setEarnedBadges(b => [...b, "showchamp"]); const badge = LOYALTY_BADGES.find(b=>b.id==="showchamp"); if(badge) setTimeout(()=>showAchievementPopup(badge), 800); }
       return;
     }
     const isFinal = playersLeft <= 3;
@@ -10839,6 +10842,7 @@ export default function MoodLabArena() {
         triggerFlash("goal");
         setCoins(c=>c+500);
         notify("SOLE SURVIVOR! +500 coins!",C.gold);
+        if(!earnedBadges.includes("showchamp")) { setEarnedBadges(b => [...b, "showchamp"]); const badge = LOYALTY_BADGES.find(b=>b.id==="showchamp"); if(badge) setTimeout(()=>showAchievementPopup(badge), 800); }
         if(stageRole) showMC("finale");
         return;
       }
@@ -11460,6 +11464,7 @@ const startSimonPuffs = () => {
             setSpPhase("final");
             setCommentary("INCREDIBLE! You completed all 10 rounds!");
             spawnConfetti(30);
+            if(!earnedBadges.includes("showchamp")) { setEarnedBadges(b => [...b, "showchamp"]); const badge = LOYALTY_BADGES.find(b=>b.id==="showchamp"); if(badge) setTimeout(()=>showAchievementPopup(badge), 800); }
           } else {
             spStartRound(spRound + 1);
           }
@@ -11626,6 +11631,7 @@ const startSimonPuffs = () => {
       triggerFlash("goal");
       spawnConfetti(30);
       playFx("coin_collect");
+      if(!earnedBadges.includes("showchamp")) { setEarnedBadges(b => [...b, "showchamp"]); const badge = LOYALTY_BADGES.find(b=>b.id==="showchamp"); if(badge) setTimeout(()=>showAchievementPopup(badge), 800); }
       setCommentary("YOU WIN! " + prize.emoji + " " + prize.name + "! Bid: " + dur.toFixed(2) + "s");
       setPaComment("SOLD to the champion puffer! +" + prize.value + " coins!");
       if(stageRole) showMC("correct",{points:String(prize.value)});
@@ -21611,6 +21617,8 @@ const startSimonPuffs = () => {
     });
 
     if(won) {
+      // Show Champ badge: win any Stage show
+      if(zone === "stage" && !earnedBadges.includes("showchamp")) { setEarnedBadges(b => [...b, "showchamp"]); const badge = LOYALTY_BADGES.find(b=>b.id==="showchamp"); if(badge) setTimeout(()=>showAchievementPopup(badge), 800); }
       setCurrentWinStreak(s => {
         const newStreak = s + 1;
         setBestWinStreak(b => Math.max(b, newStreak));
