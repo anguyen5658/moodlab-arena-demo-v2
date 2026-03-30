@@ -14551,6 +14551,7 @@ const startSimonPuffs = () => {
                   <div onClick={()=>{setTowPhase(null);startTugOfWar();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.blue}15`,border:`1px solid ${C.blue}30`,fontSize:13,fontWeight:800,color:C.blue}}>🔄 Again</div>
                   <div onClick={towEndGame} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.text3}10`,border:`1px solid ${C.text3}20`,fontSize:13,fontWeight:800,color:C.text3}}>Done ✓</div>
                 </div>
+                <div onClick={()=>{towEndGame();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
               </div>)}
             </div>
           </div>
@@ -15201,6 +15202,7 @@ const startSimonPuffs = () => {
                     <div onClick={(e)=>{e.stopPropagation();rpsEndGame();startRps();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.purple}15`,border:`1px solid ${C.purple}30`,fontSize:13,fontWeight:800,color:C.purple}}>🥋 Rematch</div>
                     <div onClick={(e)=>{e.stopPropagation();rpsEndGame();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.text3}10`,border:`1px solid ${C.text3}20`,fontSize:13,fontWeight:800,color:C.text3}}>Done ✓</div>
                   </div>
+                  <div onClick={(e)=>{e.stopPropagation();rpsEndGame();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
                 </div>
               )}
             </div>
