@@ -1,0 +1,1249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mood Lab Arena -- Loyalty System Infographic</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  :root {
+    --bg: #050510;
+    --bg2: #0a0a20;
+    --bg3: #0f0f2a;
+    --card: #12123a;
+    --border: rgba(255,255,255,0.06);
+    --border2: rgba(255,255,255,0.12);
+    --text: #F0EEFF;
+    --text2: #A8A3D0;
+    --text3: #6E6A95;
+    --pink: #FF4D8D;
+    --cyan: #00E5FF;
+    --gold: #FFD93D;
+    --purple: #C084FC;
+    --orange: #FB923C;
+    --green: #34D399;
+    --red: #FF4444;
+    --blue: #60A5FA;
+    --bronze: #CD7F32;
+    --silver: #C0C0C0;
+    --diamond: #00E5FF;
+    --legend: #FF4D8D;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .page-wrap {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+  }
+
+  /* ── Glass Card ── */
+  .glass {
+    background: rgba(8,8,25,0.72);
+    backdrop-filter: blur(40px) saturate(1.4);
+    -webkit-backdrop-filter: blur(40px) saturate(1.4);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06);
+  }
+
+  .glass-clear {
+    background: rgba(255,255,255,0.04);
+    backdrop-filter: blur(50px) saturate(1.5);
+    -webkit-backdrop-filter: blur(50px) saturate(1.5);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px;
+  }
+
+  /* ── Header ── */
+  .hero {
+    text-align: center;
+    padding: 60px 20px 50px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -40%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    height: 400px;
+    background: radial-gradient(ellipse, rgba(255,77,141,0.15), transparent 70%);
+    pointer-events: none;
+  }
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 18px;
+    border-radius: 100px;
+    background: rgba(255,77,141,0.1);
+    border: 1px solid rgba(255,77,141,0.25);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--pink);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+  .hero h1 {
+    font-size: 48px;
+    font-weight: 900;
+    letter-spacing: -2px;
+    background: linear-gradient(135deg, var(--pink), var(--purple), var(--cyan));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.1;
+    margin-bottom: 16px;
+  }
+  .hero p {
+    font-size: 16px;
+    color: var(--text2);
+    max-width: 520px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  /* ── Section ── */
+  .section {
+    margin-bottom: 48px;
+  }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .section-num {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 900;
+    color: #fff;
+    flex-shrink: 0;
+  }
+  .section-title {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+  .section-subtitle {
+    font-size: 13px;
+    color: var(--text3);
+    margin-top: 2px;
+  }
+
+  /* ── Core Loop ── */
+  .loop-track {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    justify-content: center;
+    flex-wrap: wrap;
+    padding: 30px 20px;
+  }
+  .loop-node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 16px 12px;
+    border-radius: 16px;
+    min-width: 100px;
+    text-align: center;
+    transition: transform 0.2s;
+  }
+  .loop-node:hover { transform: scale(1.05); }
+  .loop-node .icon { font-size: 32px; }
+  .loop-node .label { font-size: 12px; font-weight: 800; }
+  .loop-arrow {
+    font-size: 20px;
+    color: var(--text3);
+    padding: 0 4px;
+    flex-shrink: 0;
+  }
+
+  /* ── Dual Currency ── */
+  .currency-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .currency-card {
+    padding: 28px 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .currency-card::before {
+    content: '';
+    position: absolute;
+    top: -30px;
+    right: -30px;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  .currency-card h3 {
+    font-size: 20px;
+    font-weight: 900;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .currency-card ul {
+    list-style: none;
+    padding: 0;
+  }
+  .currency-card li {
+    font-size: 12px;
+    color: var(--text2);
+    padding: 5px 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .currency-card li::before {
+    content: '';
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* ── Tier System ── */
+  .tier-row {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+  }
+  .tier-card {
+    padding: 24px 14px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .tier-card:hover {
+    transform: translateY(-4px);
+  }
+  .tier-card .tier-icon { font-size: 40px; margin-bottom: 10px; }
+  .tier-card .tier-name { font-size: 16px; font-weight: 900; margin-bottom: 4px; }
+  .tier-card .tier-xp { font-size: 11px; color: var(--text3); margin-bottom: 10px; }
+  .tier-card .tier-mult {
+    display: inline-block;
+    padding: 4px 14px;
+    border-radius: 100px;
+    font-size: 13px;
+    font-weight: 800;
+  }
+  .tier-glow {
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    pointer-events: none;
+    filter: blur(30px);
+    opacity: 0.3;
+  }
+
+  /* ── Multiplier Stacking ── */
+  .mult-stack {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 30px 20px;
+    flex-wrap: wrap;
+  }
+  .mult-box {
+    padding: 20px 28px;
+    border-radius: 16px;
+    text-align: center;
+    min-width: 140px;
+  }
+  .mult-box .mult-label { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; }
+  .mult-box .mult-val { font-size: 32px; font-weight: 900; }
+  .mult-op { font-size: 28px; font-weight: 900; color: var(--text3); }
+
+  /* ── Daily Check-in ── */
+  .checkin-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 10px;
+  }
+  .checkin-day {
+    padding: 16px 8px;
+    border-radius: 14px;
+    text-align: center;
+    transition: transform 0.2s;
+  }
+  .checkin-day:hover { transform: scale(1.05); }
+  .checkin-day .day-num { font-size: 10px; font-weight: 700; color: var(--text3); letter-spacing: 1px; }
+  .checkin-day .day-coins { font-size: 20px; font-weight: 900; margin: 6px 0 2px; }
+  .checkin-day .day-xp { font-size: 10px; font-weight: 600; }
+  .checkin-day .day-bonus { font-size: 11px; margin-top: 4px; }
+
+  /* ── Challenges ── */
+  .challenge-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 18px 20px;
+    border-radius: 14px;
+    margin-bottom: 10px;
+  }
+  .challenge-icon { font-size: 28px; }
+  .challenge-info { flex: 1; }
+  .challenge-task { font-size: 14px; font-weight: 700; }
+  .challenge-xp { font-size: 11px; color: var(--text3); margin-top: 2px; }
+  .challenge-reward {
+    padding: 6px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 800;
+    white-space: nowrap;
+  }
+
+  /* ── Badges ── */
+  .badge-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+  .badge-card {
+    padding: 20px 10px;
+    border-radius: 14px;
+    text-align: center;
+    transition: transform 0.2s;
+  }
+  .badge-card:hover { transform: scale(1.05); }
+  .badge-card .badge-icon { font-size: 36px; margin-bottom: 8px; }
+  .badge-card .badge-name { font-size: 12px; font-weight: 800; margin-bottom: 4px; }
+  .badge-card .badge-desc { font-size: 10px; color: var(--text3); line-height: 1.3; }
+
+  /* ── Shop ── */
+  .shop-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+  .shop-item {
+    padding: 20px 12px;
+    text-align: center;
+    transition: transform 0.2s;
+  }
+  .shop-item:hover { transform: translateY(-3px); }
+  .shop-item .shop-icon { font-size: 36px; margin-bottom: 8px; }
+  .shop-item .shop-name { font-size: 12px; font-weight: 800; margin-bottom: 4px; }
+  .shop-item .shop-cat { font-size: 10px; color: var(--text3); margin-bottom: 8px; }
+  .shop-item .shop-price {
+    display: inline-block;
+    padding: 4px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 800;
+  }
+  .shop-item .shop-tier {
+    font-size: 9px;
+    font-weight: 700;
+    margin-top: 6px;
+    padding: 2px 8px;
+    border-radius: 6px;
+    display: inline-block;
+  }
+
+  /* ── In-Game Integration ── */
+  .ingame-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+  .ingame-card {
+    padding: 24px 20px;
+  }
+  .ingame-card .ingame-icon { font-size: 28px; margin-bottom: 10px; }
+  .ingame-card h4 { font-size: 14px; font-weight: 800; margin-bottom: 6px; }
+  .ingame-card p { font-size: 12px; color: var(--text2); line-height: 1.5; }
+
+  /* ── Device Gate ── */
+  .device-gate {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    align-items: stretch;
+  }
+  .device-welcome {
+    padding: 32px 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .device-welcome::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 140px;
+    height: 140px;
+    background: radial-gradient(circle, rgba(0,229,255,0.15), transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  .device-benefits {
+    padding: 28px 24px;
+  }
+  .benefit-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .benefit-item:last-child { border-bottom: none; }
+  .benefit-dot {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+
+  /* ── Flywheel ── */
+  .flywheel-wrap {
+    display: flex;
+    justify-content: center;
+    padding: 20px 0;
+  }
+  .flywheel-svg {
+    width: 100%;
+    max-width: 600px;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 768px) {
+    .hero h1 { font-size: 32px; }
+    .currency-grid { grid-template-columns: 1fr; }
+    .tier-row { grid-template-columns: repeat(3, 1fr); }
+    .badge-grid { grid-template-columns: repeat(3, 1fr); }
+    .shop-grid { grid-template-columns: repeat(2, 1fr); }
+    .ingame-grid { grid-template-columns: 1fr; }
+    .device-gate { grid-template-columns: 1fr; }
+    .checkin-grid { grid-template-columns: repeat(4, 1fr); }
+    .mult-stack { flex-direction: column; }
+    .loop-track { gap: 4px; }
+    .loop-node { min-width: 70px; padding: 10px 6px; }
+    .loop-node .icon { font-size: 24px; }
+    .loop-arrow { font-size: 16px; }
+  }
+
+  /* ── Animations ── */
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes pulse-glow {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 0.6; }
+  }
+  @keyframes spin-slow {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  .fade-in { animation: fadeInUp 0.6s ease both; }
+
+  /* ── Noise overlay ── */
+  body::after {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.025;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* ── Background mesh ── */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+    z-index: -1;
+    background:
+      radial-gradient(ellipse 60% 40% at 20% 10%, rgba(255,77,141,0.04), transparent 50%),
+      radial-gradient(ellipse 50% 40% at 80% 90%, rgba(192,132,252,0.04), transparent 50%),
+      radial-gradient(ellipse 40% 30% at 50% 50%, rgba(255,217,61,0.02), transparent 60%);
+  }
+
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border2), transparent);
+    margin: 48px 0;
+  }
+
+  .tag {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 700;
+  }
+</style>
+</head>
+<body>
+<div class="page-wrap">
+
+  <!-- ════════════════════════════════════════ -->
+  <!-- HERO -->
+  <!-- ════════════════════════════════════════ -->
+  <div class="hero">
+    <div class="hero-badge">Mood Lab Arena</div>
+    <h1>Loyalty System</h1>
+    <p>A multi-layered progression engine: dual currencies, 5 tiers, daily streaks, 12 badges, a full shop, and device-gated multipliers that compound every reward.</p>
+  </div>
+
+  <!-- ════════════════════════════════════════ -->
+  <!-- 1. LOYALTY OVERVIEW -- Core Loop -->
+  <!-- ════════════════════════════════════════ -->
+  <div class="section fade-in">
+    <div class="section-header">
+      <div class="section-num" style="background:linear-gradient(135deg,var(--pink),var(--purple))">1</div>
+      <div>
+        <div class="section-title">The Core Loop</div>
+        <div class="section-subtitle">Every action feeds back into progression</div>
+      </div>
+    </div>
+    <div class="glass" style="padding:10px">
+      <div class="loop-track">
+        <div class="loop-node" style="background:rgba(0,229,255,0.06); border:1px solid rgba(0,229,255,0.15)">
+          <div class="icon">💨</div>
+          <div class="label" style="color:var(--cyan)">PUFF</div>
+          <div style="font-size:10px;color:var(--text3)">Connect device</div>
+        </div>
+        <div class="loop-arrow">&#10132;</div>
+        <div class="loop-node" style="background:rgba(192,132,252,0.06); border:1px solid rgba(192,132,252,0.15)">
+          <div class="icon">🎮</div>
+          <div class="label" style="color:var(--purple)">PLAY</div>
+          <div style="font-size:10px;color:var(--text3)">30+ games</div>
+        </div>
+        <div class="loop-arrow">&#10132;</div>
+        <div class="loop-node" style="background:rgba(255,217,61,0.06); border:1px solid rgba(255,217,61,0.15)">
+          <div class="icon">🪙</div>
+          <div class="label" style="color:var(--gold)">EARN</div>
+          <div style="font-size:10px;color:var(--text3)">Coins + XP</div>
+        </div>
+        <div class="loop-arrow">&#10132;</div>
+        <div class="loop-node" style="background:rgba(255,77,141,0.06); border:1px solid rgba(255,77,141,0.15)">
+          <div class="icon">🏆</div>
+          <div class="label" style="color:var(--pink)">LEVEL UP</div>
+          <div style="font-size:10px;color:var(--text3)">Tier promotion</div>
+        </div>
+        <div class="loop-arrow">&#10132;</div>
+        <div class="loop-node" style="background:rgba(52,211,153,0.06); border:1px solid rgba(52,211,153,0.15)">
+          <div class="icon">🔓</div>
+          <div class="label" style="color:var(--green)">UNLOCK</div>
+          <div style="font-size:10px;color:var(--text3)">Shop + perks</div>
+        </div>
+        <div class="loop-arrow">&#10132;</div>
+        <div class="loop-node" style="background:rgba(251,146,60,0.06); border:1px solid rgba(251,146,60,0.15)">
+          <div class="icon">🔄</div>
+          <div class="label" style="color:var(--orange)">PLAY MORE</div>
+          <div style="font-size:10px;color:var(--text3)">Higher rewards</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════ -->
+  <!-- 2. DUAL CURRENCY -->
+  <!-- ════════════════════════════════════════ -->
+  <div class="section fade-in">
+    <div class="section-header">
+      <div class="section-num" style="background:linear-gradient(135deg,var(--gold),var(--orange))">2</div>
+      <div>
+        <div class="section-title">Dual Currency System</div>
+        <div class="section-subtitle">Two currencies, two purposes, one economy</div>
+      </div>
+    </div>
+    <div class="currency-grid">
+      <!-- Mood Coins -->
+      <div class="glass currency-card" style="border-color:rgba(255,217,61,0.15)">
+        <div style="position:absolute;top:-30px;right:-30px;width:120px;height:120px;background:radial-gradient(circle,rgba(255,217,61,0.1),transparent 70%);border-radius:50%;pointer-events:none"></div>
+        <h3 style="color:var(--gold)"><span style="font-size:28px">🪙</span> Mood Coins</h3>
+        <div style="font-size:12px;color:var(--gold);font-weight:700;margin-bottom:14px;padding:4px 12px;border-radius:8px;background:rgba(255,217,61,0.08);display:inline-block">SPENDABLE CURRENCY</div>
+        <ul>
+          <li style="color:var(--text2)"><span style="display:inline-block;width:4px;height:4px;border-radius:50%;background:var(--gold);margin-right:8px"></span>Earned from games, daily check-ins, challenges</li>
+          <li style="color:var(--text2)"><span style="display:inline-block;width:4px;height:4px;border-radius:50%;background:var(--gold);margin-right:8px"></span>Spent in the Shop on avatars, effects, themes</li>
+          <li style="color:var(--text2)"><span style="display:inline-block;width:4px;height:4px;border-radius:50%;background:var(--gold);margin-right:8px"></span>Can be risked in Fortune zone (Oracle games)</li>
+          <li style="color:var(--text2)"><span style="display:inline-block;width:4px;height:4px;border-radius:50%;background:var(--gold);margin-right:8px"></span>Multiplied by tier + device bonuses</li>
+          <li style="color:var(--red)"><span style="display:inline-block;width:4px;height:4px;border-radius:50%;background:var(--red);margin-right:8px"></span>CAN be lost (wagering in Slots, Blackjack, etc.)</li>
+        </ul>
+      </div>
+      <!-- XP -->
+      <div class="glass currency-card" style="border-color:rgba(0,229,255,0.15)">
+        <div style="position:absolute;top:-30px;right:-30px;width:120px;height:120px;background:radial-gradient(circle,rgba(0,229,255,0.1),transparent 70%);border-radius:50%;pointer-events:none"></div>
+        <h3 style="color:var(--cyan)"><span style="font-size:28px">&#11088;</span> XP (Experience)</h3>
+        <div style="font-size:12px;color:var(--cyan);font-weight:700;margin-bottom:14px;padding:4px 12px;border-radius:8px;background:rgba(0,229,255,0.08);display:inline-block">PROGRESSION CURRENCY</div>
+        <ul>
+          <li style="color:var(--text2)"><span style="display:inline-block;width:4px;height:4px;border-radius:50%;background:var(--cyan);margin-right:8px"></span>Earned from games (+20 win / +10 loss), dailies, challenges</li>
+          <li style="color:var(--text2)"><span style="display:inline-block;width:4px;height:4px;border-radius:50%;background:var(--cyan);margin-right:8px"></span>Drives tier progression: Bronze -> Legend</li>
+          <li style="color:var(--text2)"><span style="display:inline-block;width:4px;height:4px;border-radius:50%;background:var(--cyan);margin-right:8px"></span>Accumulates forever, never decreases</li>
+          <li style="color:var(--text2)"><span style="display:inline-block;width:4px;height:4px;border-radius:50%;background:var(--cyan);margin-right:8px"></span>Triggers tier-up events with confetti + notifications</li>
+          <li style="color:var(--green)"><span style="display:inline-block;width:4px;height:4px;border-radius:50%;background:var(--green);margin-right:8px"></span>NEVER lost -- only goes up</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════ -->
+  <!-- 3. 5-TIER SYSTEM -->
+  <!-- ════════════════════════════════════════ -->
+  <div class="section fade-in">
+    <div class="section-header">
+      <div class="section-num" style="background:linear-gradient(135deg,var(--bronze),var(--gold))">3</div>
+      <div>
+        <div class="section-title">5-Tier Loyalty System</div>
+        <div class="section-subtitle">Each tier unlocks higher multipliers and exclusive shop items</div>
+      </div>
+    </div>
+    <div class="tier-row">
+      <!-- Bronze -->
+      <div class="glass tier-card" style="border-color:rgba(205,127,50,0.2)">
+        <div class="tier-glow" style="background:var(--bronze)"></div>
+        <div class="tier-icon">&#129353;</div>
+        <div class="tier-name" style="color:var(--bronze)">Bronze</div>
+        <div class="tier-xp">0 XP</div>
+        <div class="tier-mult" style="background:rgba(205,127,50,0.12);color:var(--bronze)">1.0x</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:10px">Starting tier</div>
+      </div>
+      <!-- Silver -->
+      <div class="glass tier-card" style="border-color:rgba(192,192,192,0.2)">
+        <div class="tier-glow" style="background:var(--silver)"></div>
+        <div class="tier-icon">&#129352;</div>
+        <div class="tier-name" style="color:var(--silver)">Silver</div>
+        <div class="tier-xp">2,000 XP</div>
+        <div class="tier-mult" style="background:rgba(192,192,192,0.12);color:var(--silver)">1.2x</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:10px">+20% coins</div>
+      </div>
+      <!-- Gold -->
+      <div class="glass tier-card" style="border-color:rgba(255,215,0,0.2)">
+        <div class="tier-glow" style="background:var(--gold)"></div>
+        <div class="tier-icon">&#129351;</div>
+        <div class="tier-name" style="color:var(--gold)">Gold</div>
+        <div class="tier-xp">8,000 XP</div>
+        <div class="tier-mult" style="background:rgba(255,215,0,0.12);color:var(--gold)">1.5x</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:10px">Unlocks Gold Frame</div>
+      </div>
+      <!-- Diamond -->
+      <div class="glass tier-card" style="border-color:rgba(0,229,255,0.2)">
+        <div class="tier-glow" style="background:var(--diamond)"></div>
+        <div class="tier-icon">&#128142;</div>
+        <div class="tier-name" style="color:var(--diamond)">Diamond</div>
+        <div class="tier-xp">25,000 XP</div>
+        <div class="tier-mult" style="background:rgba(0,229,255,0.12);color:var(--diamond)">2.0x</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:10px">Unlocks Neon Theme</div>
+      </div>
+      <!-- Legend -->
+      <div class="glass tier-card" style="border-color:rgba(255,77,141,0.2)">
+        <div class="tier-glow" style="background:var(--legend);animation:pulse-glow 2s ease-in-out infinite"></div>
+        <div class="tier-icon">&#128293;</div>
+        <div class="tier-name" style="color:var(--legend)">Legend</div>
+        <div class="tier-xp">75,000 XP</div>
+        <div class="tier-mult" style="background:rgba(255,77,141,0.12);color:var(--legend)">3.0x</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:10px">Max tier + badge</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════ -->
+  <!-- 4. MULTIPLIER STACKING -->
+  <!-- ════════════════════════════════════════ -->
+  <div class="section fade-in">
+    <div class="section-header">
+      <div class="section-num" style="background:linear-gradient(135deg,var(--green),var(--cyan))">4</div>
+      <div>
+        <div class="section-title">Multiplier Stacking</div>
+        <div class="section-subtitle">Tier multiplier x Device multiplier = Total coin multiplier on every reward</div>
+      </div>
+    </div>
+    <div class="glass" style="padding:10px">
+      <div style="text-align:center;padding:10px 0 4px;font-size:12px;font-weight:700;color:var(--text3);letter-spacing:2px">FORMULA: TIER MULT &times; DEVICE MULT = TOTAL</div>
+      <div class="mult-stack">
+        <div class="mult-box glass-clear" style="border-color:rgba(255,215,0,0.2)">
+          <div class="mult-label" style="color:var(--gold)">Gold Tier</div>
+          <div class="mult-val" style="color:var(--gold)">1.5x</div>
+        </div>
+        <div class="mult-op">&times;</div>
+        <div class="mult-box glass-clear" style="border-color:rgba(0,229,255,0.2)">
+          <div class="mult-label" style="color:var(--cyan)">Device Bonus</div>
+          <div class="mult-val" style="color:var(--cyan)">1.5x</div>
+        </div>
+        <div class="mult-op">=</div>
+        <div class="mult-box" style="background:linear-gradient(135deg,rgba(255,77,141,0.12),rgba(192,132,252,0.12));border:1px solid rgba(255,77,141,0.25);border-radius:16px">
+          <div class="mult-label" style="color:var(--pink)">Total Multiplier</div>
+          <div class="mult-val" style="background:linear-gradient(135deg,var(--pink),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">2.25x</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;padding:10px 20px 20px;max-width:700px;margin:0 auto">
+        <div style="text-align:center;padding:10px 6px;border-radius:10px;background:rgba(205,127,50,0.06);border:1px solid rgba(205,127,50,0.15)">
+          <div style="font-size:10px;color:var(--bronze);font-weight:700">Bronze</div>
+          <div style="font-size:9px;color:var(--text3);margin-top:2px">1.0x &times; 1.5x</div>
+          <div style="font-size:16px;font-weight:900;color:var(--bronze);margin-top:4px">= 1.5x</div>
+        </div>
+        <div style="text-align:center;padding:10px 6px;border-radius:10px;background:rgba(192,192,192,0.06);border:1px solid rgba(192,192,192,0.15)">
+          <div style="font-size:10px;color:var(--silver);font-weight:700">Silver</div>
+          <div style="font-size:9px;color:var(--text3);margin-top:2px">1.2x &times; 1.5x</div>
+          <div style="font-size:16px;font-weight:900;color:var(--silver);margin-top:4px">= 1.8x</div>
+        </div>
+        <div style="text-align:center;padding:10px 6px;border-radius:10px;background:rgba(255,215,0,0.06);border:1px solid rgba(255,215,0,0.15)">
+          <div style="font-size:10px;color:var(--gold);font-weight:700">Gold</div>
+          <div style="font-size:9px;color:var(--text3);margin-top:2px">1.5x &times; 1.5x</div>
+          <div style="font-size:16px;font-weight:900;color:var(--gold);margin-top:4px">= 2.25x</div>
+        </div>
+        <div style="text-align:center;padding:10px 6px;border-radius:10px;background:rgba(0,229,255,0.06);border:1px solid rgba(0,229,255,0.15)">
+          <div style="font-size:10px;color:var(--diamond);font-weight:700">Diamond</div>
+          <div style="font-size:9px;color:var(--text3);margin-top:2px">2.0x &times; 1.5x</div>
+          <div style="font-size:16px;font-weight:900;color:var(--diamond);margin-top:4px">= 3.0x</div>
+        </div>
+        <div style="text-align:center;padding:10px 6px;border-radius:10px;background:rgba(255,77,141,0.06);border:1px solid rgba(255,77,141,0.15)">
+          <div style="font-size:10px;color:var(--legend);font-weight:700">Legend</div>
+          <div style="font-size:9px;color:var(--text3);margin-top:2px">3.0x &times; 1.5x</div>
+          <div style="font-size:16px;font-weight:900;color:var(--legend);margin-top:4px">= 4.5x</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ════════════════════════════════════════ -->
+  <!-- 5. DAILY CHECK-IN -->
+  <!-- ════════════════════════════════════════ -->
+  <div class="section fade-in">
+    <div class="section-header">
+      <div class="section-num" style="background:linear-gradient(135deg,var(--green),#2dd4bf)">5</div>
+      <div>
+        <div class="section-title">Daily Check-In</div>
+        <div class="section-subtitle">7-day cycle with escalating rewards -- resets and repeats after Day 7</div>
+      </div>
+    </div>
+    <div class="glass" style="padding:24px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <div style="font-size:13px;font-weight:800;color:var(--text)">7-Day Reward Cycle</div>
+        <div style="font-size:12px;color:var(--orange);font-weight:700">Streak tracked across cycles</div>
+      </div>
+      <div class="checkin-grid">
+        <!-- Day 1 -->
+        <div class="checkin-day" style="background:rgba(52,211,153,0.06);border:1px solid rgba(52,211,153,0.15)">
+          <div class="day-num">DAY 1</div>
+          <div class="day-coins" style="color:var(--green)">+10</div>
+          <div class="day-xp" style="color:var(--cyan)">+15 XP</div>
+        </div>
+        <!-- Day 2 -->
+        <div class="checkin-day" style="background:rgba(52,211,153,0.06);border:1px solid rgba(52,211,153,0.15)">
+          <div class="day-num">DAY 2</div>
+          <div class="day-coins" style="color:var(--green)">+15</div>
+          <div class="day-xp" style="color:var(--cyan)">+20 XP</div>
+        </div>
+        <!-- Day 3 -->
+        <div class="checkin-day" style="background:rgba(52,211,153,0.06);border:1px solid rgba(52,211,153,0.15)">
+          <div class="day-num">DAY 3</div>
+          <div class="day-coins" style="color:var(--green)">+20</div>
+          <div class="day-xp" style="color:var(--cyan)">+25 XP</div>
+        </div>
+        <!-- Day 4 -->
+        <div class="checkin-day" style="background:rgba(255,217,61,0.06);border:1px solid rgba(255,217,61,0.2)">
+          <div class="day-num">DAY 4</div>
+          <div class="day-coins" style="color:var(--gold)">+30</div>
+          <div class="day-xp" style="color:var(--cyan)">+30 XP</div>
+          <div class="day-bonus">&#127873;</div>
+        </div>
+        <!-- Day 5 -->
+        <div class="checkin-day" style="background:rgba(52,211,153,0.06);border:1px solid rgba(52,211,153,0.15)">
+          <div class="day-num">DAY 5</div>
+          <div class="day-coins" style="color:var(--green)">+40</div>
+          <div class="day-xp" style="color:var(--cyan)">+40 XP</div>
+        </div>
+        <!-- Day 6 -->
+        <div class="checkin-day" style="background:rgba(52,211,153,0.06);border:1px solid rgba(52,211,153,0.15)">
+          <div class="day-num">DAY 6</div>
+          <div class="day-coins" style="color:var(--green)">+50</div>
+          <div class="day-xp" style="color:var(--cyan)">+50 XP</div>
+        </div>
+        <!-- Day 7 -->
+        <div class="checkin-day" style="background:linear-gradient(135deg,rgba(255,217,61,0.1),rgba(255,77,141,0.08));border:1px solid rgba(255,217,61,0.25)">
+          <div class="day-num" style="color:var(--gold)">DAY 7</div>
+          <div class="day-coins" style="color:var(--gold);font-size:22px">+100</div>
+          <div class="day-xp" style="color:var(--cyan)">+100 XP</div>
+          <div class="day-bonus">&#127942; Chest!</div>
+        </div>
+      </div>
+      <div style="margin-top:16px;padding:12px 16px;border-radius:12px;background:rgba(255,77,141,0.06);border:1px solid rgba(255,77,141,0.12);display:flex;align-items:center;gap:10px">
+        <span style="font-size:18px">&#128293;</span>
+        <div>
+          <div style="font-size:12px;font-weight:700;color:var(--pink)">Streak Tracking</div>
+          <div style="font-size:11px;color:var(--text2)">Completing all 7 days earns the <strong style="color:var(--gold)">Week Warrior</strong> badge. Coin rewards are multiplied by your active tier + device multiplier.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════ -->
+  <!-- 6. DAILY CHALLENGES -->
+  <!-- ════════════════════════════════════════ -->
+  <div class="section fade-in">
+    <div class="section-header">
+      <div class="section-num" style="background:linear-gradient(135deg,var(--orange),#f59e0b)">6</div>
+      <div>
+        <div class="section-title">Daily Challenges</div>
+        <div class="section-subtitle">3 tasks per day -- completing all 3 earns a 50-coin completion bonus</div>
+      </div>
+    </div>
+    <div class="glass" style="padding:20px">
+      <!-- Challenge 1 -->
+      <div class="challenge-row" style="background:rgba(192,132,252,0.04);border:1px solid rgba(192,132,252,0.1)">
+        <div class="challenge-icon">&#127918;</div>
+        <div class="challenge-info">
+          <div class="challenge-task">Play 3 games today</div>
+          <div class="challenge-xp">+20 XP</div>
+        </div>
+        <div class="challenge-reward" style="background:rgba(52,211,153,0.12);color:var(--green)">+25 coins</div>
+      </div>
+      <!-- Challenge 2 -->
+      <div class="challenge-row" style="background:rgba(255,217,61,0.04);border:1px solid rgba(255,217,61,0.1)">
+        <div class="challenge-icon">&#127942;</div>
+        <div class="challenge-info">
+          <div class="challenge-task">Win 1 game</div>
+          <div class="challenge-xp">+25 XP</div>
+        </div>
+        <div class="challenge-reward" style="background:rgba(52,211,153,0.12);color:var(--green)">+30 coins</div>
+      </div>
+      <!-- Challenge 3 -->
+      <div class="challenge-row" style="background:rgba(192,132,252,0.04);border:1px solid rgba(192,132,252,0.1)">
+        <div class="challenge-icon">&#128302;</div>
+        <div class="challenge-info">
+          <div class="challenge-task">Try 1 Fortune game</div>
+          <div class="challenge-xp">+15 XP</div>
+        </div>
+        <div class="challenge-reward" style="background:rgba(52,211,153,0.12);color:var(--green)">+20 coins</div>
+      </div>
+      <!-- Completion Bonus -->
+      <div style="margin-top:12px;padding:14px 18px;border-radius:12px;background:linear-gradient(135deg,rgba(255,217,61,0.08),rgba(255,77,141,0.06));border:1px solid rgba(255,217,61,0.2);display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div style="font-size:13px;font-weight:800;color:var(--gold)">All Challenges Complete Bonus</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px">Finish all 3 tasks in one day</div>
+        </div>
+        <div style="font-size:18px;font-weight:900;color:var(--gold)">+50 &#129689;</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ════════════════════════════════════════ -->
+  <!-- 7. 12 BADGES -->
+  <!-- ════════════════════════════════════════ -->
+  <div class="section fade-in">
+    <div class="section-header">
+      <div class="section-num" style="background:linear-gradient(135deg,var(--purple),#a855f7)">7</div>
+      <div>
+        <div class="section-title">12 Achievement Badges</div>
+        <div class="section-subtitle">Tracked via earnedBadges state -- each triggers an achievement popup with sound</div>
+      </div>
+    </div>
+    <div class="badge-grid">
+      <!-- 1. First Puff -->
+      <div class="glass badge-card" style="border-color:rgba(0,229,255,0.15)">
+        <div class="badge-icon">&#128168;</div>
+        <div class="badge-name" style="color:var(--cyan)">First Puff</div>
+        <div class="badge-desc">Play your first game</div>
+      </div>
+      <!-- 2. Cloud Chaser -->
+      <div class="glass badge-card" style="border-color:rgba(96,165,250,0.15)">
+        <div class="badge-icon">&#127788;&#65039;</div>
+        <div class="badge-name" style="color:var(--blue)">Cloud Chaser</div>
+        <div class="badge-desc">Play 100 games</div>
+      </div>
+      <!-- 3. Blinker Beast -->
+      <div class="glass badge-card" style="border-color:rgba(255,68,68,0.15)">
+        <div class="badge-icon">&#128548;</div>
+        <div class="badge-name" style="color:var(--red)">Blinker Beast</div>
+        <div class="badge-desc">Hit 10 blinkers</div>
+      </div>
+      <!-- 4. On Fire -->
+      <div class="glass badge-card" style="border-color:rgba(251,146,60,0.15)">
+        <div class="badge-icon">&#128293;</div>
+        <div class="badge-name" style="color:var(--orange)">On Fire</div>
+        <div class="badge-desc">5 win streak</div>
+      </div>
+      <!-- 5. Unstoppable -->
+      <div class="glass badge-card" style="border-color:rgba(255,77,141,0.15)">
+        <div class="badge-icon">&#128165;</div>
+        <div class="badge-name" style="color:var(--pink)">Unstoppable</div>
+        <div class="badge-desc">10 win streak</div>
+      </div>
+      <!-- 6. Show Champ -->
+      <div class="glass badge-card" style="border-color:rgba(255,217,61,0.15)">
+        <div class="badge-icon">&#127775;</div>
+        <div class="badge-name" style="color:var(--gold)">Show Champ</div>
+        <div class="badge-desc">Win a Stage show</div>
+      </div>
+      <!-- 7. Fortune King -->
+      <div class="glass badge-card" style="border-color:rgba(255,217,61,0.2)">
+        <div class="badge-icon">&#128081;</div>
+        <div class="badge-name" style="color:var(--gold)">Fortune King</div>
+        <div class="badge-desc">Win 5,000 coins in Fortune</div>
+      </div>
+      <!-- 8. Social Butterfly -->
+      <div class="glass badge-card" style="border-color:rgba(192,132,252,0.15)">
+        <div class="badge-icon">&#129419;</div>
+        <div class="badge-name" style="color:var(--purple)">Social Butterfly</div>
+        <div class="badge-desc">Chat 50 messages</div>
+      </div>
+      <!-- 9. Collector -->
+      <div class="glass badge-card" style="border-color:rgba(251,146,60,0.15)">
+        <div class="badge-icon">&#128230;</div>
+        <div class="badge-name" style="color:var(--orange)">Collector</div>
+        <div class="badge-desc">Buy 5 shop items</div>
+      </div>
+      <!-- 10. Week Warrior -->
+      <div class="glass badge-card" style="border-color:rgba(52,211,153,0.15)">
+        <div class="badge-icon">&#128737;&#65039;</div>
+        <div class="badge-name" style="color:var(--green)">Week Warrior</div>
+        <div class="badge-desc">7-day check-in streak</div>
+      </div>
+      <!-- 11. Legend -->
+      <div class="glass badge-card" style="border-color:rgba(255,77,141,0.2)">
+        <div class="badge-icon">&#127942;</div>
+        <div class="badge-name" style="color:var(--pink)">Legend</div>
+        <div class="badge-desc">Reach Legend tier</div>
+      </div>
+      <!-- 12. Explorer -->
+      <div class="glass badge-card" style="border-color:rgba(0,229,255,0.15)">
+        <div class="badge-icon">&#127919;</div>
+        <div class="badge-name" style="color:var(--cyan)">Explorer</div>
+        <div class="badge-desc">Try every game</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════ -->
+  <!-- 8. SHOP -->
+  <!-- ════════════════════════════════════════ -->
+  <div class="section fade-in">
+    <div class="section-header">
+      <div class="section-num" style="background:linear-gradient(135deg,var(--gold),#f59e0b)">8</div>
+      <div>
+        <div class="section-title">Loyalty Shop</div>
+        <div class="section-subtitle">8 items across 4 categories -- some require tier unlocks</div>
+      </div>
+    </div>
+    <div class="shop-grid">
+      <!-- Cat Avatar -->
+      <div class="glass shop-item" style="border-color:rgba(255,217,61,0.1)">
+        <div class="shop-icon">&#128049;</div>
+        <div class="shop-name">Cat Avatar</div>
+        <div class="shop-cat">Avatar</div>
+        <div class="shop-price" style="background:rgba(255,217,61,0.1);color:var(--gold)">200 coins</div>
+      </div>
+      <!-- Alien Avatar -->
+      <div class="glass shop-item" style="border-color:rgba(255,217,61,0.1)">
+        <div class="shop-icon">&#128125;</div>
+        <div class="shop-name">Alien Avatar</div>
+        <div class="shop-cat">Avatar</div>
+        <div class="shop-price" style="background:rgba(255,217,61,0.1);color:var(--gold)">200 coins</div>
+      </div>
+      <!-- Smoke Trail -->
+      <div class="glass shop-item" style="border-color:rgba(192,132,252,0.1)">
+        <div class="shop-icon">&#128168;</div>
+        <div class="shop-name">Smoke Trail</div>
+        <div class="shop-cat">Puff Effect</div>
+        <div class="shop-price" style="background:rgba(255,217,61,0.1);color:var(--gold)">300 coins</div>
+      </div>
+      <!-- Fire Trail -->
+      <div class="glass shop-item" style="border-color:rgba(251,146,60,0.1)">
+        <div class="shop-icon">&#128293;</div>
+        <div class="shop-name">Fire Trail</div>
+        <div class="shop-cat">Puff Effect</div>
+        <div class="shop-price" style="background:rgba(255,217,61,0.1);color:var(--gold)">500 coins</div>
+      </div>
+      <!-- Gold Frame -->
+      <div class="glass shop-item" style="border-color:rgba(255,215,0,0.15)">
+        <div class="shop-icon">&#10024;</div>
+        <div class="shop-name">Gold Frame</div>
+        <div class="shop-cat">Frame</div>
+        <div class="shop-price" style="background:rgba(255,217,61,0.1);color:var(--gold)">400 coins</div>
+        <div class="shop-tier" style="background:rgba(255,215,0,0.1);color:var(--gold);border:1px solid rgba(255,215,0,0.2)">Gold Tier Required</div>
+      </div>
+      <!-- Neon Theme -->
+      <div class="glass shop-item" style="border-color:rgba(0,229,255,0.15)">
+        <div class="shop-icon">&#127912;</div>
+        <div class="shop-name">Neon Theme</div>
+        <div class="shop-cat">Theme</div>
+        <div class="shop-price" style="background:rgba(255,217,61,0.1);color:var(--gold)">600 coins</div>
+        <div class="shop-tier" style="background:rgba(0,229,255,0.1);color:var(--diamond);border:1px solid rgba(0,229,255,0.2)">Diamond Tier Required</div>
+      </div>
+      <!-- Streak Shield -->
+      <div class="glass shop-item" style="border-color:rgba(52,211,153,0.1)">
+        <div class="shop-icon">&#128737;&#65039;</div>
+        <div class="shop-name">Streak Shield</div>
+        <div class="shop-cat">Power-up</div>
+        <div class="shop-price" style="background:rgba(255,217,61,0.1);color:var(--gold)">100 coins</div>
+      </div>
+      <!-- Extra Time -->
+      <div class="glass shop-item" style="border-color:rgba(96,165,250,0.1)">
+        <div class="shop-icon">&#9200;</div>
+        <div class="shop-name">Extra Time x3</div>
+        <div class="shop-cat">Power-up</div>
+        <div class="shop-price" style="background:rgba(255,217,61,0.1);color:var(--gold)">150 coins</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ════════════════════════════════════════ -->
+  <!-- 9. IN-GAME INTEGRATION -->
+  <!-- ════════════════════════════════════════ -->
+  <div class="section fade-in">
+    <div class="section-header">
+      <div class="section-num" style="background:linear-gradient(135deg,var(--cyan),var(--blue))">9</div>
+      <div>
+        <div class="section-title">In-Game Integration</div>
+        <div class="section-subtitle">Loyalty is visible everywhere during active gameplay</div>
+      </div>
+    </div>
+    <div class="ingame-grid">
+      <!-- Multiplier Badge -->
+      <div class="glass ingame-card">
+        <div class="ingame-icon">&#127941;</div>
+        <h4 style="color:var(--gold)">Multiplier Badge</h4>
+        <p>A persistent HUD badge (top-right corner during gameplay) shows your current tier multiplier icon and value. If BLE is connected, a second "1.5x" device badge stacks below it. Always visible so players know their bonus.</p>
+      </div>
+      <!-- Floating Rewards -->
+      <div class="glass ingame-card">
+        <div class="ingame-icon">&#127873;</div>
+        <h4 style="color:var(--green)">Floating Rewards</h4>
+        <p>After each game result, a large animated "+N coins" and "+N XP" floats up from center screen with a gold glow and fades out over 2 seconds. The reward amount shown is already multiplied by the total multiplier.</p>
+      </div>
+      <!-- Win Streaks -->
+      <div class="glass ingame-card">
+        <div class="ingame-icon">&#128293;</div>
+        <h4 style="color:var(--orange)">Win Streak Bonuses</h4>
+        <p>Consecutive wins trigger escalating bonuses: 3-streak notification, 5-streak +50 bonus coins, 10-streak +200 bonus coins with crowd sound effect. Streaks reset on loss with a notification if streak was 3+.</p>
+      </div>
+      <!-- Reward Breakdown -->
+      <div class="glass ingame-card">
+        <div class="ingame-icon">&#128200;</div>
+        <h4 style="color:var(--purple)">Reward Breakdown</h4>
+        <p>The <code>recordGameResult</code> function calculates: base coins times total multiplier, plus base XP + bonus (15 for win, 5 for loss). Tier-up detection runs after every XP award, triggering confetti and level-up sound.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════ -->
+  <!-- 10. DEVICE GATE -->
+  <!-- ════════════════════════════════════════ -->
+  <div class="section fade-in">
+    <div class="section-header">
+      <div class="section-num" style="background:linear-gradient(135deg,var(--cyan),var(--green))">10</div>
+      <div>
+        <div class="section-title">Device Gate</div>
+        <div class="section-subtitle">BLE connection required to play -- Cali Clear vaporizer via Web Bluetooth</div>
+      </div>
+    </div>
+    <div class="device-gate">
+      <!-- Welcome Card -->
+      <div class="glass device-welcome" style="border-color:rgba(0,229,255,0.15)">
+        <div style="position:absolute;top:0;right:0;width:140px;height:140px;background:radial-gradient(circle,rgba(0,229,255,0.12),transparent 70%);border-radius:50%;pointer-events:none"></div>
+        <div style="font-size:48px;margin-bottom:16px">&#128168;</div>
+        <div style="font-size:20px;font-weight:900;color:var(--text);margin-bottom:6px">Connect Your Cali Clear</div>
+        <div style="font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.5">Tap to pair via Web Bluetooth and start playing. The welcome card appears on the Arena Hub when no device is connected.</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <div class="tag" style="background:rgba(0,229,255,0.1);color:var(--cyan);border:1px solid rgba(0,229,255,0.2)">1.5x Coin Bonus</div>
+          <div class="tag" style="background:rgba(192,132,252,0.1);color:var(--purple);border:1px solid rgba(192,132,252,0.2)">Play All Games</div>
+        </div>
+      </div>
+      <!-- Benefits -->
+      <div class="glass device-benefits">
+        <div style="font-size:14px;font-weight:800;color:var(--text);margin-bottom:14px">Device Connection Benefits</div>
+        <div class="benefit-item">
+          <div class="benefit-dot" style="background:rgba(0,229,255,0.1)">&#129689;</div>
+          <div>
+            <div style="font-size:12px;font-weight:700;color:var(--cyan)">1.5x Coin Multiplier</div>
+            <div style="font-size:11px;color:var(--text3)">Stacks with tier multiplier on all rewards</div>
+          </div>
+        </div>
+        <div class="benefit-item">
+          <div class="benefit-dot" style="background:rgba(52,211,153,0.1)">&#127918;</div>
+          <div>
+            <div style="font-size:12px;font-weight:700;color:var(--green)">Unlock All Games</div>
+            <div style="font-size:11px;color:var(--text3)">Games require BLE to start playing</div>
+          </div>
+        </div>
+        <div class="benefit-item">
+          <div class="benefit-dot" style="background:rgba(192,132,252,0.1)">&#128168;</div>
+          <div>
+            <div style="font-size:12px;font-weight:700;color:var(--purple)">Physical Puff Input</div>
+            <div style="font-size:11px;color:var(--text3)">Real puffs replace on-screen HOLD button</div>
+          </div>
+        </div>
+        <div class="benefit-item">
+          <div class="benefit-dot" style="background:rgba(255,77,141,0.1)">&#127760;</div>
+          <div>
+            <div style="font-size:12px;font-weight:700;color:var(--pink)">Glow Overlay</div>
+            <div style="font-size:11px;color:var(--text3)">Puff-active cyan glow across top of screen</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ════════════════════════════════════════ -->
+  <!-- 11. ENGAGEMENT FLYWHEEL -->
+  <!-- ════════════════════════════════════════ -->
+  <div class="section fade-in">
+    <div class="section-header">
+      <div class="section-num" style="background:linear-gradient(135deg,var(--pink),var(--purple))">11</div>
+      <div>
+        <div class="section-title">Engagement Flywheel</div>
+        <div class="section-subtitle">Every system reinforces every other -- circular dependency drives retention</div>
+      </div>
+    </div>
+    <div class="glass" style="padding:30px 20px">
+      <div class="flywheel-wrap">
+        <svg class="flywheel-svg" viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <filter id="glow">
+              <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+              <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+            <linearGradient id="grad-pink" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#FF4D8D"/>
+              <stop offset="100%" stop-color="#C084FC"/>
+            </linearGradient>
+          </defs>
+
+          <!-- Outer ring -->
+          <circle cx="300" cy="300" r="240" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="50"/>
+
+          <!-- Connecting arcs -->
+          <circle cx="300" cy="300" r="240" fill="none" stroke="url(#grad-pink)" stroke-width="2" stroke-dasharray="100 50" opacity="0.3">
+            <animateTransform attributeName="transform" type="rotate" from="0 300 300" to="360 300 300" dur="60s" repeatCount="indefinite"/>
+          </circle>
+
+          <!-- Center text -->
+          <text x="300" y="286" text-anchor="middle" fill="#F0EEFF" font-size="20" font-weight="900" font-family="Inter,sans-serif">LOYALTY</text>
+          <text x="300" y="310" text-anchor="middle" fill="#FF4D8D" font-size="14" font-weight="700" font-family="Inter,sans-serif">FLYWHEEL</text>
+          <text x="300" y="330" text-anchor="middle" fill="#6E6A95" font-size="10" font-family="Inter,sans-serif">Everything feeds everything</text>
+
+          <!-- Node: Device (top) -->
+          <circle cx="300" cy="70" r="42" fill="rgba(0,229,255,0.08)" stroke="rgba(0,229,255,0.3)" stroke-width="1.5" filter="url(#glow)"/>
+          <text x="300" y="62" text-anchor="middle" font-size="22">&#128168;</text>
+          <text x="300" y="80" text-anchor="middle" fill="#00E5FF" font-size="10" font-weight="800" font-family="Inter,sans-serif">DEVICE</text>
+
+          <!-- Node: Play (top-right) -->
+          <circle cx="498" cy="186" r="42" fill="rgba(192,132,252,0.08)" stroke="rgba(192,132,252,0.3)" stroke-width="1.5" filter="url(#glow)"/>
+          <text x="498" y="178" text-anchor="middle" font-size="22">&#127918;</text>
+          <text x="498" y="196" text-anchor="middle" fill="#C084FC" font-size="10" font-weight="800" font-family="Inter,sans-serif">PLAY</text>
+
+          <!-- Node: Earn (right) -->
+          <circle cx="530" cy="370" r="42" fill="rgba(255,217,61,0.08)" stroke="rgba(255,217,61,0.3)" stroke-width="1.5" filter="url(#glow)"/>
+          <text x="530" y="362" text-anchor="middle" font-size="22">&#129689;</text>
+          <text x="530" y="380" text-anchor="middle" fill="#FFD93D" font-size="10" font-weight="800" font-family="Inter,sans-serif">EARN</text>
+
+          <!-- Node: Level Up (bottom-right) -->
+          <circle cx="420" cy="520" r="42" fill="rgba(255,77,141,0.08)" stroke="rgba(255,77,141,0.3)" stroke-width="1.5" filter="url(#glow)"/>
+          <text x="420" y="512" text-anchor="middle" font-size="22">&#11014;&#65039;</text>
+          <text x="420" y="532" text-anchor="middle" fill="#FF4D8D" font-size="10" font-weight="800" font-family="Inter,sans-serif">LEVEL UP</text>
+
+          <!-- Node: Shop (bottom-left) -->
+          <circle cx="180" cy="520" r="42" fill="rgba(251,146,60,0.08)" stroke="rgba(251,146,60,0.3)" stroke-width="1.5" filter="url(#glow)"/>
+          <text x="180" y="512" text-anchor="middle" font-size="22">&#128722;</text>
+          <text x="180" y="532" text-anchor="middle" fill="#FB923C" font-size="10" font-weight="800" font-family="Inter,sans-serif">SHOP</text>
+
+          <!-- Node: Daily (left) -->
+          <circle cx="70" cy="370" r="42" fill="rgba(52,211,153,0.08)" stroke="rgba(52,211,153,0.3)" stroke-width="1.5" filter="url(#glow)"/>
+          <text x="70" y="362" text-anchor="middle" font-size="22">&#128197;</text>
+          <text x="70" y="380" text-anchor="middle" fill="#34D399" font-size="10" font-weight="800" font-family="Inter,sans-serif">DAILY</text>
+
+          <!-- Node: Badges (top-left) -->
+          <circle cx="102" cy="186" r="42" fill="rgba(96,165,250,0.08)" stroke="rgba(96,165,250,0.3)" stroke-width="1.5" filter="url(#glow)"/>
+          <text x="102" y="178" text-anchor="middle" font-size="22">&#127941;</text>
+          <text x="102" y="196" text-anchor="middle" fill="#60A5FA" font-size="10" font-weight="800" font-family="Inter,sans-serif">BADGES</text>
+
+          <!-- Arrows: Device -> Play -->
+          <line x1="338" y1="86" x2="460" y2="162" stroke="rgba(0,229,255,0.25)" stroke-width="1.5" marker-end="url(#arrowCyan)"/>
+          <!-- Play -> Earn -->
+          <line x1="524" y1="224" x2="536" y2="330" stroke="rgba(192,132,252,0.25)" stroke-width="1.5"/>
+          <!-- Earn -> Level Up -->
+          <line x1="510" y1="404" x2="454" y2="486" stroke="rgba(255,217,61,0.25)" stroke-width="1.5"/>
+          <!-- Level Up -> Shop -->
+          <line x1="382" y1="534" x2="222" y2="534" stroke="rgba(255,77,141,0.25)" stroke-width="1.5"/>
+          <!-- Shop -> Daily -->
+          <line x1="146" y1="498" x2="88" y2="408" stroke="rgba(251,146,60,0.25)" stroke-width="1.5"/>
+          <!-- Daily -> Badges -->
+          <line x1="76" y1="330" x2="92" y2="226" stroke="rgba(52,211,153,0.25)" stroke-width="1.5"/>
+          <!-- Badges -> Device -->
+          <line x1="136" y1="162" x2="264" y2="90" stroke="rgba(96,165,250,0.25)" stroke-width="1.5"/>
+        </svg>
+      </div>
+      <!-- Legend -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:0 10px;margin-top:10px">
+        <div style="text-align:center;padding:8px;border-radius:10px;background:rgba(0,229,255,0.04);border:1px solid rgba(0,229,255,0.08)">
+          <div style="font-size:10px;color:var(--cyan);font-weight:700">Device</div>
+          <div style="font-size:9px;color:var(--text3);margin-top:2px">Gates access, gives 1.5x</div>
+        </div>
+        <div style="text-align:center;padding:8px;border-radius:10px;background:rgba(255,217,61,0.04);border:1px solid rgba(255,217,61,0.08)">
+          <div style="font-size:10px;color:var(--gold);font-weight:700">Earn</div>
+          <div style="font-size:9px;color:var(--text3);margin-top:2px">Coins + XP from every game</div>
+        </div>
+        <div style="text-align:center;padding:8px;border-radius:10px;background:rgba(255,77,141,0.04);border:1px solid rgba(255,77,141,0.08)">
+          <div style="font-size:10px;color:var(--pink);font-weight:700">Level Up</div>
+          <div style="font-size:9px;color:var(--text3);margin-top:2px">Higher tier = higher mult</div>
+        </div>
+        <div style="text-align:center;padding:8px;border-radius:10px;background:rgba(52,211,153,0.04);border:1px solid rgba(52,211,153,0.08)">
+          <div style="font-size:10px;color:var(--green);font-weight:700">Daily</div>
+          <div style="font-size:9px;color:var(--text3);margin-top:2px">Streaks feed coins + XP</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════ -->
+  <!-- Footer -->
+  <!-- ════════════════════════════════════════ -->
+  <div style="text-align:center;padding:40px 0 0">
+    <div style="font-size:11px;color:var(--text3);letter-spacing:1px">MOOD LAB ARENA -- LOYALTY SYSTEM INFOGRAPHIC</div>
+    <div style="font-size:10px;color:rgba(110,106,149,0.5);margin-top:6px">Extracted from moodlab-arena-v6.jsx -- All data sourced from codebase constants and runtime logic</div>
+  </div>
+
+</div>
+</body>
+</html>
