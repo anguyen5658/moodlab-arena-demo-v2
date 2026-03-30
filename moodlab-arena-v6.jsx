@@ -42,6 +42,58 @@ const FORTUNE_LEVELS = [
   {name:"High Roller", emoji:"👑", minWager:200000, color:"#FFD700"},
 ];
 
+// ── LOYALTY SYSTEM ──
+const LOYALTY_TIERS = [
+  { name:"Bronze", icon:"🥉", color:"#CD7F32", xpReq:0, mult:1.0 },
+  { name:"Silver", icon:"🥈", color:"#C0C0C0", xpReq:2000, mult:1.2 },
+  { name:"Gold", icon:"🥇", color:"#FFD700", xpReq:8000, mult:1.5 },
+  { name:"Diamond", icon:"💎", color:"#00E5FF", xpReq:25000, mult:2.0 },
+  { name:"Legend", icon:"🔥", color:"#FF4D8D", xpReq:75000, mult:3.0 },
+];
+
+const DAILY_REWARDS = [
+  { day:1, coins:10, xp:15 },
+  { day:2, coins:15, xp:20 },
+  { day:3, coins:20, xp:25 },
+  { day:4, coins:30, xp:30, bonus:"🎁" },
+  { day:5, coins:40, xp:40 },
+  { day:6, coins:50, xp:50 },
+  { day:7, coins:100, xp:100, bonus:"🏆 Chest!" },
+];
+
+const DAILY_CHALLENGES = [
+  { id:"play3", task:"Play 3 games today", reward:25, xpReward:20, icon:"🎮" },
+  { id:"win1", task:"Win 1 game", reward:30, xpReward:25, icon:"🏆" },
+  { id:"fortune1", task:"Try 1 Fortune game", reward:20, xpReward:15, icon:"🔮" },
+];
+
+const SHOP_ITEMS = [
+  { id:"avatar_cat", icon:"🐱", name:"Cat Avatar", price:200, cat:"Avatar" },
+  { id:"avatar_alien", icon:"👽", name:"Alien Avatar", price:200, cat:"Avatar" },
+  { id:"effect_smoke", icon:"💨", name:"Smoke Trail", price:300, cat:"Puff Effect" },
+  { id:"effect_fire", icon:"🔥", name:"Fire Trail", price:500, cat:"Puff Effect" },
+  { id:"frame_gold", icon:"✨", name:"Gold Frame", price:400, cat:"Frame", tier:"Gold" },
+  { id:"theme_neon", icon:"🎨", name:"Neon Theme", price:600, cat:"Theme", tier:"Diamond" },
+  { id:"shield", icon:"🛡️", name:"Streak Shield", price:100, cat:"Power-up" },
+  { id:"extratime", icon:"⏰", name:"Extra Time x3", price:150, cat:"Power-up" },
+];
+
+const LOYALTY_BADGES = [
+  { id:"fp", icon:"💨", name:"First Puff", desc:"Play your first game" },
+  { id:"puff100", icon:"🌬️", name:"Cloud Chaser", desc:"Play 100 games" },
+  { id:"blinker", icon:"😤", name:"Blinker Beast", desc:"Hit 10 blinkers" },
+  { id:"streak5", icon:"🔥", name:"On Fire", desc:"5 win streak" },
+  { id:"streak10", icon:"💥", name:"Unstoppable", desc:"10 win streak" },
+  { id:"showchamp", icon:"🌟", name:"Show Champ", desc:"Win a Stage show" },
+  { id:"fortuneking", icon:"👑", name:"Fortune King", desc:"Win 5,000 coins in Fortune" },
+  { id:"social", icon:"🦋", name:"Social Butterfly", desc:"Chat 50 messages" },
+  { id:"collector", icon:"📦", name:"Collector", desc:"Buy 5 shop items" },
+  { id:"weekwarrior", icon:"🛡️", name:"Week Warrior", desc:"7-day streak" },
+  { id:"legend", icon:"🏆", name:"Legend", desc:"Reach Legend tier" },
+  { id:"allgames", icon:"🎯", name:"Explorer", desc:"Try every game" },
+];
+
+
 const C = {
   bg:"#050510", bg2:"#0a0a20", bg3:"#0f0f2a", card:"#12123a",
   border:"rgba(255,255,255,0.06)", border2:"rgba(255,255,255,0.12)",
@@ -973,6 +1025,20 @@ export default function MoodLabArena() {
   // ── Arena State ──
   const [coins, setCoins] = useState(12580);
   const [xp, setXp] = useState(7450);
+
+  // ── Loyalty System State ──
+  const [loyaltyTab, setLoyaltyTab] = useState("overview");
+  const [dailyStreak, setDailyStreak] = useState(0);
+  const [dailyCheckedIn, setDailyCheckedIn] = useState(false);
+  const [ownedItems, setOwnedItems] = useState([]);
+  const [earnedBadges, setEarnedBadges] = useState(["fp"]);
+  const [completedChallenges, setCompletedChallenges] = useState([]);
+  const [currentWinStreak, setCurrentWinStreak] = useState(0);
+  const [bestWinStreak, setBestWinStreak] = useState(0);
+  const [floatingReward, setFloatingReward] = useState(null);
+  const [coinPulse, setCoinPulse] = useState(false);
+  const [achievementPopup, setAchievementPopup] = useState(null);
+  const prevBleConnected = useRef(false);
   const [selectedGame, setSelectedGame] = useState(null);
   const [matchmaking, setMatchmaking] = useState(null);
   const [gameActive, setGameActive] = useState(null);
@@ -1783,6 +1849,15 @@ export default function MoodLabArena() {
   // Fortune jackpot growing + lucky hour system
   useEffect(()=>{if(tick%30===0)setFortuneJackpot(j=>j+Math.floor(Math.random()*50)+10);},[tick]);
   useEffect(()=>{if(tick%300===0&&Math.random()<0.1){setFortuneLuckyHour(true);playFx("lucky_hour");}if(fortuneLuckyHour&&tick%3600===0)setFortuneLuckyHour(false);},[tick,fortuneLuckyHour]);
+  // ── BLE connection celebration ──
+  useEffect(() => {
+    if(bleConnected && !prevBleConnected.current) {
+      setTimeout(() => { notify("Device Connected! 1.5x Coin Bonus Active!", C.cyan); playFx("achievement"); }, 1500);
+    }
+    prevBleConnected.current = bleConnected;
+  }, [bleConnected]);
+  // ── Coin balance pulse animation ──
+  useEffect(() => { if(coins > 0) { setCoinPulse(true); setTimeout(() => setCoinPulse(false), 600); } }, [coins]);
   // tickerOffset now driven by CSS animation (tickerScroll) — no React re-renders
 
   // ── Live Spectator Engine ──
@@ -2718,9 +2793,6 @@ export default function MoodLabArena() {
   const triggerInputPulse = () => { setInputPulse(true); setTimeout(()=>setInputPulse(false),600); };
 
   const resolveInputForGame = (game, callback) => {
-    // Use already-selected device input from Arena home, skip the prompt
-    if(sessionInput) { callback(sessionInput); return; }
-    // Fallback: default to "puff" if no input selected
     callback("puff");
   };
   const handleAskPick = (id) => { setSessionInput(id); setShowAskPrompt(null); triggerInputPulse(); if(window._inputCb){window._inputCb(id);window._inputCb=null;} };
@@ -2753,6 +2825,7 @@ export default function MoodLabArena() {
   const walkBack = useCallback(() => { walkTo("hub"); }, [walkTo]);
 
   const startMatch = (game, mode) => {
+    if(!bleConnected) { setShowBlePopup(true); notify("Connect your device to play! \u{1F4A8}", C.orange); return; }
     setSelectedGame(null); // Clear game detail overlay
     resolveInputForGame(game, (input) => {
       setMatchmaking({game,mode,stage:"searching",input});
@@ -3065,12 +3138,14 @@ export default function MoodLabArena() {
         if(matchWin) {
           playFx("win"); playFx("crowd");
           spawnConfetti(60, [C.gold, C.orange, "#fff", C.green]);
-          setCoins(c=>c+150+totalBonus);
+          const duelBase = 150 + totalBonus;
+          recordGameResult(true, duelBase, 30);
           setDuelStats(s=>({...s, wins:s.wins+1, streak:s.streak+1}));
-          setCommentary(pick(["FASTEST GUN IN THE WEST! +"+(150+totalBonus)+" coins!","CHAMPION DUELIST! "+(duelOpponentRef.current||{}).name+" tips their hat!","YOU ARE THE SHERIFF NOW!"]));
-          notify("DUEL WON! +"+(150+totalBonus)+" coins!", C.gold);
+          setCommentary(pick(["FASTEST GUN IN THE WEST! +"+Math.round(duelBase*getCoinMultiplier())+" coins!","CHAMPION DUELIST! "+(duelOpponentRef.current||{}).name+" tips their hat!","YOU ARE THE SHERIFF NOW!"]));
+          notify("DUEL WON! +"+Math.round(duelBase*getCoinMultiplier())+" coins!", C.gold);
         } else {
           playFx("lose");
+          recordGameResult(false, 0, 5);
           setDuelStats(s=>({...s, streak:0}));
           setCommentary(pick([((duelOpponentRef.current||{}).name||"AI")+" wins the duel!","Outdrawn! Better luck next time partner!","The AI claims the bounty!"]));
           notify("Duel lost!", C.red);
@@ -3758,7 +3833,7 @@ export default function MoodLabArena() {
     let amt;if(e<1.0)amt=5+Math.round(Math.random()*3);else if(e<2.0)amt=8+Math.round(Math.random()*6);else if(e<4.0)amt=14+Math.round(Math.random()*6);else amt=20+Math.round(Math.random()*10);
     playFx("kick");setBpPuffAmount(0);
     bpProcessPuff(bpCurrentTurn,amt,bpPlayers,bpAirLevel,bpPopThreshold);};
-  const bpEndGame = () => {const won=bpLoser&&!bpLoser.isYou;const r=won?80+Math.floor(Math.random()*40):10;setCoins(c=>c+r);notify(won?"🎈 SURVIVED! +"+r+" coins!":"💀 Popped! +"+r,won?C.green:C.red);
+  const bpEndGame = () => {const won=bpLoser&&!bpLoser.isYou;const baseR=won?80+Math.floor(Math.random()*40):10;recordGameResult(won,baseR,won?20:5);notify(won?"🎈 SURVIVED! +"+Math.round(baseR*getCoinMultiplier())+" coins!":"💀 Popped! +"+Math.round(baseR*getCoinMultiplier()),won?C.green:C.red);
     // WC tournament integration — report result as score (survived=3, popped=0 for group scoring)
     if(gameActive?.wcMode){const myS=won?3:0;const aiS=won?0:3;if(gameActive.wcKnockout){wcFinishKnockoutMatch(myS,aiS);}else if(gameActive.wcMatchIdx!==undefined){wcFinishGroupMatch(gameActive.wcMatchIdx,myS,aiS);}}
     setGameActive(null);setBpPhase(null);};
@@ -3930,7 +4005,7 @@ export default function MoodLabArena() {
   const ppMovePaddle=(dir)=>{const g=ppG.current;g.py=Math.max(10,Math.min(90,g.py+dir*6));setPpPaddleY(g.py);};
   const ppPuffUp=()=>{setPpPuffHeld(true);const g=ppG.current;if(ppInterval.current)clearInterval(ppInterval.current);ppInterval.current=setInterval(()=>{if(!g.paused){g.py=Math.max(10,g.py-4);setPpPaddleY(g.py);}},50);};
   const ppPuffRelease=()=>{setPpPuffHeld(false);if(ppInterval.current){clearInterval(ppInterval.current);ppInterval.current=null;}const g=ppG.current;ppInterval.current=setInterval(()=>{if(!g.paused){g.py=Math.min(90,g.py+0.6);setPpPaddleY(g.py);}},80);};
-  const ppEndGame=()=>{if(ppRaf.current)cancelAnimationFrame(ppRaf.current);if(ppInterval.current){clearInterval(ppInterval.current);ppInterval.current=null;}ppG.current.paused=true;const won=ppScore.you>ppScore.ai;const r=won?80:15;setCoins(c=>c+r);notify(won?"🏓 Won! +"+r:"🏓 Lost! +"+r,won?C.green:C.red);
+  const ppEndGame=()=>{if(ppRaf.current)cancelAnimationFrame(ppRaf.current);if(ppInterval.current){clearInterval(ppInterval.current);ppInterval.current=null;}ppG.current.paused=true;const won=ppScore.you>ppScore.ai;const baseR=won?80:15;recordGameResult(won,baseR,won?20:5);notify(won?"🏓 Won! +"+Math.round(baseR*getCoinMultiplier()):"🏓 Lost! +"+Math.round(baseR*getCoinMultiplier()),won?C.green:C.red);
     // WC tournament integration
     if(gameActive?.wcMode){const my=ppScore.you;const ai=ppScore.ai;if(gameActive.wcKnockout){wcFinishKnockoutMatch(my,ai);}else if(gameActive.wcMatchIdx!==undefined){wcFinishGroupMatch(gameActive.wcMatchIdx,my,ai);}}
     setGameActive(null);setPpPhase(null);setPpIntro(0);};
@@ -4249,8 +4324,8 @@ export default function MoodLabArena() {
 
   const towEndGame = () => {
     towCleanup();
-    const won=towPosRef.current>50;const r=won?80:15;
-    setCoins(c=>c+r);notify(won?"💪 Won! +"+r:"😤 Lost! +"+r,won?C.green:C.red);
+    const won=towPosRef.current>50;const baseR=won?80:15;
+    recordGameResult(won,baseR,won?20:5);notify(won?"💪 Won! +"+Math.round(baseR*getCoinMultiplier()):"😤 Lost! +"+Math.round(baseR*getCoinMultiplier()),won?C.green:C.red);
     if(gameActive?.wcMode) {
       const myS = won ? 3 : 0; const aiS = won ? 0 : 3;
       if(gameActive.wcKnockout) { wcFinishKnockoutMatch(myS, aiS); }
@@ -5183,14 +5258,15 @@ export default function MoodLabArena() {
   };
 
   const kickEndGame = () => {
-    const pool = getDevicePool();
-    const mult = pool.rewardMult;
     const isWc = gameActive?.wcMode;
-    let reward = 0;
-    if(kickScore.you > kickScore.ai) { reward = Math.round((isWc ? 20 : 80) * mult); notify(`⚽ YOU WIN! +${reward} coins!`,C.green); playFx("win"); if(isWc) playFx("goal_horn"); }
-    else if(kickScore.you < kickScore.ai) { reward = Math.round((isWc ? 5 : 10) * mult); notify(`😢 +${reward} coins`,C.red); playFx("lose"); }
-    else { reward = Math.round((isWc ? 10 : 30) * mult); notify(`🤝 Draw! +${reward} coins`,C.gold); }
-    setCoins(c=>c+reward);
+    const kickWon = kickScore.you > kickScore.ai;
+    const kickDraw = kickScore.you === kickScore.ai;
+    const baseReward = isWc ? (kickWon ? 20 : kickDraw ? 10 : 5) : (kickWon ? 80 : kickDraw ? 30 : 10);
+    const totalReward = Math.round(baseReward * getCoinMultiplier());
+    if(kickWon) { notify(`⚽ YOU WIN! +${totalReward} coins!`,C.green); playFx("win"); if(isWc) playFx("goal_horn"); }
+    else if(!kickDraw) { notify(`😢 +${totalReward} coins`,C.red); playFx("lose"); }
+    else { notify(`🤝 Draw! +${totalReward} coins`,C.gold); }
+    recordGameResult(kickWon, baseReward, kickWon ? 25 : kickDraw ? 10 : 5);
 
     // Handle WC tournament progression
     if(isWc) {
@@ -5237,7 +5313,7 @@ export default function MoodLabArena() {
   const wcConfirmTeam = () => {
     if(!wcTeam) return;
     playFx("success");
-    setWcDeviceInput(sessionInput||"puff");
+    setWcDeviceInput("puff");
     setWcPhase("group_draw");
     setWcDrawAnim(true);
 
@@ -5320,6 +5396,7 @@ export default function MoodLabArena() {
   };
 
   const wcStartGroupMatch = (matchIdx) => {
+    if(!bleConnected) { setShowBlePopup(true); notify("Connect your device to play! \u{1F4A8}", C.orange); return; }
     if(!wcTournament || wcTournament.groupMatches[matchIdx].played) return;
     playFx("select"); playFx("referee_whistle");
     // Start game — store context for callback
@@ -5431,6 +5508,7 @@ export default function MoodLabArena() {
   };
 
   const wcStartKnockoutMatch = () => {
+    if(!bleConnected) { setShowBlePopup(true); notify("Connect your device to play! \u{1F4A8}", C.orange); return; }
     if(!wcBracket || wcBracket.currentRound >= wcBracket.rounds.length) return;
     playFx("select"); playFx("referee_whistle");
     const opp = wcBracket.opponents[wcBracket.currentRound];
@@ -5506,7 +5584,7 @@ export default function MoodLabArena() {
     const gtPrize = GAME_TOURNAMENTS[wcGameId];
     const prize = (gtPrize && gtPrize.prizes[wcFinalResult]) ? gtPrize.prizes[wcFinalResult] : WC_PRIZES[wcFinalResult];
     if(prize) {
-      setCoins(c => c + prize.coins);
+      setCoins(c => c + Math.round(prize.coins * getCoinMultiplier()));
       setXp(x => x + Math.floor(prize.pts / 10));
       notify(`${prize.label || prize.title} — +${prize.coins} coins!`, wcFinalResult === "gold" ? C.gold : C.cyan);
       if(wcFinalResult === "gold") spawnConfetti(80, [C.gold, "#fff", C.cyan]);
@@ -5618,7 +5696,7 @@ export default function MoodLabArena() {
               setHtTugPos(pos => {
                 const won = pos < 50;
                 const prize = won ? 50 : 0;
-                if(prize) setCoins(c => c + prize);
+                if(prize) setCoins(c => c + Math.round(prize * getCoinMultiplier()));
                 setHalftimeResult({coins:prize, message:won ? "Team A WINS! +50 coins!" : "Team B pulled ahead!", won});
                 if(won) { spawnConfetti(25, [C.cyan, C.gold, C.green]); playFx("win"); }
                 else playFx("lose");
@@ -6408,8 +6486,8 @@ export default function MoodLabArena() {
         newData.myBest = Math.max(newData.myBest, holdDuration);
         newData.leaderboard = [...newData.leaderboard, {name:"You",time:parseFloat(holdDuration.toFixed(2))}]
           .sort((a,b) => b.time - a.time).slice(0, 5);
-        setCoins(c => c + 200);
-        notify("+200 coins! BLINKER HIT! " + holdDuration.toFixed(2) + "s", C.red);
+        setCoins(c => c + Math.round(200 * getCoinMultiplier()));
+        notify("+" + Math.round(200 * getCoinMultiplier()) + " coins! BLINKER HIT! " + holdDuration.toFixed(2) + "s", C.red);
       } else if (prev.type === "blinker") {
         newData.myBest = Math.max(newData.myBest, holdDuration);
       }
@@ -6428,8 +6506,8 @@ export default function MoodLabArena() {
         newData.error = err;
         if (newData.bestError === null || err < newData.bestError) newData.bestError = err;
         if (err <= 0.005) {
-          setCoins(c => c + 420);
-          notify("PERFECT 4.20! +420 coins! 420 Master!", "#7FFF00");
+          setCoins(c => c + Math.round(420 * getCoinMultiplier()));
+          notify("PERFECT 4.20! +" + Math.round(420 * getCoinMultiplier()) + " coins! 420 Master!", "#7FFF00");
         } else if (err <= 0.15) {
           setCoins(c => c + 100);
           notify("So close! " + holdDuration.toFixed(2) + "s (+" + err.toFixed(2) + "s off) +100 coins", "#7FFF00");
@@ -7323,6 +7401,24 @@ export default function MoodLabArena() {
           ))}
         </div>
 
+
+        {/* CONNECT DEVICE CARD — when BLE not connected */}
+        {!bleConnected && (
+          <div onClick={()=>setShowBlePopup(true)} style={{position:"absolute",bottom:70,left:18,right:18,zIndex:11,padding:"14px 16px",borderRadius:16,cursor:"pointer",background:"linear-gradient(135deg,rgba(0,229,255,0.08),rgba(192,132,252,0.08))",border:"1px solid rgba(0,229,255,0.15)",overflow:"hidden",animation:"arenaFadeIn 0.6s ease 0.5s both",...GLASS_CARD}}>
+            <div style={{position:"absolute",top:0,right:0,width:100,height:100,background:"radial-gradient(circle,rgba(0,229,255,0.15),transparent 70%)",borderRadius:"50%",pointerEvents:"none"}}/>
+            <div style={{display:"flex",alignItems:"center",gap:12,position:"relative",zIndex:1}}>
+              <div style={{fontSize:24}}>💨</div>
+              <div style={{flex:1}}>
+                <div style={{fontSize:13,fontWeight:800,color:C.text}}>Connect Your Cali Clear</div>
+                <div style={{fontSize:10,color:C.text2,marginTop:2}}>Tap to pair and start playing</div>
+                <div style={{display:"flex",gap:6,marginTop:6}}>
+                  <div style={{padding:"2px 8px",borderRadius:6,background:"rgba(0,229,255,0.1)",border:"1px solid rgba(0,229,255,0.2)",fontSize:8,fontWeight:700,color:C.cyan}}>1.5x Coin Bonus</div>
+                  <div style={{padding:"2px 8px",borderRadius:6,background:"rgba(192,132,252,0.1)",border:"1px solid rgba(192,132,252,0.2)",fontSize:8,fontWeight:700,color:C.purple}}>Play All Games</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
         {/* ═══ BOTTOM NAV — Floating pill dock ═══ */}
         <div style={{position:"absolute",bottom:16,left:"50%",transform:"translateX(-50%)",zIndex:10}}>
           <div style={{display:"inline-flex",alignItems:"center",gap:3,padding:"4px 5px",borderRadius:100,
@@ -7431,6 +7527,18 @@ export default function MoodLabArena() {
       </div>
 
       {renderZoneHeader("arcade")}
+      {/* Loyalty status bar */}
+      <div style={{display:"flex",gap:6,padding:"0 14px",marginBottom:8}}>
+        <div style={{padding:"3px 8px",borderRadius:8,background:`${getCurrentTier?.()?.color || C.cyan}10`,border:`1px solid ${getCurrentTier?.()?.color || C.cyan}20`,fontSize:9,fontWeight:700,color:getCurrentTier?.()?.color || C.cyan}}>
+          {getCurrentTier?.()?.icon} {getCurrentTier?.()?.mult}x
+        </div>
+        {bleConnected && <div style={{padding:"3px 8px",borderRadius:8,background:"rgba(0,229,255,0.08)",border:"1px solid rgba(0,229,255,0.15)",fontSize:9,fontWeight:700,color:C.cyan}}>
+          💨 1.5x
+        </div>}
+        {currentWinStreak >= 2 && <div style={{padding:"3px 8px",borderRadius:8,background:"rgba(255,140,60,0.08)",border:"1px solid rgba(255,140,60,0.15)",fontSize:9,fontWeight:700,color:C.orange}}>
+          🔥 {currentWinStreak} streak
+        </div>}
+      </div>
 
       {/* ═══ 1. HERO SECTION — Auto-slider of best info ═══ */}
       {(()=>{
@@ -7565,6 +7673,9 @@ export default function MoodLabArena() {
                       <span style={{display:"inline-block",width:4,height:4,borderRadius:"50%",background:C.green,marginRight:3,verticalAlign:"middle"}}/>
                       {count}
                     </span>
+                  </div>
+                  <div style={{fontSize:9,color:C.gold,fontWeight:700,marginTop:4}}>
+                    🪙 ~{Math.round((g.type==="Luck"?30:50) * (getCoinMultiplier?.() || 1))} per game
                   </div>
                 </div>
               );
@@ -7701,6 +7812,7 @@ export default function MoodLabArena() {
       setSelectedGame(g);
     };
     const startShowGame = (g) => {
+      if(!bleConnected) { setShowBlePopup(true); notify("Connect your device to play! \u{1F4A8}", C.orange); return; }
       showMC("intro", {show:g.name}); playFx("show_intro");
       if(g.id==="vibecheck"){setGameActive({id:"vibecheck",name:"Vibe Check",emoji:"🧠",color:C.gold});vcStartGame();}
       // spinwin moved to Fortune
@@ -7719,7 +7831,14 @@ export default function MoodLabArena() {
       }}/>
 
       {renderZoneHeader("stage")}
-      <div style={{padding:"0 14px",position:"relative",zIndex:1}}>
+      {/* Loyalty status bar */}
+      <div style={{display:"flex",gap:6,padding:"0 14px",marginBottom:8}}>
+        <div style={{padding:"3px 8px",borderRadius:8,background:`${getCurrentTier?.()?.color || C.cyan}10`,border:`1px solid ${getCurrentTier?.()?.color || C.cyan}20`,fontSize:9,fontWeight:700,color:getCurrentTier?.()?.color || C.cyan}}>
+          {getCurrentTier?.()?.icon} {getCurrentTier?.()?.mult}x
+        </div>
+        {bleConnected && <div style={{padding:"3px 8px",borderRadius:8,background:"rgba(0,229,255,0.08)",border:"1px solid rgba(0,229,255,0.15)",fontSize:9,fontWeight:700,color:C.cyan}}>💨 1.5x</div>}
+        {currentWinStreak >= 2 && <div style={{padding:"3px 8px",borderRadius:8,background:"rgba(255,140,60,0.08)",border:"1px solid rgba(255,140,60,0.15)",fontSize:9,fontWeight:700,color:C.orange}}>🔥 {currentWinStreak} streak</div>}
+      </div>      <div style={{padding:"0 14px",position:"relative",zIndex:1}}>
 
         {/* 1. AUTO-SLIDER HERO */}
         {(()=>{
@@ -8220,7 +8339,7 @@ export default function MoodLabArena() {
   };
   const slotsNextRound = () => {
     const next = slotsRound+1;
-    if(next>=8) { setSlotsPhase("complete"); return; }
+    if(next>=8) { setSlotsPhase("complete"); recordGameResult(slotsScore>0, 0, slotsScore>0?20:5); return; }
     setSlotsRound(next);
     setSlotsWin(0);
     setSlotsBonusRound(false);
@@ -8946,6 +9065,7 @@ export default function MoodLabArena() {
       {q:"Puff Derby",ans:"Horse #3",result:"correct",coins:"+75",time:"5d ago"},
     ];
     const launchGame = (g) => {
+      if(!bleConnected) { setShowBlePopup(true); notify("Connect your device to play! \u{1F4A8}", C.orange); return; }
       if(g.id==="crystalball"){setGameActive({id:"crystalball",name:"Fortune Teller",emoji:"🔮",color:"#9333EA"});startCrystalBall();}
       else if(g.id==="strainbattle"){setGameActive({id:"strainbattle",name:"Strain Battle",emoji:"🌿",color:"#22C55E"});startStrainBattle();}
       else if(g.id==="matchpredictor"){setGameActive({id:"matchpredictor",name:"Match Predictor",emoji:"📊",color:"#3B82F6"});startMatchPredictor();}
@@ -8977,6 +9097,14 @@ export default function MoodLabArena() {
           <span style={{fontSize:14,color:C.text2}}>←</span>
           <span style={{fontSize:11,fontWeight:600,color:C.text2}}>Lobby</span>
         </div>
+      </div>
+      {/* Loyalty status bar */}
+      <div style={{display:"flex",gap:6,padding:"0 14px",marginBottom:8}}>
+        <div style={{padding:"3px 8px",borderRadius:8,background:`${getCurrentTier?.()?.color || C.cyan}10`,border:`1px solid ${getCurrentTier?.()?.color || C.cyan}20`,fontSize:9,fontWeight:700,color:getCurrentTier?.()?.color || C.cyan}}>
+          {getCurrentTier?.()?.icon} {getCurrentTier?.()?.mult}x
+        </div>
+        {bleConnected && <div style={{padding:"3px 8px",borderRadius:8,background:"rgba(0,229,255,0.08)",border:"1px solid rgba(0,229,255,0.15)",fontSize:9,fontWeight:700,color:C.cyan}}>💨 1.5x</div>}
+        {currentWinStreak >= 2 && <div style={{padding:"3px 8px",borderRadius:8,background:"rgba(255,140,60,0.08)",border:"1px solid rgba(255,140,60,0.15)",fontSize:9,fontWeight:700,color:C.orange}}>🔥 {currentWinStreak} streak</div>}
       </div>
       {/* HERO AUTO-SLIDER */}
       {(()=>{
@@ -11071,7 +11199,7 @@ export default function MoodLabArena() {
       if (roundNum < 2) { bdStartRound(roundNum + 1, guard); }
       else {
         setBdPhase("final");
-        const bonus = scoreForFinal >= 250 ? 100 : scoreForFinal >= 150 ? 50 : 20;
+        const bonus = Math.round((scoreForFinal >= 250 ? 100 : scoreForFinal >= 150 ? 50 : 20) * getCoinMultiplier());
         setCoins(c => c + bonus);
         setCommentary("BEAT DROP COMPLETE! +" + bonus + " coins!");
         if (scoreForFinal >= 250) { spawnConfetti(60, [C.pink, C.purple, C.gold, C.cyan]); playFx("win"); }
@@ -11191,14 +11319,14 @@ export default function MoodLabArena() {
     setTimeout(() => {
       if (!guard.v) return;
       if (!survived) {
-        const bonus = plRound >= 5 ? 60 : plRound >= 3 ? 30 : 10;
+        const bonus = Math.round((plRound >= 5 ? 60 : plRound >= 3 ? 30 : 10) * getCoinMultiplier());
         setCoins(c => c + bonus);
         setPlPhase("final");
         setCommentary("Puff Limbo over! Made it to round " + (plRound + 1) + " -- +" + bonus + " coins");
         playFx(plRound >= 3 ? "success" : "save");
       } else if (plRound >= 6) {
         setPlPhase("champion");
-        setCoins(c => c + 150);
+        setCoins(c => c + Math.round(150 * getCoinMultiplier()));
         setCommentary("PUFF LIMBO CHAMPION! Survived the 5.0s BLINKER round! +150 coins!");
         spawnConfetti(80, [C.gold, C.orange, C.red, C.pink]);
         playFx("win");
@@ -13083,9 +13211,7 @@ const startSimonPuffs = () => {
                     <div style={{fontSize:11,color:C.text2,marginBottom:6,fontStyle:"italic",maxWidth:280}}>
                       "{won?pick(WIN_MSGS):draw?"Fair game! Both high af apparently 😂":pick(LOSE_MSGS)}"
                     </div>
-                    <div style={{fontSize:10,color:C.gold,marginBottom:14,padding:"4px 14px",borderRadius:20,...LG.tinted(C.gold)}}>
-                      💰 ×{pool.rewardMult} {pool.label} · {getDeviceShort()}
-                    </div>
+                    {(()=>{const fkWc=gameActive?.wcMode;const fkBase=fkWc?(won?20:draw?10:5):(won?80:draw?30:10);return(<div style={{padding:10,borderRadius:10,background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.06)",marginBottom:10,width:"100%",maxWidth:260}}><div style={{fontSize:9,color:C.text3,letterSpacing:1,marginBottom:6}}>REWARD BREAKDOWN</div><div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:C.text2,marginBottom:3}}><span>Base</span><span style={{color:C.gold}}>+{fkBase} 🪙</span></div><div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:C.text2,marginBottom:3}}><span>{getCurrentTier().icon} {getCurrentTier().name}</span><span style={{color:getCurrentTier().color}}>x{getCurrentTier().mult}</span></div>{bleConnected&&<div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:C.text2,marginBottom:3}}><span>💨 Device</span><span style={{color:C.cyan}}>x1.5</span></div>}<div style={{borderTop:"1px solid rgba(255,255,255,0.08)",paddingTop:6,marginTop:3,display:"flex",justifyContent:"space-between",fontSize:13,fontWeight:800}}><span style={{color:C.text}}>TOTAL</span><span style={{color:C.gold}}>+{Math.round(fkBase*getCoinMultiplier())} 🪙</span></div></div>);})()}
                     <div style={{display:"flex",gap:10,justifyContent:"center"}}>
                       {/* No rematch in tournament mode */}
                       {!gameActive?.wcMode && <div onClick={()=>{startKick(gameActive?.id);playFx("whistle");}} style={{
@@ -13917,9 +14043,7 @@ const startSimonPuffs = () => {
                     <div style={{fontSize:11,color:C.text2,marginBottom:6,fontStyle:"italic",maxWidth:280}}>
                       "{won?pick(WIN_MSGS):draw?"Fair game! Both puffs equal apparently 😂":pick(LOSE_MSGS)}"
                     </div>
-                    <div style={{fontSize:10,color:C.gold,marginBottom:14,padding:"4px 14px",borderRadius:20,...LG.tinted(C.gold)}}>
-                      💰 ×{pool.rewardMult} {pool.label} · {getDeviceShort()}
-                    </div>
+                    {(()=>{const fkWc=gameActive?.wcMode;const fkBase=fkWc?(won?20:draw?10:5):(won?80:draw?30:10);return(<div style={{padding:10,borderRadius:10,background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.06)",marginBottom:10,width:"100%",maxWidth:260}}><div style={{fontSize:9,color:C.text3,letterSpacing:1,marginBottom:6}}>REWARD BREAKDOWN</div><div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:C.text2,marginBottom:3}}><span>Base</span><span style={{color:C.gold}}>+{fkBase} 🪙</span></div><div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:C.text2,marginBottom:3}}><span>{getCurrentTier().icon} {getCurrentTier().name}</span><span style={{color:getCurrentTier().color}}>x{getCurrentTier().mult}</span></div>{bleConnected&&<div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:C.text2,marginBottom:3}}><span>💨 Device</span><span style={{color:C.cyan}}>x1.5</span></div>}<div style={{borderTop:"1px solid rgba(255,255,255,0.08)",paddingTop:6,marginTop:3,display:"flex",justifyContent:"space-between",fontSize:13,fontWeight:800}}><span style={{color:C.text}}>TOTAL</span><span style={{color:C.gold}}>+{Math.round(fkBase*getCoinMultiplier())} 🪙</span></div></div>);})()}
                     <div style={{display:"flex",gap:10,justifyContent:"center"}}>
                       {!gameActive?.wcMode && <div onClick={()=>{startKick(gameActive?.id);playFx("whistle");}} style={{
                         padding:"12px 28px",borderRadius:12,cursor:"pointer",
@@ -14185,10 +14309,10 @@ const startSimonPuffs = () => {
                 </div></div>)}
               {bpPhase==="ai_turn"&&bpCharging&&(<div style={{width:"100%",marginTop:8}}><div style={{width:"100%",height:6,borderRadius:4,background:"rgba(255,255,255,0.05)",overflow:"hidden"}}><div style={{width:bpPuffAmount+"%",height:"100%",borderRadius:4,background:`linear-gradient(90deg,${C.orange},${C.red})`,transition:"width 0.05s linear"}}/></div><div style={{textAlign:"center",fontSize:8,color:C.orange,marginTop:4,animation:"pulse 0.5s infinite"}}>{(curP?curP.name:"AI")+" is puffing... 💨"}</div></div>)}
               {/* Result actions */}
-              {bpPhase==="result"&&(<div style={{display:"flex",gap:10,marginTop:12,animation:"fadeIn 0.5s ease"}}>
+              {bpPhase==="result"&&(<><div style={{display:"flex",gap:10,marginTop:12,animation:"fadeIn 0.5s ease"}}>
                 <div onClick={()=>{setBpPhase(null);startBalloonPop();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.pink}15`,border:`1px solid ${C.pink}30`,fontSize:13,fontWeight:800,color:C.pink}}>🔄 Play Again</div>
-                <div onClick={bpEndGame} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.text3}10`,border:`1px solid ${C.text3}20`,fontSize:13,fontWeight:800,color:C.text3}}>Done ✓</div>
-              </div>)}
+                <div onClick={bpEndGame} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.text3}10`,border:`1px solid ${C.text3}20`,fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
+              </div><div style={{display:"flex",gap:8,marginTop:8}}><div onClick={()=>{bpEndGame();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{flex:1,padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple}}>👤 My Progress</div></div></>)}
             </div>
           </div>
         );
@@ -14569,8 +14693,9 @@ const startSimonPuffs = () => {
                   {/* Actions */}
                   <div style={{display:"flex",gap:10,marginTop:16}}>
                     <div onClick={()=>{setHpPhase(null);startHotPotato();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.orange}15`,border:`1px solid ${C.orange}30`,fontSize:13,fontWeight:800,color:C.orange}}>🔄 Play Again</div>
-                    <div onClick={hpEndGame} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.text3}10`,border:`1px solid ${C.text3}20`,fontSize:13,fontWeight:800,color:C.text3}}>Done ✓</div>
+                    <div onClick={hpEndGame} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.text3}10`,border:`1px solid ${C.text3}20`,fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
                   </div>
+                  <div style={{display:"flex",gap:8,marginTop:8}}><div onClick={()=>{hpEndGame();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{flex:1,padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple}}>👤 My Progress</div></div>
                 </div>
               )}
             </div>
@@ -16358,6 +16483,7 @@ const startSimonPuffs = () => {
                 <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.text2}}>{bjRound+1}/7</div><div style={{fontSize:8,color:C.text3}}>HAND</div></div>
                 <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.cyan}}>Bet:{bjBet}</div><div style={{fontSize:8,color:C.text3}}>WAGER</div></div>
               </div>
+              <div style={{fontSize:9,color:C.gold,fontWeight:700,marginBottom:4,textAlign:"center"}}>Win up to: {Math.round(bjBet * 2.5 * (getCoinMultiplier?.() || 1))} 🪙 ({(2.5 * (getCoinMultiplier?.() || 1)).toFixed(1)}x)</div>
               {bjPhase==="intro"&&(<div style={{textAlign:"center",animation:"fadeIn 0.5s ease"}}><div style={{fontSize:48,marginBottom:8}}>🃏</div><div style={{fontSize:20,fontWeight:900,color:"#22C55E",letterSpacing:3}}>BLACKJACK</div><div style={{fontSize:11,color:C.text3,marginTop:8}}>Short puff = HIT | Long puff = STAND | Blinker = DOUBLE DOWN</div></div>)}
               {(bjPhase==="dealing"||isPlayerTurn||isDealerTurn||isResult)&&(<div style={{width:"100%"}}>
                 <div style={{textAlign:"center",marginBottom:16}}>
@@ -19572,7 +19698,7 @@ const startSimonPuffs = () => {
             ))}
             {fanTeam && (
               <div style={{position:"sticky",bottom:0,padding:"10px 0",background:`linear-gradient(0deg, #06101E, transparent)`}}>
-                <div onClick={()=>{playFx("success");setFanDevice(sessionInput||"puff");setFanMode("watching");}} style={{
+                <div onClick={()=>{playFx("success");setFanDevice("puff");setFanMode("watching");}} style={{
                   padding:"12px 0",borderRadius:14,textAlign:"center",cursor:"pointer",
                   background:`linear-gradient(135deg, ${C.cyan}40, ${C.gold}30)`,
                   border:`2px solid ${C.cyan}60`,backdropFilter:"blur(8px)",
@@ -20880,11 +21006,28 @@ const startSimonPuffs = () => {
                 </div>
               )}
 
-              <div onClick={()=>{setShowVibeCheck(false);setVcPhase(null);setCoins(c=>c+vcScore);setStageRole(null);setMcVisible(false);setStageElim(null);}} style={{
+              {/* Reward breakdown */}
+              <div style={{padding:12,borderRadius:12,background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.06)",marginBottom:12,width:"100%",maxWidth:280}}>
+                <div style={{fontSize:10,color:C.text3,letterSpacing:1,marginBottom:8}}>REWARD BREAKDOWN</div>
+                <div style={{display:"flex",justifyContent:"space-between",fontSize:12,color:C.text2,marginBottom:4}}>
+                  <span>Base Reward</span><span style={{color:C.gold}}>+{vcScore} 🪙</span>
+                </div>
+                <div style={{display:"flex",justifyContent:"space-between",fontSize:12,color:C.text2,marginBottom:4}}>
+                  <span>{getCurrentTier().icon} {getCurrentTier().name} ({getCurrentTier().mult}x)</span>
+                  <span style={{color:getCurrentTier().color}}>x{getCurrentTier().mult}</span>
+                </div>
+                {bleConnected && <div style={{display:"flex",justifyContent:"space-between",fontSize:12,color:C.text2,marginBottom:4}}>
+                  <span>💨 Device Bonus</span><span style={{color:C.cyan}}>x1.5</span>
+                </div>}
+                <div style={{borderTop:"1px solid rgba(255,255,255,0.08)",paddingTop:8,marginTop:4,display:"flex",justifyContent:"space-between",fontSize:14,fontWeight:800}}>
+                  <span style={{color:C.text}}>TOTAL</span><span style={{color:C.gold}}>+{Math.round(vcScore * getCoinMultiplier())} 🪙</span>
+                </div>
+              </div>
+              <div onClick={()=>{setShowVibeCheck(false);setVcPhase(null);recordGameResult(vcScore>0,vcScore,vcScore>50?30:15);setStageRole(null);setMcVisible(false);setStageElim(null);}} style={{
                 padding:"14px 40px",borderRadius:14,cursor:"pointer",
                 background:`linear-gradient(135deg, ${C.gold}20, ${C.orange}15)`,border:`1px solid ${C.gold}30`,
               }}>
-                <span style={{fontSize:14,fontWeight:900,color:C.gold}}>COLLECT {vcScore} COINS</span>
+                <span style={{fontSize:14,fontWeight:900,color:C.gold}}>COLLECT {Math.round(vcScore * getCoinMultiplier())} COINS</span>
               </div>
             </div>
           )}
@@ -21224,41 +21367,8 @@ const startSimonPuffs = () => {
     );
   };
 
-  // Input Method Panel
-  const renderInputPanel = () => {
-    if(!showInputPanel) return null;
-    return (
-      <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:250,display:"flex",flexDirection:"column",justifyContent:"flex-end"}}>
-        <div onClick={()=>setShowInputPanel(false)} style={{position:"absolute",inset:0,background:"rgba(5,5,16,0.75)",backdropFilter:"blur(8px)"}}/>
-        <div style={{position:"relative",maxWidth:430,margin:"0 auto",width:"100%",background:`linear-gradient(180deg,#0D0D28,${C.bg})`,borderRadius:"22px 22px 0 0",border:`1px solid ${C.border2}`,borderBottom:"none",padding:"8px 18px 28px",animation:"sheetUp 0.3s ease"}}>
-          <div style={{width:36,height:4,borderRadius:2,background:`${C.text3}30`,margin:"0 auto 16px"}}/>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
-            <div>
-              <div style={{fontSize:15,fontWeight:900,color:C.text}}>Device Control</div>
-              <div style={{fontSize:10,color:C.text3,marginTop:2}}>Choose your preferred input · Selected before each game</div>
-            </div>
-            <div onClick={()=>setShowInputPanel(false)} style={{width:28,height:28,borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",background:`${C.text3}08`,border:`1px solid ${C.border}`,fontSize:12,color:C.text3}}>✕</div>
-          </div>
-          <div style={{fontSize:9,fontWeight:700,color:C.text3,letterSpacing:1.5,marginBottom:6}}>DEVICE INPUTS</div>
-          <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:12}}>
-            {INPUT_TYPES.map(t=>(
-              <div key={t.id} onClick={()=>{setPrimaryInput(t.id);triggerInputPulse();}} style={{padding:"10px 12px",borderRadius:10,cursor:"pointer",display:"flex",alignItems:"center",gap:10,background:primaryInput===t.id?`${t.color}08`:C.bg3,border:`1.5px solid ${primaryInput===t.id?t.color+"35":C.border}`,transition:"all 0.25s"}}>
-                <div style={{width:34,height:34,borderRadius:9,display:"flex",alignItems:"center",justifyContent:"center",background:`${t.color}12`,border:`1px solid ${t.color}20`,fontSize:16}}>{t.icon}</div>
-                <div style={{flex:1}}><div style={{fontSize:12,fontWeight:700,color:primaryInput===t.id?t.color:C.text}}>{t.label}</div><div style={{fontSize:9,color:C.text3}}>{t.desc}</div></div>
-                {primaryInput===t.id && <div style={{width:18,height:18,borderRadius:"50%",background:t.color,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:"#000",fontWeight:900}}>✓</div>}
-              </div>
-            ))}
-          </div>
-          <div style={{padding:"8px 12px",borderRadius:8,background:`${(INPUT_TYPES.find(t=>t.id===primaryInput)||INPUT_TYPES[0]).color}05`,border:`1px solid ${(INPUT_TYPES.find(t=>t.id===primaryInput)||INPUT_TYPES[0]).color}10`,display:"flex",alignItems:"center",gap:6}}>
-            <span style={{fontSize:13}}>{(INPUT_TYPES.find(t=>t.id===primaryInput)||INPUT_TYPES[0]).icon}</span>
-            <div style={{fontSize:10,fontWeight:600,color:(INPUT_TYPES.find(t=>t.id===primaryInput)||INPUT_TYPES[0]).color}}>
-              You'll choose your input before each game starts
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
+  // Input Method Panel — removed (device connection required, puff-only mode)
+  const renderInputPanel = () => null;
 
   // Ask Prompt — removed. Device control selected on Arena home screen.
 
@@ -21370,7 +21480,140 @@ const startSimonPuffs = () => {
   // ═════════════════════════════════════════
   // ── SOCIAL: HELPERS ──
   // ═════════════════════════════════════════
-  const getCurrentRank = () => {
+  // ── LOYALTY SYSTEM HELPERS ──
+  const getCurrentTier = () => {
+    for(let i = LOYALTY_TIERS.length - 1; i >= 0; i--) {
+      if(xp >= LOYALTY_TIERS[i].xpReq) return { ...LOYALTY_TIERS[i], idx: i };
+    }
+    return { ...LOYALTY_TIERS[0], idx: 0 };
+  };
+
+  const getNextTier = () => {
+    const tier = getCurrentTier();
+    return tier.idx < LOYALTY_TIERS.length - 1 ? LOYALTY_TIERS[tier.idx + 1] : null;
+  };
+
+  const getCoinMultiplier = () => {
+    const tier = getCurrentTier();
+    const deviceBonus = bleConnected ? 1.5 : 1.0;
+    return tier.mult * deviceBonus;
+  };
+
+  const showAchievementPopup = (badge) => {
+    setAchievementPopup(badge);
+    playFx("achievement");
+    setTimeout(() => setAchievementPopup(null), 3000);
+  };
+
+  const claimDaily = () => {
+    if(dailyCheckedIn) return;
+    const dayIdx = dailyStreak % 7;
+    const reward = DAILY_REWARDS[dayIdx];
+    const mult = getCoinMultiplier();
+    const earnedCoins = Math.round(reward.coins * mult);
+    setCoins(c => c + earnedCoins);
+    setXp(x => x + reward.xp);
+    setDailyStreak(s => s + 1);
+    setDailyCheckedIn(true);
+    playFx("coin_collect");
+    notify("+" + earnedCoins + " coins +" + reward.xp + " XP -- Streak " + (dailyStreak+1) + " fire", C.green);
+    if((dailyStreak + 1) % 7 === 0 && !earnedBadges.includes("weekwarrior")) {
+      setEarnedBadges(b => [...b, "weekwarrior"]);
+      const badge = LOYALTY_BADGES.find(b=>b.id==="weekwarrior");
+      if(badge) setTimeout(()=>showAchievementPopup(badge), 600);
+    }
+  };
+
+  const completeChallenge = (challengeId) => {
+    if(completedChallenges.includes(challengeId)) return;
+    const ch = DAILY_CHALLENGES.find(c => c.id === challengeId);
+    if(!ch) return;
+    const mult = getCoinMultiplier();
+    const earnedCoins = Math.round(ch.reward * mult);
+    setCoins(c => c + earnedCoins);
+    setXp(x => x + ch.xpReward);
+    setCompletedChallenges(cc => [...cc, challengeId]);
+    playFx("success");
+    notify("+" + earnedCoins + " coins Challenge complete!", C.green);
+    if(completedChallenges.length + 1 >= DAILY_CHALLENGES.length) {
+      setTimeout(() => {
+        const bonusCoins = Math.round(50 * mult);
+        setCoins(c => c + bonusCoins);
+        notify("All challenges done! +" + bonusCoins + " BONUS", C.gold);
+        playFx("win");
+      }, 800);
+    }
+  };
+
+  const buyShopItem = (item) => {
+    if(ownedItems.includes(item.id)) return;
+    if(coins < item.price) { notify("Not enough coins!", C.red); return; }
+    if(item.tier) {
+      const tier = getCurrentTier();
+      const tierIdx = LOYALTY_TIERS.findIndex(t => t.name === item.tier);
+      if(tier.idx < tierIdx) { notify("Requires " + item.tier + " tier!", C.orange); return; }
+    }
+    setCoins(c => c - item.price);
+    setOwnedItems(o => [...o, item.id]);
+    playFx("success");
+    notify("Purchased " + item.name + "!", C.green);
+    if(ownedItems.length + 1 >= 5 && !earnedBadges.includes("collector")) {
+      setEarnedBadges(b => [...b, "collector"]);
+      const badge = LOYALTY_BADGES.find(b=>b.id==="collector");
+      if(badge) setTimeout(()=>showAchievementPopup(badge), 600);
+    }
+  };
+
+  // ── ARENA LOYALTY: XP & Game Result Tracking ──
+  const awardXP = (amount, reason) => {
+    setXp(x => x + amount);
+    const newXp = xp + amount;
+    const currentIdx = getCurrentTier().idx;
+    for(let i = currentIdx + 1; i < LOYALTY_TIERS.length; i++) {
+      if(newXp >= LOYALTY_TIERS[i].xpReq) {
+        setTimeout(() => {
+          playFx("level_up");
+          notify("TIER UP! " + LOYALTY_TIERS[i].icon + " " + LOYALTY_TIERS[i].name + " -- " + LOYALTY_TIERS[i].mult + "x multiplier!", LOYALTY_TIERS[i].color);
+          spawnConfetti(50, [LOYALTY_TIERS[i].color, C.gold, "#fff"]);
+        }, 500);
+        break;
+      }
+    }
+  };
+
+  const showFloatingReward = (coins, xpAmt) => {
+    setFloatingReward({ coins, xp: xpAmt, key: Date.now() });
+    setTimeout(() => setFloatingReward(null), 2000);
+  };
+
+  const recordGameResult = (won, baseCoins, baseXP) => {
+    const mult = getCoinMultiplier();
+    const totalCoins = Math.round(baseCoins * mult);
+    const totalXP = baseXP + (won ? 15 : 5);
+
+    setCoins(c => c + totalCoins);
+    awardXP(totalXP, won ? "game_win" : "game_played");
+    updateProfileAfterGame(won);
+    showFloatingReward(totalCoins, totalXP);
+
+    if(won) {
+      setCurrentWinStreak(s => {
+        const newStreak = s + 1;
+        setBestWinStreak(b => Math.max(b, newStreak));
+        if(newStreak === 3) notify("3 Win Streak!", C.orange);
+        if(newStreak === 5) { notify("5 Win Streak! +50 bonus!", C.gold); setCoins(c => c + 50); }
+        if(newStreak === 10) { notify("10 WIN STREAK! +200 bonus!", C.pink); setCoins(c => c + 200); playFx("crowd"); }
+        if(newStreak === 5 && !earnedBadges.includes("streak5")) { setEarnedBadges(b => [...b, "streak5"]); const badge = LOYALTY_BADGES.find(b=>b.id==="streak5"); if(badge) setTimeout(()=>showAchievementPopup(badge), 800); }
+        if(newStreak === 10 && !earnedBadges.includes("streak10")) { setEarnedBadges(b => [...b, "streak10"]); const badge = LOYALTY_BADGES.find(b=>b.id==="streak10"); if(badge) setTimeout(()=>showAchievementPopup(badge), 800); }
+        return newStreak;
+      });
+    } else {
+      if(currentWinStreak >= 3) notify("Streak ended at " + currentWinStreak, C.text3);
+      setCurrentWinStreak(0);
+    }
+  };
+
+    const getCurrentRank = () => {
     const r = RANKS.find(r => r.name === playerProfile.rank);
     return r || RANKS[0];
   };
@@ -21513,81 +21756,290 @@ const startSimonPuffs = () => {
     );
   };
 
-  // ── RENDER: ME TAB ──
+  // ── RENDER: ME TAB (LOYALTY SYSTEM) ──
   // ═════════════════════════════════════════
   const renderMe = () => {
-    const rank = getCurrentRank();
-    const nextRank = getNextRank();
+    const tier = getCurrentTier();
+    const nextTier = getNextTier();
     const winRate = getWinRate();
+    const xpProgress = nextTier ? Math.min(((xp - tier.xpReq) / (nextTier.xpReq - tier.xpReq)) * 100, 100) : 100;
+    const totalMultiplier = getCoinMultiplier();
+    const earnedBadgeCount = earnedBadges.length;
+    const ltPill = (id, label, color) => ({
+      padding:"6px 14px",borderRadius:99,fontSize:11,fontWeight:700,cursor:"pointer",whiteSpace:"nowrap",
+      background:loyaltyTab===id?(color||C.pink):"transparent",
+      color:loyaltyTab===id?"#fff":C.text3,
+      border:loyaltyTab===id?"none":"1px solid "+C.border,
+    });
     return (
     <div style={{padding:"0 14px"}}>
-      {/* Profile Card — tappable to open full profile */}
-      <div onClick={() => setShowProfile(true)} style={{textAlign:"center",padding:"20px",borderRadius:18,marginBottom:16,cursor:"pointer",background:`radial-gradient(ellipse at 50% 0%, ${rank.color}10, ${C.bg2} 60%)`,border:`1px solid ${rank.color}15`,position:"relative"}}>
-        {/* Rank badge corner */}
-        <div style={{position:"absolute",top:10,right:10,display:"flex",alignItems:"center",gap:3,padding:"3px 8px",borderRadius:100,background:`${rank.color}12`,border:`1px solid ${rank.color}25`}}>
-          <span style={{fontSize:10}}>{rank.emoji}</span>
-          <span style={{fontSize:8,fontWeight:800,color:rank.color}}>{rank.name}</span>
-        </div>
-        {/* Streak badge corner */}
-        <div style={{position:"absolute",top:10,left:10,display:"flex",alignItems:"center",gap:2,padding:"3px 8px",borderRadius:100,background:`${C.orange}10`,border:`1px solid ${C.orange}20`}}>
-          <span style={{fontSize:10,animation:playerProfile.streak>=7?"pulse 1.5s infinite":"none"}}>🔥</span>
-          <span style={{fontSize:9,fontWeight:800,color:C.orange}}>{playerProfile.streak}</span>
-        </div>
-        <div style={{width:56,height:56,borderRadius:18,margin:"0 auto 10px",background:`linear-gradient(135deg,${rank.color}30,${C.purple}20)`,border:`2px solid ${rank.color}40`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:28,boxShadow:`0 0 20px ${rank.color}15`}}>🌟</div>
-        <div style={{fontSize:18,fontWeight:900,color:C.text}}>{USER.name}</div>
-        <div style={{fontSize:11,color:rank.color,fontWeight:700,marginTop:2}}>Lv.{USER.level} · {rank.name}</div>
-        <div style={{margin:"10px auto 0",maxWidth:200}}>
-          {nextRank ? (<>
-            <div style={{height:4,borderRadius:2,background:`${C.text3}15`,overflow:"hidden"}}>
-              <div style={{height:"100%",borderRadius:2,width:`${playerProfile.rankProgress}%`,background:`linear-gradient(90deg,${rank.color},${nextRank.color})`}}/>
+      {/* ── Profile Card ── */}
+      <div style={{padding:18,borderRadius:18,marginBottom:14,position:"relative",
+        background:"linear-gradient(135deg,"+C.bg3+","+tier.color+"12)",
+        border:"1px solid "+tier.color+"25",
+        boxShadow:"0 0 40px "+tier.color+"08"}}>
+        <div style={{display:"flex",gap:14,alignItems:"center"}}>
+          <div style={{width:58,height:58,borderRadius:16,
+            background:"linear-gradient(135deg,"+tier.color+"35,"+C.bg3+")",
+            border:"2px solid "+tier.color+"50",
+            display:"flex",alignItems:"center",justifyContent:"center",fontSize:28,
+            boxShadow:"0 0 20px "+tier.color+"15"}}>
+            {ownedItems.includes("avatar_cat") ? "🐱" : ownedItems.includes("avatar_alien") ? "👽" : "🌟"}
+          </div>
+          <div style={{flex:1}}>
+            <div style={{display:"flex",alignItems:"center",gap:8}}>
+              <span style={{fontSize:16,fontWeight:900,color:C.text}}>{USER.name}</span>
+              <span style={{fontSize:14}}>{tier.icon}</span>
+              <span style={{fontSize:11,fontWeight:700,color:tier.color}}>{tier.name}</span>
             </div>
-            <div style={{fontSize:9,color:C.text3,marginTop:3}}>{playerProfile.rankProgress}% to {nextRank.name}</div>
-          </>) : (
-            <div style={{fontSize:9,color:C.gold,marginTop:3}}>Max Rank Achieved!</div>
+            <div style={{display:"flex",gap:10,marginTop:5}}>
+              <span style={{fontSize:10,color:C.orange,fontWeight:700}}>{"🔥 "+playerProfile.streak+" streak"}</span>
+              <span style={{fontSize:10,color:C.text3}}>{"🏅 "+earnedBadgeCount+" badges"}</span>
+            </div>
+            <div style={{marginTop:8}}>
+              <div style={{display:"flex",justifyContent:"space-between",fontSize:9,color:C.text3,marginBottom:3}}>
+                <span>{"XP: "+xp.toLocaleString()}</span>
+                <span>{nextTier ? "-> "+nextTier.name+" ("+nextTier.xpReq.toLocaleString()+")" : "MAX TIER"}</span>
+              </div>
+              <div style={{height:6,borderRadius:3,background:C.bg,overflow:"hidden"}}>
+                <div style={{height:"100%",width:xpProgress+"%",borderRadius:3,
+                  background:"linear-gradient(90deg,"+tier.color+","+C.cyan+")",
+                  transition:"width 0.5s ease"}}/>
+              </div>
+            </div>
+          </div>
+        </div>
+        {/* Featured badges */}
+        <div style={{display:"flex",gap:6,marginTop:12,alignItems:"center"}}>
+          {LOYALTY_BADGES.filter(b=>earnedBadges.includes(b.id)).slice(0,4).map(b=>(
+            <span key={b.id} style={{fontSize:18,background:C.bg,borderRadius:8,padding:"3px 7px",border:"1px solid "+C.border}}>{b.icon}</span>
+          ))}
+          <span style={{fontSize:10,color:C.text3,marginLeft:4}}>Featured</span>
+        </div>
+        {/* Multiplier badges */}
+        <div style={{display:"flex",gap:6,marginTop:10,flexWrap:"wrap"}}>
+          <div style={{display:"flex",alignItems:"center",gap:4,padding:"4px 10px",borderRadius:8,
+            background:tier.color+"12",border:"1px solid "+tier.color+"25",fontSize:10,fontWeight:700,color:tier.color}}>
+            {tier.icon+" "+tier.mult+"x "+tier.name+" Multiplier"}
+          </div>
+          {bleConnected && (
+            <div style={{display:"flex",alignItems:"center",gap:4,padding:"4px 10px",borderRadius:8,
+              background:C.green+"12",border:"1px solid "+C.green+"25",fontSize:10,fontWeight:700,color:C.green}}>
+              {"💨 1.5x Device Bonus Active"}
+            </div>
+          )}
+          {totalMultiplier > 1.0 && (
+            <div style={{display:"flex",alignItems:"center",gap:4,padding:"4px 10px",borderRadius:8,
+              background:C.gold+"12",border:"1px solid "+C.gold+"25",fontSize:10,fontWeight:800,color:C.gold}}>
+              {"= "+totalMultiplier.toFixed(1)+"x Total"}
+            </div>
           )}
         </div>
       </div>
-      {/* Stats Row */}
-      <div style={{display:"flex",gap:6,marginBottom:16}}>
-        {[{l:"🪙 Coins",v:coins.toLocaleString(),c:C.gold},{l:"🎮 Games",v:playerProfile.gamesPlayed.toString(),c:C.cyan},{l:"🏆 Win%",v:winRate+"%",c:C.green},{l:"🔥 Streak",v:playerProfile.streak+"d",c:C.orange}].map((s,i)=>(
-          <div key={i} style={{flex:1,padding:"10px 4px",borderRadius:12,textAlign:"center",background:`${s.c}06`,border:`1px solid ${s.c}10`}}>
+
+      {/* ── Stats Row ── */}
+      <div style={{display:"flex",gap:6,marginBottom:14}}>
+        {[{l:"Coins",v:coins.toLocaleString(),icon:"🪙",c:C.gold},{l:"Games",v:playerProfile.gamesPlayed.toString(),icon:"🎮",c:C.cyan},{l:"Win%",v:winRate+"%",icon:"🏆",c:C.green},{l:"Streak",v:dailyStreak+"d",icon:"🔥",c:C.orange}].map((s,i)=>(
+          <div key={i} style={{flex:1,padding:"10px 4px",borderRadius:12,textAlign:"center",background:s.c+"06",border:"1px solid "+s.c+"10"}}>
+            <div style={{fontSize:13}}>{s.icon}</div>
             <div style={{fontFamily:"'Courier New',monospace",fontSize:15,fontWeight:900,color:s.c}}>{s.v}</div>
-            <div style={{fontSize:7,color:C.text3,marginTop:2}}>{s.l}</div>
+            <div style={{fontSize:7,color:C.text3,marginTop:1,fontWeight:600,letterSpacing:0.5}}>{s.l.toUpperCase()}</div>
           </div>
         ))}
       </div>
-      {/* Puff Stats */}
-      <div style={{display:"flex",gap:6,marginBottom:16}}>
-        {[{l:"💨 Total Puffs",v:playerProfile.totalPuffs,c:C.cyan},{l:"💀 Blinkers",v:playerProfile.blinkerCount,c:C.red},{l:"⏱ Puff Time",v:Math.floor(playerProfile.totalPuffTime/60)+"m",c:C.purple}].map((s,i)=>(
-          <div key={i} style={{flex:1,padding:"10px 4px",borderRadius:12,textAlign:"center",background:`${s.c}06`,border:`1px solid ${s.c}10`}}>
-            <div style={{fontFamily:"'Courier New',monospace",fontSize:15,fontWeight:900,color:s.c}}>{s.v}</div>
-            <div style={{fontSize:7,color:C.text3,marginTop:2}}>{s.l}</div>
-          </div>
-        ))}
+
+      {/* ── Tab Pills ── */}
+      <div style={{display:"flex",gap:6,marginBottom:14,overflowX:"auto",paddingBottom:2}}>
+        <div style={ltPill("overview","Overview",C.pink)} onClick={()=>setLoyaltyTab("overview")}>Overview</div>
+        <div style={ltPill("daily","Daily",C.green)} onClick={()=>setLoyaltyTab("daily")}>Daily</div>
+        <div style={ltPill("challenges","Challenges",C.orange)} onClick={()=>setLoyaltyTab("challenges")}>Challenges</div>
+        <div style={ltPill("badges","Badges",C.purple)} onClick={()=>setLoyaltyTab("badges")}>Badges</div>
+        <div style={ltPill("shop","Shop",C.gold)} onClick={()=>setLoyaltyTab("shop")}>Shop</div>
       </div>
-      {/* Achievements Preview */}
-      <div style={{fontSize:11,fontWeight:800,color:C.text,marginBottom:8}}>🏅 Achievements · {playerProfile.achievements.length}/{ACHIEVEMENTS.length}</div>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:12}}>
-        {ACHIEVEMENTS.slice(0,8).map((a,i)=>{
-          const unlocked = playerProfile.achievements.includes(a.id);
-          return (
-          <div key={i} style={{padding:"10px 4px",borderRadius:10,textAlign:"center",background:unlocked?`${a.color}08`:`${C.text3}04`,border:`1px solid ${unlocked?a.color+"15":C.text3+"06"}`,opacity:unlocked?1:0.35,boxShadow:unlocked?`0 0 10px ${a.color}08`:"none"}}>
-            <div style={{fontSize:20,filter:unlocked?"none":"grayscale(1)"}}>{a.emoji}</div>
-            <div style={{fontSize:7,fontWeight:700,color:unlocked?a.color:C.text3,marginTop:2}}>{a.name}</div>
+
+      {/* ═══ OVERVIEW TAB ═══ */}
+      {loyaltyTab==="overview" && <>
+        {/* Tier Progress */}
+        <div style={{...GLASS_CARD,borderRadius:14,padding:14,marginBottom:10}}>
+          <div style={{fontSize:11,fontWeight:700,letterSpacing:2,color:C.text3,marginBottom:10}}>TIER PROGRESS</div>
+          <div style={{display:"flex",gap:8,justifyContent:"center"}}>
+            {LOYALTY_TIERS.map((t,i)=>(
+              <div key={i} style={{textAlign:"center",opacity:i<=tier.idx?1:0.3,transition:"opacity 0.3s"}}>
+                <div style={{fontSize:24}}>{t.icon}</div>
+                <div style={{fontSize:9,fontWeight:700,color:t.color,marginTop:2}}>{t.name}</div>
+                <div style={{fontSize:8,color:C.text3}}>{t.mult+"x"}</div>
+              </div>
+            ))}
           </div>
-        );})}
-      </div>
-      <div onClick={() => setShowAchievements(true)} style={{padding:"10px",borderRadius:10,textAlign:"center",cursor:"pointer",marginBottom:16,background:`${C.purple}06`,border:`1px solid ${C.purple}12`,fontSize:10,fontWeight:700,color:C.purple}}>View All Achievements</div>
-      {/* Legacy Badges */}
-      <div style={{fontSize:11,fontWeight:800,color:C.text,marginBottom:8}}>🎖 Badges</div>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:16}}>
-        {BADGES.map((b,i)=>(
-          <div key={i} style={{padding:"10px 4px",borderRadius:10,textAlign:"center",background:b.earned?`${C.gold}06`:`${C.text3}04`,border:`1px solid ${b.earned?C.gold+"12":C.text3+"06"}`,opacity:b.earned?1:0.35}}>
-            <div style={{fontSize:20,filter:b.earned?"none":"grayscale(1)"}}>{b.emoji}</div>
-            <div style={{fontSize:7,fontWeight:700,color:b.earned?C.gold:C.text3,marginTop:2}}>{b.name}</div>
+          {nextTier && <div style={{marginTop:10,padding:"8px 12px",borderRadius:8,background:C.bg,fontSize:11,color:C.text2}}>
+            {"Next: "}<strong style={{color:nextTier.color}}>{nextTier.name}</strong>{" -- "+((nextTier.xpReq - xp) > 0 ? (nextTier.xpReq - xp).toLocaleString() : 0)+" XP to go"}
+          </div>}
+        </div>
+
+        {/* Quick Stats */}
+        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:10}}>
+          {[
+            {label:"Puffs",value:playerProfile.totalPuffs,icon:"💨",color:C.cyan},
+            {label:"Blinkers",value:playerProfile.blinkerCount,icon:"💀",color:C.red},
+            {label:"Puff Time",value:Math.floor(playerProfile.totalPuffTime/60)+"m",icon:"⏱️",color:C.purple},
+          ].map((st,i)=>(
+            <div key={i} style={{...GLASS_CARD,borderRadius:12,padding:12,textAlign:"center"}}>
+              <div style={{fontSize:16}}>{st.icon}</div>
+              <div style={{fontFamily:"monospace",fontSize:16,fontWeight:800,color:st.color}}>{st.value}</div>
+              <div style={{fontSize:8,color:C.text3,fontWeight:600,letterSpacing:0.5}}>{st.label.toUpperCase()}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Quick Actions */}
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+          <div style={{...GLASS_CARD,borderRadius:12,padding:14,cursor:"pointer",textAlign:"center"}} onClick={()=>setLoyaltyTab("daily")}>
+            <div style={{fontSize:18}}>📅</div>
+            <div style={{fontSize:12,fontWeight:700,color:C.green,marginTop:4}}>Daily Check-in</div>
+            <div style={{fontSize:10,color:C.text3}}>{dailyCheckedIn?"Claimed today":"Claim now!"}</div>
           </div>
-        ))}
-      </div>
+          <div style={{...GLASS_CARD,borderRadius:12,padding:14,cursor:"pointer",textAlign:"center"}} onClick={()=>setLoyaltyTab("challenges")}>
+            <div style={{fontSize:18}}>🎯</div>
+            <div style={{fontSize:12,fontWeight:700,color:C.orange,marginTop:4}}>Challenges</div>
+            <div style={{fontSize:10,color:C.text3}}>{completedChallenges.length+"/"+DAILY_CHALLENGES.length+" done"}</div>
+          </div>
+          <div style={{...GLASS_CARD,borderRadius:12,padding:14,cursor:"pointer",textAlign:"center"}} onClick={()=>setLoyaltyTab("shop")}>
+            <div style={{fontSize:18}}>🛒</div>
+            <div style={{fontSize:12,fontWeight:700,color:C.gold,marginTop:4}}>Shop</div>
+            <div style={{fontSize:10,color:C.text3}}>{SHOP_ITEMS.length+" items"}</div>
+          </div>
+          <div style={{...GLASS_CARD,borderRadius:12,padding:14,cursor:"pointer",textAlign:"center"}} onClick={()=>setLoyaltyTab("badges")}>
+            <div style={{fontSize:18}}>🏅</div>
+            <div style={{fontSize:12,fontWeight:700,color:C.purple,marginTop:4}}>Badges</div>
+            <div style={{fontSize:10,color:C.text3}}>{earnedBadgeCount+"/"+LOYALTY_BADGES.length+" earned"}</div>
+          </div>
+        </div>
+      </>}
+
+      {/* ═══ DAILY TAB ═══ */}
+      {loyaltyTab==="daily" && <>
+        <div style={{...GLASS_CARD,borderRadius:14,padding:14,marginBottom:10}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+            <div style={{fontSize:14,fontWeight:700,color:C.text}}>Daily Check-in</div>
+            <div style={{fontSize:12,color:C.orange,fontWeight:700}}>{"🔥 "+dailyStreak+" streak"}</div>
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:5}}>
+            {DAILY_REWARDS.map((d,i)=>{
+              const isCurrent = (dailyStreak%7)===i && !dailyCheckedIn;
+              const isPast = i < (dailyStreak%7) || (dailyCheckedIn && i <= (dailyStreak-1)%7);
+              return (
+                <div key={i} style={{padding:"7px 3px",borderRadius:10,textAlign:"center",
+                  background:d.day===7?C.gold+"12":C.bg,
+                  border:"1px solid "+(isCurrent?C.green+"60":d.day===7?C.gold+"25":C.border),
+                  opacity:isPast?0.45:1}}>
+                  <div style={{fontSize:8,fontWeight:700,color:C.text3}}>{"D"+d.day}</div>
+                  <div style={{fontSize:13,fontWeight:800,color:isPast?C.text3:C.green}}>{"+"+d.coins}</div>
+                  <div style={{fontSize:7,color:C.cyan}}>{"+"+d.xp+"xp"}</div>
+                  {d.bonus && <div style={{fontSize:7,marginTop:1}}>{d.bonus}</div>}
+                  {isPast && <div style={{fontSize:9,marginTop:1}}>{"✅"}</div>}
+                </div>
+              );
+            })}
+          </div>
+          <button onClick={claimDaily} style={{width:"100%",marginTop:12,padding:"10px 0",borderRadius:10,border:"none",fontWeight:700,fontSize:14,
+            cursor:dailyCheckedIn?"default":"pointer",
+            background:dailyCheckedIn?C.bg3:"linear-gradient(90deg,"+C.green+","+C.cyan+")",
+            color:dailyCheckedIn?C.text3:"#fff"}}>
+            {dailyCheckedIn ? "Claimed Today" : "Claim Daily Reward"}
+          </button>
+          {totalMultiplier > 1.0 && !dailyCheckedIn && (
+            <div style={{textAlign:"center",marginTop:6,fontSize:10,color:C.gold,fontWeight:600}}>
+              {totalMultiplier.toFixed(1)+"x multiplier active on rewards!"}
+            </div>
+          )}
+        </div>
+      </>}
+
+      {/* ═══ CHALLENGES TAB ═══ */}
+      {loyaltyTab==="challenges" && <>
+        <div style={{...GLASS_CARD,borderRadius:14,padding:14,marginBottom:10}}>
+          <div style={{fontSize:14,fontWeight:700,color:C.text,marginBottom:12}}>Daily Challenges</div>
+          {DAILY_CHALLENGES.map((ch,i)=>{
+            const done = completedChallenges.includes(ch.id);
+            return (
+              <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",
+                padding:"10px 12px",borderRadius:10,background:C.bg,marginBottom:6,border:"1px solid "+C.border}}>
+                <div style={{display:"flex",alignItems:"center",gap:8}}>
+                  <span style={{fontSize:16}}>{ch.icon}</span>
+                  <div>
+                    <div style={{fontSize:12,color:done?C.text3:C.text,fontWeight:600}}>{ch.task}</div>
+                    <div style={{fontSize:9,color:C.text3,marginTop:1}}>{"+"+ch.xpReward+" XP"}</div>
+                  </div>
+                </div>
+                <button onClick={()=>completeChallenge(ch.id)} style={{padding:"6px 12px",borderRadius:8,border:"none",fontSize:11,fontWeight:700,
+                  cursor:done?"default":"pointer",
+                  background:done?C.bg3:C.green+"18",color:done?C.text3:C.green}}>
+                  {done ? "Done" : "+"+ch.reward+" coins"}
+                </button>
+              </div>
+            );
+          })}
+          {completedChallenges.length >= DAILY_CHALLENGES.length && (
+            <div style={{textAlign:"center",padding:10,borderRadius:10,background:C.gold+"12",border:"1px solid "+C.gold+"25",
+              fontSize:12,fontWeight:700,color:C.gold,marginTop:4}}>
+              {"ALL DONE! Bonus claimed!"}
+            </div>
+          )}
+        </div>
+      </>}
+
+      {/* ═══ BADGES TAB ═══ */}
+      {loyaltyTab==="badges" && <>
+        <div style={{fontSize:11,color:C.text2,marginBottom:10}}>{earnedBadgeCount+"/"+LOYALTY_BADGES.length+" earned"}</div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8}}>
+          {LOYALTY_BADGES.map(b=>{
+            const earned = earnedBadges.includes(b.id);
+            return (
+              <div key={b.id} style={{padding:12,borderRadius:12,textAlign:"center",
+                background:earned?C.gold+"08":C.bg3,
+                border:"1px solid "+(earned?C.gold+"20":C.border),
+                opacity:earned?1:0.35}}>
+                <div style={{fontSize:28,filter:earned?"none":"grayscale(1)"}}>{b.icon}</div>
+                <div style={{fontSize:11,fontWeight:700,color:earned?C.text:C.text3,marginTop:4}}>{b.name}</div>
+                <div style={{fontSize:9,color:C.text3,marginTop:2}}>{b.desc}</div>
+                {earned && <div style={{fontSize:8,color:C.green,marginTop:4,fontWeight:700}}>{"EARNED"}</div>}
+                {!earned && <div style={{fontSize:8,color:C.text3,marginTop:4}}>{"Locked"}</div>}
+              </div>
+            );
+          })}
+        </div>
+      </>}
+
+      {/* ═══ SHOP TAB ═══ */}
+      {loyaltyTab==="shop" && <>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+          <div style={{fontSize:11,color:C.text2}}>{"Spend your coins"}</div>
+          <div style={{display:"flex",alignItems:"center",gap:4,fontSize:12,fontWeight:800,color:C.gold}}>
+            {"🪙 "+coins.toLocaleString()}
+          </div>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+          {SHOP_ITEMS.map((item,i)=>{
+            const bought = ownedItems.includes(item.id);
+            const canAfford = coins >= item.price;
+            const tierLocked = item.tier && tier.idx < LOYALTY_TIERS.findIndex(t => t.name === item.tier);
+            return (
+              <div key={i} style={{...GLASS_CARD,borderRadius:12,padding:14,textAlign:"center",opacity:bought?0.5:1}}>
+                <div style={{fontSize:32,marginBottom:6}}>{item.icon}</div>
+                <div style={{fontSize:12,fontWeight:700,color:C.text}}>{item.name}</div>
+                <div style={{fontSize:10,color:C.text3,marginTop:2}}>{item.cat+(item.tier?" -- "+item.tier+" tier":"")}</div>
+                <button onClick={()=>buyShopItem(item)} style={{marginTop:8,padding:"6px 16px",borderRadius:8,border:"none",fontSize:12,fontWeight:700,
+                  cursor:bought||!canAfford||tierLocked?"default":"pointer",
+                  background:bought?C.bg3:tierLocked?C.text3+"12":C.gold+"18",
+                  color:bought?C.text3:tierLocked?C.text3:canAfford?C.gold:C.red}}>
+                  {bought ? "Owned" : tierLocked ? "Locked" : item.price+" coins"}
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      </>}
+
       <div style={{height:80}}/>
     </div>
   );};
@@ -21621,6 +22073,22 @@ const startSimonPuffs = () => {
         filter:"blur(1px)",
       }}/>
 
+      {/* Loyalty multiplier badge — visible during active gameplay */}
+      {gameActive && (
+        <div style={{position:"fixed",top:12,right:12,zIndex:200,display:"flex",gap:4,flexDirection:"column",alignItems:"flex-end"}}>
+          <div style={{padding:"3px 8px",borderRadius:8,background:"rgba(0,0,0,0.6)",backdropFilter:"blur(10px)",border:`1px solid ${getCurrentTier().color}30`,display:"flex",alignItems:"center",gap:4}}>
+            <span style={{fontSize:10}}>{getCurrentTier().icon}</span>
+            <span style={{fontSize:9,fontWeight:800,color:getCurrentTier().color}}>{getCurrentTier().mult}x</span>
+          </div>
+          {bleConnected && (
+            <div style={{padding:"3px 8px",borderRadius:8,background:"rgba(0,0,0,0.6)",backdropFilter:"blur(10px)",border:"1px solid rgba(0,229,255,0.2)",display:"flex",alignItems:"center",gap:4}}>
+              <span style={{fontSize:10}}>💨</span>
+              <span style={{fontSize:9,fontWeight:800,color:"#00E5FF"}}>1.5x</span>
+            </div>
+          )}
+        </div>
+      )}
+
       {renderAtmosphere()}
 
       {/* Notification */}
@@ -21628,23 +22096,66 @@ const startSimonPuffs = () => {
         <div style={{position:"fixed",top:14,left:"50%",transform:"translateX(-50%)",maxWidth:360,padding:"8px 18px",borderRadius:100,zIndex:300,background:`${notif.color}15`,border:`1px solid ${notif.color}30`,color:notif.color,fontSize:12,fontWeight:700,backdropFilter:"blur(12px)",textAlign:"center",animation:"fadeIn 0.25s ease",letterSpacing:0.3}}>{notif.msg}</div>
       )}
 
+      {/* Floating reward popup */}
+      {floatingReward && (
+        <div key={floatingReward.key} style={{position:"fixed",top:"45%",left:"50%",transform:"translateX(-50%)",zIndex:300,
+          animation:"rewardFloatUp 2s ease-out forwards",pointerEvents:"none",textAlign:"center"}}>
+          <div style={{fontSize:24,fontWeight:900,color:C.gold,textShadow:"0 2px 10px rgba(255,217,61,0.5)"}}>
+            +{floatingReward.coins} 🪙
+          </div>
+          {floatingReward.xp > 0 && <div style={{fontSize:14,fontWeight:700,color:C.cyan,marginTop:4}}>
+            +{floatingReward.xp} XP
+          </div>}
+        </div>
+      )}
+
+      {/* Achievement unlock popup */}
+      {achievementPopup && (
+        <div style={{position:"fixed",inset:0,zIndex:400,display:"flex",alignItems:"center",justifyContent:"center",
+          background:"rgba(5,5,16,0.85)",backdropFilter:"blur(12px)",animation:"fadeIn 0.3s ease",pointerEvents:"auto"}}
+          onClick={()=>setAchievementPopup(null)}>
+          <div style={{textAlign:"center",animation:"scaleIn 0.5s cubic-bezier(0.34,1.56,0.64,1)"}}>
+            <div style={{fontSize:14,letterSpacing:3,color:C.gold,fontWeight:700,marginBottom:12}}>ACHIEVEMENT UNLOCKED</div>
+            <div style={{fontSize:72,marginBottom:12,filter:"drop-shadow(0 0 20px rgba(255,217,61,0.4))"}}>{achievementPopup.icon}</div>
+            <div style={{fontSize:22,fontWeight:900,color:C.text,marginBottom:4}}>{achievementPopup.name}</div>
+            <div style={{fontSize:13,color:C.text2}}>{achievementPopup.desc}</div>
+            <div style={{marginTop:16,fontSize:11,color:C.text3}}>Tap to continue</div>
+          </div>
+        </div>
+      )}
+
       {/* Header — always visible across all pages */}
       <div style={{padding:"12px 14px 4px",display:"flex",justifyContent:"space-between",alignItems:"center",position:"relative",zIndex:20}}>
         <div style={{fontSize:9,fontWeight:600,color:C.text3,letterSpacing:1.5}}><span style={{fontWeight:800,color:C.text2,letterSpacing:1}}>Powered by <span style={{fontWeight:900,letterSpacing:2}}>MOOD LAB</span></span></div>
         <div style={{display:"flex",gap:5,alignItems:"center"}}>
-          {/* Input method button */}
-          <div onClick={()=>setShowInputPanel(true)} style={{display:"flex",alignItems:"center",gap:4,padding:"3px 10px",borderRadius:100,cursor:"pointer",...LG.pill,border:`1px solid ${activeInput.color}${inputPulse?"50":"18"}`,transition:"all 0.3s",boxShadow:inputPulse?`0 0 10px ${activeInput.color}25`:LG.pill.boxShadow}}>
-            <span style={{fontSize:11}}>{activeInput.icon}</span>
-            <span style={{fontSize:9,fontWeight:700,color:activeInput.color}}>{activeInput.label}</span>
-            <span style={{fontSize:7,color:C.text3}}>▼</span>
+          <div onClick={()=>{playFx("tap");setShowBlePopup(true);}} style={{display:"flex",alignItems:"center",gap:4,padding:"3px 10px",borderRadius:100,cursor:"pointer",background:bleConnected?`${C.green}10`:`${C.orange}10`,border:`1px solid ${bleConnected?C.green+"30":C.orange+"30"}`,transition:"all 0.3s",boxShadow:bleConnected?`0 0 8px ${C.green}15`:`0 0 8px ${C.orange}20`}}>
+            <div style={{width:6,height:6,borderRadius:"50%",background:bleConnected?C.green:C.orange,boxShadow:bleConnected?`0 0 6px ${C.green}`:`0 0 6px ${C.orange}`,animation:bleConnected?"":"pulse 1.5s infinite"}}/>
+            <span style={{fontSize:9,fontWeight:700,color:bleConnected?C.green:C.orange}}>{bleConnected?"Connected":"Connect"}</span>
           </div>
-          <div style={{display:"flex",alignItems:"center",gap:3,padding:"3px 8px",borderRadius:100,background:`${C.gold}08`,border:`1px solid ${C.gold}15`}}>
-            <span style={{fontSize:10}}>🪙</span><span style={{fontSize:11,fontWeight:800,color:C.gold,fontFamily:"'Courier New',monospace"}}>{coins.toLocaleString()}</span>
+          <div style={{display:"flex",alignItems:"center",gap:3,padding:"3px 8px",borderRadius:100,background:`${C.gold}08`,border:`1px solid ${C.gold}15`,transform:coinPulse?"scale(1.15)":"scale(1)",transition:"transform 0.3s ease"}}>
+            <span style={{fontSize:10}}>🪙</span><span style={{fontSize:11,fontWeight:800,color:coinPulse?"#fff":C.gold,fontFamily:"'Courier New',monospace",transition:"color 0.3s ease"}}>{coins.toLocaleString()}</span>
           </div>
-          <div onClick={()=>{playFx("tap");setShowBlePopup(true);}} style={{display:"flex",alignItems:"center",gap:3,padding:"3px 8px",borderRadius:100,cursor:"pointer",background:bleConnected?`${C.green}08`:`${C.text3}08`,border:`1px solid ${bleConnected?C.green+"15":C.text3+"15"}`}}>
-            <div style={{width:5,height:5,borderRadius:"50%",background:bleConnected?C.green:C.text3,animation:bleConnected?"":"pulse 2s infinite"}}/><span style={{fontSize:9,fontWeight:600,color:bleConnected?C.green:C.text3}}>{bleConnected?"BLE":"BLE"}</span>
-          </div>
+          {currentWinStreak >= 2 && (
+            <div style={{display:"flex",alignItems:"center",gap:3,padding:"3px 8px",borderRadius:100,...LG.pill,border:`1px solid ${currentWinStreak>=5?C.gold:C.orange}30`}}>
+              <span style={{fontSize:10}}>🔥</span>
+              <span style={{fontSize:9,fontWeight:800,color:currentWinStreak>=5?C.gold:C.orange}}>{currentWinStreak}</span>
+            </div>
+          )}
         </div>
+      </div>
+
+      {/* Tier XP micro-bar */}
+      <div style={{height:2,background:C.bg3,position:"relative",overflow:"hidden"}}>
+        <div style={{height:"100%",background:`linear-gradient(90deg,${getCurrentTier?.()?.color || C.cyan},${C.purple})`,
+          width:`${(() => {
+            const t = getCurrentTier?.();
+            if(!t) return 0;
+            const nextTier = LOYALTY_TIERS?.[t.idx+1];
+            if(!nextTier) return 100;
+            return Math.min(100, ((xp - t.xpReq) / (nextTier.xpReq - t.xpReq)) * 100);
+          })()}%`,
+          transition:"width 0.8s ease"
+        }}/>
       </div>
 
       {/* Live Ticker — universal across all pages */}
@@ -21786,6 +22297,8 @@ const startSimonPuffs = () => {
         @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
         @keyframes sheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
         @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+        @keyframes scaleIn{0%{transform:scale(0) rotate(-10deg);opacity:0}100%{transform:scale(1) rotate(0deg);opacity:1}}
+        @keyframes rewardFloatUp{0%{opacity:0;transform:translateX(-50%) translateY(0) scale(0.5)}15%{opacity:1;transform:translateX(-50%) translateY(-20px) scale(1.1)}60%{opacity:0.8;transform:translateX(-50%) translateY(-60px) scale(1)}100%{opacity:0;transform:translateX(-50%) translateY(-120px) scale(0.8)}}
         @keyframes floatUp{0%{opacity:0;transform:translateY(0)}15%{opacity:0.8}85%{opacity:0.5}100%{opacity:0;transform:translateY(-400px)}}
         @keyframes zoneEntry{from{opacity:0;transform:scale(0.92) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
         @keyframes borderShift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
