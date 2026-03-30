@@ -52,13 +52,13 @@ const LOYALTY_TIERS = [
 ];
 
 const DAILY_REWARDS = [
-  { day:1, coins:10, xp:15 },
-  { day:2, coins:15, xp:20 },
-  { day:3, coins:20, xp:25 },
-  { day:4, coins:30, xp:30, bonus:"🎁" },
-  { day:5, coins:40, xp:40 },
-  { day:6, coins:50, xp:50 },
-  { day:7, coins:100, xp:100, bonus:"🏆 Chest!" },
+  { day:1, xp:20, coins:10 },
+  { day:2, xp:25, coins:15 },
+  { day:3, xp:30, coins:20 },
+  { day:4, xp:40, coins:30, bonus:"🎁" },
+  { day:5, xp:50, coins:40 },
+  { day:6, xp:60, coins:50 },
+  { day:7, xp:100, coins:100, bonus:"🏆 Milestone!" },
 ];
 
 const DAILY_CHALLENGES = [
@@ -21613,14 +21613,17 @@ const startSimonPuffs = () => {
     if(dailyCheckedIn) return;
     const dayIdx = dailyStreak % 7;
     const reward = DAILY_REWARDS[dayIdx];
-    const mult = getCoinMultiplier();
-    const earnedCoins = Math.round(reward.coins * mult);
-    setCoins(c => c + earnedCoins);
-    setXp(x => x + reward.xp);
+    awardXP(reward.xp, "daily_checkin");
+    if(bleConnected && reward.coins) {
+      setCoins(c => c + reward.coins);
+      playFx("coin_collect");
+      notify("+" + reward.coins + " 🪙 +" + reward.xp + " XP — Streak " + (dailyStreak+1) + " 🔥", C.green);
+    } else {
+      playFx("success");
+      notify("+" + reward.xp + " XP — Streak " + (dailyStreak+1) + " 🔥  (Connect device for coins!)", C.cyan);
+    }
     setDailyStreak(s => s + 1);
     setDailyCheckedIn(true);
-    playFx("coin_collect");
-    notify("+" + earnedCoins + " coins +" + reward.xp + " XP -- Streak " + (dailyStreak+1) + " fire", C.green);
     if((dailyStreak + 1) % 7 === 0) {
       playFx("crowd");
       if(!earnedBadges.includes("weekwarrior")) {
@@ -22153,8 +22156,8 @@ const startSimonPuffs = () => {
                   boxShadow:isDay7&&!isPast?`0 0 12px ${C.gold}15`:"none",
                   transition:"all 0.3s ease"}}>
                   <div style={{fontSize:8,fontWeight:700,color:isDay7?C.gold:C.text3}}>{isDay7?"👑":"D"+d.day}</div>
-                  <div style={{fontSize:13,fontWeight:800,color:isPast?C.text3:isDay7?C.gold:C.green}}>{"+"+d.coins}</div>
-                  <div style={{fontSize:7,color:C.cyan}}>{"+"+d.xp+"xp"}</div>
+                  <div style={{fontSize:12,fontWeight:800,color:isPast?C.text3:isDay7?C.gold:C.cyan}}>{"+"+d.xp+" XP"}</div>
+                  {d.coins && <div style={{fontSize:7,color:bleConnected?C.gold:C.text3}}>{bleConnected?"+"+d.coins+" 🪙":"🔒 "+d.coins}</div>}
                   {d.bonus && <div style={{fontSize:7,marginTop:1}}>{d.bonus}</div>}
                   {isPast && <div style={{fontSize:9,marginTop:1}}>{"✅"}</div>}
                 </div>
@@ -22169,9 +22172,9 @@ const startSimonPuffs = () => {
             animation:dailyCheckedIn?"none":"claimPulse 2s ease-in-out infinite"}}>
             {dailyCheckedIn ? "Claimed Today" : "Claim Daily Reward"}
           </button>
-          {totalMultiplier > 1.0 && !dailyCheckedIn && (
-            <div style={{textAlign:"center",marginTop:6,fontSize:10,color:C.gold,fontWeight:600}}>
-              {totalMultiplier.toFixed(1)+"x multiplier active on rewards!"}
+          {!bleConnected && !dailyCheckedIn && (
+            <div style={{textAlign:"center",marginTop:6,fontSize:10,color:C.orange,fontWeight:600}}>
+              💨 Connect device to also earn coins
             </div>
           )}
         </div>
