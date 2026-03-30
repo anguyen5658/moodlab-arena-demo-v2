@@ -6321,7 +6321,7 @@ export default function MoodLabArena() {
             {[{id:"control",l:"Control",i:"🎛",c:C.cyan},{id:"arena",l:"Arena",i:"🎮",c:C.cyan},{id:"live",l:"Live",i:"📡",c:C.pink},{id:"me",l:"Me",i:"👤",c:C.purple}].map(t=>{
               const active = tab===t.id;
               return (
-                <div key={t.id} onClick={()=>{playFx("nav");if(t.id!=="arena"){notify("Coming Soon — Arena Demo Only",C.cyan);return;}setTab(t.id);setZone(null);setArenaView("hub");}} style={{
+                <div key={t.id} onClick={()=>{playFx("nav");if(t.id!=="arena"&&t.id!=="me"){notify("Coming Soon — Arena Demo Only",C.cyan);return;}setTab(t.id);setZone(null);setArenaView("hub");setSelectedGame(null);setGameActive(null);}} style={{
                   display:"flex",alignItems:"center",gap:active?5:0,
                   padding:active?"7px 14px":"7px 10px",
                   borderRadius:100,cursor:"pointer",
@@ -7429,7 +7429,7 @@ export default function MoodLabArena() {
             {[{id:"control",l:"Control",i:"🎛",c:C.cyan},{id:"arena",l:"Arena",i:"🎮",c:C.cyan},{id:"live",l:"Live",i:"📡",c:C.pink},{id:"me",l:"Me",i:"👤",c:C.purple}].map(t=>{
               const active = tab===t.id;
               return (
-                <div key={t.id} onClick={()=>{playFx("nav");if(t.id!=="arena"){notify("Coming Soon — Arena Demo Only",C.cyan);return;}setTab(t.id);setZone(null);setArenaView("hub");}} style={{
+                <div key={t.id} onClick={()=>{playFx("nav");if(t.id!=="arena"&&t.id!=="me"){notify("Coming Soon — Arena Demo Only",C.cyan);return;}setTab(t.id);setZone(null);setArenaView("hub");setSelectedGame(null);setGameActive(null);}} style={{
                   display:"flex",alignItems:"center",gap:active?5:0,
                   padding:active?"7px 14px":"7px 10px",
                   borderRadius:100,cursor:"pointer",
@@ -22372,7 +22372,7 @@ const startSimonPuffs = () => {
           {[{id:"control",l:"Control",i:"🎛",c:C.cyan},{id:"arena",l:"Arena",i:"🎮",c:C.cyan},{id:"live",l:"Live",i:"📡",c:C.pink},{id:"me",l:"Me",i:"👤",c:C.purple}].map(t=>{
             const active = tab===t.id;
             return (
-              <div key={t.id} onClick={()=>{playFx("nav");if(t.id!=="arena"){notify("Coming Soon — Arena Demo Only",C.cyan);return;}setTab(t.id);setZone(null);setArenaView("hub");}} style={{
+              <div key={t.id} onClick={()=>{playFx("nav");if(t.id!=="arena"&&t.id!=="me"){notify("Coming Soon — Arena Demo Only",C.cyan);return;}setTab(t.id);setZone(null);setArenaView("hub");setSelectedGame(null);setGameActive(null);}} style={{
                 display:"flex",alignItems:"center",gap:active?5:0,
                 padding:active?"9px 14px":"9px 12px",
                 borderRadius:100,cursor:"pointer",minHeight:44,
