@@ -13238,6 +13238,7 @@ const startSimonPuffs = () => {
                         boxShadow:`0 0 15px ${C.green}10`,
                       }}>💰 Collect</div>
                     </div>
+                    {!gameActive?.wcMode && <div onClick={()=>{cleanupAllGames();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>}
                   </div>
                 );
               })()}
@@ -14069,6 +14070,7 @@ const startSimonPuffs = () => {
                         boxShadow:`0 0 15px ${C.green}10`,
                       }}>💰 Collect</div>
                     </div>
+                    {!gameActive?.wcMode && <div onClick={()=>{cleanupAllGames();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>}
                   </div>
                 );
               })()}
@@ -21629,6 +21631,8 @@ const startSimonPuffs = () => {
     if(!earnedBadges.includes("allgames") && playerProfile.gamesPlayed >= PLAY_GAMES.length) { setEarnedBadges(b => [...b, "allgames"]); const badge = LOYALTY_BADGES.find(b=>b.id==="allgames"); if(badge) setTimeout(()=>showAchievementPopup(badge), 800); }
     // Cloud Chaser badge: played 100 games
     if(!earnedBadges.includes("puff100") && playerProfile.gamesPlayed >= 100) { setEarnedBadges(b => [...b, "puff100"]); const badge = LOYALTY_BADGES.find(b=>b.id==="puff100"); if(badge) setTimeout(()=>showAchievementPopup(badge), 800); }
+    // First Puff welcome badge: show popup on very first game
+    if(playerProfile.gamesPlayed <= 1 && earnedBadges.includes("fp")) { setTimeout(() => showAchievementPopup(LOYALTY_BADGES.find(b=>b.id==="fp")), 2000); }
 
     if(won) {
       // Show Champ badge: win any Stage show
