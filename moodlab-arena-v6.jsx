@@ -3962,7 +3962,7 @@ export default function MoodLabArena() {
     setTimeout(()=>rrResolveTurn(rrPlayers,rrCurrentTurn,rrChamber,rrCurrentChamber,charge),600);};
   const rrPuff=()=>{if(rrPhase==="player_turn")rrStartPuff();else if(rrPhase==="puffing")rrStopPuff();};
   const rrEndGame=()=>{const won=rrWinner&&rrWinner.isYou;const baseR=won?50:5;
-    recordGameResult(won,baseR,won?15:3);notify(won?"🔫 SURVIVOR! +"+Math.round(baseR*getCoinMultiplier())+" coins!":"💀 Eliminated! +"+Math.round(baseR*getCoinMultiplier()),won?C.green:C.red);
+    recordGameResult(won,baseR,won?15:3);notify(won?"🔫 SURVIVOR! +"+baseR+" coins!":"💀 Eliminated! +"+baseR,won?C.green:C.red);
     setGameActive(null);setRrPhase(null);setDimLights(false);if(rrPuffInterval.current){clearInterval(rrPuffInterval.current);rrPuffInterval.current=null;}};
 
   // ═══════════════════════════════════════════════════════════════
@@ -4022,7 +4022,7 @@ export default function MoodLabArena() {
   const ppMovePaddle=(dir)=>{const g=ppG.current;g.py=Math.max(10,Math.min(90,g.py+dir*6));setPpPaddleY(g.py);};
   const ppPuffUp=()=>{setPpPuffHeld(true);const g=ppG.current;if(ppInterval.current)clearInterval(ppInterval.current);ppInterval.current=setInterval(()=>{if(!g.paused){g.py=Math.max(10,g.py-4);setPpPaddleY(g.py);}},50);};
   const ppPuffRelease=()=>{setPpPuffHeld(false);if(ppInterval.current){clearInterval(ppInterval.current);ppInterval.current=null;}const g=ppG.current;ppInterval.current=setInterval(()=>{if(!g.paused){g.py=Math.min(90,g.py+0.6);setPpPaddleY(g.py);}},80);};
-  const ppEndGame=()=>{if(ppRaf.current)cancelAnimationFrame(ppRaf.current);if(ppInterval.current){clearInterval(ppInterval.current);ppInterval.current=null;}ppG.current.paused=true;const won=ppScore.you>ppScore.ai;const baseR=won?80:15;recordGameResult(won,baseR,won?20:5);notify(won?"🏓 Won! +"+Math.round(baseR*getCoinMultiplier()):"🏓 Lost! +"+Math.round(baseR*getCoinMultiplier()),won?C.green:C.red);
+  const ppEndGame=()=>{if(ppRaf.current)cancelAnimationFrame(ppRaf.current);if(ppInterval.current){clearInterval(ppInterval.current);ppInterval.current=null;}ppG.current.paused=true;const won=ppScore.you>ppScore.ai;const baseR=won?80:15;recordGameResult(won,baseR,won?20:5);notify(won?"🏓 Won! +"+baseR:"🏓 Lost! +"+baseR,won?C.green:C.red);
     // WC tournament integration
     if(gameActive?.wcMode){const my=ppScore.you;const ai=ppScore.ai;if(gameActive.wcKnockout){wcFinishKnockoutMatch(my,ai);}else if(gameActive.wcMatchIdx!==undefined){wcFinishGroupMatch(gameActive.wcMatchIdx,my,ai);}}
     setGameActive(null);setPpPhase(null);setPpIntro(0);};
@@ -4196,7 +4196,7 @@ export default function MoodLabArena() {
     if(rpInterval.current)clearInterval(rpInterval.current);
     if(rpPuffTimer.current)clearTimeout(rpPuffTimer.current);
     const won=rpScore>500;const baseR=Math.min(Math.floor(rpScore/10),100);
-    recordGameResult(won,baseR,15);notify("🎵 Score: "+rpScore+" | +"+Math.round(baseR*getCoinMultiplier())+" coins!",C.purple);
+    recordGameResult(won,baseR,15);notify("🎵 Score: "+rpScore+" | +"+baseR+" coins!",C.purple);
     if(won){spawnConfetti(40,[C.purple,C.pink,C.gold,C.cyan]);setCommentary(pick(rpComedy.win));}
     if(gameActive?.wcMode) {
       const won = rpScore > 300;
@@ -4342,7 +4342,7 @@ export default function MoodLabArena() {
   const towEndGame = () => {
     towCleanup();
     const won=towPosRef.current>50;const baseR=won?80:15;
-    recordGameResult(won,baseR,won?20:5);notify(won?"💪 Won! +"+Math.round(baseR*getCoinMultiplier()):"😤 Lost! +"+Math.round(baseR*getCoinMultiplier()),won?C.green:C.red);
+    recordGameResult(won,baseR,won?20:5);notify(won?"💪 Won! +"+baseR:"😤 Lost! +"+baseR,won?C.green:C.red);
     if(gameActive?.wcMode) {
       const myS = won ? 3 : 0; const aiS = won ? 0 : 3;
       if(gameActive.wcKnockout) { wcFinishKnockoutMatch(myS, aiS); }
@@ -4522,7 +4522,7 @@ export default function MoodLabArena() {
     if(hpPuffRef.current){clearInterval(hpPuffRef.current);hpPuffRef.current=null;}
     if(window._hpActive){window._hpActive.v=false;window._hpActive=null;}
     const won = hpWinner&&hpWinner.isYou;const baseR=won?60:10;
-    recordGameResult(won,baseR,won?20:5);notify(won?"💣 Survived! +"+Math.round(baseR*getCoinMultiplier())+" coins!":"💀 Exploded! +"+Math.round(baseR*getCoinMultiplier()),won?C.green:C.red);
+    recordGameResult(won,baseR,won?20:5);notify(won?"💣 Survived! +"+baseR+" coins!":"💀 Exploded! +"+baseR,won?C.green:C.red);
     setGameActive(null);setHpPhase(null);setDimLights(false);
   };
 
@@ -4639,7 +4639,7 @@ export default function MoodLabArena() {
     if(hookGameLoop.current){clearInterval(hookGameLoop.current);hookGameLoop.current=null;}
     hookHoldingRef.current=false;
     const won=hookRecentCatches.length>0;const baseR=won?hookRecentCatches.length*20:0;
-    recordGameResult(won,baseR,10);notify("🎣 Fishing done! +"+Math.round(baseR*getCoinMultiplier())+" coins!",won?C.green:C.red);
+    recordGameResult(won,baseR,10);notify("🎣 Fishing done! +"+baseR+" coins!",won?C.green:C.red);
     setGameActive(null);setHookPhase(null);
   };
   // ── Match Intro Sequence ──
@@ -5279,10 +5279,9 @@ export default function MoodLabArena() {
     const kickWon = kickScore.you > kickScore.ai;
     const kickDraw = kickScore.you === kickScore.ai;
     const baseReward = isWc ? (kickWon ? 20 : kickDraw ? 10 : 5) : (kickWon ? 80 : kickDraw ? 30 : 10);
-    const totalReward = Math.round(baseReward * getCoinMultiplier());
-    if(kickWon) { notify(`⚽ YOU WIN! +${totalReward} coins!`,C.green); playFx("win"); if(isWc) playFx("goal_horn"); }
-    else if(!kickDraw) { notify(`😢 +${totalReward} coins`,C.red); playFx("lose"); }
-    else { notify(`🤝 Draw! +${totalReward} coins`,C.gold); }
+    if(kickWon) { notify(`⚽ YOU WIN! +${baseReward} coins!`,C.green); playFx("win"); if(isWc) playFx("goal_horn"); }
+    else if(!kickDraw) { notify(`😢 +${baseReward} coins`,C.red); playFx("lose"); }
+    else { notify(`🤝 Draw! +${baseReward} coins`,C.gold); }
     recordGameResult(kickWon, baseReward, kickWon ? 25 : kickDraw ? 10 : 5);
 
     // Handle WC tournament progression
@@ -11232,7 +11231,7 @@ export default function MoodLabArena() {
         setBdPhase("final");
         const baseCoins = scoreForFinal >= 250 ? 100 : scoreForFinal >= 150 ? 50 : 20;
         recordGameResult(scoreForFinal >= 200, baseCoins, 15);
-        setCommentary("BEAT DROP COMPLETE! +" + Math.round(baseCoins * getCoinMultiplier()) + " coins!");
+        setCommentary("BEAT DROP COMPLETE! +" + baseCoins + " coins!");
         if (scoreForFinal >= 250) { spawnConfetti(60, [C.pink, C.purple, C.gold, C.cyan]); playFx("win"); }
         else playFx("success");
         if(stageRole) showMC("finale");
@@ -11353,7 +11352,7 @@ export default function MoodLabArena() {
         const baseCoins = plRound >= 5 ? 60 : plRound >= 3 ? 30 : 10;
         recordGameResult(false, baseCoins, 15);
         setPlPhase("final");
-        setCommentary("Puff Limbo over! Made it to round " + (plRound + 1) + " -- +" + Math.round(baseCoins * getCoinMultiplier()) + " coins");
+        setCommentary("Puff Limbo over! Made it to round " + (plRound + 1) + " -- +" + baseCoins + " coins");
         playFx(plRound >= 3 ? "success" : "save");
       } else if (plRound >= 6) {
         setPlPhase("champion");
@@ -14737,7 +14736,7 @@ const startSimonPuffs = () => {
                 <div style={{textAlign:"center",padding:"20px 0",animation:"fadeIn 0.5s ease"}}>
                   <div style={{fontSize:50,marginBottom:8}}>{hpWon?"👑":"💀"}</div>
                   <div style={{fontSize:24,fontWeight:900,color:hpWon?C.green:C.red}}>{hpWon?"SOLE SURVIVOR!":hpWinner?hpWinner.name+" WINS!":"Game Over!"}</div>
-                  <div style={{fontSize:11,color:C.text2,marginTop:4}}>+{Math.round(hpBaseCoins * getCoinMultiplier())} coins!</div>
+                  <div style={{fontSize:11,color:C.text2,marginTop:4}}>+{hpBaseCoins} coins!</div>
                   {/* Elimination order */}
                   <div style={{marginTop:12,textAlign:"left",width:"100%",maxWidth:260}}>
                     <div style={{fontSize:8,fontWeight:800,color:C.text3,letterSpacing:1,marginBottom:4}}>ELIMINATION ORDER</div>
@@ -21283,18 +21282,26 @@ const startSimonPuffs = () => {
             </div>
           ))}
 
-          {/* Scan button */}
-          <div onClick={()=>{
-            playFx("tap");
-            connectBle();
-          }} style={{
-            padding:"10px 0",borderRadius:12,textAlign:"center",cursor:"pointer",marginTop:6,
-            background:bleScanning?`${C.cyan}12`:`rgba(255,255,255,0.03)`,border:`1px solid ${bleScanning?C.cyan+"30":C.border}`,
-          }}>
-            <div style={{fontSize:11,fontWeight:700,color:bleScanning?C.cyan:C.text2}}>
-              {bleScanning?"🔄 Scanning...":"🔍 Scan for Devices"}
+          {/* Scan / Disconnect buttons */}
+          {!bleConnected ? (
+            <div onClick={()=>{playFx("tap");connectBle();}} style={{
+              padding:"10px 0",borderRadius:12,textAlign:"center",cursor:"pointer",marginTop:6,
+              background:bleScanning?`${C.cyan}12`:`rgba(255,255,255,0.03)`,border:`1px solid ${bleScanning?C.cyan+"30":C.border}`,
+            }}>
+              <div style={{fontSize:11,fontWeight:700,color:bleScanning?C.cyan:C.text2}}>
+                {bleScanning?"🔄 Scanning...":"🔍 Scan for Devices"}
+              </div>
             </div>
-          </div>
+          ) : (
+            <div onClick={()=>{playFx("tap");disconnectBle();notify("Device disconnected",C.orange);}} style={{
+              padding:"10px 0",borderRadius:12,textAlign:"center",cursor:"pointer",marginTop:6,
+              background:`${C.red}08`,border:`1px solid ${C.red}20`,
+            }}>
+              <div style={{fontSize:11,fontWeight:700,color:C.red}}>
+                Disconnect Device
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );
