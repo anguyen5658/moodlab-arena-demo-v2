@@ -15370,6 +15370,7 @@ const startSimonPuffs = () => {
                     <div onClick={()=>{stEndGame();startSurvivalTrivia();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:C.gold+"15",border:"1px solid "+C.gold+"30",fontSize:13,fontWeight:800,color:C.gold}}>Play Again</div>
                     <div onClick={stEndGame} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:C.text3+"10",border:"1px solid "+C.text3+"20",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
                   </div>
+                  <div onClick={()=>{stEndGame();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
                 </div>
               )}
             </div>
@@ -16004,6 +16005,7 @@ const startSimonPuffs = () => {
                     <div onClick={()=>{spEndGame();startSimonPuffs();}} style={{padding:"12px 24px",borderRadius:12,cursor:"pointer",background:C.purple+"15",border:"1px solid "+C.purple+"30",fontSize:13,fontWeight:800,color:C.purple}}>Play Again</div>
                     <div onClick={spEndGame} style={{padding:"12px 24px",borderRadius:12,cursor:"pointer",background:C.text3+"10",border:"1px solid "+C.text3+"20",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
                   </div>
+                  <div onClick={()=>{spEndGame();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
                 </div>
               )}
               {spComment && (
@@ -16144,6 +16146,7 @@ const startSimonPuffs = () => {
                     <div onClick={()=>{paEndGame();startPuffAuction();}} style={{padding:"12px 24px",borderRadius:12,cursor:"pointer",background:C.gold+"15",border:"1px solid "+C.gold+"30",fontSize:13,fontWeight:800,color:C.gold}}>Play Again</div>
                     <div onClick={paEndGame} style={{padding:"12px 24px",borderRadius:12,cursor:"pointer",background:C.text3+"10",border:"1px solid "+C.text3+"20",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
                   </div>
+                  <div onClick={()=>{paEndGame();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
                 </div>
               )}
               {paComment && (
