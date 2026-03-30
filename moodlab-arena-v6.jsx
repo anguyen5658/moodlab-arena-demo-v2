@@ -21527,10 +21527,13 @@ const startSimonPuffs = () => {
     setDailyCheckedIn(true);
     playFx("coin_collect");
     notify("+" + earnedCoins + " coins +" + reward.xp + " XP -- Streak " + (dailyStreak+1) + " fire", C.green);
-    if((dailyStreak + 1) % 7 === 0 && !earnedBadges.includes("weekwarrior")) {
-      setEarnedBadges(b => [...b, "weekwarrior"]);
-      const badge = LOYALTY_BADGES.find(b=>b.id==="weekwarrior");
-      if(badge) setTimeout(()=>showAchievementPopup(badge), 600);
+    if((dailyStreak + 1) % 7 === 0) {
+      playFx("crowd");
+      if(!earnedBadges.includes("weekwarrior")) {
+        setEarnedBadges(b => [...b, "weekwarrior"]);
+        const badge = LOYALTY_BADGES.find(b=>b.id==="weekwarrior");
+        if(badge) setTimeout(()=>showAchievementPopup(badge), 600);
+      }
     }
   };
 
@@ -21617,6 +21620,11 @@ const startSimonPuffs = () => {
       }
       return p;
     });
+
+    // Blinker Beast badge: profile blinkerCount >= 10
+    if(!earnedBadges.includes("blinker") && playerProfile.blinkerCount >= 10) { setEarnedBadges(b => [...b, "blinker"]); const badge = LOYALTY_BADGES.find(b=>b.id==="blinker"); if(badge) setTimeout(()=>showAchievementPopup(badge), 800); }
+    // Explorer badge: played at least as many games as exist
+    if(!earnedBadges.includes("allgames") && playerProfile.gamesPlayed >= PLAY_GAMES.length) { setEarnedBadges(b => [...b, "allgames"]); const badge = LOYALTY_BADGES.find(b=>b.id==="allgames"); if(badge) setTimeout(()=>showAchievementPopup(badge), 800); }
 
     if(won) {
       // Show Champ badge: win any Stage show
