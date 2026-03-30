@@ -873,6 +873,7 @@ const UNIVERSAL_PUFF_CONFIG = {
     { name: "BLINKER", max: 100, color: "#FF4444" },
   ],
 };
+const getTriviaPuffAnswer = (ms) => ms < 500 ? 0 : ms < 1500 ? 1 : ms < 3000 ? 2 : 3;
 
 const HOOK_FISH = [
   {name:"Blue Snap",emoji:"🐟",rarity:"common",pts:10,zoneWidth:35,resistance:0.8,instability:0.3,tensionRate:1.0,escapeRate:0.8,color:C.cyan},
@@ -991,6 +992,8 @@ export default function MoodLabArena() {
   const [vcPuffAnswer, setVcPuffAnswer] = useState(null);
   const [vcTimer, setVcTimer] = useState(10);
   const vcTimerRef = useRef(null);
+  const vcPuffStartRef = useRef(null);
+  const vcPuffHighlightRef = useRef(null);
 
   // ── Spin & Win (Full Game Show) ──
   const [swPhase, setSwPhase] = useState(null); // null|intro|spinning|result|bonus|complete
@@ -1299,6 +1302,9 @@ export default function MoodLabArena() {
   const [stEliminated, setStEliminated] = useState(false);
   const [stStreak, setStStreak] = useState(0);
   const [stQuestion, setStQuestion] = useState(null);
+  const [stPuffHighlight, setStPuffHighlight] = useState(null);
+  const stPuffStartRef = useRef(null);
+  const stPuffHighlightRef = useRef(null);
 
   // ── Simon Puffs ──
   const [spPhase, setSpPhase] = useState(null);
@@ -6556,6 +6562,9 @@ export default function MoodLabArena() {
     else if (id === "puffpong")    { down = ppPuffUp;       up = ppPuffRelease;  }
     // --- Stage: Higher or Lower (hold-based: short=lower, long=higher) ---
     else if (id === "higherlower")    { down = () => setHlPuffStart(Date.now()); up = () => { if(hlPuffStart){ hlHandlePuff(Date.now()-hlPuffStart>1500); setHlPuffStart(null); } }; }
+    // --- Stage: Trivia games (duration-based: TAP=A, SHORT=B, MED=C, LONG=D) ---
+    else if (id === "vibecheck")       { down = vcPuffStart;  up = vcPuffStop;  }
+    else if (id === "survivaltrivia")  { down = stPuffStart;  up = stPuffStop;  }
     // --- Fortune / Oracle games (hold-based) ---
     else if (id === "crystalball")    { down = cbHandlePuff;     up = cbHandlePuffEnd;     }
     else if (id === "strainbattle")   { down = sbHandlePuff;     up = sbHandlePuffEnd;     }
@@ -9990,6 +9999,11 @@ export default function MoodLabArena() {
     if(swTickRef.current){clearInterval(swTickRef.current);swTickRef.current=null;}
     // Vibe Check
     if(vcTimerRef.current){clearInterval(vcTimerRef.current);vcTimerRef.current=null;}
+    if(vcPuffHighlightRef.current){clearInterval(vcPuffHighlightRef.current);vcPuffHighlightRef.current=null;}
+    vcPuffStartRef.current=null;
+    // Survival Trivia puff
+    if(stPuffHighlightRef.current){clearInterval(stPuffHighlightRef.current);stPuffHighlightRef.current=null;}
+    stPuffStartRef.current=null; setStPuffHighlight(null);
     // Simon Puffs
     if(spPuffInterval.current){clearInterval(spPuffInterval.current);spPuffInterval.current=null;}
     if(spShowTimer.current){clearTimeout(spShowTimer.current);spShowTimer.current=null;}
@@ -10605,6 +10619,25 @@ export default function MoodLabArena() {
         stRevealAnswer(roundNum, -1, correctIdx, playersLeft, avatars);
       }
     },1000);
+  };
+
+  // ── Survival Trivia: Puff-to-Answer (TAP=A, SHORT=B, MED=C, LONG=D) ──
+  const stPuffStart = () => {
+    if(stAnswer !== null) return;
+    stPuffStartRef.current = Date.now();
+    setStPuffHighlight(0);
+    if(stPuffHighlightRef.current) clearInterval(stPuffHighlightRef.current);
+    stPuffHighlightRef.current = setInterval(() => {
+      if(!stPuffStartRef.current) return;
+      setStPuffHighlight(getTriviaPuffAnswer(Date.now() - stPuffStartRef.current));
+    }, 100);
+  };
+  const stPuffStop = () => {
+    if(stPuffHighlightRef.current){ clearInterval(stPuffHighlightRef.current); stPuffHighlightRef.current = null; }
+    if(!stPuffStartRef.current || stAnswer !== null){ stPuffStartRef.current = null; setStPuffHighlight(null); return; }
+    const ans = getTriviaPuffAnswer(Date.now() - stPuffStartRef.current);
+    stPuffStartRef.current = null; setStPuffHighlight(null);
+    stSelectAnswer(ans);
   };
 
   const stSelectAnswer = (idx) => {
@@ -15047,16 +15080,20 @@ const startSimonPuffs = () => {
                     {stQuestion.answers.map((ans,i)=>{
                       const isSelected = stAnswer===i;
                       const isCorrectAns = stCorrect===i;
-                      const bg = isReveal ? (isCorrectAns ? "rgba(52,211,153,0.2)" : (isSelected && !isCorrectAns) ? "rgba(255,68,68,0.2)" : "rgba(255,255,255,0.03)") : (isSelected ? "rgba(0,229,255,0.15)" : "rgba(255,255,255,0.03)");
-                      const border = isReveal ? (isCorrectAns ? "1px solid rgba(52,211,153,0.4)" : (isSelected && !isCorrectAns) ? "1px solid rgba(255,68,68,0.4)" : "1px solid rgba(255,255,255,0.06)") : (isSelected ? "1px solid rgba(0,229,255,0.3)" : "1px solid rgba(255,255,255,0.06)");
+                      const isPuffHl = stPuffHighlight===i && stAnswer===null && !isReveal;
+                      const bg = isReveal ? (isCorrectAns ? "rgba(52,211,153,0.2)" : (isSelected && !isCorrectAns) ? "rgba(255,68,68,0.2)" : "rgba(255,255,255,0.03)") : isPuffHl ? "rgba(0,229,255,0.25)" : (isSelected ? "rgba(0,229,255,0.15)" : "rgba(255,255,255,0.03)");
+                      const border = isReveal ? (isCorrectAns ? "1px solid rgba(52,211,153,0.4)" : (isSelected && !isCorrectAns) ? "1px solid rgba(255,68,68,0.4)" : "1px solid rgba(255,255,255,0.06)") : isPuffHl ? "2px solid rgba(0,229,255,0.6)" : (isSelected ? "1px solid rgba(0,229,255,0.3)" : "1px solid rgba(255,255,255,0.06)");
                       return (
                         <div key={i} onClick={()=>isQuestion && stSelectAnswer(i)}
-                          style={{padding:"12px 10px",borderRadius:10,cursor:isQuestion?"pointer":"default",background:bg,border:border,fontSize:13,fontWeight:700,color:isReveal?(isCorrectAns?C.green:(isSelected&&!isCorrectAns)?C.red:C.text3):C.text,transition:"all 0.3s"}}>
+                          style={{padding:"12px 10px",borderRadius:10,cursor:isQuestion?"pointer":"default",background:bg,border:border,fontSize:13,fontWeight:700,color:isReveal?(isCorrectAns?C.green:(isSelected&&!isCorrectAns)?C.red:C.text3):C.text,transition:"all 0.15s ease",transform:isPuffHl?"scale(1.04)":"scale(1)",boxShadow:isPuffHl?"0 0 16px rgba(0,229,255,0.2)":"none",position:"relative"}}>
+                          <div style={{position:"absolute",top:4,left:6,width:16,height:16,borderRadius:5,display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,fontWeight:900,color:isPuffHl?C.cyan:C.text3,background:isPuffHl?"rgba(0,229,255,0.15)":"rgba(255,255,255,0.05)"
+                          }}>{"ABCD"[i]}</div>
                           {isReveal && isCorrectAns && "\u2713 "}{isReveal && isSelected && !isCorrectAns && "\u2717 "}{ans}
                         </div>
                       );
                     })}
                   </div>
+                  {isQuestion && <div style={{textAlign:"center",marginTop:8}}><div style={{fontSize:8,color:C.text3,letterSpacing:1}}>TAP=A · SHORT PUFF=B · MED PUFF=C · LONG PUFF=D</div></div>}
                 </div>
               )}
 
@@ -20537,6 +20574,25 @@ const startSimonPuffs = () => {
     setTimeout(()=>{ setVcPhase("question"); setVcTimer(10); }, 3000);
   };
 
+  // ── Vibe Check: Puff-to-Answer (TAP=A, SHORT=B, MED=C, LONG=D) ──
+  const vcPuffStart = () => {
+    if(vcAnswered) return;
+    vcPuffStartRef.current = Date.now();
+    setVcPuffAnswer(0);
+    if(vcPuffHighlightRef.current) clearInterval(vcPuffHighlightRef.current);
+    vcPuffHighlightRef.current = setInterval(() => {
+      if(!vcPuffStartRef.current) return;
+      setVcPuffAnswer(getTriviaPuffAnswer(Date.now() - vcPuffStartRef.current));
+    }, 100);
+  };
+  const vcPuffStop = () => {
+    if(vcPuffHighlightRef.current){ clearInterval(vcPuffHighlightRef.current); vcPuffHighlightRef.current = null; }
+    if(!vcPuffStartRef.current || vcAnswered){ vcPuffStartRef.current = null; setVcPuffAnswer(null); return; }
+    const ans = getTriviaPuffAnswer(Date.now() - vcPuffStartRef.current);
+    vcPuffStartRef.current = null; setVcPuffAnswer(null);
+    vcAnswerQuestion(ans);
+  };
+
   const vcAnswerQuestion = (ansIdx) => {
     if(vcAnswered) return;
     if(vcEliminated && ansIdx !== -1) return; // allow timeout (-1) even when eliminated
@@ -20705,8 +20761,10 @@ const startSimonPuffs = () => {
                   return (
                     <div key={i} onClick={()=>vcAnswerQuestion(i)} style={{
                       padding:"14px 10px",borderRadius:14,cursor:"pointer",textAlign:"center",position:"relative",
-                      background:`${optColors[i]}06`,border:`1.5px solid ${optColors[i]}20`,
-                      transition:"all 0.2s",transform:vcPuffAnswer===i?"scale(0.96)":"scale(1)",
+                      background: vcPuffAnswer===i && !vcAnswered ? `${optColors[i]}25` : `${optColors[i]}06`,
+                      border: vcPuffAnswer===i && !vcAnswered ? `2px solid ${optColors[i]}80` : `1.5px solid ${optColors[i]}20`,
+                      boxShadow: vcPuffAnswer===i && !vcAnswered ? `0 0 20px ${optColors[i]}30` : "none",
+                      transition:"all 0.15s ease",transform: vcPuffAnswer===i && !vcAnswered ? "scale(1.04)" : "scale(1)",
                     }}>
                       <div style={{position:"absolute",top:6,left:8,width:20,height:20,borderRadius:6,display:"flex",alignItems:"center",justifyContent:"center",
                         background:`${optColors[i]}15`,fontSize:10,fontWeight:900,color:optColors[i]
