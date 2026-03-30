@@ -12400,6 +12400,14 @@ const startSimonPuffs = () => {
                         <div style={{textAlign:"center"}}><div style={{fontSize:15,fontWeight:900,color:C.red}}>{duelStats.fouls}</div><div style={{fontSize:7,color:"rgba(210,170,120,0.5)"}}>Fouls</div></div>
                       </div>
                       {duelScore.you >= 3 && <div style={{fontSize:13,color:C.gold,fontWeight:800,marginBottom:10,animation:"countPulse 1.5s infinite"}}>+{150+duelRoundResults.reduce((s,r)=>s+(r.win?r.bonusCoins:0),0)} coins earned! 🪙</div>}
+                      {(()=>{const won=duelScore.you>=3;const base=won?(150+duelRoundResults.reduce((s,r)=>s+(r.win?r.bonusCoins:0),0)):15;return (
+<div style={{padding:10,borderRadius:12,background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.06)",marginTop:10,marginBottom:8}}>
+  <div style={{fontSize:9,color:C.text3,letterSpacing:1,marginBottom:6}}>REWARD BREAKDOWN</div>
+  <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:C.text2,marginBottom:3}}><span>Base</span><span style={{color:C.gold}}>+{base} 🪙</span></div>
+  <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:C.text2,marginBottom:3}}><span>{getCurrentTier().icon} {getCurrentTier().name}</span><span style={{color:getCurrentTier().color}}>×{getCurrentTier().mult}</span></div>
+  {bleConnected&&<div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:C.text2,marginBottom:3}}><span>💨 Device</span><span style={{color:C.cyan}}>×1.5</span></div>}
+  <div style={{borderTop:"1px solid rgba(255,255,255,0.06)",paddingTop:6,marginTop:3,display:"flex",justifyContent:"space-between",fontSize:13,fontWeight:800}}><span style={{color:C.text}}>TOTAL</span><span style={{color:C.gold}}>+{Math.round(base*getCoinMultiplier())} 🪙</span></div>
+</div>);})()}
                       <div style={{display:"flex",gap:8,justifyContent:"center"}}>
                         <div onClick={(e)=>{e.stopPropagation();startDuel();}} style={{padding:"12px 24px",borderRadius:12,cursor:"pointer",background:`linear-gradient(135deg, ${C.gold}20, ${C.gold}08)`,border:`1px solid ${C.gold}40`,fontSize:14,fontWeight:800,color:C.gold,letterSpacing:1,minWidth:44,textAlign:"center"}}>🔫 REMATCH</div>
                         <div onClick={(e)=>{e.stopPropagation();resetDuel();setGameActive(null);}} style={{padding:"12px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:`1px solid rgba(139,69,19,0.3)`,fontSize:14,fontWeight:700,color:C.text2,minWidth:44,textAlign:"center"}}>Exit</div>
@@ -14453,6 +14461,14 @@ const startSimonPuffs = () => {
               {ppPhase==="result"&&<div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:8,marginTop:8,animation:"fadeIn 0.5s ease"}}>
                 <div style={{fontSize:20,fontWeight:900,color:ppScore.you>ppScore.ai?C.cyan:C.red,textShadow:"0 0 20px currentColor",letterSpacing:2}}>{ppScore.you>ppScore.ai?"YOU WIN! 🏆":"AI WINS 🤖"}</div>
                 <div style={{fontSize:11,color:C.text2}}>{ppScore.you>ppScore.ai?"Puff Pong champion! Powered by THC 💨🏆":"Better luck next puff! 💨"}</div>
+                {(()=>{const won=ppScore.you>ppScore.ai;const base=won?80:15;return (
+<div style={{padding:10,borderRadius:12,background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.06)",marginTop:10,marginBottom:8,width:"100%",maxWidth:300}}>
+  <div style={{fontSize:9,color:C.text3,letterSpacing:1,marginBottom:6}}>REWARD BREAKDOWN</div>
+  <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:C.text2,marginBottom:3}}><span>Base</span><span style={{color:C.gold}}>+{base} 🪙</span></div>
+  <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:C.text2,marginBottom:3}}><span>{getCurrentTier().icon} {getCurrentTier().name}</span><span style={{color:getCurrentTier().color}}>×{getCurrentTier().mult}</span></div>
+  {bleConnected&&<div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:C.text2,marginBottom:3}}><span>💨 Device</span><span style={{color:C.cyan}}>×1.5</span></div>}
+  <div style={{borderTop:"1px solid rgba(255,255,255,0.06)",paddingTop:6,marginTop:3,display:"flex",justifyContent:"space-between",fontSize:13,fontWeight:800}}><span style={{color:C.text}}>TOTAL</span><span style={{color:C.gold}}>+{Math.round(base*getCoinMultiplier())} 🪙</span></div>
+</div>);})()}
                 <div style={{display:"flex",gap:10}}>
                   <div onClick={()=>{setPpPhase(null);startPuffPong();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.cyan}12`,border:`1px solid ${C.cyan}30`,fontSize:13,fontWeight:800,color:C.cyan}}>🔄 Rematch</div>
                   <div onClick={ppEndGame} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.text3}08`,border:`1px solid ${C.text3}15`,fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
