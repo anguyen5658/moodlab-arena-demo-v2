@@ -858,8 +858,8 @@ const VC_QUESTIONS = [
 const UNIVERSAL_PUFF_CONFIG = {
   // Sweet spot shifts randomly each round
   randomizeSweetSpot: () => {
-    const min = 40 + Math.random() * 25; // 40-65%
-    const max = min + 15 + Math.random() * 15; // +15-30% window
+    const min = 30 + Math.random() * 20; // 30-50%
+    const max = min + 20 + Math.random() * 20; // +20-40% window
     return { min: Math.round(min), max: Math.min(95, Math.round(max)) };
   },
   // Blinker threshold
@@ -873,22 +873,22 @@ const UNIVERSAL_PUFF_CONFIG = {
     { name: "BLINKER", max: 100, color: "#FF4444" },
   ],
 };
-const getTriviaPuffAnswer = (ms) => ms < 500 ? 0 : ms < 1500 ? 1 : ms < 3000 ? 2 : 3;
+const getTriviaPuffAnswer = (ms) => ms < 800 ? 0 : ms < 2000 ? 1 : ms < 3500 ? 2 : 3;
 
 const HOOK_FISH = [
   {name:"Blue Snap",emoji:"🐟",rarity:"common",pts:10,zoneWidth:35,resistance:0.8,instability:0.3,tensionRate:1.0,escapeRate:0.8,color:C.cyan},
   {name:"Lunar Carp",emoji:"🐠",rarity:"common",pts:10,zoneWidth:33,resistance:0.9,instability:0.35,tensionRate:1.0,escapeRate:0.9,color:C.cyan},
   {name:"Pond Darter",emoji:"🐡",rarity:"common",pts:10,zoneWidth:38,resistance:0.7,instability:0.25,tensionRate:0.9,escapeRate:0.7,color:C.cyan},
-  {name:"Neon Koi",emoji:"🎏",rarity:"rare",pts:25,zoneWidth:22,resistance:1.2,instability:0.5,tensionRate:1.3,escapeRate:1.1,color:C.purple},
-  {name:"Glitch Fin",emoji:"🦈",rarity:"rare",pts:25,zoneWidth:20,resistance:1.4,instability:0.55,tensionRate:1.4,escapeRate:1.2,color:C.purple},
-  {name:"Gold Pike",emoji:"🐊",rarity:"rare",pts:25,zoneWidth:24,resistance:1.1,instability:0.45,tensionRate:1.2,escapeRate:1.0,color:C.purple},
-  {name:"Void Eel",emoji:"🐉",rarity:"legendary",pts:60,zoneWidth:13,resistance:1.8,instability:0.75,tensionRate:1.8,escapeRate:1.5,color:C.gold},
-  {name:"Abyssal Ray",emoji:"🦑",rarity:"legendary",pts:60,zoneWidth:12,resistance:2.0,instability:0.8,tensionRate:2.0,escapeRate:1.6,color:C.gold},
+  {name:"Neon Koi",emoji:"🎏",rarity:"rare",pts:25,zoneWidth:30,resistance:1.2,instability:0.5,tensionRate:1.3,escapeRate:1.1,color:C.purple},
+  {name:"Glitch Fin",emoji:"🦈",rarity:"rare",pts:25,zoneWidth:28,resistance:1.4,instability:0.55,tensionRate:1.4,escapeRate:1.2,color:C.purple},
+  {name:"Gold Pike",emoji:"🐊",rarity:"rare",pts:25,zoneWidth:32,resistance:1.1,instability:0.45,tensionRate:1.2,escapeRate:1.0,color:C.purple},
+  {name:"Void Eel",emoji:"🐉",rarity:"legendary",pts:60,zoneWidth:22,resistance:1.8,instability:0.50,tensionRate:1.8,escapeRate:1.5,color:C.gold},
+  {name:"Abyssal Ray",emoji:"🦑",rarity:"legendary",pts:60,zoneWidth:20,resistance:2.0,instability:0.55,tensionRate:2.0,escapeRate:1.6,color:C.gold},
 ];
 
 
 // ── Simon Puffs Constants ──
-const SP_PUFF_TYPES = [{name:"Short",maxDur:1.0,color:"#00E5FF"},{name:"Medium",maxDur:2.5,color:"#FFD93D"},{name:"Long",maxDur:99,color:"#FF4D8D"}];
+const SP_PUFF_TYPES = [{name:"Short",maxDur:1.2,color:"#00E5FF"},{name:"Medium",maxDur:3.0,color:"#FFD93D"},{name:"Long",maxDur:99,color:"#FF4D8D"}];
 const SP_COMEDY = [
   "Round 1! Easy peasy!","Getting warmer! Can you remember?","3 puffs! Your short-term memory is being tested!",
   "4 in a row! Not bad for someone who's probably baked!","5 puffs! Simon is impressed!","6?! Your brain is on FIRE!",
@@ -928,9 +928,9 @@ const DEVICE_MODELS = [
   { id:"none", name:"No Device", short:"Tap Only", pool:"open", emoji:"👆" },
 ];
 const DEVICE_POOLS = {
-  select: { label:"Select Pool", color:C.gold, aiSave:0.38, aiScore:0.58, rewardMult:2 },
-  standard: { label:"Standard Pool", color:C.cyan, aiSave:0.30, aiScore:0.50, rewardMult:1.5 },
-  open: { label:"Open Pool", color:C.text3, aiSave:0.20, aiScore:0.40, rewardMult:1 },
+  select: { label:"Select Pool", color:C.gold, aiSave:0.25, aiScore:0.45, rewardMult:2 },
+  standard: { label:"Standard Pool", color:C.cyan, aiSave:0.20, aiScore:0.40, rewardMult:1.5 },
+  open: { label:"Open Pool", color:C.text3, aiSave:0.12, aiScore:0.30, rewardMult:1 },
 };
 const KICK_ZONES = [
   { label:"↖", col:0, row:0 }, { label:"⬆", col:1, row:0 }, { label:"↗", col:2, row:0 },
@@ -990,7 +990,7 @@ export default function MoodLabArena() {
   const [vcEliminated, setVcEliminated] = useState(false);
   const [vcCorrectStreak, setVcCorrectStreak] = useState(0);
   const [vcPuffAnswer, setVcPuffAnswer] = useState(null);
-  const [vcTimer, setVcTimer] = useState(10);
+  const [vcTimer, setVcTimer] = useState(15);
   const vcTimerRef = useRef(null);
   const vcPuffStartRef = useRef(null);
   const vcPuffHighlightRef = useRef(null);
@@ -1025,6 +1025,7 @@ export default function MoodLabArena() {
   const [duelTumbleweed, setDuelTumbleweed] = useState(false);
   const [duelDustParticles, setDuelDustParticles] = useState([]);
   const duelDrawTime = useRef(null);
+  const duelExpectedDrawTime = useRef(null); // for 200ms foul grace period
   const duelTimerRef = useRef(null);
   const duelSteadyTimerRef = useRef(null);
   const [duelIntroStage, setDuelIntroStage] = useState(null);
@@ -1044,12 +1045,12 @@ export default function MoodLabArena() {
   const [duelStaredownStage, setDuelStaredownStage] = useState(0); // 0-3 for building tension
 
   const DUEL_OPPONENTS = [
-    {name:"Sheriff Puffington",emoji:"🤠",img:"https://api.dicebear.com/9.x/adventurer/svg?seed=Sheriff&backgroundColor=transparent",rank:"#1",record:"420-69",taunt:"This town ain't big enough for the two of us",speed:350},
-    {name:"Quick Draw McGraw",emoji:"🔫",img:"https://api.dicebear.com/9.x/adventurer/svg?seed=QuickDraw&backgroundColor=transparent",rank:"#3",record:"380-88",taunt:"0.2 seconds is all I need",speed:280},
-    {name:"Cactus Jack",emoji:"🌵",img:"https://api.dicebear.com/9.x/bottts-neutral/svg?seed=CactusJack&backgroundColor=transparent",rank:"#7",record:"301-120",taunt:"Prickly and fast",speed:320},
-    {name:"Dusty Rhodes",emoji:"🏜️",img:"https://api.dicebear.com/9.x/adventurer/svg?seed=DustyRhodes&backgroundColor=transparent",rank:"#12",record:"250-140",taunt:"Faster than a tumbleweed in a tornado",speed:400},
-    {name:"Dynamite Dan",emoji:"🧨",img:"https://api.dicebear.com/9.x/bottts-neutral/svg?seed=DynamiteDan&backgroundColor=transparent",rank:"#5",record:"350-95",taunt:"BOOM. Already drew.",speed:300},
-    {name:"Whiskey Wilma",emoji:"🥃",img:"https://api.dicebear.com/9.x/adventurer/svg?seed=WhiskeyWilma&backgroundColor=transparent",rank:"#15",record:"220-160",taunt:"I shoot straighter when I'm drunk",speed:450},
+    {name:"Sheriff Puffington",emoji:"🤠",img:"https://api.dicebear.com/9.x/adventurer/svg?seed=Sheriff&backgroundColor=transparent",rank:"#1",record:"420-69",taunt:"This town ain't big enough for the two of us",speed:450},
+    {name:"Quick Draw McGraw",emoji:"🔫",img:"https://api.dicebear.com/9.x/adventurer/svg?seed=QuickDraw&backgroundColor=transparent",rank:"#3",record:"380-88",taunt:"0.2 seconds is all I need",speed:380},
+    {name:"Cactus Jack",emoji:"🌵",img:"https://api.dicebear.com/9.x/bottts-neutral/svg?seed=CactusJack&backgroundColor=transparent",rank:"#7",record:"301-120",taunt:"Prickly and fast",speed:420},
+    {name:"Dusty Rhodes",emoji:"🏜️",img:"https://api.dicebear.com/9.x/adventurer/svg?seed=DustyRhodes&backgroundColor=transparent",rank:"#12",record:"250-140",taunt:"Faster than a tumbleweed in a tornado",speed:500},
+    {name:"Dynamite Dan",emoji:"🧨",img:"https://api.dicebear.com/9.x/bottts-neutral/svg?seed=DynamiteDan&backgroundColor=transparent",rank:"#5",record:"350-95",taunt:"BOOM. Already drew.",speed:400},
+    {name:"Whiskey Wilma",emoji:"🥃",img:"https://api.dicebear.com/9.x/adventurer/svg?seed=WhiskeyWilma&backgroundColor=transparent",rank:"#15",record:"220-160",taunt:"I shoot straighter when I'm drunk",speed:550},
   ];
   const duelOpponentRef = useRef(null);
 
@@ -1065,7 +1066,7 @@ export default function MoodLabArena() {
   const [kickDiveAnim, setKickDiveAnim] = useState(null); // keeper dive zone
 
   const [kickCharging, setKickCharging] = useState(false);
-  const [actionTimer, setActionTimer] = useState(3); // 3s countdown for actions
+  const [actionTimer, setActionTimer] = useState(5); // 5s countdown for actions
   const actionTimerRef = useRef(null);
   const [showHowToPlay, setShowHowToPlay] = useState(false);
   const [wcDeviceInput, setWcDeviceInput] = useState(null); // device input locked for tournament
@@ -1873,7 +1874,7 @@ export default function MoodLabArena() {
   useEffect(() => {
     const timerStates = ["shoot","save_dive","shoot_x","shoot_y"];
     if(timerStates.includes(kickState) && !kickCharging && !matchIntro) {
-      setActionTimer(3);
+      setActionTimer(5);
       if(actionTimerRef.current) clearInterval(actionTimerRef.current);
       actionTimerRef.current = setInterval(()=>{
         setActionTimer(p=>{
@@ -2854,6 +2855,7 @@ export default function MoodLabArena() {
 
       // Build tension stages — longer staredown in later rounds
       const tensionBase = 1500 + Math.random() * 3000 + roundNum * 400; // gets longer each round
+      duelExpectedDrawTime.current = Date.now() + 3200 + tensionBase; // 3200ms countdown + tensionBase
       const stage1 = tensionBase * 0.3;
       const stage2 = tensionBase * 0.6;
       const stage3 = tensionBase * 0.85;
@@ -2897,11 +2899,11 @@ export default function MoodLabArena() {
         setCommentary("DRAW! HOLD TO PUFF!");
         setDuelStaredownText("");
 
-        // Auto-timeout after 3s if no puff
+        // Auto-timeout after 5s if no puff
         duelTimerRef.current = setTimeout(()=>{
           if(duelDrawTime.current) {
             const aiSpeed = getAiDrawSpeed(roundNum);
-            const timeoutResult = {win:false, you:3000, ai:aiSpeed, timeout:true, puffDur:0, bonus:null, bonusCoins:0};
+            const timeoutResult = {win:false, you:5000, ai:aiSpeed, timeout:true, puffDur:0, bonus:null, bonusCoins:0};
             setDuelResult(timeoutResult);
             setDuelPhase("result");
             duelDrawTime.current = null;
@@ -2912,26 +2914,26 @@ export default function MoodLabArena() {
             setCommentary(pick(["Too slow, partner! AI drew ages ago!","You froze up! Tumbleweed is faster!","Asleep at high noon!"]));
             handleDuelRoundEnd(false, false, timeoutResult);
           }
-        }, 3000);
+        }, 5000);
       }, tensionBase);
     }, 3200); // After 3..2..1..DRAW! countdown
   };
 
   const getAiDrawSpeed = (round) => {
     const opp = duelOpponentRef.current || DUEL_OPPONENTS[0];
-    // AI gets faster each round: base speed - (round * 30-50ms)
+    // AI gets faster each round: base speed - (round * 15-25ms)
     const base = opp.speed;
-    const speedup = round * (30 + Math.random()*20);
+    const speedup = round * (15 + Math.random()*10);
     const jitter = (Math.random()-0.5) * 80;
-    return Math.max(180, Math.floor(base - speedup + jitter));
+    return Math.max(280, Math.floor(base - speedup + jitter));
   };
 
   // duelShoot = START of puff hold (mousedown/touchstart)
   const duelShoot = () => {
     if(duelFiredShot) return;
 
-    // FOUL: puffed before DRAW phase
-    if(duelPhase === "staredown" || duelPhase === "countdown") {
+    // FOUL: puffed before DRAW phase (200ms grace period — treat as valid draw if within 200ms of DRAW)
+    if((duelPhase === "staredown" || duelPhase === "countdown") && !(duelExpectedDrawTime.current && (duelExpectedDrawTime.current - Date.now()) < 200)) {
       setDuelFiredShot(true);
       clearTimeout(duelTimerRef.current);
       clearTimeout(duelSteadyTimerRef.current);
@@ -3894,7 +3896,7 @@ export default function MoodLabArena() {
   const ppStartLoop=()=>{
     const g=ppG.current;g.lastT=performance.now();
     if(ppInterval.current)clearInterval(ppInterval.current);
-    ppInterval.current=setInterval(()=>{if(!g.paused){g.py=Math.min(90,g.py+1.2);setPpPaddleY(g.py);}},80);
+    ppInterval.current=setInterval(()=>{if(!g.paused){g.py=Math.min(90,g.py+0.6);setPpPaddleY(g.py);}},80);
     const loop=(now)=>{
       if(g.paused)return;const dt=Math.min((now-g.lastT)/16.667,3);g.lastT=now;
       let nx=g.bx+g.dx*dt,ny=g.by+g.dy*dt,ndx=g.dx,ndy=g.dy;
@@ -3905,7 +3907,7 @@ export default function MoodLabArena() {
       g.ay+=(ny-g.ay)*aiSpd*dt;g.ay=Math.max(10,Math.min(90,g.ay));
       const spd=Math.sqrt(ndx*ndx+ndy*ndy);
       if(nx<=6&&g.bx>6){const hd=Math.abs(ny-g.py);
-        if(hd<12){const ho=(ny-g.py)/12,sm=hd<2;ndx=Math.abs(ndx)*(sm?1.6:1.05);ndy=g.dy+ho*2.5;nx=7;
+        if(hd<18){const ho=(ny-g.py)/18,sm=hd<2;ndx=Math.abs(ndx)*(sm?1.6:1.05);ndy=g.dy+ho*2.5;nx=7;
           g.rally++;g.smash=sm;playFx("pong_hit");setPpImpact({x:6,y:ny,t:Date.now()});setTimeout(()=>setPpImpact(null),300);
           if(sm){setPpSmash(true);triggerShake();setPpComment(pick(PP_SMASH));setTimeout(()=>setPpSmash(false),500);}else setPpComment(pick(PP_HIT));
           if(g.rally>0&&g.rally%10===0){setPpComment(pick(PP_RALLY).replace("{n}",g.rally));playFx("crowd");}setPpRally(g.rally);
@@ -3927,7 +3929,7 @@ export default function MoodLabArena() {
   };
   const ppMovePaddle=(dir)=>{const g=ppG.current;g.py=Math.max(10,Math.min(90,g.py+dir*6));setPpPaddleY(g.py);};
   const ppPuffUp=()=>{setPpPuffHeld(true);const g=ppG.current;if(ppInterval.current)clearInterval(ppInterval.current);ppInterval.current=setInterval(()=>{if(!g.paused){g.py=Math.max(10,g.py-4);setPpPaddleY(g.py);}},50);};
-  const ppPuffRelease=()=>{setPpPuffHeld(false);if(ppInterval.current){clearInterval(ppInterval.current);ppInterval.current=null;}const g=ppG.current;ppInterval.current=setInterval(()=>{if(!g.paused){g.py=Math.min(90,g.py+1.2);setPpPaddleY(g.py);}},80);};
+  const ppPuffRelease=()=>{setPpPuffHeld(false);if(ppInterval.current){clearInterval(ppInterval.current);ppInterval.current=null;}const g=ppG.current;ppInterval.current=setInterval(()=>{if(!g.paused){g.py=Math.min(90,g.py+0.6);setPpPaddleY(g.py);}},80);};
   const ppEndGame=()=>{if(ppRaf.current)cancelAnimationFrame(ppRaf.current);if(ppInterval.current){clearInterval(ppInterval.current);ppInterval.current=null;}ppG.current.paused=true;const won=ppScore.you>ppScore.ai;const r=won?80:15;setCoins(c=>c+r);notify(won?"🏓 Won! +"+r:"🏓 Lost! +"+r,won?C.green:C.red);
     // WC tournament integration
     if(gameActive?.wcMode){const my=ppScore.you;const ai=ppScore.ai;if(gameActive.wcKnockout){wcFinishKnockoutMatch(my,ai);}else if(gameActive.wcMatchIdx!==undefined){wcFinishGroupMatch(gameActive.wcMatchIdx,my,ai);}}
@@ -3962,7 +3964,7 @@ export default function MoodLabArena() {
     combo50:["COMBO x50! INHUMAN! This isn't weed, this is FOCUS 🧠💨","x50! WHAT ARE YOU?! 🫨🔥🔥🔥"],
     blinker:["BLINKER HIT! Caught ALL the notes! 🫁🎵","BLINKER ACTIVATED! Screen clear! 💨💨💨","MEGA PUFF! Everything absorbed! 🌬️🎵"],
     puff:["PUFF COMBO! Multiple notes in one breath! 🫁","Big puff energy! Caught them all! 💨🎵"],
-    gameover:["Game over! 10 misses... maybe try a different strain 🌿","The concert's over! Your rhythm needs rehab 🏥🎵","Stage lights OFF. Practice makes perfect puffs 💨"],
+    gameover:["Game over! 15 misses... maybe try a different strain 🌿","The concert's over! Your rhythm needs rehab 🏥🎵","Stage lights OFF. Practice makes perfect puffs 💨"],
     win:["ENCORE! ENCORE! What a performance! 🎤🔥","Standing ovation! The crowd wants MORE! 👏💨","YOU CRUSHED IT! Puff game STRONG! 🫁🏆"]
   };
   const startRhythmPuff = () => {
@@ -3982,14 +3984,14 @@ export default function MoodLabArena() {
       let beatCount=0;let currentSpeed=3;
       rpInterval.current=setInterval(()=>{
         beatCount++;
-        if(beatCount%500===0&&currentSpeed<6){currentSpeed+=0.4;setRpSpeed(currentSpeed);}
+        if(beatCount%500===0&&currentSpeed<6){currentSpeed+=0.25;setRpSpeed(currentSpeed);}
         setRpBeat(b=>b+1);
         if(beatCount%8===0)setRpStageFlash(f=>f>0?0:1);
         setRpNotes(notes=>{
           let nn=[...notes.map(n=>({...n,y:n.y+currentSpeed})).filter(n=>{
             if(n.y>95&&!n.hit){
               setRpMisses(m=>{
-                if(m+1>=10){clearInterval(rpInterval.current);setRpPhase("result");playFx("lose");
+                if(m+1>=15){clearInterval(rpInterval.current);setRpPhase("result");playFx("lose");
                   setCommentary(pick(rpComedy.gameover));setRpComment(pick(rpComedy.gameover));}
                 return m+1;
               });
@@ -4024,9 +4026,9 @@ export default function MoodLabArena() {
       const dist = Math.abs(closest.y-RP_HIT_ZONE);
       const newN=[...notes];newN[closest.idx]={...newN[closest.idx],hit:true};
       let rating,pts,ratingColor;
-      if(dist<=4){rating="PERFECT";pts=100;ratingColor=C.gold;rpSpawnParticles(lane,RP_LANE_COLORS[lane],12);setRpCrowdJump(true);setTimeout(()=>setRpCrowdJump(false),300);}
-      else if(dist<=8){rating="GOOD";pts=75;ratingColor=C.green;rpSpawnParticles(lane,RP_LANE_COLORS[lane],6);}
-      else if(dist<=14){rating="OK";pts=50;ratingColor=C.orange;}
+      if(dist<=8){rating="PERFECT";pts=100;ratingColor=C.gold;rpSpawnParticles(lane,RP_LANE_COLORS[lane],12);setRpCrowdJump(true);setTimeout(()=>setRpCrowdJump(false),300);}
+      else if(dist<=14){rating="GOOD";pts=75;ratingColor=C.green;rpSpawnParticles(lane,RP_LANE_COLORS[lane],6);}
+      else if(dist<=22){rating="OK";pts=50;ratingColor=C.orange;}
       else{rating="MISS";pts=0;ratingColor=C.red;}
       if(rating==="MISS"){
         setRpCombo(0);setRpMisses(m=>m+1);setRpComment(pick(rpComedy.miss));playFx("rhythm_miss");
@@ -4312,7 +4314,7 @@ export default function MoodLabArena() {
   const hpStartRound = (players, round) => {
     const alive = players.filter(p=>p.alive);
     if(alive.length <= 1) return;
-    const maxT = Math.max(2, 6 - (round-1)*0.6 + (Math.random()*2-1));
+    const maxT = Math.max(3, 6 - (round-1)*0.4 + (Math.random()*2-1));
     setHpMaxTimer(maxT);setHpBombTimer(0);setHpFuse(1);setHpRound(round);setHpPassing(false);
     setHpExploded(null);setHpPuffHeld(false);setHpPuffPower(0);setHpPassTarget(null);
     const aliveIdxs = players.map((p,i)=>p.alive?i:-1).filter(i=>i>=0);
@@ -4611,8 +4613,8 @@ export default function MoodLabArena() {
 
   // Randomize sweet spot: min hold ~1.8-2.8s, window 0.8-1.2s, never < 1.5s hold
   const randomizeSweetSpot = () => {
-    const holdMin = 1.8 + Math.random()*1.0; // 1.8-2.8s minimum hold for sweet spot
-    const window = 0.8 + Math.random()*0.4; // 0.8-1.2s window width
+    const holdMin = 1.5 + Math.random()*0.8; // 1.5-2.3s minimum hold for sweet spot
+    const window = 1.2 + Math.random()*0.6; // 1.2-1.8s window width
     const holdMax = holdMin + window;
     // Convert to power % using the curve (~40% at 1.5s, ~70% at 2.5s, ~95% at 3.5s)
     const pMin = Math.round(40 + (holdMin-1.5)/2.0 * 55);
@@ -4948,10 +4950,10 @@ export default function MoodLabArena() {
     let autoFail = false;
     if(puffZone==="perfect"){ aiSaveChance=pool.aiSave; } // sweet spot = real chance to score
     else { autoFail=true; } // tap/short/good/long = instant fail
-    if(wasBlinker){ missChance=1.0; autoFail=true; } // blinker = always miss
-    else if(puffZone==="long"){ missChance=0.6; autoFail=true; } // held too long = mostly miss
+    if(wasBlinker){ missChance=0.7; autoFail=true; } // blinker = 70% miss (30% chance to still score)
+    else if(puffZone==="long"){ missChance=0.3; autoFail=true; } // held too long = 30% miss
 
-    const missed = autoFail ? (Math.random() < Math.max(missChance, 0.4)) : false; // non-sweet: 40%+ miss, rest saved
+    const missed = autoFail ? (Math.random() < Math.max(missChance, 0.2)) : false; // non-sweet: 20%+ miss, rest saved
     const aiSaves = !missed && (autoFail || (sameZone && Math.random() < aiSaveChance));
     const isGoal = !missed && !aiSaves;
 
@@ -5116,7 +5118,7 @@ export default function MoodLabArena() {
     setKickBonusUsed(true); setKickBonusActive(true); setKickBonusAvail(false);
     // Bonus has a TIGHTER sweet spot (harder)
     const holdMin = 2.2 + Math.random()*0.6;
-    const window = 0.5 + Math.random()*0.3; // narrower!
+    const window = 0.8 + Math.random()*0.4; // wider bonus window
     const holdMax = holdMin + window;
     const pMin = Math.round(40 + (holdMin-1.5)/2.0 * 55);
     const pMax = Math.min(96, Math.round(40 + (holdMax-1.5)/2.0 * 55));
@@ -6428,7 +6430,7 @@ export default function MoodLabArena() {
         if (err <= 0.005) {
           setCoins(c => c + 420);
           notify("PERFECT 4.20! +420 coins! 420 Master!", "#7FFF00");
-        } else if (err <= 0.05) {
+        } else if (err <= 0.15) {
           setCoins(c => c + 100);
           notify("So close! " + holdDuration.toFixed(2) + "s (+" + err.toFixed(2) + "s off) +100 coins", "#7FFF00");
         } else {
@@ -6756,10 +6758,10 @@ export default function MoodLabArena() {
             )}
             {data.error !== null && !data.puffing && (
               <div style={{padding:10,borderRadius:10,...LG.base,marginBottom:12}}>
-                <div style={{fontSize:14,fontWeight:800,color:data.error<=0.005?"#7FFF00":data.error<=0.05?C.gold:C.orange}}>
+                <div style={{fontSize:14,fontWeight:800,color:data.error<=0.005?"#7FFF00":data.error<=0.15?C.gold:C.orange}}>
                   {data.myTime.toFixed(2)}s {data.error <= 0.005 ? "PERFECT! 420 MASTER!" : `(${data.error.toFixed(2)}s off)`}
                 </div>
-                {data.error <= 0.05 && data.error > 0.005 && <div style={{fontSize:11,color:C.text2,marginTop:2}}>So close!</div>}
+                {data.error <= 0.15 && data.error > 0.005 && <div style={{fontSize:11,color:C.text2,marginTop:2}}>So close!</div>}
               </div>
             )}
             <div style={{padding:10,borderRadius:12,...LG.base,marginBottom:12}}>
@@ -10591,7 +10593,7 @@ export default function MoodLabArena() {
     }
     const isFinal = playersLeft <= 3;
     setStFinalMode(isFinal);
-    const timerDur = isFinal ? 8 : 15;
+    const timerDur = isFinal ? 12 : 15;
     const q = ST_QUESTIONS[roundNum % ST_QUESTIONS.length];
     const indices = [0,1,2,3];
     for(let i=indices.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[indices[i],indices[j]]=[indices[j],indices[i]];}
@@ -10603,7 +10605,7 @@ export default function MoodLabArena() {
     setStRound(roundNum+1);
     setStTimer(timerDur);
     setStPhase("question");
-    setStComment(isFinal ? "FINAL 3 SHOWDOWN! 8 SECONDS!" : "Round "+(roundNum+1)+" - "+playersLeft+" alive");
+    setStComment(isFinal ? "FINAL 3 SHOWDOWN! 12 SECONDS!" : "Round "+(roundNum+1)+" - "+playersLeft+" alive");
     setCommentary(isFinal ? "FINAL SHOWDOWN! Only "+playersLeft+" remain!" : playersLeft+" players remaining...");
     if(stageRole) showMC("round_start", {n:String(roundNum+1)});
     if(stTimerRef.current) clearInterval(stTimerRef.current);
@@ -10651,7 +10653,7 @@ export default function MoodLabArena() {
     setStCorrect(correctIdx);
     setStPhase("reveal");
     const isCorrect = playerAnswer === correctIdx;
-    const elimRate = Math.min(0.35, 0.10 + roundNum * 0.02);
+    const elimRate = Math.min(0.25, 0.08 + roundNum * 0.015);
     let newAvatars = avatars.map(a=>{
       if(!a.alive) return a;
       if(a.isYou) return {...a, alive: isCorrect};
@@ -10809,7 +10811,7 @@ export default function MoodLabArena() {
     const roundResult = {round:pcRound,target:pcTarget,actual:clampedElapsed,error:error};
 
     let perfect = false;
-    if(pcTarget === 4.20 && error <= 0.05) {
+    if(pcTarget === 4.20 && error <= 0.15) {
       perfect = true;
       setPcPerfect420(true);
       setCoins(c=>c+420);
@@ -10821,7 +10823,7 @@ export default function MoodLabArena() {
     setPcResults(prev=>[...prev,roundResult]);
     setPcPhase("reveal");
 
-    const errorComment = error <= 0.05 ? "PERFECT! Are you a robot?!" :
+    const errorComment = error <= 0.15 ? "PERFECT! Are you a robot?!" :
       error <= 0.15 ? "SO CLOSE! Almost superhuman precision!" :
       error <= 0.30 ? "Not bad! Your internal clock is pretty solid." :
       error <= 0.50 ? "Decent! "+PC_COMEDY[Math.floor(Math.random()*PC_COMEDY.length)] :
@@ -11013,7 +11015,7 @@ export default function MoodLabArena() {
         if (!bdReleasedRef.current) {
           bdScoreRound(roundNum, null, Date.now(), guard);
         }
-      }, 3000);
+      }, 4000);
     }, buildTime);
   };
 
@@ -11082,7 +11084,7 @@ export default function MoodLabArena() {
   // ══════════════════════════════════════════════════════
   // PUFF LIMBO -- Endurance Challenge Game Engine
   // ══════════════════════════════════════════════════════
-  const PL_TARGETS = [3.0, 3.5, 4.0, 4.2, 4.5, 4.7, 5.0];
+  const PL_TARGETS = [2.5, 3.0, 3.5, 3.8, 4.0, 4.2, 4.5];
   const PL_NAMES = ["CloudChaser99","BlinkerBetty","THC_Tony","VapeLord69","DabQueen","PuffDaddy_Jr","SmokeRing_Steve","HazeDaze","KushKing","FogMachine","MistWalker","NebulaNick","GreenGoblin","SkyHighSam","TokeToken","LitLenny","BubbleBoi","RipTide","SeshGremlin","GlassHouse"];
 
   const plCleanup = () => {
@@ -11212,8 +11214,8 @@ export default function MoodLabArena() {
   // SIMON PUFFS -- Full Game Engine
   // =====================================================================
   const spGetPuffType = (dur) => {
-    if(dur < 1.0) return "short";
-    if(dur < 2.5) return "medium";
+    if(dur < 1.2) return "short";
+    if(dur < 3.0) return "medium";
     return "long";
   };
 
@@ -11526,8 +11528,8 @@ const startSimonPuffs = () => {
   const PD_AI = [{bs:0.6,bc:0.15,bz:2.5,rc:0.1},{bs:0.9,bc:0.25,bz:3.0,rc:0.05},{bs:0.5,bc:0.08,bz:1.5,rc:0.15},{bs:1.0,bc:0.3,bz:3.5,rc:0.03},{bs:0.4,bc:0.05,bz:1.0,rc:0.2},{bs:0.7,bc:0.18,bz:2.0,rc:0.08}];
   const startPuffDerby = () => { setPdPhase("pick");setPdPlayerHorse(null);setPdRaceTime(30);setPdPuffCount(0);setPdStamina(100);pdStaminaRef.current=100;setPdPositions([0,0,0,0,0,0]);pdPosRef.current=[0,0,0,0,0,0];setPdFinishOrder([]);pdFinishRef.current=[];pdLastPuff.current=0;setCommentary("Pick your horse!");playFx("crowd"); };
   const pdPickHorse = (idx) => { setPdPlayerHorse(idx);playFx("select");setCommentary(PD_HORSE_NAMES[idx]+" selected!");setPdPhase("countdown");let c=3;const cd=setInterval(()=>{c--;if(c<=0){clearInterval(cd);setPdPhase("racing");setCommentary("AND THEY'RE OFF!");playFx("whistle");triggerFlash("goal");pdStartRace(idx);}},800); };
-  const pdStartRace = (pi) => { pdPosRef.current=[0,0,0,0,0,0];pdFinishRef.current=[];pdStaminaRef.current=100;pdLastPuff.current=Date.now();let tl=30;setPdRaceTime(30);pdAiRef.current=setInterval(()=>{if(Date.now()-pdLastPuff.current>500){pdStaminaRef.current=Math.min(100,pdStaminaRef.current+0.4);setPdStamina(Math.round(pdStaminaRef.current));}const np=[...pdPosRef.current];for(let i=0;i<6;i++){if(i===pi||pdFinishRef.current.includes(i))continue;const p=PD_AI[i];let mv=p.bs*(0.6+Math.random()*0.8);if(Math.random()<p.bc)mv+=p.bz;if(Math.random()<p.rc)mv=0;if(np[i]>70)mv*=1.2;if(np[i]>90)mv*=1.1;np[i]=Math.min(100,np[i]+mv*0.16);if(np[i]>=100&&!pdFinishRef.current.includes(i)){pdFinishRef.current=[...pdFinishRef.current,i];setPdFinishOrder([...pdFinishRef.current]);}}if(np[pi]>=100&&!pdFinishRef.current.includes(pi)){pdFinishRef.current=[...pdFinishRef.current,pi];setPdFinishOrder([...pdFinishRef.current]);}pdPosRef.current=np;setPdPositions([...np]);if(pdFinishRef.current.length>=6)pdEndRace(pi);},50);pdTimerRef.current=setInterval(()=>{tl--;setPdRaceTime(tl);if(tl<=10&&tl>0)setCommentary(tl+" seconds!");if(tl<=0)pdEndRace(pi);},1000); };
-  const pdPuff = () => { if(pdPhase!=="racing"||pdPlayerHorse===null)return;const idx=pdPlayerHorse;pdLastPuff.current=Date.now();setPdPuffCount(p=>p+1);playFx("horse_gallop");let boost=3+Math.random()*2;if(pdStaminaRef.current<=0){boost=1;}else{pdStaminaRef.current=Math.max(0,pdStaminaRef.current-5);setPdStamina(Math.round(pdStaminaRef.current));}const np=[...pdPosRef.current];np[idx]=Math.min(100,np[idx]+boost);pdPosRef.current=np;setPdPositions([...np]);if(np[idx]>=100&&!pdFinishRef.current.includes(idx)){pdFinishRef.current=[...pdFinishRef.current,idx];setPdFinishOrder([...pdFinishRef.current]);} };
+  const pdStartRace = (pi) => { pdPosRef.current=[0,0,0,0,0,0];pdFinishRef.current=[];pdStaminaRef.current=100;pdLastPuff.current=Date.now();let tl=30;setPdRaceTime(30);pdAiRef.current=setInterval(()=>{if(Date.now()-pdLastPuff.current>500){pdStaminaRef.current=Math.min(100,pdStaminaRef.current+0.6);setPdStamina(Math.round(pdStaminaRef.current));}const np=[...pdPosRef.current];for(let i=0;i<6;i++){if(i===pi||pdFinishRef.current.includes(i))continue;const p=PD_AI[i];let mv=p.bs*(0.6+Math.random()*0.8);if(Math.random()<p.bc)mv+=p.bz;if(Math.random()<p.rc)mv=0;if(np[i]>70)mv*=1.2;if(np[i]>90)mv*=1.1;np[i]=Math.min(100,np[i]+mv*0.16);if(np[i]>=100&&!pdFinishRef.current.includes(i)){pdFinishRef.current=[...pdFinishRef.current,i];setPdFinishOrder([...pdFinishRef.current]);}}if(np[pi]>=100&&!pdFinishRef.current.includes(pi)){pdFinishRef.current=[...pdFinishRef.current,pi];setPdFinishOrder([...pdFinishRef.current]);}pdPosRef.current=np;setPdPositions([...np]);if(pdFinishRef.current.length>=6)pdEndRace(pi);},50);pdTimerRef.current=setInterval(()=>{tl--;setPdRaceTime(tl);if(tl<=10&&tl>0)setCommentary(tl+" seconds!");if(tl<=0)pdEndRace(pi);},1000); };
+  const pdPuff = () => { if(pdPhase!=="racing"||pdPlayerHorse===null)return;const idx=pdPlayerHorse;pdLastPuff.current=Date.now();setPdPuffCount(p=>p+1);playFx("horse_gallop");let boost=3+Math.random()*2;if(pdStaminaRef.current<=0){boost=1;}else{pdStaminaRef.current=Math.max(0,pdStaminaRef.current-3);setPdStamina(Math.round(pdStaminaRef.current));}const np=[...pdPosRef.current];np[idx]=Math.min(100,np[idx]+boost);pdPosRef.current=np;setPdPositions([...np]);if(np[idx]>=100&&!pdFinishRef.current.includes(idx)){pdFinishRef.current=[...pdFinishRef.current,idx];setPdFinishOrder([...pdFinishRef.current]);} };
   const pdEndRace = (pi) => { if(pdAiRef.current){clearInterval(pdAiRef.current);pdAiRef.current=null;}if(pdTimerRef.current){clearInterval(pdTimerRef.current);pdTimerRef.current=null;}const fin=[...pdFinishRef.current];const rem=[0,1,2,3,4,5].filter(i=>!fin.includes(i));rem.sort((a,b)=>pdPosRef.current[b]-pdPosRef.current[a]);const fo=[...fin,...rem];setPdFinishOrder(fo);pdFinishRef.current=fo;const place=fo.indexOf(pi)+1;setCoins(c=>c+([0,500,300,150,75,30,10][place]||10));setPdPhase("result");if(place===1){setCommentary(PD_HORSE_NAMES[pi]+" WINS!");triggerFlash("goal");playFx("crowd");playFx("horse_whinny");if(stageRole)showMC("correct",{points:"500"});setConfettiParticles(Array.from({length:30},(_,i)=>({id:Date.now()+i,x:Math.random()*100,y:-10-Math.random()*20,size:4+Math.random()*4,color:[C.green,C.gold,C.cyan,C.pink][i%4],rot:Math.random()*360})));}else if(place<=3){setCommentary("Top 3!");playFx("select");}else{setCommentary("Better luck next time!");playFx("tap");} };
   const pdCleanup = () => { if(pdAiRef.current){clearInterval(pdAiRef.current);pdAiRef.current=null;}if(pdTimerRef.current){clearInterval(pdTimerRef.current);pdTimerRef.current=null;}setPdPhase(null);setGameActive(null);setStageRole(null);setMcVisible(false); };
   const hlPickRandom = () => { const av=HL_STATS.filter((_,i)=>!hlUsedRef.current.includes(i));if(av.length===0){hlUsedRef.current=[];return HL_STATS[Math.floor(Math.random()*HL_STATS.length)];}const pk=av[Math.floor(Math.random()*av.length)];hlUsedRef.current=[...hlUsedRef.current,HL_STATS.indexOf(pk)];return pk; };
@@ -14314,7 +14316,7 @@ const startSimonPuffs = () => {
       // ═══════════════════════════════════════════════════════════════
       if(gameActive.id==="rhythm" && rpPhase) {
         const rpMult=rpGetMultiplier(rpCombo);const rpComboFire=rpCombo>=20?"🔥🔥🔥":rpCombo>=10?"🔥🔥":rpCombo>=5?"🔥":"";const rpBeatPulse=rpBeat%8<4;
-        return (<div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden",background:"#06101E",animation:screenShake?"shake 0.4s ease":"none"}}><div style={{position:"absolute",inset:0,background:`radial-gradient(ellipse at 50% 0%,rgba(160,50,220,.25) 0%,transparent 50%),radial-gradient(ellipse at 20% 20%,rgba(255,50,100,.15) 0%,transparent 40%),radial-gradient(ellipse at 80% 20%,rgba(0,150,255,.15) 0%,transparent 40%),linear-gradient(180deg,#0a0a28 0%,#150030 30%,#0a0a1e 100%)`}}/>{[0,1,2,3].map(i=>(<div key={"spt"+i} style={{position:"absolute",top:-20,left:`${10+i*25}%`,width:60,height:"110%",background:`linear-gradient(180deg,${RP_LANE_COLORS[i]}${rpStageFlash>0?"30":"08"} 0%,transparent 70%)`,transform:`rotate(${(i-1.5)*8}deg)`,transformOrigin:"top center",pointerEvents:"none",zIndex:1}}/>))}<div style={{position:"absolute",top:0,left:`${30+Math.sin(rpBeat*.05)*25}%`,width:80,height:"100%",background:`linear-gradient(180deg,${C.pink}15,transparent 60%)`,transform:"rotate(-5deg)",pointerEvents:"none",zIndex:1}}/>{[...Array(12)].map((_,i)=>(<div key={"ap"+i} style={{position:"absolute",left:`${(i*8+rpBeat*.1)%100}%`,top:`${20+(i*13)%60}%`,width:2+i%3,height:2+i%3,borderRadius:"50%",background:RP_LANE_COLORS[i%4],opacity:.15,pointerEvents:"none",zIndex:2}}/>))}{screenFlash&&<div style={{position:"absolute",inset:0,zIndex:200,pointerEvents:"none",opacity:0,background:screenFlash==="blinker"?"rgba(255,0,200,.3)":"rgba(255,200,0,.2)",animation:"flashOverlay .4s ease forwards"}}/>}{rpBlinker&&<div style={{position:"absolute",inset:0,zIndex:195,pointerEvents:"none",background:"radial-gradient(circle,rgba(255,0,200,.15),rgba(200,50,255,.08))",animation:"pulse .5s infinite"}}/>}{confettiParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size*.6,background:p.color,borderRadius:1,transform:`rotate(${p.rot}deg)`,zIndex:210,pointerEvents:"none",animation:"confettiFall 1.5s ease-out forwards"}}/>))}{renderGameChatPanel("RHYTHM PUFF")}{rpPhase==="intro"&&(<div style={{position:"absolute",inset:0,zIndex:50,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>{rpIntroStep>=1&&(<div style={{position:"absolute",inset:0}}>{[0,1,2,3].map(i=>(<div key={i} style={{position:"absolute",top:0,left:`${15+i*20}%`,width:40,height:"100%",background:`linear-gradient(180deg,${RP_LANE_COLORS[i]}30,transparent 60%)`,transform:`rotate(${(i-1.5)*12}deg)`,transformOrigin:"top center",animation:`fadeIn .5s ease ${i*.15}s both`}}/>))}</div>)}{rpIntroStep>=2&&(<div style={{animation:"goalBurst .8s ease both",textAlign:"center",zIndex:55}}><div style={{fontSize:32,fontWeight:900,letterSpacing:6,color:C.purple,textShadow:`0 0 20px ${C.purple},0 0 40px ${C.purple}80`,animation:"neonFlicker 2s infinite"}}>RHYTHM PUFF</div><div style={{fontSize:14,color:C.pink,fontWeight:700,marginTop:4,letterSpacing:2}}>🎵 Guitar Hero x Puff Session 🎵</div></div>)}{rpIntroStep>=3&&(<div style={{display:"flex",gap:16,marginTop:24,animation:"fadeIn .5s ease both"}}>{RP_LANES.map((lane,i)=>(<div key={i} style={{fontSize:28,animation:`fadeIn .3s ease ${i*.1}s both`,filter:`drop-shadow(0 0 8px ${RP_LANE_COLORS[i]})`}}>{lane}</div>))}</div>)}{rpIntroStep>=4&&(<div style={{marginTop:20,animation:"duelCountdownPop .6s ease both"}}><div style={{fontSize:28,fontWeight:900,color:C.gold,letterSpacing:4,textShadow:`0 0 20px ${C.gold}80`}}>3, 2, 1, DROP!</div></div>)}</div>)}{(rpPhase==="playing"||rpPhase==="result")&&(<div style={{display:"flex",flexDirection:"column",alignItems:"center",width:"100%",height:"100%",padding:"40px 8px 8px",zIndex:10,position:"relative"}}><div style={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",maxWidth:360,marginBottom:4,zIndex:20}}><div style={{display:"flex",flexDirection:"column",alignItems:"flex-start"}}><div style={{fontSize:9,color:C.text3,fontWeight:700,letterSpacing:1}}>SCORE</div><div style={{fontSize:18,fontWeight:900,color:C.gold,textShadow:`0 0 10px ${C.gold}40`}}>{rpScore.toLocaleString()}</div></div><div style={{display:"flex",flexDirection:"column",alignItems:"center"}}><div style={{fontSize:9,color:C.text3,fontWeight:700,letterSpacing:1}}>COMBO</div><div style={{fontSize:16,fontWeight:900,color:rpCombo>=10?C.orange:rpCombo>=5?C.gold:C.text,textShadow:rpCombo>=5?`0 0 15px ${C.orange}60`:"none",animation:rpCombo>=10?"countPulse .5s infinite":"none"}}>{rpCombo}x {rpComboFire}</div>{rpMult>1&&<div style={{fontSize:8,color:C.cyan,fontWeight:800}}>x{rpMult} MULT</div>}</div><div style={{display:"flex",flexDirection:"column",alignItems:"flex-end"}}><div style={{fontSize:9,color:C.text3,fontWeight:700,letterSpacing:1}}>MISS</div><div style={{display:"flex",gap:2}}>{[...Array(10)].map((_,i)=>(<div key={i} style={{width:6,height:6,borderRadius:"50%",background:i<rpMisses?C.red:`${C.text3}30`,boxShadow:i<rpMisses?`0 0 4px ${C.red}`:""}}/>))}</div></div></div><div style={{position:"relative",width:"100%",maxWidth:340,flex:1,maxHeight:420,overflow:"hidden",borderRadius:16,border:`1px solid rgba(255,255,255,0.06)`,background:"rgba(0,0,0,.3)",backdropFilter:"blur(8px)"}}>{RP_LANES.map((lane,li)=>(<div key={li} style={{position:"absolute",left:`${li*25}%`,top:0,width:"25%",height:"100%",background:`linear-gradient(180deg,${RP_LANE_COLORS[li]}03,${RP_LANE_COLORS[li]}06 80%,${RP_LANE_COLORS[li]}15)`,borderRight:li<3?`1px solid rgba(255,255,255,.04)`:"none"}}><div style={{position:"absolute",left:"50%",top:0,width:1,height:"100%",background:`linear-gradient(180deg,transparent,${RP_LANE_COLORS[li]}15 50%,${RP_LANE_COLORS[li]}25)`,transform:"translateX(-50%)"}}/></div>))}<div style={{position:"absolute",left:0,right:0,top:`${RP_HIT_ZONE-2}%`,height:"4%",zIndex:8,display:"flex"}}>{RP_LANES.map((lane,li)=>(<div key={li} style={{flex:1,position:"relative"}}><div style={{position:"absolute",inset:0,background:`linear-gradient(90deg,transparent,${RP_LANE_COLORS[li]}${rpBeatPulse?"40":"20"},transparent)`,boxShadow:`0 0 ${rpBeatPulse?15:8}px ${RP_LANE_COLORS[li]}30`,transition:"all .15s ease"}}/><div style={{position:"absolute",left:"50%",top:"50%",transform:"translate(-50%,-50%) rotate(45deg)",width:10,height:10,border:`2px solid ${RP_LANE_COLORS[li]}60`,borderRadius:2}}/></div>))}</div>{rpNotes.filter(n=>!n.hit).map(n=>{const nc=RP_LANE_COLORS[n.lane];const nh=n.y>RP_HIT_ZONE-15;return(<div key={n.id} style={{position:"absolute",left:`${n.lane*25+7}%`,top:`${n.y}%`,width:"11%",height:14,borderRadius:7,zIndex:6,background:`linear-gradient(135deg,${nc},${nc}CC)`,boxShadow:`0 0 ${nh?16:8}px ${nc}${nh?"80":"40"},0 2px 8px rgba(0,0,0,.3)`,transition:"top .06s linear",transform:nh?"scale(1.1)":"scale(1)"}}><div style={{position:"absolute",left:"20%",right:"20%",bottom:"100%",height:n.y>10?20:0,background:`linear-gradient(to top,${nc}30,transparent)`,borderRadius:"4px 4px 0 0"}}/><div style={{position:"absolute",inset:2,borderRadius:5,background:"radial-gradient(circle,rgba(255,255,255,.4),transparent)"}}/></div>);})}{rpNotes.filter(n=>n.hit&&n.y<95).map(n=>(<div key={n.id+"h"} style={{position:"absolute",left:`${n.lane*25+4}%`,top:`${n.y-2}%`,width:"17%",height:18,borderRadius:9,background:`radial-gradient(circle,${RP_LANE_COLORS[n.lane]}60,transparent)`,animation:"flashOverlay .3s ease forwards",zIndex:5}}/>))}{rpParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:`${p.x}%`,top:`${p.y}%`,width:p.size,height:p.size,borderRadius:"50%",background:p.color,boxShadow:`0 0 6px ${p.color}`,zIndex:12,pointerEvents:"none",animation:"rpParticleBurst .6s ease-out forwards"}}/>))}{rpRating&&(<div style={{position:"absolute",left:`${(rpRating.lane||0)*25+12.5}%`,top:`${RP_HIT_ZONE-12}%`,transform:"translateX(-50%)",zIndex:15,animation:"rpRatingPop .6s ease forwards",textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:rpRating.color,letterSpacing:2,textShadow:`0 0 10px ${rpRating.color},0 0 20px ${rpRating.color}60`}}>{rpRating.text}</div></div>)}{RP_LANES.map((lane,li)=>(<div key={"ll"+li} style={{position:"absolute",left:`${li*25}%`,bottom:2,width:"25%",textAlign:"center",fontSize:14,opacity:.4,zIndex:7}}>{lane}</div>))}</div><div style={{display:"flex",gap:4,marginTop:4,width:"100%",maxWidth:340,zIndex:20}}>{RP_LANES.map((lane,li)=>(<div key={li} onClick={()=>{if(rpPhase==="playing")rpHitNote(li);}} onTouchStart={(e)=>{e.preventDefault();if(rpPhase==="playing")rpHitNote(li);}} style={{flex:1,padding:"10px 0",borderRadius:12,cursor:"pointer",textAlign:"center",background:`${RP_LANE_COLORS[li]}12`,border:`2px solid ${RP_LANE_COLORS[li]}35`,fontSize:20,userSelect:"none",WebkitUserSelect:"none",boxShadow:`0 0 12px ${RP_LANE_COLORS[li]}15`}}>{lane}</div>))}</div>{rpPhase==="playing"&&(<div style={{display:"flex",gap:6,marginTop:4,width:"100%",maxWidth:340,zIndex:20}}><div onClick={rpPuffHit} onTouchStart={(e)=>{e.preventDefault();rpPuffHit();}} style={{flex:1,padding:"10px 0",borderRadius:12,cursor:"pointer",textAlign:"center",background:`${C.cyan}12`,border:`2px solid ${C.cyan}35`,fontSize:13,fontWeight:800,color:C.cyan,userSelect:"none",WebkitUserSelect:"none"}}>💨 PUFF</div><div onClick={rpBlinkerPuff} onTouchStart={(e)=>{e.preventDefault();rpBlinkerPuff();}} style={{flex:1,padding:"10px 0",borderRadius:12,cursor:"pointer",textAlign:"center",background:rpBlinker?`${C.pink}25`:`${C.pink}10`,border:`2px solid ${rpBlinker?C.pink:C.pink+"35"}`,fontSize:13,fontWeight:800,color:C.pink,userSelect:"none",WebkitUserSelect:"none",opacity:rpBlinker?.5:1}}>🫁 BLINKER</div></div>)}{rpComment&&(<div style={{marginTop:4,padding:"4px 14px",borderRadius:10,maxWidth:340,textAlign:"center",...LG.pill}}><div style={{fontSize:10,fontWeight:700,color:rpCombo>=10?C.gold:rpCombo>=5?C.orange:C.text,lineHeight:1.3}}>{rpComment}</div></div>)}<div style={{position:"absolute",bottom:0,left:0,right:0,height:45,zIndex:5,overflow:"hidden",pointerEvents:"none"}}>{[...Array(20)].map((_,i)=>(<div key={"cr"+i} style={{position:"absolute",bottom:rpCrowdJump&&i%3===0?6:0,left:`${i*5+Math.sin(i)*2}%`,width:14+i%5,height:20+i%8,borderRadius:"8px 8px 0 0",background:`rgba(${30+i*3},${10+i*2},${40+i*4},.8)`,transition:"bottom .15s ease"}}/>))}</div>{rpCombo>=5&&(<div style={{position:"absolute",bottom:45,left:"50%",transform:"translateX(-50%)",width:Math.min(200,rpCombo*4),height:3,borderRadius:2,zIndex:6,background:`linear-gradient(90deg,transparent,${rpCombo>=20?C.orange:C.gold},transparent)`,boxShadow:`0 0 ${rpCombo>=20?20:10}px ${rpCombo>=20?C.orange:C.gold}60`,animation:"pulse .5s infinite"}}/>)}{rpPhase==="result"&&(<div style={{position:"absolute",inset:0,zIndex:30,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",background:"rgba(5,5,16,.85)",backdropFilter:"blur(10px)",animation:"fadeIn .5s ease"}}><div style={{fontSize:28,fontWeight:900,letterSpacing:4,color:rpScore>500?C.gold:C.purple,marginBottom:8,textShadow:`0 0 20px ${rpScore>500?C.gold:C.purple}80`,animation:rpScore>500?"countPulse 1s infinite":"none"}}>{rpScore>500?"ENCORE!":"SHOW OVER"}</div><div style={{fontSize:36,fontWeight:900,color:C.gold,textShadow:`0 0 20px ${C.gold}60`}}>{rpScore.toLocaleString()}</div><div style={{fontSize:11,color:C.text2,marginTop:4}}>points</div><div style={{display:"flex",gap:20,marginTop:12}}><div style={{textAlign:"center"}}><div style={{fontSize:18,fontWeight:900,color:C.orange}}>{rpMaxCombo}x</div><div style={{fontSize:9,color:C.text3}}>MAX COMBO</div></div><div style={{textAlign:"center"}}><div style={{fontSize:18,fontWeight:900,color:C.red}}>{rpMisses}</div><div style={{fontSize:9,color:C.text3}}>MISSES</div></div><div style={{textAlign:"center"}}><div style={{fontSize:18,fontWeight:900,color:C.green}}>+{Math.min(300,Math.floor(rpScore/10))}</div><div style={{fontSize:9,color:C.text3}}>COINS</div></div></div><div style={{display:"flex",gap:10,marginTop:16}}><div onClick={()=>{setRpPhase(null);startRhythmPuff();}} style={{padding:"12px 28px",borderRadius:14,cursor:"pointer",background:`${C.purple}18`,border:`2px solid ${C.purple}40`,fontSize:14,fontWeight:800,color:C.purple}}>🔄 Again</div><div onClick={rpEndGame} style={{padding:"12px 28px",borderRadius:14,cursor:"pointer",background:`${C.text3}10`,border:`1px solid ${C.text3}25`,fontSize:14,fontWeight:800,color:C.text3}}>Done ✓</div></div></div>)}</div>)}</div>);
+        return (<div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden",background:"#06101E",animation:screenShake?"shake 0.4s ease":"none"}}><div style={{position:"absolute",inset:0,background:`radial-gradient(ellipse at 50% 0%,rgba(160,50,220,.25) 0%,transparent 50%),radial-gradient(ellipse at 20% 20%,rgba(255,50,100,.15) 0%,transparent 40%),radial-gradient(ellipse at 80% 20%,rgba(0,150,255,.15) 0%,transparent 40%),linear-gradient(180deg,#0a0a28 0%,#150030 30%,#0a0a1e 100%)`}}/>{[0,1,2,3].map(i=>(<div key={"spt"+i} style={{position:"absolute",top:-20,left:`${10+i*25}%`,width:60,height:"110%",background:`linear-gradient(180deg,${RP_LANE_COLORS[i]}${rpStageFlash>0?"30":"08"} 0%,transparent 70%)`,transform:`rotate(${(i-1.5)*8}deg)`,transformOrigin:"top center",pointerEvents:"none",zIndex:1}}/>))}<div style={{position:"absolute",top:0,left:`${30+Math.sin(rpBeat*.05)*25}%`,width:80,height:"100%",background:`linear-gradient(180deg,${C.pink}15,transparent 60%)`,transform:"rotate(-5deg)",pointerEvents:"none",zIndex:1}}/>{[...Array(12)].map((_,i)=>(<div key={"ap"+i} style={{position:"absolute",left:`${(i*8+rpBeat*.1)%100}%`,top:`${20+(i*13)%60}%`,width:2+i%3,height:2+i%3,borderRadius:"50%",background:RP_LANE_COLORS[i%4],opacity:.15,pointerEvents:"none",zIndex:2}}/>))}{screenFlash&&<div style={{position:"absolute",inset:0,zIndex:200,pointerEvents:"none",opacity:0,background:screenFlash==="blinker"?"rgba(255,0,200,.3)":"rgba(255,200,0,.2)",animation:"flashOverlay .4s ease forwards"}}/>}{rpBlinker&&<div style={{position:"absolute",inset:0,zIndex:195,pointerEvents:"none",background:"radial-gradient(circle,rgba(255,0,200,.15),rgba(200,50,255,.08))",animation:"pulse .5s infinite"}}/>}{confettiParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size*.6,background:p.color,borderRadius:1,transform:`rotate(${p.rot}deg)`,zIndex:210,pointerEvents:"none",animation:"confettiFall 1.5s ease-out forwards"}}/>))}{renderGameChatPanel("RHYTHM PUFF")}{rpPhase==="intro"&&(<div style={{position:"absolute",inset:0,zIndex:50,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>{rpIntroStep>=1&&(<div style={{position:"absolute",inset:0}}>{[0,1,2,3].map(i=>(<div key={i} style={{position:"absolute",top:0,left:`${15+i*20}%`,width:40,height:"100%",background:`linear-gradient(180deg,${RP_LANE_COLORS[i]}30,transparent 60%)`,transform:`rotate(${(i-1.5)*12}deg)`,transformOrigin:"top center",animation:`fadeIn .5s ease ${i*.15}s both`}}/>))}</div>)}{rpIntroStep>=2&&(<div style={{animation:"goalBurst .8s ease both",textAlign:"center",zIndex:55}}><div style={{fontSize:32,fontWeight:900,letterSpacing:6,color:C.purple,textShadow:`0 0 20px ${C.purple},0 0 40px ${C.purple}80`,animation:"neonFlicker 2s infinite"}}>RHYTHM PUFF</div><div style={{fontSize:14,color:C.pink,fontWeight:700,marginTop:4,letterSpacing:2}}>🎵 Guitar Hero x Puff Session 🎵</div></div>)}{rpIntroStep>=3&&(<div style={{display:"flex",gap:16,marginTop:24,animation:"fadeIn .5s ease both"}}>{RP_LANES.map((lane,i)=>(<div key={i} style={{fontSize:28,animation:`fadeIn .3s ease ${i*.1}s both`,filter:`drop-shadow(0 0 8px ${RP_LANE_COLORS[i]})`}}>{lane}</div>))}</div>)}{rpIntroStep>=4&&(<div style={{marginTop:20,animation:"duelCountdownPop .6s ease both"}}><div style={{fontSize:28,fontWeight:900,color:C.gold,letterSpacing:4,textShadow:`0 0 20px ${C.gold}80`}}>3, 2, 1, DROP!</div></div>)}</div>)}{(rpPhase==="playing"||rpPhase==="result")&&(<div style={{display:"flex",flexDirection:"column",alignItems:"center",width:"100%",height:"100%",padding:"40px 8px 8px",zIndex:10,position:"relative"}}><div style={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",maxWidth:360,marginBottom:4,zIndex:20}}><div style={{display:"flex",flexDirection:"column",alignItems:"flex-start"}}><div style={{fontSize:9,color:C.text3,fontWeight:700,letterSpacing:1}}>SCORE</div><div style={{fontSize:18,fontWeight:900,color:C.gold,textShadow:`0 0 10px ${C.gold}40`}}>{rpScore.toLocaleString()}</div></div><div style={{display:"flex",flexDirection:"column",alignItems:"center"}}><div style={{fontSize:9,color:C.text3,fontWeight:700,letterSpacing:1}}>COMBO</div><div style={{fontSize:16,fontWeight:900,color:rpCombo>=10?C.orange:rpCombo>=5?C.gold:C.text,textShadow:rpCombo>=5?`0 0 15px ${C.orange}60`:"none",animation:rpCombo>=10?"countPulse .5s infinite":"none"}}>{rpCombo}x {rpComboFire}</div>{rpMult>1&&<div style={{fontSize:8,color:C.cyan,fontWeight:800}}>x{rpMult} MULT</div>}</div><div style={{display:"flex",flexDirection:"column",alignItems:"flex-end"}}><div style={{fontSize:9,color:C.text3,fontWeight:700,letterSpacing:1}}>MISS</div><div style={{display:"flex",gap:2}}>{[...Array(15)].map((_,i)=>(<div key={i} style={{width:5,height:5,borderRadius:"50%",background:i<rpMisses?C.red:`${C.text3}30`,boxShadow:i<rpMisses?`0 0 4px ${C.red}`:""}}/>))}</div></div></div><div style={{position:"relative",width:"100%",maxWidth:340,flex:1,maxHeight:420,overflow:"hidden",borderRadius:16,border:`1px solid rgba(255,255,255,0.06)`,background:"rgba(0,0,0,.3)",backdropFilter:"blur(8px)"}}>{RP_LANES.map((lane,li)=>(<div key={li} style={{position:"absolute",left:`${li*25}%`,top:0,width:"25%",height:"100%",background:`linear-gradient(180deg,${RP_LANE_COLORS[li]}03,${RP_LANE_COLORS[li]}06 80%,${RP_LANE_COLORS[li]}15)`,borderRight:li<3?`1px solid rgba(255,255,255,.04)`:"none"}}><div style={{position:"absolute",left:"50%",top:0,width:1,height:"100%",background:`linear-gradient(180deg,transparent,${RP_LANE_COLORS[li]}15 50%,${RP_LANE_COLORS[li]}25)`,transform:"translateX(-50%)"}}/></div>))}<div style={{position:"absolute",left:0,right:0,top:`${RP_HIT_ZONE-2}%`,height:"4%",zIndex:8,display:"flex"}}>{RP_LANES.map((lane,li)=>(<div key={li} style={{flex:1,position:"relative"}}><div style={{position:"absolute",inset:0,background:`linear-gradient(90deg,transparent,${RP_LANE_COLORS[li]}${rpBeatPulse?"40":"20"},transparent)`,boxShadow:`0 0 ${rpBeatPulse?15:8}px ${RP_LANE_COLORS[li]}30`,transition:"all .15s ease"}}/><div style={{position:"absolute",left:"50%",top:"50%",transform:"translate(-50%,-50%) rotate(45deg)",width:10,height:10,border:`2px solid ${RP_LANE_COLORS[li]}60`,borderRadius:2}}/></div>))}</div>{rpNotes.filter(n=>!n.hit).map(n=>{const nc=RP_LANE_COLORS[n.lane];const nh=n.y>RP_HIT_ZONE-15;return(<div key={n.id} style={{position:"absolute",left:`${n.lane*25+7}%`,top:`${n.y}%`,width:"11%",height:14,borderRadius:7,zIndex:6,background:`linear-gradient(135deg,${nc},${nc}CC)`,boxShadow:`0 0 ${nh?16:8}px ${nc}${nh?"80":"40"},0 2px 8px rgba(0,0,0,.3)`,transition:"top .06s linear",transform:nh?"scale(1.1)":"scale(1)"}}><div style={{position:"absolute",left:"20%",right:"20%",bottom:"100%",height:n.y>10?20:0,background:`linear-gradient(to top,${nc}30,transparent)`,borderRadius:"4px 4px 0 0"}}/><div style={{position:"absolute",inset:2,borderRadius:5,background:"radial-gradient(circle,rgba(255,255,255,.4),transparent)"}}/></div>);})}{rpNotes.filter(n=>n.hit&&n.y<95).map(n=>(<div key={n.id+"h"} style={{position:"absolute",left:`${n.lane*25+4}%`,top:`${n.y-2}%`,width:"17%",height:18,borderRadius:9,background:`radial-gradient(circle,${RP_LANE_COLORS[n.lane]}60,transparent)`,animation:"flashOverlay .3s ease forwards",zIndex:5}}/>))}{rpParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:`${p.x}%`,top:`${p.y}%`,width:p.size,height:p.size,borderRadius:"50%",background:p.color,boxShadow:`0 0 6px ${p.color}`,zIndex:12,pointerEvents:"none",animation:"rpParticleBurst .6s ease-out forwards"}}/>))}{rpRating&&(<div style={{position:"absolute",left:`${(rpRating.lane||0)*25+12.5}%`,top:`${RP_HIT_ZONE-12}%`,transform:"translateX(-50%)",zIndex:15,animation:"rpRatingPop .6s ease forwards",textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:rpRating.color,letterSpacing:2,textShadow:`0 0 10px ${rpRating.color},0 0 20px ${rpRating.color}60`}}>{rpRating.text}</div></div>)}{RP_LANES.map((lane,li)=>(<div key={"ll"+li} style={{position:"absolute",left:`${li*25}%`,bottom:2,width:"25%",textAlign:"center",fontSize:14,opacity:.4,zIndex:7}}>{lane}</div>))}</div><div style={{display:"flex",gap:4,marginTop:4,width:"100%",maxWidth:340,zIndex:20}}>{RP_LANES.map((lane,li)=>(<div key={li} onClick={()=>{if(rpPhase==="playing")rpHitNote(li);}} onTouchStart={(e)=>{e.preventDefault();if(rpPhase==="playing")rpHitNote(li);}} style={{flex:1,padding:"10px 0",borderRadius:12,cursor:"pointer",textAlign:"center",background:`${RP_LANE_COLORS[li]}12`,border:`2px solid ${RP_LANE_COLORS[li]}35`,fontSize:20,userSelect:"none",WebkitUserSelect:"none",boxShadow:`0 0 12px ${RP_LANE_COLORS[li]}15`}}>{lane}</div>))}</div>{rpPhase==="playing"&&(<div style={{display:"flex",gap:6,marginTop:4,width:"100%",maxWidth:340,zIndex:20}}><div onClick={rpPuffHit} onTouchStart={(e)=>{e.preventDefault();rpPuffHit();}} style={{flex:1,padding:"10px 0",borderRadius:12,cursor:"pointer",textAlign:"center",background:`${C.cyan}12`,border:`2px solid ${C.cyan}35`,fontSize:13,fontWeight:800,color:C.cyan,userSelect:"none",WebkitUserSelect:"none"}}>💨 PUFF</div><div onClick={rpBlinkerPuff} onTouchStart={(e)=>{e.preventDefault();rpBlinkerPuff();}} style={{flex:1,padding:"10px 0",borderRadius:12,cursor:"pointer",textAlign:"center",background:rpBlinker?`${C.pink}25`:`${C.pink}10`,border:`2px solid ${rpBlinker?C.pink:C.pink+"35"}`,fontSize:13,fontWeight:800,color:C.pink,userSelect:"none",WebkitUserSelect:"none",opacity:rpBlinker?.5:1}}>🫁 BLINKER</div></div>)}{rpComment&&(<div style={{marginTop:4,padding:"4px 14px",borderRadius:10,maxWidth:340,textAlign:"center",...LG.pill}}><div style={{fontSize:10,fontWeight:700,color:rpCombo>=10?C.gold:rpCombo>=5?C.orange:C.text,lineHeight:1.3}}>{rpComment}</div></div>)}<div style={{position:"absolute",bottom:0,left:0,right:0,height:45,zIndex:5,overflow:"hidden",pointerEvents:"none"}}>{[...Array(20)].map((_,i)=>(<div key={"cr"+i} style={{position:"absolute",bottom:rpCrowdJump&&i%3===0?6:0,left:`${i*5+Math.sin(i)*2}%`,width:14+i%5,height:20+i%8,borderRadius:"8px 8px 0 0",background:`rgba(${30+i*3},${10+i*2},${40+i*4},.8)`,transition:"bottom .15s ease"}}/>))}</div>{rpCombo>=5&&(<div style={{position:"absolute",bottom:45,left:"50%",transform:"translateX(-50%)",width:Math.min(200,rpCombo*4),height:3,borderRadius:2,zIndex:6,background:`linear-gradient(90deg,transparent,${rpCombo>=20?C.orange:C.gold},transparent)`,boxShadow:`0 0 ${rpCombo>=20?20:10}px ${rpCombo>=20?C.orange:C.gold}60`,animation:"pulse .5s infinite"}}/>)}{rpPhase==="result"&&(<div style={{position:"absolute",inset:0,zIndex:30,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",background:"rgba(5,5,16,.85)",backdropFilter:"blur(10px)",animation:"fadeIn .5s ease"}}><div style={{fontSize:28,fontWeight:900,letterSpacing:4,color:rpScore>500?C.gold:C.purple,marginBottom:8,textShadow:`0 0 20px ${rpScore>500?C.gold:C.purple}80`,animation:rpScore>500?"countPulse 1s infinite":"none"}}>{rpScore>500?"ENCORE!":"SHOW OVER"}</div><div style={{fontSize:36,fontWeight:900,color:C.gold,textShadow:`0 0 20px ${C.gold}60`}}>{rpScore.toLocaleString()}</div><div style={{fontSize:11,color:C.text2,marginTop:4}}>points</div><div style={{display:"flex",gap:20,marginTop:12}}><div style={{textAlign:"center"}}><div style={{fontSize:18,fontWeight:900,color:C.orange}}>{rpMaxCombo}x</div><div style={{fontSize:9,color:C.text3}}>MAX COMBO</div></div><div style={{textAlign:"center"}}><div style={{fontSize:18,fontWeight:900,color:C.red}}>{rpMisses}</div><div style={{fontSize:9,color:C.text3}}>MISSES</div></div><div style={{textAlign:"center"}}><div style={{fontSize:18,fontWeight:900,color:C.green}}>+{Math.min(300,Math.floor(rpScore/10))}</div><div style={{fontSize:9,color:C.text3}}>COINS</div></div></div><div style={{display:"flex",gap:10,marginTop:16}}><div onClick={()=>{setRpPhase(null);startRhythmPuff();}} style={{padding:"12px 28px",borderRadius:14,cursor:"pointer",background:`${C.purple}18`,border:`2px solid ${C.purple}40`,fontSize:14,fontWeight:800,color:C.purple}}>🔄 Again</div><div onClick={rpEndGame} style={{padding:"12px 28px",borderRadius:14,cursor:"pointer",background:`${C.text3}10`,border:`1px solid ${C.text3}25`,fontSize:14,fontWeight:800,color:C.text3}}>Done ✓</div></div></div>)}</div>)}</div>);
       }
 
       // ═══════════════════════════════════════════════════════════════
@@ -15030,7 +15032,7 @@ const startSimonPuffs = () => {
         const isReveal = stPhase==="reveal";
         const isEliminated = stPhase==="eliminated";
         const isWinner = stPhase==="winner";
-        const timerPct = stFinalMode ? (stTimer/8)*100 : (stTimer/15)*100;
+        const timerPct = stFinalMode ? (stTimer/12)*100 : (stTimer/15)*100;
         const timerColor = stTimer<=3 ? C.red : stTimer<=5 ? C.orange : C.text;
         return (
           <div style={{...overlayStyle,background:"rgba(15,0,0,0.97)"}}>
@@ -15234,7 +15236,7 @@ const startSimonPuffs = () => {
                     </div>
                   </div>
                   <div style={{fontSize:13,fontWeight:700,color:Math.abs(pcPuffTime-pcTarget)<=0.15?C.green:Math.abs(pcPuffTime-pcTarget)<=0.5?C.gold:C.red,marginBottom:8}}>
-                    {Math.abs(pcPuffTime-pcTarget)<=0.05?"\u00B10.05s PERFECT!":"\u00B1"+Math.abs(pcPuffTime-pcTarget).toFixed(2)+"s off"}
+                    {Math.abs(pcPuffTime-pcTarget)<=0.15?"\u00B10.15s PERFECT!":"\u00B1"+Math.abs(pcPuffTime-pcTarget).toFixed(2)+"s off"}
                   </div>
                   <div style={{fontSize:12,color:C.text2,textAlign:"center",maxWidth:280,marginBottom:12}}>{pcComment}</div>
                   {/* Timeline visual */}
@@ -20569,9 +20571,9 @@ const startSimonPuffs = () => {
     setVcScore(0);
     setVcQ(0);
     setVcAnswered(false);
-    setVcTimer(10);
+    setVcTimer(15);
     setVcPuffAnswer(null);
-    setTimeout(()=>{ setVcPhase("question"); setVcTimer(10); }, 3000);
+    setTimeout(()=>{ setVcPhase("question"); setVcTimer(15); }, 3000);
   };
 
   // ── Vibe Check: Puff-to-Answer (TAP=A, SHORT=B, MED=C, LONG=D) ──
@@ -20649,7 +20651,7 @@ const startSimonPuffs = () => {
     setVcQ(q=>q+1);
     setVcAnswered(false);
     setVcPuffAnswer(null);
-    setVcTimer(10);
+    setVcTimer(15);
     setVcPhase("question");
   };
 
@@ -20667,7 +20669,7 @@ const startSimonPuffs = () => {
   const renderVibeCheck = () => {
     if(!showVibeCheck) return null;
     const q = VC_QUESTIONS_V2[vcRound] || VC_QUESTIONS_V2[0];
-    const timerPct = (vcTimer/10)*100;
+    const timerPct = (vcTimer/15)*100;
     const timerColor = vcTimer > 6 ? C.green : vcTimer > 3 ? C.orange : C.red;
     const nowViewers = 1247 + Math.floor(Math.random()*100);
 
