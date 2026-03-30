@@ -7350,26 +7350,7 @@ export default function MoodLabArena() {
               <div key={mainStage} style={{position:"absolute",bottom:0,left:0,right:0,height:2,borderRadius:1,background:`linear-gradient(90deg, transparent, ${s.ctaColor}50)`,animation:"jumbotronProgress 5s linear forwards",transformOrigin:"left",willChange:"transform"}}/>
             </div>
           </div>
-          {/* ═══ CONNECT DEVICE — inline, above status bar ═══ */}
-          {!bleConnected && (
-            <div style={{display:"flex",justifyContent:"center",marginTop:8,animation:"arenaFadeIn 0.6s ease 0.15s both"}}>
-              <div onClick={()=>{playFx("tap");setShowBlePopup(true);}} style={{display:"inline-flex",alignItems:"center",gap:10,padding:"9px 20px",borderRadius:12,cursor:"pointer",
-                ...GLASS_CARD,border:"1px solid rgba(0,229,255,0.2)",
-                boxShadow:"0 4px 20px rgba(0,0,0,0.4), 0 0 15px rgba(0,229,255,0.06)",
-                transition:"all 0.3s ease",
-              }}>
-                <div style={{width:28,height:28,borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",
-                  background:"rgba(0,229,255,0.1)",border:"1px solid rgba(0,229,255,0.2)"}}>
-                  <span style={{fontSize:12}}>💨</span>
-                </div>
-                <div>
-                  <div style={{fontSize:11,fontWeight:800,color:C.text,letterSpacing:0.3}}>Connect Device to Play</div>
-                  <div style={{fontSize:7,color:C.cyan,fontWeight:600,marginTop:1}}>Tap to pair</div>
-                </div>
-                <div style={{width:5,height:5,borderRadius:"50%",background:C.orange,animation:"pulse 1.5s infinite",marginLeft:2}}/>
-              </div>
-            </div>
-          )}
+          {/* Connect device button moved to global fixed position above bottom nav */}
           {/* ═══ STATUS BAR — centered, tight gap below jumbotron ═══ */}
           <div style={{display:"flex",justifyContent:"center",marginTop:6,animation:"arenaFadeIn 0.6s ease 0.2s both"}}>
             <div style={{display:"inline-flex",alignItems:"center",gap:6,padding:"5px 14px",borderRadius:100,
@@ -7638,6 +7619,20 @@ export default function MoodLabArena() {
             }}>{t.charAt(0).toUpperCase()+t.slice(1)}</div>
           ))}
         </div>
+
+        {/* Connect device inline — Arcade hub */}
+        {!bleConnected && (
+          <div onClick={()=>{playFx("tap");setShowBlePopup(true);}} style={{display:"flex",justifyContent:"center",margin:"8px 0px",}}>
+            <div style={{display:"inline-flex",alignItems:"center",gap:8,padding:"8px 16px",borderRadius:10,cursor:"pointer",
+              background:"rgba(8,8,25,0.72)",border:"1px solid rgba(0,229,255,0.15)",
+              backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",
+            }}>
+              <span style={{fontSize:11}}>💨</span>
+              <span style={{fontSize:10,fontWeight:700,color:"#F0EEFF"}}>Connect Device to Play</span>
+              <div style={{width:4,height:4,borderRadius:"50%",background:"#FB923C",animation:"pulse 1.5s infinite"}}/>
+            </div>
+          </div>
+        )}
 
         {/* ======= ALL GAMES - Smart 2-Column Grid ======= */}
         {arcadeHubTab==="games" && <div style={{marginBottom:4}}>
@@ -7916,6 +7911,20 @@ export default function MoodLabArena() {
             <div style={{fontSize:6,color:C.text3}}>Roles</div>
           </div>
         </div>
+
+        {/* Connect device inline — Stage hub */}
+        {!bleConnected && (
+          <div onClick={()=>{playFx("tap");setShowBlePopup(true);}} style={{display:"flex",justifyContent:"center",margin:"8px 0px",}}>
+            <div style={{display:"inline-flex",alignItems:"center",gap:8,padding:"8px 16px",borderRadius:10,cursor:"pointer",
+              background:"rgba(8,8,25,0.72)",border:"1px solid rgba(0,229,255,0.15)",
+              backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",
+            }}>
+              <span style={{fontSize:11}}>💨</span>
+              <span style={{fontSize:10,fontWeight:700,color:"#F0EEFF"}}>Connect Device to Play</span>
+              <div style={{width:4,height:4,borderRadius:"50%",background:"#FB923C",animation:"pulse 1.5s infinite"}}/>
+            </div>
+          </div>
+        )}
 
         {/* 4. ALL SHOWS — 2-column grid */}
         <div style={{marginBottom:8}}>
@@ -9234,6 +9243,20 @@ export default function MoodLabArena() {
       </div>
 
       <div style={{padding:"0 14px",position:"relative",zIndex:1}}>
+
+        {/* Connect device inline — Fortune hub */}
+        {!bleConnected && (
+          <div onClick={()=>{playFx("tap");setShowBlePopup(true);}} style={{display:"flex",justifyContent:"center",margin:"8px 0px",}}>
+            <div style={{display:"inline-flex",alignItems:"center",gap:8,padding:"8px 16px",borderRadius:10,cursor:"pointer",
+              background:"rgba(8,8,25,0.72)",border:"1px solid rgba(0,229,255,0.15)",
+              backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",
+            }}>
+              <span style={{fontSize:11}}>💨</span>
+              <span style={{fontSize:10,fontWeight:700,color:"#F0EEFF"}}>Connect Device to Play</span>
+              <div style={{width:4,height:4,borderRadius:"50%",background:"#FB923C",animation:"pulse 1.5s infinite"}}/>
+            </div>
+          </div>
+        )}
 
         {/* TAB BAR */}
         <div style={{display:"flex",borderBottom:`1px solid ${C.gold}18`,marginBottom:10}}>
@@ -22266,7 +22289,7 @@ const startSimonPuffs = () => {
         </div>
       )}
 
-      {/* Connect device button is now inline in the hub, above status bar */}
+      {/* Connect device button moved to global fixed position above bottom nav */}
 
       {renderAtmosphere()}
 
@@ -22443,6 +22466,28 @@ const startSimonPuffs = () => {
       {renderPuffReactionsOverlay()}
 
       {/* Nav buttons are in index.html OUTSIDE React — controlled via window.__moodlabGoHome/GoBack */}
+
+      {/* CONNECT DEVICE — global, above bottom nav, only when not connected */}
+      {!bleConnected && !gameActive && !matchmaking && (
+        <div onClick={()=>{playFx("tap");setShowBlePopup(true);}} style={{position:"fixed",bottom:62,left:"50%",transform:"translateX(-50%)",zIndex:250,
+          display:"inline-flex",alignItems:"center",gap:10,padding:"9px 20px",borderRadius:12,cursor:"pointer",
+          background:"rgba(8,8,25,0.85)",
+          backdropFilter:"blur(40px) saturate(1.4)",
+          WebkitBackdropFilter:"blur(40px) saturate(1.4)",
+          border:"1px solid rgba(0,229,255,0.2)",
+          boxShadow:"0 4px 20px rgba(0,0,0,0.4), 0 0 15px rgba(0,229,255,0.06)",
+        }}>
+          <div style={{width:28,height:28,borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",
+            background:"rgba(0,229,255,0.1)",border:"1px solid rgba(0,229,255,0.2)"}}>
+            <span style={{fontSize:12}}>💨</span>
+          </div>
+          <div>
+            <div style={{fontSize:11,fontWeight:800,color:"#F0EEFF",letterSpacing:0.3}}>Connect Device to Play</div>
+            <div style={{fontSize:7,color:"#00E5FF",fontWeight:600,marginTop:1}}>Tap to pair</div>
+          </div>
+          <div style={{width:5,height:5,borderRadius:"50%",background:"#FB923C",animation:"pulse 1.5s infinite",marginLeft:2}}/>
+        </div>
+      )}
 
       {/* Bottom Nav — Floating pill dock (hidden on arena hub) */}
       <div style={{position:"fixed",bottom:16,left:"50%",transform:"translateX(-50%)",zIndex:50,display:(tab==="arena"&&!zone)?"none":"flex",justifyContent:"center"}}>
