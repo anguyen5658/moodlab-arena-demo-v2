@@ -21559,7 +21559,8 @@ const startSimonPuffs = () => {
   const getCoinMultiplier = () => {
     const tier = getCurrentTier();
     const deviceBonus = bleConnected ? 1.5 : 1.0;
-    return tier.mult * deviceBonus;
+    const mult = tier.mult * deviceBonus;
+    return isNaN(mult) ? 1.0 : mult;
   };
 
   const showAchievementPopup = (badge) => {
@@ -21632,8 +21633,9 @@ const startSimonPuffs = () => {
 
   // ── ARENA LOYALTY: XP & Game Result Tracking ──
   const awardXP = (amount, reason) => {
-    setXp(x => x + amount);
-    const newXp = xp + amount;
+    const safeAmount = Math.max(0, Number(amount) || 0);
+    setXp(x => x + safeAmount);
+    const newXp = xp + safeAmount;
     const currentIdx = getCurrentTier().idx;
     for(let i = currentIdx + 1; i < LOYALTY_TIERS.length; i++) {
       if(newXp >= LOYALTY_TIERS[i].xpReq) {
@@ -21654,9 +21656,11 @@ const startSimonPuffs = () => {
   };
 
   const recordGameResult = (won, baseCoins, baseXP) => {
+    const safeCoins = Math.max(0, Math.round(Number(baseCoins) || 0));
+    const safeXP = Math.max(0, Number(baseXP) || 0);
     const mult = getCoinMultiplier();
-    const totalCoins = Math.round(baseCoins * mult);
-    const totalXP = baseXP + (won ? 15 : 5);
+    const totalCoins = Math.round(safeCoins * mult);
+    const totalXP = safeXP + (won ? 15 : 5);
 
     setCoins(c => c + totalCoins);
     awardXP(totalXP, won ? "game_win" : "game_played");
