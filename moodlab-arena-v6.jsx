@@ -9066,6 +9066,8 @@ export default function MoodLabArena() {
     ];
     const launchGame = (g) => {
       if(!bleConnected) { setShowBlePopup(true); notify("Connect your device to play! \u{1F4A8}", C.orange); return; }
+      // Daily challenge: "Try 1 Fortune game"
+      if(!completedChallenges.includes("fortune1")) { completeChallenge("fortune1"); }
       if(g.id==="crystalball"){setGameActive({id:"crystalball",name:"Fortune Teller",emoji:"🔮",color:"#9333EA"});startCrystalBall();}
       else if(g.id==="strainbattle"){setGameActive({id:"strainbattle",name:"Strain Battle",emoji:"🌿",color:"#22C55E"});startStrainBattle();}
       else if(g.id==="matchpredictor"){setGameActive({id:"matchpredictor",name:"Match Predictor",emoji:"📊",color:"#3B82F6"});startMatchPredictor();}
@@ -21595,6 +21597,18 @@ const startSimonPuffs = () => {
     awardXP(totalXP, won ? "game_win" : "game_played");
     updateProfileAfterGame(won);
     showFloatingReward(totalCoins, totalXP);
+
+    // Daily challenge: "Win 1 game"
+    if(won && !completedChallenges.includes("win1")) {
+      completeChallenge("win1");
+    }
+    // Daily challenge: "Play 3 games" (gamesPlayed already incremented by updateProfileAfterGame above)
+    setPlayerProfile(p => {
+      if(p.gamesPlayed >= 3 && !completedChallenges.includes("play3")) {
+        setTimeout(() => completeChallenge("play3"), 400);
+      }
+      return p;
+    });
 
     if(won) {
       setCurrentWinStreak(s => {
