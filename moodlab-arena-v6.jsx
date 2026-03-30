@@ -5919,6 +5919,7 @@ export default function MoodLabArena() {
         setSwShowBust(true);
         setSwTotalWon(prev => Math.max(0, prev + actualValue));
         setCoins(c => Math.max(0, c + actualValue));
+        recordGameResult(false, 0, 5);
         playFx("lose");
         setTimeout(() => { try { playFx("laugh"); } catch(e) {} }, 300);
         triggerFlash("red");
@@ -5926,7 +5927,7 @@ export default function MoodLabArena() {
       } else if(prize.label === "JACKPOT") {
         setSwShowJackpot(true);
         setSwTotalWon(prev => prev + actualValue);
-        setCoins(c => c + Math.round(actualValue * getCoinMultiplier()));
+        recordGameResult(actualValue > 0, Math.abs(actualValue), 10);
         playFx("jackpot_alarm");
         playFx("crowd");
         spawnConfetti(80, [C.gold, C.orange, "#fff", C.cyan, C.pink]);
@@ -5934,7 +5935,7 @@ export default function MoodLabArena() {
         notify("👑 JACKPOT! +" + actualValue + " coins!", C.gold);
       } else {
         setSwTotalWon(prev => prev + actualValue);
-        setCoins(c => c + Math.round(actualValue * getCoinMultiplier()));
+        recordGameResult(actualValue > 0, Math.abs(actualValue), 10);
         playFx("win");
         spawnConfetti(20, [prize.color, C.gold]);
         notify(prize.emoji + " +" + actualValue + " coins!", prize.color);
@@ -8026,7 +8027,7 @@ export default function MoodLabArena() {
         const pts = ans==="certain" ? 150 : 50;
         setCbScore(s=>s+pts);
         setCbStreak(s=>s+1);
-        setCoins(c=>c+pts);
+        recordGameResult(true, pts, 10);
         playFx("crowd");
         spawnConfetti(30);
         setCommentary(ans==="certain"?"BLINKER BONUS! 3x COINS! The Fortune pays out big!":"Correct! The Crystal Ball confirms your vision!");
@@ -8095,8 +8096,9 @@ export default function MoodLabArena() {
     const winner = vote==="left"?sbMatchup[0].name:sbMatchup[1].name;
     setCommentary("You voted for "+winner+"! Let's see the results...");
     const pts = (vote==="left" && leftPct>50) || (vote==="right" && rightPct>50) ? 30 : 10;
+    const correct = (vote==="left" && leftPct>50) || (vote==="right" && rightPct>50);
     setSbScore(s=>s+pts);
-    setCoins(c=>c+pts);
+    recordGameResult(correct, pts, 10);
   };
   const sbNextRound = () => {
     const next = sbRound + 1;
@@ -8152,7 +8154,7 @@ export default function MoodLabArena() {
       const pts = correct ? 100 : 0;
       setMpResults(prev=>[...prev,{match:mpMatch,prediction:pred,result:simResult,correct}]);
       setMpScore(s=>s+pts);
-      if(correct) { setCoins(c=>c+pts); spawnConfetti(30); playFx("crowd"); setCommentary("Correct prediction! +100 coins!"); }
+      if(correct) { recordGameResult(correct, pts, 10); spawnConfetti(30); playFx("crowd"); setCommentary("Correct prediction! +100 coins!"); }
       else { setCommentary("Not this time... the result was: "+(simResult==="home"?"Home Win":simResult==="draw"?"Draw":"Away Win")); }
       setMpPhase("result"); setTimeout(()=>mpNextRound(), 2500);
     },2000);
@@ -8216,7 +8218,7 @@ export default function MoodLabArena() {
       setDpAnswered(prev=>[...prev,ans]);
       if(correct) {
         setDpStreak(s=>s+1);
-        setCoins(c=>c+pts);
+        recordGameResult(correct, pts, 10);
         spawnConfetti(30);
         setCommentary(mult>1?"Streak bonus! "+mult+"x multiplier! +"+pts+" coins!":"Correct! +"+pts+" coins!");
       } else {
@@ -8489,8 +8491,8 @@ export default function MoodLabArena() {
     } else {
       result="push";setCommentary("Push! Both have "+pTotal);
     }
-    if(winAmt>0){const w=fortuneLuckyHour?winAmt*2:winAmt;setCoins(c=>c+w);updateFortuneXP(w);playFx("crowd");}
-    if(result==="bust"||result==="lose") setCoins(c=>Math.max(0,c-bet));
+    if(winAmt>0){recordGameResult(true, winAmt, 15);updateFortuneXP(winAmt);playFx("crowd");}
+    else if(result==="bust"||result==="lose"){recordGameResult(false, 0, 5);setCoins(c=>Math.max(0,c-bet));}
     setBjResult(result);setBjScore(s=>s+winAmt);setBjPhase("result");
     setTimeout(()=>bjNextRound(),2500);
   };
@@ -8553,7 +8555,7 @@ export default function MoodLabArena() {
       if(won) {
         const winAmt = Math.floor(cfBet*mult);
         const cfW = fortuneLuckyHour?winAmt*2:winAmt;
-        setCoins(c=>c+cfW);
+        recordGameResult(true, cfW, 10);
         updateFortuneXP(cfW);
         setCfScore(s=>s+cfW);
         setCfStreak(s=>s+1);
@@ -8634,7 +8636,7 @@ export default function MoodLabArena() {
         // Come-out roll
         if(diceTotal===7||diceTotal===11) {
           const win = isBlinker?Math.floor(crapsBet*1.5):crapsBet;
-          setCrapsResult("win");setCoins(c=>c+win);setCrapsScore(s=>s+win);
+          setCrapsResult("win");recordGameResult(true, win, 10);setCrapsScore(s=>s+win);
           spawnConfetti(20);playFx("crowd");
           setCommentary("NATURAL "+diceTotal+"! You WIN +"+win+"!");
         } else if(diceTotal===2||diceTotal===3||diceTotal===12) {
@@ -8651,7 +8653,7 @@ export default function MoodLabArena() {
         // Point phase
         if(diceTotal===crapsPoint) {
           const win = isBlinker?Math.floor(crapsBet*1.5):crapsBet;
-          setCrapsResult("win");setCoins(c=>c+win);setCrapsScore(s=>s+win);
+          setCrapsResult("win");recordGameResult(true, win, 10);setCrapsScore(s=>s+win);
           spawnConfetti(30);playFx("crowd");triggerFlash("goal");
           setCommentary("HIT THE POINT! "+diceTotal+"! You WIN +"+win+"!");
           setCrapsPoint(null);
@@ -8730,7 +8732,7 @@ export default function MoodLabArena() {
       spawnConfetti(30);triggerFlash("goal");
     }
     setMbPrize(prize);setMbRevealed(true);setMbPhase("reveal");playFx("box_open");
-    if(prize.value>0){setCoins(c=>c+prize.value);setMbScore(s=>s+prize.value);}
+    if(prize.value>0){recordGameResult(prize.value > 0, prize.value, 10);setMbScore(s=>s+prize.value);}
     if(prize.rarity==="legendary"){spawnConfetti(50);triggerFlash("goal");playFx("treasure_find");setCommentary("LEGENDARY! "+prize.emoji+" "+prize.name+"!");}
     else if(prize.rarity==="rare"){spawnConfetti(20);playFx("treasure_find");setCommentary("Rare find! "+prize.emoji+" "+prize.name);}
     else if(prize.value>0){playFx("coin_collect");setCommentary(prize.emoji+" "+prize.name+" -- nice!");}
@@ -8807,7 +8809,7 @@ export default function MoodLabArena() {
       if(bestSymbol && (bestCount+wilds>=3 || bestCount>=3)) {
         const payout = SC_PAYOUTS[bestSymbol]||(bestSymbol==="🌟"?500:50);
         setScPrize({symbol:bestSymbol,amount:payout});
-        setScScore(s=>s+payout);setCoins(c=>c+payout);
+        setScScore(s=>s+payout);recordGameResult(payout > 0, payout, 10);
         spawnConfetti(40);triggerFlash("goal");playFx("crowd");
         setCommentary("WINNER! 3x "+bestSymbol+" = "+payout+" coins!");
       } else {
@@ -8892,7 +8894,7 @@ export default function MoodLabArena() {
     }
     const baseCoins = Math.floor(10 + Math.random()*190);
     const fcWin = isBlinker ? Math.floor(50 + Math.random()*450) : baseCoins;
-    setFcFortune(fortune);setFcCoins(fcWin);setCoins(c=>c+fcWin);setFcScore(s=>s+fcWin);
+    setFcFortune(fortune);setFcCoins(fcWin);recordGameResult(true, fcWin, 10);setFcScore(s=>s+fcWin);
     setFcPhase("reading");
     setTimeout(()=>setFcPhase("result"),3000);
     setTimeout(()=>fcNextRound(),4500);
@@ -8982,7 +8984,7 @@ export default function MoodLabArena() {
           setCommentary("ALL 3 TREASURES! JACKPOT BONUS +"+bonus+"!");
           spawnConfetti(50);triggerFlash("goal");
           const totalWin = tmCoins+info.value+bonus;
-          if(totalWin>0){setCoins(c=>c+totalWin);setTmScore(s=>s+totalWin);}
+          if(totalWin>0){recordGameResult(true, totalWin, 10);setTmScore(s=>s+totalWin);}
           setTmPhase("result");setTmGameOver(true);
         },500);
         return;
@@ -8996,7 +8998,7 @@ export default function MoodLabArena() {
       setTimeout(()=>{
         const remaining = Math.max(0,tmCoins-lostCoins);
         setTmCoins(remaining);
-        if(remaining>0){setCoins(c=>c+remaining);setTmScore(s=>s+remaining);}
+        if(remaining>0){recordGameResult(false, remaining, 10);setTmScore(s=>s+remaining);}
         setTmPhase("result");
       },1500);
       return;
@@ -9008,7 +9010,7 @@ export default function MoodLabArena() {
   const tmCashOut = () => {
     if(tmPhase!=="playing"||tmGameOver) return;
     const winnings = tmCoins;
-    if(winnings>0){setCoins(c=>c+winnings);setTmScore(s=>s+winnings);}
+    if(winnings>0){recordGameResult(true, winnings, 10);setTmScore(s=>s+winnings);}
     setTmGameOver(true);setTmPhase("result");
     setCommentary("Cashed out with "+winnings+" coins!");
     playFx("crowd");
