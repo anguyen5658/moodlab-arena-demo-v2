@@ -3019,7 +3019,7 @@ export default function MoodLabArena() {
         triggerShake();
         triggerFlash("miss");
         playFx("whistle");
-        setCommentary("DRAW! HOLD TO PUFF!");
+        setCommentary("DRAW! HOLD TO SHOOT!");
         setDuelStaredownText("");
 
         // Auto-timeout after 5s if no puff
@@ -4907,7 +4907,7 @@ export default function MoodLabArena() {
     const outOfBounds = xPos < 10 || xPos > 90;
     if(outOfBounds) { setKickComment(pick(["WIDE! Too far! 🌊","That's the stands! 💀","Off the pitch! 😂"])); playFx("laugh"); }
     else if(inSweet) { setKickComment("Nice X aim! 🎯 Now puff for HEIGHT! ↕️"); }
-    else { setKickComment("X locked! Now HOLD TO PUFF for height! ↕️ 💨"); }
+    else { setKickComment("X locked! Now HOLD TO AIM height! ↕️ ⚽"); }
     playFx("select");
     setCommentary("Horizontal locked! Now aim VERTICAL! ↕️");
   };
@@ -10370,7 +10370,7 @@ export default function MoodLabArena() {
     // After 2s, transition to guessing
     setTimeout(()=>{
       setPipPhase("guessing");
-      setCommentary("HOLD TO PUFF your price guess! Longer = higher!");
+      setCommentary("HOLD TO SET PRICE 💰 Longer = higher!");
     },2000);
   };
 
@@ -10551,7 +10551,7 @@ export default function MoodLabArena() {
     setRpsPlayerChoice(choice);
     rpsPlayerChoiceRef.current = choice; // sync ref for stale closure fix
     playFx("select");
-    setCommentary("Now HOLD TO PUFF for power! 💨");
+    setCommentary("Now HOLD TO POWER UP your throw! 💪");
     setRpsPhase("puff");
     setRpsPuffPower(0);
     setRpsAiPuffPower(0);
@@ -12311,13 +12311,13 @@ const startSimonPuffs = () => {
                     {wwPhase==="draw" && (
                       <div style={{animation:"duelDrawFlash 0.15s ease"}}>
                         <div style={{fontSize:44,fontWeight:900,color:C.red,textShadow:`0 0 50px ${C.red}, 0 0 100px ${C.red}60, 0 4px 20px rgba(0,0,0,0.5)`,animation:"countPulse 0.3s infinite",letterSpacing:5,textTransform:"uppercase"}}>DRAW!</div>
-                        <div style={{fontSize:11,fontWeight:800,color:"#fff",marginTop:8,animation:"countPulse 0.5s infinite",opacity:0.95,letterSpacing:2}}>HOLD TO PUFF!</div>
+                        <div style={{fontSize:11,fontWeight:800,color:"#fff",marginTop:8,animation:"countPulse 0.5s infinite",opacity:0.95,letterSpacing:2}}>HOLD TO SHOOT! 🔫</div>
                       </div>
                     )}
                     {wwPhase==="puffing" && (
                       <div style={{animation:"fadeIn 0.2s ease",width:"100%"}}>
                         <div style={{fontSize:14,fontWeight:900,color:puffMeterColor,textShadow:`0 0 15px ${puffMeterColor}60`,letterSpacing:2,textTransform:"uppercase",marginBottom:10}}>
-                          {duelPuffMeter<20?"PUFFING...":duelPuffMeter<45?"QUICK DRAW":duelPuffMeter<70?"POWER SHOT":duelPuffMeter<90?"MEGA PUFF":"LEGENDARY!"}
+                          {duelPuffMeter<20?"DRAWING...":duelPuffMeter<45?"QUICK DRAW":duelPuffMeter<70?"POWER SHOT":duelPuffMeter<90?"MEGA PUFF":"LEGENDARY!"}
                         </div>
                         {/* Universal Puff Action Bar */}
                         <div style={{width:"80%",maxWidth:200,margin:"0 auto 6px"}}>
@@ -13110,8 +13110,8 @@ const startSimonPuffs = () => {
                     {kickCharging && <div style={{position:"absolute",left:0,top:0,bottom:0,width:`${kickPower}%`,background:`${zoneColor}12`,transition:"width 0.06s linear",borderRadius:16}}/>}
                     <div style={{position:"relative",zIndex:1}}>
                       {kickCharging
-                        ? (zone==="perfect"?"🎯 RELEASE NOW!":isPuffBlinker.current?"💀 BLINKER! LET GO!":zone==="good"?"💨 Almost... keep going!":"💨 PUFFING... "+elapsed.toFixed(1)+"s")
-                        : (inp==="puff"?"💨 HOLD TO PUFF":"🔘 HOLD TO CHARGE")}
+                        ? (zone==="perfect"?"🎯 RELEASE NOW!":isPuffBlinker.current?"💀 BLINKER! LET GO!":zone==="good"?"💨 Almost... keep going!":"⚽ CHARGING... "+elapsed.toFixed(1)+"s")
+                        : (inp==="puff"?"💨 HOLD TO KICK ⚽":"🔘 HOLD TO CHARGE ⚽")}
                       <div style={{fontSize:8,color:`${kickCharging?zoneColor:inpInfo.color}80`,marginTop:3}}>
                         {kickCharging
                           ? (zone==="perfect"?`🎯 ${elapsed.toFixed(1)}s — SWEET SPOT! RELEASE!`:`${elapsed.toFixed(1)}s — Hold for 2.5-3.5s`)
@@ -13195,11 +13195,11 @@ const startSimonPuffs = () => {
                       <span>
                         {kickCharging
                           ? (kickState==="shoot_x"
-                            ? `← PUFFING... ${Math.round(kickPower)}% →`
-                            : `↕ PUFFING... ${Math.round(kickPower)}%`)
+                            ? `← AIMING... ${Math.round(kickPower)}% →`
+                            : `↕ POWERING... ${Math.round(kickPower)}%`)
                           : (kickState==="shoot_x"
-                            ? "💨 HOLD TO PUFF ← →"
-                            : "💨 HOLD TO PUFF ↕")}
+                            ? "⚽ HOLD TO AIM ← →"
+                            : "⚽ HOLD TO POWER ↕")}
                       </span>
                       {!kickCharging && <span style={{fontSize:12,fontWeight:900,color:actionTimer<=1?C.red:C.gold,minWidth:20,animation:actionTimer<=1?"pulse 0.5s infinite":"none"}}>{actionTimer}s</span>}
                     </div>
@@ -14383,7 +14383,7 @@ const startSimonPuffs = () => {
                 <div style={{height:6}}/>
                 <div onMouseDown={bpStartCharge} onMouseUp={bpStopCharge} onMouseLeave={()=>{if(bpCharging)bpStopCharge();}} onTouchStart={(e)=>{e.preventDefault();bpStartCharge();}} onTouchEnd={bpStopCharge}
                   style={{padding:"14px 0",borderRadius:16,cursor:"pointer",textAlign:"center",userSelect:"none",background:bpCharging?`linear-gradient(135deg,${C.orange}30,${C.red}20)`:`linear-gradient(135deg,${C.cyan}15,${C.pink}10)`,border:`2px solid ${bpCharging?C.orange:C.cyan}30`,transform:bpCharging?"scale(0.97)":"scale(1)",transition:"all 0.2s"}}>
-                  <div style={{fontSize:18,fontWeight:900,letterSpacing:2,color:bpCharging?C.orange:C.cyan}}>{bpCharging?"💨 PUFFING...":"HOLD TO PUFF 💨"}</div>
+                  <div style={{fontSize:18,fontWeight:900,letterSpacing:2,color:bpCharging?C.orange:C.cyan}}>{bpCharging?"🎈 INFLATING...":"HOLD TO INFLATE 🎈"}</div>
                   <div style={{fontSize:9,color:C.text3,marginTop:3}}>{bpCharging?("Tier: "+(puffTier==="safe"?"TAP 😐":puffTier==="medium"?"SHORT 😤":puffTier==="long"?"LONG 🌬️":"BLINKER 🫁🔥")+" · Release to add air!"):"Min 5% · Hold longer = more air"}</div>
                 </div></div>)}
               {bpPhase==="ai_turn"&&bpCharging&&(<div style={{width:"100%",marginTop:8}}><div style={{width:"100%",height:6,borderRadius:4,background:"rgba(255,255,255,0.05)",overflow:"hidden"}}><div style={{width:bpPuffAmount+"%",height:"100%",borderRadius:4,background:`linear-gradient(90deg,${C.orange},${C.red})`,transition:"width 0.05s linear"}}/></div><div style={{textAlign:"center",fontSize:8,color:C.orange,marginTop:4,animation:"pulse 0.5s infinite"}}>{(curP?curP.name:"AI")+" is puffing... 💨"}</div></div>)}
@@ -14434,7 +14434,7 @@ const startSimonPuffs = () => {
                       <img src={p.img} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}} onError={(e)=>{e.target.style.display="none";}}/>
                     </div>
                     <div style={{fontSize:8,fontWeight:700,color:isCur?(p.isYou?C.cyan:C.orange):C.text3}}>{p.isYou?"YOU":p.name.slice(0,8)}</div>
-                    {isCur && <div style={{fontSize:6,color:C.red,animation:"pulse 0.5s infinite"}}>PUFFING</div>}
+                    {isCur && <div style={{fontSize:6,color:C.red,animation:"pulse 0.5s infinite"}}>PASSING</div>}
                   </div>);})}
               </div>
               {/* Revolver */}
@@ -14504,10 +14504,10 @@ const startSimonPuffs = () => {
                 {ppPuffHeld && <div style={{marginBottom:4}}>{renderUniversalPuffBar(Math.min(100,(ppPaddleY/80)*100), true)}</div>}
                 <div style={{display:"flex",gap:8,marginTop:4,alignItems:"center",justifyContent:"center"}}>
                 <div onMouseDown={()=>ppMovePaddle(-1)} onTouchStart={(e)=>{e.preventDefault();ppMovePaddle(-1);}} style={{padding:"8px 16px",borderRadius:10,cursor:"pointer",background:`${C.cyan}12`,border:`1px solid ${C.cyan}25`,fontSize:11,fontWeight:800,color:C.cyan}}>UP</div>
-                <div onMouseDown={ppPuffUp} onMouseUp={ppPuffRelease} onMouseLeave={ppPuffRelease} onTouchStart={(e)=>{e.preventDefault();ppPuffUp();}} onTouchEnd={ppPuffRelease} style={{padding:"10px 20px",borderRadius:12,cursor:"pointer",background:ppPuffHeld?`${C.cyan}30`:`${C.cyan}10`,border:`2px solid ${ppPuffHeld?C.cyan:C.cyan+"40"}`,fontSize:12,fontWeight:900,color:C.cyan,transition:"all 0.15s",transform:ppPuffHeld?"scale(0.95)":"scale(1)"}}>{ppPuffHeld?"PUFFING... 💨":"HOLD TO PUFF"}</div>
+                <div onMouseDown={ppPuffUp} onMouseUp={ppPuffRelease} onMouseLeave={ppPuffRelease} onTouchStart={(e)=>{e.preventDefault();ppPuffUp();}} onTouchEnd={ppPuffRelease} style={{padding:"10px 20px",borderRadius:12,cursor:"pointer",background:ppPuffHeld?`${C.cyan}30`:`${C.cyan}10`,border:`2px solid ${ppPuffHeld?C.cyan:C.cyan+"40"}`,fontSize:12,fontWeight:900,color:C.cyan,transition:"all 0.15s",transform:ppPuffHeld?"scale(0.95)":"scale(1)"}}>{ppPuffHeld?"PADDLE UP... 🏓":"HOLD TO MOVE PADDLE 🏓"}</div>
                 <div onMouseDown={()=>ppMovePaddle(1)} onTouchStart={(e)=>{e.preventDefault();ppMovePaddle(1);}} style={{padding:"8px 16px",borderRadius:10,cursor:"pointer",background:`${C.cyan}12`,border:`1px solid ${C.cyan}25`,fontSize:11,fontWeight:800,color:C.cyan}}>DOWN</div>
               </div></div>}
-              <div style={{fontSize:7,color:C.text3,marginTop:2,opacity:0.5}}>PUFF = paddle UP | Release = drift DOWN | Tap UP/DOWN</div>
+              <div style={{fontSize:7,color:C.text3,marginTop:2,opacity:0.5}}>HOLD = paddle UP | Release = drift DOWN | Tap UP/DOWN buttons</div>
               {ppComment&&<div style={{padding:"5px 14px",borderRadius:10,marginTop:2,background:"rgba(0,229,255,0.06)",border:"1px solid rgba(0,229,255,0.12)"}}><div style={{fontSize:10,fontWeight:700,color:C.text,textAlign:"center"}}>{ppComment}</div></div>}
               {ppPhase==="result"&&<div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:8,marginTop:8,animation:"fadeIn 0.5s ease"}}>
                 <div style={{fontSize:20,fontWeight:900,color:ppScore.you>ppScore.ai?C.cyan:C.red,textShadow:"0 0 20px currentColor",letterSpacing:2}}>{ppScore.you>ppScore.ai?"YOU WIN! 🏆":"AI WINS 🤖"}</div>
@@ -14973,7 +14973,7 @@ const startSimonPuffs = () => {
                     background:hookHolding?`linear-gradient(135deg,${C.cyan}20,${C.blue}10)`:"rgba(255,255,255,0.03)",
                     border:`2px solid ${hookHolding?C.cyan:C.border}30`,
                     transform:hookHolding?"scale(0.97)":"scale(1)",transition:"all 0.15s",userSelect:"none"}}>
-                    <div style={{fontSize:14,fontWeight:900,color:hookHolding?C.cyan:C.text2,letterSpacing:2}}>{hookHolding?"💨 REELING...":"HOLD TO PUFF 💨"}</div>
+                    <div style={{fontSize:14,fontWeight:900,color:hookHolding?C.cyan:C.text2,letterSpacing:2}}>{hookHolding?"🎣 REELING IN...":"HOLD TO REEL 🎣"}</div>
                     <div style={{fontSize:8,color:C.text3,marginTop:2}}>{hookHolding?"Release to lower suction":"Hold anywhere to reel in!"}</div>
                   </div>
                 </div>
@@ -15331,7 +15331,7 @@ const startSimonPuffs = () => {
                       );
                     })}
                   </div>
-                  {isQuestion && <div style={{textAlign:"center",marginTop:8}}><div style={{fontSize:8,color:C.text3,letterSpacing:1}}>TAP=A · SHORT PUFF=B · MED PUFF=C · LONG PUFF=D</div></div>}
+                  {isQuestion && <div style={{textAlign:"center",marginTop:8}}><div style={{fontSize:8,color:C.text3,letterSpacing:1}}>Tap to answer · Puff for bonus points 💨</div></div>}
                 </div>
               )}
 
@@ -15977,7 +15977,7 @@ const startSimonPuffs = () => {
                         fontSize:16,fontWeight:900,color:C.purple,marginTop:8,
                         boxShadow:spPuffing?"0 0 30px "+C.purple+"40":"none",
                         transform:spPuffing?"scale(1.05)":"scale(1)",transition:"all .15s ease"}}>
-                      {spPuffing ? "PUFFING... "+spPuffTime.toFixed(1)+"s" : "HOLD TO PUFF"}
+                      {spPuffing ? "REPEATING... "+spPuffTime.toFixed(1)+"s" : "Watch the pattern · Tap or Puff to repeat 🔴"}
                     </div>
                   )}
                 </div>
@@ -16111,7 +16111,7 @@ const startSimonPuffs = () => {
                         fontSize:16,fontWeight:900,color:paHolding?(inDanger?C.red:C.gold):C.gold,
                         boxShadow:paHolding?"0 0 30px "+(inDanger?C.red:C.gold)+"40":"none",
                         transform:paHolding?"scale(1.05)":"scale(1)",transition:"all .15s ease"}}>
-                      {paHolding ? (inDanger ? "DANGER! RELEASE!" : "BIDDING... "+paBidTime.toFixed(1)+"s") : "HOLD TO BID"}
+                      {paHolding ? (inDanger ? "DANGER! RELEASE!" : "BIDDING... "+paBidTime.toFixed(1)+"s") : "HOLD TO BID 🔨"}
                     </div>
                   )}
                 </div>
@@ -16171,7 +16171,7 @@ const startSimonPuffs = () => {
               <div style={{textAlign:"center",marginBottom:4}}><div style={{fontSize:18,fontWeight:900,letterSpacing:4,background:"linear-gradient(135deg, "+C.green+", "+C.gold+")",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>{isResult?"RACE RESULTS":"PUFF DERBY"}</div>{isRacing&&<div style={{fontSize:9,color:C.text3}}>Time: {pdRaceTime}s | Puffs: {pdPuffCount}</div>}</div>
               {isPick&&(<div style={{width:"100%",animation:"fadeIn 0.4s ease"}}><div style={{fontSize:13,fontWeight:800,color:C.text2,textAlign:"center",marginBottom:12}}>Pick your horse!</div><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>{pdHorses.map((h,i)=>(<div key={i} onClick={(e)=>{e.stopPropagation();pdPickHorse(i);}} style={{padding:"12px 8px",borderRadius:12,cursor:"pointer",textAlign:"center",background:"linear-gradient(135deg, "+C.green+"10, "+C.green+"05)",border:"1px solid "+C.green+"25"}}><div style={{fontSize:32}}>{PD_HORSE_EMOJIS[i]}</div><div style={{fontSize:11,fontWeight:800,color:C.text,marginTop:4}}>{PD_HORSE_NAMES[i]}</div><div style={{display:"flex",gap:4,justifyContent:"center",marginTop:4}}><span style={{fontSize:8,color:C.cyan,padding:"1px 5px",borderRadius:4,background:C.cyan+"10"}}>SPD:{h.speed.toFixed(1)}</span><span style={{fontSize:8,color:C.gold,padding:"1px 5px",borderRadius:4,background:C.gold+"10"}}>STA:{h.stamina.toFixed(1)}</span></div></div>))}</div></div>)}
               {isCD&&(<div style={{textAlign:"center",padding:"40px 0"}}><div style={{fontSize:48,marginBottom:12}}>{PD_HORSE_EMOJIS[pi]}</div><div style={{fontSize:14,fontWeight:800,color:C.green,marginBottom:8}}>{PD_HORSE_NAMES[pi]}</div><div style={{fontSize:36,fontWeight:900,color:C.gold,animation:"countPulse 0.8s infinite"}}>GET READY!</div></div>)}
-              {isRacing&&(<div style={{width:"100%"}}><div style={{width:"100%",height:4,borderRadius:2,background:"rgba(255,255,255,0.08)",marginBottom:8,overflow:"hidden"}}><div style={{height:"100%",width:(pdRaceTime/30*100)+"%",background:pdRaceTime>10?"linear-gradient(90deg,"+C.green+","+C.cyan+")":"linear-gradient(90deg,"+C.red+","+C.orange+")",borderRadius:2,transition:"width 1s linear"}}/></div><div style={{width:"100%",borderRadius:12,overflow:"hidden",background:"rgba(0,0,0,0.3)",border:"1px solid "+C.green+"20",padding:"4px 0"}}>{[0,1,2,3,4,5].map(i=>{const pos=pdPositions[i];const isP=i===pi;const fin=pdFinishOrder.includes(i);const pl=pdFinishOrder.indexOf(i)+1;return(<div key={"ln"+i} style={{display:"flex",alignItems:"center",padding:"3px 6px",background:isP?"rgba(0,229,255,0.06)":"transparent",borderBottom:i<5?"1px solid rgba(255,255,255,0.04)":"none"}}><div style={{fontSize:7,fontWeight:700,color:isP?C.cyan:C.text3,width:14,textAlign:"center"}}>{i+1}</div><div style={{flex:1,height:20,position:"relative",marginLeft:4,marginRight:4}}><div style={{position:"absolute",top:"50%",left:0,right:0,height:1,background:"rgba(255,255,255,0.06)"}}/><div style={{position:"absolute",right:0,top:0,bottom:0,width:2,background:C.gold+"40"}}/><div style={{position:"absolute",left:(pos*0.92)+"%",top:"50%",transform:"translateY(-50%)",fontSize:isP?18:14,transition:"left 0.08s linear",filter:isP?"drop-shadow(0 0 6px "+C.cyan+"60)":"none",zIndex:isP?2:1}}>{PD_HORSE_EMOJIS[i]}</div></div>{fin?<div style={{fontSize:8,fontWeight:900,color:pl===1?C.gold:pl<=3?C.green:C.text3,width:16,textAlign:"center"}}>{"#"+pl}</div>:<div style={{fontSize:7,color:C.text3,width:16,textAlign:"center"}}>{Math.round(pos)+"%"}</div>}</div>);})}</div><div style={{marginTop:10}}><div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}><span style={{fontSize:9,fontWeight:700,color:stC}}>Stamina: {Math.round(pdStamina)}%</span><span style={{fontSize:9,color:C.text3}}>Puffs: {pdPuffCount}</span></div><div style={{width:"100%",height:8,borderRadius:4,background:"rgba(255,255,255,0.08)",overflow:"hidden"}}><div style={{height:"100%",width:pdStamina+"%",background:"linear-gradient(90deg,"+stC+","+stC+"80)",borderRadius:4,transition:"width 0.15s"}}/></div>{pdStamina<=0&&<div style={{fontSize:8,color:C.red,fontWeight:700,marginTop:2,animation:"pulse 0.5s infinite"}}>EXHAUSTED!</div>}</div><div style={{textAlign:"center",marginTop:12}}><div style={{fontSize:11,color:C.text2,fontWeight:600,marginBottom:6}}>TAP ANYWHERE TO PUFF!</div></div></div>)}
+              {isRacing&&(<div style={{width:"100%"}}><div style={{width:"100%",height:4,borderRadius:2,background:"rgba(255,255,255,0.08)",marginBottom:8,overflow:"hidden"}}><div style={{height:"100%",width:(pdRaceTime/30*100)+"%",background:pdRaceTime>10?"linear-gradient(90deg,"+C.green+","+C.cyan+")":"linear-gradient(90deg,"+C.red+","+C.orange+")",borderRadius:2,transition:"width 1s linear"}}/></div><div style={{width:"100%",borderRadius:12,overflow:"hidden",background:"rgba(0,0,0,0.3)",border:"1px solid "+C.green+"20",padding:"4px 0"}}>{[0,1,2,3,4,5].map(i=>{const pos=pdPositions[i];const isP=i===pi;const fin=pdFinishOrder.includes(i);const pl=pdFinishOrder.indexOf(i)+1;return(<div key={"ln"+i} style={{display:"flex",alignItems:"center",padding:"3px 6px",background:isP?"rgba(0,229,255,0.06)":"transparent",borderBottom:i<5?"1px solid rgba(255,255,255,0.04)":"none"}}><div style={{fontSize:7,fontWeight:700,color:isP?C.cyan:C.text3,width:14,textAlign:"center"}}>{i+1}</div><div style={{flex:1,height:20,position:"relative",marginLeft:4,marginRight:4}}><div style={{position:"absolute",top:"50%",left:0,right:0,height:1,background:"rgba(255,255,255,0.06)"}}/><div style={{position:"absolute",right:0,top:0,bottom:0,width:2,background:C.gold+"40"}}/><div style={{position:"absolute",left:(pos*0.92)+"%",top:"50%",transform:"translateY(-50%)",fontSize:isP?18:14,transition:"left 0.08s linear",filter:isP?"drop-shadow(0 0 6px "+C.cyan+"60)":"none",zIndex:isP?2:1}}>{PD_HORSE_EMOJIS[i]}</div></div>{fin?<div style={{fontSize:8,fontWeight:900,color:pl===1?C.gold:pl<=3?C.green:C.text3,width:16,textAlign:"center"}}>{"#"+pl}</div>:<div style={{fontSize:7,color:C.text3,width:16,textAlign:"center"}}>{Math.round(pos)+"%"}</div>}</div>);})}</div><div style={{marginTop:10}}><div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}><span style={{fontSize:9,fontWeight:700,color:stC}}>Stamina: {Math.round(pdStamina)}%</span><span style={{fontSize:9,color:C.text3}}>Puffs: {pdPuffCount}</span></div><div style={{width:"100%",height:8,borderRadius:4,background:"rgba(255,255,255,0.08)",overflow:"hidden"}}><div style={{height:"100%",width:pdStamina+"%",background:"linear-gradient(90deg,"+stC+","+stC+"80)",borderRadius:4,transition:"width 0.15s"}}/></div>{pdStamina<=0&&<div style={{fontSize:8,color:C.red,fontWeight:700,marginTop:2,animation:"pulse 0.5s infinite"}}>EXHAUSTED!</div>}</div><div style={{textAlign:"center",marginTop:12}}><div style={{fontSize:11,color:C.text2,fontWeight:600,marginBottom:6}}>TAP TO GALLOP! 🏇</div></div></div>)}
               {isResult&&(<div style={{textAlign:"center",width:"100%"}}>{pPlace===1&&<div><div style={{fontSize:56,marginBottom:8,animation:"countPulse 1s infinite"}}>{PD_HORSE_EMOJIS[pi]}</div><div style={{fontSize:26,fontWeight:900,color:C.gold,marginBottom:4}}>WINNER!</div><div style={{fontSize:14,fontWeight:700,color:C.gold}}>+500 coins</div></div>}{pPlace>1&&pPlace<=3&&<div><div style={{fontSize:48,marginBottom:8}}>{PD_HORSE_EMOJIS[pi]}</div><div style={{fontSize:22,fontWeight:900,color:C.green,marginBottom:4}}>#{pPlace} PLACE!</div></div>}{pPlace>3&&<div><div style={{fontSize:48,marginBottom:8}}>{PD_HORSE_EMOJIS[pi]}</div><div style={{fontSize:22,fontWeight:900,color:C.text3,marginBottom:4}}>#{pPlace} PLACE</div></div>}<div style={{marginTop:16,maxWidth:300,margin:"16px auto"}}><div style={{fontSize:10,fontWeight:700,color:C.text3,marginBottom:6}}>FINAL STANDINGS</div>{pdFinishOrder.slice(0,6).map((hI,pl)=>(<div key={"r"+pl} style={{display:"flex",alignItems:"center",gap:8,padding:"4px 8px",borderRadius:6,marginBottom:2,background:hI===pi?C.cyan+"10":"transparent"}}><span style={{fontSize:10,fontWeight:900,color:pl===0?C.gold:pl<3?C.green:C.text3,width:20}}>#{pl+1}</span><span style={{fontSize:14}}>{PD_HORSE_EMOJIS[hI]}</span><span style={{fontSize:10,fontWeight:700,color:hI===pi?C.cyan:C.text2,flex:1}}>{PD_HORSE_NAMES[hI]}</span>{hI===pi&&<span style={{fontSize:8,color:C.cyan,fontWeight:700}}>YOU</span>}</div>))}</div><div style={{fontSize:11,color:C.text2,fontStyle:"italic",marginTop:8}}>{commentary}</div><div style={{display:"flex",gap:10,justifyContent:"center",marginTop:12}}><div onClick={(e)=>{e.stopPropagation();pdCleanup();startPuffDerby();setGameActive({id:"puffderby",name:"Puff Derby",emoji:"\uD83C\uDFC7",color:C.green});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:C.green+"15",border:"1px solid "+C.green+"30",fontSize:13,fontWeight:800,color:C.green}}>Race Again</div><div onClick={(e)=>{e.stopPropagation();pdCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:C.text3+"10",border:"1px solid "+C.text3+"20",fontSize:13,fontWeight:800,color:C.text3}}>Done</div></div></div>)}
             </div>
           </div>
@@ -16210,7 +16210,7 @@ const startSimonPuffs = () => {
               {!isR&&!hlRevealing&&isP&&<div style={{fontSize:16,fontWeight:900,color:C.gold,margin:"8px 0",animation:"pulse 1.5s infinite"}}>VS</div>}
               {isC&&<div style={{textAlign:"center",marginTop:8}}><div style={{fontSize:24,fontWeight:900,color:C.green}}>CORRECT!</div><div style={{fontSize:12,fontWeight:700,color:C.green}}>+{10*hlStreak} pts</div></div>}
               {isW&&<div style={{textAlign:"center",marginTop:8}}><div style={{fontSize:24,fontWeight:900,color:C.red}}>WRONG!</div><div style={{fontSize:11,color:C.red}}>Streak broken!</div></div>}
-              {isP&&!hlRevealing&&(<div style={{textAlign:"center",marginTop:8,width:"100%"}}><div style={{fontSize:10,color:C.text3,marginBottom:8}}>{hlPuffStart?<span style={{color:C.gold,fontWeight:700,animation:"pulse 0.5s infinite"}}>Hold for HIGHER...</span>:<span>Short puff = LOWER | Long puff = HIGHER</span>}</div><div style={{display:"flex",gap:10,justifyContent:"center"}}><div data-hl-btn="1" onClick={(e)=>{e.stopPropagation();if(!hlRevealing)hlGuess("lower");}} style={{flex:1,maxWidth:130,padding:"12px 8px",borderRadius:12,cursor:"pointer",textAlign:"center",background:C.red+"12",border:"1px solid "+C.red+"30"}}><div style={{fontSize:20,marginBottom:2}}>{"\u2B07\uFE0F"}</div><div style={{fontSize:12,fontWeight:800,color:C.red}}>LOWER</div><div style={{fontSize:8,color:C.text3}}>Short puff</div></div><div data-hl-btn="1" onClick={(e)=>{e.stopPropagation();if(!hlRevealing)hlGuess("higher");}} style={{flex:1,maxWidth:130,padding:"12px 8px",borderRadius:12,cursor:"pointer",textAlign:"center",background:C.green+"12",border:"1px solid "+C.green+"30"}}><div style={{fontSize:20,marginBottom:2}}>{"\u2B06\uFE0F"}</div><div style={{fontSize:12,fontWeight:800,color:C.green}}>HIGHER</div><div style={{fontSize:8,color:C.text3}}>Long puff</div></div></div></div>)}
+              {isP&&!hlRevealing&&(<div style={{textAlign:"center",marginTop:8,width:"100%"}}><div style={{fontSize:10,color:C.text3,marginBottom:8}}>{hlPuffStart?<span style={{color:C.gold,fontWeight:700,animation:"pulse 0.5s infinite"}}>Hold for HIGHER...</span>:<span>Tap HIGHER or LOWER · or Puff (short=lower, long=higher)</span>}</div><div style={{display:"flex",gap:10,justifyContent:"center"}}><div data-hl-btn="1" onClick={(e)=>{e.stopPropagation();if(!hlRevealing)hlGuess("lower");}} style={{flex:1,maxWidth:130,padding:"12px 8px",borderRadius:12,cursor:"pointer",textAlign:"center",background:C.red+"12",border:"1px solid "+C.red+"30"}}><div style={{fontSize:20,marginBottom:2}}>{"\u2B07\uFE0F"}</div><div style={{fontSize:12,fontWeight:800,color:C.red}}>LOWER</div><div style={{fontSize:8,color:C.text3}}>Short puff</div></div><div data-hl-btn="1" onClick={(e)=>{e.stopPropagation();if(!hlRevealing)hlGuess("higher");}} style={{flex:1,maxWidth:130,padding:"12px 8px",borderRadius:12,cursor:"pointer",textAlign:"center",background:C.green+"12",border:"1px solid "+C.green+"30"}}><div style={{fontSize:20,marginBottom:2}}>{"\u2B06\uFE0F"}</div><div style={{fontSize:12,fontWeight:800,color:C.green}}>HIGHER</div><div style={{fontSize:8,color:C.text3}}>Long puff</div></div></div></div>)}
               {isR&&(<div style={{textAlign:"center"}}><div style={{fontSize:48,marginBottom:8}}>{hlBestStreak>=7?"\uD83C\uDFC6":hlBestStreak>=5?"\uD83D\uDD25":hlBestStreak>=3?"\u2B50":"\uD83D\uDCCA"}</div><div style={{fontSize:26,fontWeight:900,color:hlScore>=100?C.gold:C.cyan,marginBottom:4}}>GAME OVER</div><div style={{fontSize:18,fontWeight:800,color:C.text,marginBottom:4}}>Score: {hlScore}</div><div style={{fontSize:13,color:C.text2,marginBottom:4}}>Best Streak: {hlBestStreak} {hlBestStreak>=5?"\uD83D\uDD25":""}</div><div style={{fontSize:14,fontWeight:700,color:C.gold,marginBottom:12}}>+{Math.max(10,Math.floor(hlScore/2))} coins</div><div style={{fontSize:11,color:C.text2,fontStyle:"italic",marginBottom:12}}>{commentary}</div>{(()=>{const won=hlBestStreak>=3;const base=Math.max(10,Math.floor(hlScore/2));return(<div style={{padding:10,borderRadius:12,background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.06)",marginTop:10,marginBottom:8}}><div style={{fontSize:9,color:C.text3,letterSpacing:1,marginBottom:6}}>GAME REWARD</div><div style={{display:"flex",justifyContent:"space-between",fontSize:13,fontWeight:800}}><span style={{color:C.text}}>Earned</span><span style={{color:C.gold}}>+{base} 🪙</span></div>{!bleConnected && <div style={{display:"flex",justifyContent:"space-between",fontSize:10,color:C.orange,marginTop:4}}><span>Without device</span><span>70%</span></div>}</div>);})()}<div style={{display:"flex",gap:10,justifyContent:"center"}}><div onClick={(e)=>{e.stopPropagation();hlCleanup();startHigherLower();setGameActive({id:"higherlower",name:"Higher or Lower",emoji:"\uD83D\uDCCA",color:C.cyan});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:C.cyan+"15",border:"1px solid "+C.cyan+"30",fontSize:13,fontWeight:800,color:C.cyan}}>Play Again</div><div onClick={(e)=>{e.stopPropagation();hlCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:C.text3+"10",border:"1px solid "+C.text3+"20",fontSize:13,fontWeight:800,color:C.text3}}>Done</div></div><div onClick={()=>{hlCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div></div>)}
             </div>
           </div>
@@ -16251,8 +16251,8 @@ const startSimonPuffs = () => {
                   <div style={{padding:"10px 24px",borderRadius:12,background:"rgba(34,197,94,0.10)",border:"1px solid rgba(34,197,94,0.25)"}}><div style={{fontSize:14,fontWeight:800,color:C.green}}>YES</div><div style={{fontSize:8,color:C.text3}}>Long (&gt;1.5s)</div></div>
                   <div style={{padding:"10px 24px",borderRadius:12,background:"rgba(255,215,0,0.10)",border:"1px solid rgba(255,215,0,0.25)"}}><div style={{fontSize:14,fontWeight:800,color:C.gold}}>CERTAIN</div><div style={{fontSize:8,color:C.text3}}>Blinker (&gt;3s)</div></div>
                 </div>
-                {cbPuffing&&<div style={{fontSize:13,fontWeight:800,color:C.gold,animation:"pulse 0.5s infinite"}}>PUFFING... hold for YES or Blinker!</div>}
-                {!cbPuffing&&<div style={{fontSize:11,color:C.text3}}>HOLD to puff your prediction</div>}
+                {cbPuffing&&<div style={{fontSize:13,fontWeight:800,color:C.gold,animation:"pulse 0.5s infinite"}}>CHANNELING... hold for YES or Blinker! 🔮</div>}
+                {!cbPuffing&&<div style={{fontSize:11,color:C.text3}}>PUFF FOR PREDICTION 🔮</div>}
               </div>)}
 
               {isR&&(<div style={{textAlign:"center",animation:"fadeIn 0.4s ease"}}><div style={{fontSize:56,marginBottom:12,animation:"countPulse 0.8s infinite",filter:"drop-shadow(0 0 25px rgba(147,51,234,0.7))"}}>🔮</div><div style={{fontSize:20,fontWeight:900,color:cbAnswer==="certain"?C.gold:cbAnswer==="yes"?C.green:C.red,marginBottom:4}}>{cbAnswer==="certain"?"ABSOLUTELY CERTAIN!":cbAnswer==="yes"?"YES":"NO"}</div><div style={{fontSize:12,color:C.text3}}>The Crystal Ball is revealing...</div></div>)}
@@ -16320,7 +16320,7 @@ const startSimonPuffs = () => {
                   ))}
                 </div>
                 <div style={{textAlign:"center",marginTop:12}}>
-                  <div style={{fontSize:11,color:C.text3}}>Short puff = <span style={{color:"#22C55E",fontWeight:700}}>{sbMatchup[0].name}</span> | Long puff = <span style={{color:C.gold,fontWeight:700}}>{sbMatchup[1].name}</span></div>
+                  <div style={{fontSize:11,color:C.text3}}>TAP TO VOTE 🌿 · Short puff = <span style={{color:"#22C55E",fontWeight:700}}>{sbMatchup[0].name}</span> | Long puff = <span style={{color:C.gold,fontWeight:700}}>{sbMatchup[1].name}</span></div>
                 </div>
               </div>)}
 
@@ -16397,7 +16397,7 @@ const startSimonPuffs = () => {
                   <div style={{padding:"8px 16px",borderRadius:10,background:"rgba(255,215,0,0.10)",border:"1px solid rgba(255,215,0,0.25)"}}><div style={{fontSize:11,fontWeight:700,color:C.gold}}>Draw</div><div style={{fontSize:8,color:C.text3}}>Medium (1-2.5s)</div></div>
                   <div style={{padding:"8px 16px",borderRadius:10,background:"rgba(239,68,68,0.10)",border:"1px solid rgba(239,68,68,0.25)"}}><div style={{fontSize:11,fontWeight:700,color:C.red}}>Away Win</div><div style={{fontSize:8,color:C.text3}}>Long (&gt;2.5s)</div></div>
                 </div>
-                <div style={{fontSize:11,color:C.text3}}>HOLD to puff your prediction</div>
+                <div style={{fontSize:11,color:C.text3}}>TAP TO PREDICT 📊</div>
               </div>)}
 
               {isPr&&(<div style={{textAlign:"center",animation:"fadeIn 0.4s ease"}}><div style={{fontSize:48,marginBottom:8}}>📊</div><div style={{fontSize:20,fontWeight:900,color:mpPrediction==="home"?"#3B82F6":mpPrediction==="draw"?C.gold:C.red}}>{mpPrediction==="home"?"HOME WIN":mpPrediction==="draw"?"DRAW":"AWAY WIN"}</div><div style={{fontSize:12,color:C.text3,marginTop:4}}>Waiting for result...</div></div>)}
@@ -16472,7 +16472,7 @@ const startSimonPuffs = () => {
                     <div style={{padding:"10px 24px",borderRadius:12,background:`${catColors[currentQ.cat]}10`,border:`1px solid ${catColors[currentQ.cat]}25`}}><div style={{fontSize:14,fontWeight:800,color:catColors[currentQ.cat]}}>{currentQ.b}</div><div style={{fontSize:8,color:C.text3}}>Long puff</div></div>
                   </div>
                 )}
-                <div style={{fontSize:11,color:C.text3,marginTop:12}}>HOLD to puff your pick</div>
+                <div style={{fontSize:11,color:C.text3,marginTop:12}}>TAP TO PICK 📅</div>
               </div>)}
 
               {isRev&&(<div style={{textAlign:"center",animation:"fadeIn 0.4s ease"}}>
@@ -16546,7 +16546,7 @@ const startSimonPuffs = () => {
                     {SLOTS_SYMBOLS.map(s=>(<div key={s} style={{fontSize:8,color:C.text3,padding:"2px 4px",borderRadius:4,background:"rgba(255,255,255,0.03)"}}>{s}{s}{s} = {SLOTS_PAYOUTS[s]}</div>))}
                   </div>
                 </div>
-                {isReady&&(<div style={{marginTop:16,fontSize:14,fontWeight:800,color:C.gold,animation:"pulse 1.5s infinite"}}>HOLD TO SPIN!</div>)}
+                {isReady&&(<div style={{marginTop:16,fontSize:14,fontWeight:800,color:C.gold,animation:"pulse 1.5s infinite"}}>PUFF TO SPIN 🎰</div>)}
                 {isSpin&&(<div style={{marginTop:16,fontSize:14,fontWeight:800,color:C.cyan,animation:"pulse 0.5s infinite"}}>SPINNING... RELEASE TO STOP</div>)}
               </div>)}
               {slotsHistory.length>0&&(<div style={{display:"flex",gap:4,flexWrap:"wrap",justifyContent:"center",marginTop:8}}>
@@ -16619,7 +16619,7 @@ const startSimonPuffs = () => {
                     <div style={{padding:"6px 14px",borderRadius:8,background:"rgba(239,68,68,0.10)",border:"1px solid rgba(239,68,68,0.20)"}}><div style={{fontSize:11,fontWeight:700,color:C.red}}>STAND</div><div style={{fontSize:7,color:C.text3}}>&gt;1.5s</div></div>
                     <div style={{padding:"6px 14px",borderRadius:8,background:"rgba(147,51,234,0.10)",border:"1px solid rgba(147,51,234,0.20)"}}><div style={{fontSize:11,fontWeight:700,color:C.purple}}>DOUBLE</div><div style={{fontSize:7,color:C.text3}}>4.5s+</div></div>
                   </div>
-                  <div style={{fontSize:12,fontWeight:700,color:C.gold,marginTop:10,animation:"pulse 1.5s infinite"}}>HOLD TO PUFF!</div>
+                  <div style={{fontSize:12,fontWeight:700,color:C.gold,marginTop:10,animation:"pulse 1.5s infinite"}}>TAP: Hit/Stand · PUFF: Double Down 🃏</div>
                 </div>)}
                 {isResult&&(<div style={{textAlign:"center",marginTop:8}}>
                   <div style={{fontSize:16,fontWeight:800,color:bjResult==="win"||bjResult==="blackjack"?C.gold:bjResult==="push"?C.cyan:C.red}}>
@@ -16687,8 +16687,8 @@ const startSimonPuffs = () => {
                   <div style={{padding:"4px 10px",borderRadius:8,background:"rgba(239,68,68,0.10)",border:"1px solid rgba(239,68,68,0.20)"}}><div style={{fontSize:9,fontWeight:700,color:C.red}}>LONG: 3x</div></div>
                   <div style={{padding:"4px 10px",borderRadius:8,background:"rgba(147,51,234,0.10)",border:"1px solid rgba(147,51,234,0.20)"}}><div style={{fontSize:9,fontWeight:700,color:C.purple}}>BLINKER: 5x</div></div>
                 </div>
-                <div style={{fontSize:14,fontWeight:800,color:C.gold,animation:"pulse 1.5s infinite"}}>HOLD TO SET CONFIDENCE!</div>
-                {cfPuffing&&<div style={{fontSize:12,fontWeight:700,color:C.cyan,marginTop:8,animation:"pulse 0.5s infinite"}}>PUFFING...</div>}
+                <div style={{fontSize:14,fontWeight:800,color:C.gold,animation:"pulse 1.5s infinite"}}>PUFF TO FLIP 🪙</div>
+                {cfPuffing&&<div style={{fontSize:12,fontWeight:700,color:C.cyan,marginTop:8,animation:"pulse 0.5s infinite"}}>FLIPPING...</div>}
               </div>)}
               {(isFlip||isRes)&&(<div style={{textAlign:"center"}}>
                 <div style={{fontSize:72,marginBottom:12,transition:"all 0.5s",animation:isFlip?"spin 1.5s linear":"none"}}>
@@ -16768,7 +16768,7 @@ const startSimonPuffs = () => {
                     <div style={{padding:"3px 8px",borderRadius:6,background:"rgba(255,255,255,0.04)",fontSize:8,color:C.text3}}>Long:9-10</div>
                     <div style={{padding:"3px 8px",borderRadius:6,background:"rgba(255,255,255,0.04)",fontSize:8,color:C.text3}}>Max:11-12</div>
                   </div>
-                  <div style={{fontSize:14,fontWeight:800,color:C.gold,marginTop:10,animation:"pulse 1.5s infinite"}}>HOLD TO ROLL!</div>
+                  <div style={{fontSize:14,fontWeight:800,color:C.gold,marginTop:10,animation:"pulse 1.5s infinite"}}>PUFF TO ROLL 🎲</div>
                 </div>)}
                 {isRoll&&crapsRolling&&(<div style={{marginTop:12,fontSize:14,fontWeight:800,color:C.cyan,animation:"pulse 0.5s infinite"}}>ROLLING... RELEASE!</div>)}
               </div>)}
@@ -16825,7 +16825,7 @@ const startSimonPuffs = () => {
                   ))}
                 </div>
               )}
-              {isPuff&&<div style={{fontSize:14,fontWeight:800,color:C.gold,marginTop:16,animation:"pulse 1.5s infinite"}}>HOLD TO PUFF & REVEAL!</div>}
+              {isPuff&&<div style={{fontSize:14,fontWeight:800,color:C.gold,marginTop:16,animation:"pulse 1.5s infinite"}}>TAP TO OPEN 🎁</div>}
               {isReveal&&mbPrize&&(
                 <div style={{textAlign:"center",animation:"fadeIn 0.4s ease",marginTop:12}}>
                   <div style={{fontSize:64,marginBottom:8,filter:`drop-shadow(0 0 20px ${rarityGlow}60)`,animation:"pulse 1s infinite"}}>{mbPrize.emoji}</div>
@@ -16888,7 +16888,7 @@ const startSimonPuffs = () => {
                   </div>
                 </div>
               )}
-              {isScratch&&scCurrentIdx!==null&&<div style={{fontSize:14,fontWeight:800,color:C.pink,marginTop:8,animation:"pulse 1.5s infinite"}}>HOLD TO PUFF & SCRATCH!</div>}
+              {isScratch&&scCurrentIdx!==null&&<div style={{fontSize:14,fontWeight:800,color:C.pink,marginTop:8,animation:"pulse 1.5s infinite"}}>SWIPE TO SCRATCH 🎫</div>}
               {isScratch&&scCurrentIdx===null&&<div style={{fontSize:12,color:C.text3,marginTop:8}}>Tap an area to select it</div>}
               {isRes&&scPrize&&(
                 <div style={{textAlign:"center",animation:"fadeIn 0.4s ease",marginTop:8}}>
@@ -16939,7 +16939,7 @@ const startSimonPuffs = () => {
                     animation:fcCracking?"pulse 0.3s infinite":"pulse 3s infinite",
                     transform:fcCracking?"rotate(10deg) scale(1.1)":"rotate(0)",
                   }}>🥠</div>
-                  <div style={{fontSize:14,fontWeight:800,color:C.orange,marginTop:16,animation:"pulse 1.5s infinite"}}>HOLD TO PUFF & CRACK!</div>
+                  <div style={{fontSize:14,fontWeight:800,color:C.orange,marginTop:16,animation:"pulse 1.5s infinite"}}>TAP TO CRACK 🥠</div>
                   <div style={{fontSize:10,color:C.text3,marginTop:4}}>Longer puff = bigger reveal. Blinker = 2x coins!</div>
                 </div>
               )}
@@ -17011,7 +17011,7 @@ const startSimonPuffs = () => {
                       );
                     })}
                   </div>
-                  {isPlay&&!tmGameOver&&tmSelected!==null&&<div style={{fontSize:13,fontWeight:800,color:C.gold,textAlign:"center",animation:"pulse 1.5s infinite"}}>PUFF TO FLIP!</div>}
+                  {isPlay&&!tmGameOver&&tmSelected!==null&&<div style={{fontSize:13,fontWeight:800,color:C.gold,textAlign:"center",animation:"pulse 1.5s infinite"}}>TAP TO DIG 🗺️</div>}
                   {isPlay&&!tmGameOver&&tmSelected===null&&<div style={{fontSize:11,color:C.text3,textAlign:"center"}}>Tap a tile to select it</div>}
                   {isPlay&&!tmGameOver&&tmCoins>0&&(
                     <div onClick={(e)=>{e.stopPropagation();tmCashOut();}} style={{
@@ -17134,7 +17134,7 @@ const startSimonPuffs = () => {
                 }}>
                   <div style={{fontSize:24}}>{pipPuffing?"💨":"👆"}</div>
                   <div style={{fontSize:12,fontWeight:800,color:pipPuffing?C.lime:C.gold,marginTop:4}}>
-                    {pipPuffing?"PUFFING... Release to lock in!":"HOLD TO PUFF YOUR GUESS!"}
+                    {pipPuffing?"SETTING PRICE... Release to lock in! 💰":"HOLD TO SET PRICE 💰"}
                   </div>
                   <div style={{fontSize:9,color:C.text3,marginTop:2}}>
                     {pipPuffing?`$${PIP_PRICE_PER_SEC}/sec`:"Longer puff = higher price"}
@@ -21017,7 +21017,7 @@ const startSimonPuffs = () => {
 
               {/* Puff-to-answer hint */}
               <div style={{textAlign:"center",marginTop:12}}>
-                <div style={{fontSize:8,color:C.text3,letterSpacing:1}}>TAP=A · SHORT PUFF=B · MED PUFF=C · LONG PUFF=D</div>
+                <div style={{fontSize:8,color:C.text3,letterSpacing:1}}>Tap to answer · Puff for bonus points 💨</div>
               </div>
             </div>
           )}
@@ -21229,7 +21229,7 @@ const startSimonPuffs = () => {
               <div style={{fontSize:12,fontWeight:700,color:C.text2,marginBottom:12}}>Total Won: <span style={{color:C.gold,fontWeight:900}}>{swTotalWon}</span> coins</div>
 
               {swPhase === "ready" && (
-                <div onClick={() => { if(!swSpinning) puffLockIn(swDoSpin); }} style={{padding:"14px 36px",borderRadius:14,cursor:"pointer",background:C.gold + "15",border:"1px solid " + C.gold + "35",color:C.gold,fontSize:15,fontWeight:900,animation:"pulse 1.5s infinite",textAlign:"center"}}>{"💨"} PUFF TO SPIN! ({swBonusRound ? "BONUS" : (swRound + 1) + "/3"})</div>
+                <div onClick={() => { if(!swSpinning) puffLockIn(swDoSpin); }} style={{padding:"14px 36px",borderRadius:14,cursor:"pointer",background:C.gold + "15",border:"1px solid " + C.gold + "35",color:C.gold,fontSize:15,fontWeight:900,animation:"pulse 1.5s infinite",textAlign:"center"}}>{"🎡"} TAP TO SPIN! ({swBonusRound ? "BONUS" : (swRound + 1) + "/3"})</div>
               )}
               {swSpinning && <div style={{fontSize:13,fontWeight:800,color:C.cyan,animation:"pulse 0.4s infinite"}}>{"🌀"} Spinning...</div>}
             </>
