@@ -3944,8 +3944,8 @@ export default function MoodLabArena() {
     if(charge>=80){playFx("laugh");setCommentary("BLINKER! 🫁🔥 Maximum dodge!");}
     setTimeout(()=>rrResolveTurn(rrPlayers,rrCurrentTurn,rrChamber,rrCurrentChamber,charge),600);};
   const rrPuff=()=>{if(rrPhase==="player_turn")rrStartPuff();else if(rrPhase==="puffing")rrStopPuff();};
-  const rrEndGame=()=>{const won=rrWinner&&rrWinner.isYou;const r=won?150:10;setCoins(c=>c+r);
-    notify(won?"🔫 SURVIVOR! +"+r+" coins!":"💀 Eliminated! +"+r,won?C.green:C.red);
+  const rrEndGame=()=>{const won=rrWinner&&rrWinner.isYou;const baseR=won?50:5;
+    recordGameResult(won,baseR,won?15:3);notify(won?"🔫 SURVIVOR! +"+Math.round(baseR*getCoinMultiplier())+" coins!":"💀 Eliminated! +"+Math.round(baseR*getCoinMultiplier()),won?C.green:C.red);
     setGameActive(null);setRrPhase(null);setDimLights(false);if(rrPuffInterval.current){clearInterval(rrPuffInterval.current);rrPuffInterval.current=null;}};
 
   // ═══════════════════════════════════════════════════════════════
@@ -4178,9 +4178,9 @@ export default function MoodLabArena() {
   const rpEndGame = () => {
     if(rpInterval.current)clearInterval(rpInterval.current);
     if(rpPuffTimer.current)clearTimeout(rpPuffTimer.current);
-    const r=Math.min(300,Math.floor(rpScore/10));
-    setCoins(c=>c+r);notify("🎵 Score: "+rpScore+" | +"+r+" coins!",C.purple);
-    if(rpScore>500){spawnConfetti(40,[C.purple,C.pink,C.gold,C.cyan]);setCommentary(pick(rpComedy.win));}
+    const won=rpScore>500;const baseR=Math.min(Math.floor(rpScore/10),100);
+    recordGameResult(won,baseR,15);notify("🎵 Score: "+rpScore+" | +"+Math.round(baseR*getCoinMultiplier())+" coins!",C.purple);
+    if(won){spawnConfetti(40,[C.purple,C.pink,C.gold,C.cyan]);setCommentary(pick(rpComedy.win));}
     if(gameActive?.wcMode) {
       const won = rpScore > 300;
       const myS = won ? 3 : 0; const aiS = won ? 0 : 3;
@@ -4504,8 +4504,8 @@ export default function MoodLabArena() {
     if(hpTimerRef.current){clearInterval(hpTimerRef.current);hpTimerRef.current=null;}
     if(hpPuffRef.current){clearInterval(hpPuffRef.current);hpPuffRef.current=null;}
     if(window._hpActive){window._hpActive.v=false;window._hpActive=null;}
-    const won = hpWinner&&hpWinner.isYou;const r=won?120:15;
-    setCoins(c=>c+r);notify(won?"💣 Survived! +"+r+" coins!":"💀 Exploded! +"+r,won?C.green:C.red);
+    const won = hpWinner&&hpWinner.isYou;const baseR=won?60:10;
+    recordGameResult(won,baseR,won?20:5);notify(won?"💣 Survived! +"+Math.round(baseR*getCoinMultiplier())+" coins!":"💀 Exploded! +"+Math.round(baseR*getCoinMultiplier()),won?C.green:C.red);
     setGameActive(null);setHpPhase(null);setDimLights(false);
   };
 
@@ -4621,8 +4621,8 @@ export default function MoodLabArena() {
   const hookEndGame = () => {
     if(hookGameLoop.current){clearInterval(hookGameLoop.current);hookGameLoop.current=null;}
     hookHoldingRef.current=false;
-    const r=hookScore>0?Math.min(200,hookScore):5;
-    setCoins(c=>c+r);notify("🎣 Fishing done! +"+r+" coins!",hookScore>0?C.green:C.red);
+    const won=hookRecentCatches.length>0;const baseR=won?hookRecentCatches.length*20:0;
+    recordGameResult(won,baseR,10);notify("🎣 Fishing done! +"+Math.round(baseR*getCoinMultiplier())+" coins!",won?C.green:C.red);
     setGameActive(null);setHookPhase(null);
   };
   // ── Match Intro Sequence ──
