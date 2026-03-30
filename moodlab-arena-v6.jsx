@@ -10399,7 +10399,7 @@ export default function MoodLabArena() {
         recordGameResult(finalPipScore > 0, finalPipScore, 15);
         playFx("crowd");
         setCommentary("That's the show! Let's see how you did!");
-        triggerConfetti();
+        spawnConfetti();
       } else {
         pipStartRound(nextRound, _pipCurUsed);
       }
@@ -21691,8 +21691,8 @@ const startSimonPuffs = () => {
         const newStreak = s + 1;
         setBestWinStreak(b => Math.max(b, newStreak));
         if(newStreak === 3) notify("3 Win Streak!", C.orange);
-        if(newStreak === 5) { notify("5 Win Streak! +50 bonus!", C.gold); setCoins(c => c + 50); }
-        if(newStreak === 10) { notify("10 WIN STREAK! +200 bonus!", C.pink); setCoins(c => c + 200); playFx("crowd"); }
+        if(newStreak === 5) { notify("5 Win Streak! +50 bonus!", C.gold); setCoins(c => c + 50); playFx("streak_fire"); }
+        if(newStreak === 10) { notify("10 WIN STREAK! +200 bonus!", C.pink); setCoins(c => c + 200); playFx("crowd"); spawnConfetti(60, [C.gold, C.pink, C.cyan, "#fff"]); }
         if(newStreak === 5 && !earnedBadges.includes("streak5")) { setEarnedBadges(b => [...b, "streak5"]); const badge = LOYALTY_BADGES.find(b=>b.id==="streak5"); if(badge) setTimeout(()=>showAchievementPopup(badge), 800); }
         if(newStreak === 10 && !earnedBadges.includes("streak10")) { setEarnedBadges(b => [...b, "streak10"]); const badge = LOYALTY_BADGES.find(b=>b.id==="streak10"); if(badge) setTimeout(()=>showAchievementPopup(badge), 800); }
         return newStreak;
