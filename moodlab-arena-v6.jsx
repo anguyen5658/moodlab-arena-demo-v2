@@ -6554,6 +6554,23 @@ export default function MoodLabArena() {
     else if (id === "rhythm")      { down = rpPuffHit;      up = null;           }
     // hold-based: puffUp moves paddle down, puffRelease lets it drift
     else if (id === "puffpong")    { down = ppPuffUp;       up = ppPuffRelease;  }
+    // --- Stage: Higher or Lower (hold-based: short=lower, long=higher) ---
+    else if (id === "higherlower")    { down = () => setHlPuffStart(Date.now()); up = () => { if(hlPuffStart){ hlHandlePuff(Date.now()-hlPuffStart>1500); setHlPuffStart(null); } }; }
+    // --- Fortune / Oracle games (hold-based) ---
+    else if (id === "crystalball")    { down = cbHandlePuff;     up = cbHandlePuffEnd;     }
+    else if (id === "strainbattle")   { down = sbHandlePuff;     up = sbHandlePuffEnd;     }
+    else if (id === "matchpredictor") { down = mpHandlePuff;     up = mpHandlePuffEnd;     }
+    else if (id === "dailypicks")     { down = dpHandlePuff;     up = dpHandlePuffEnd;     }
+    else if (id === "puffslots")      { down = slotsHandlePuff;  up = slotsHandlePuffEnd;  }
+    else if (id === "puffblackjack")  { down = bjHandlePuff;     up = bjHandlePuffEnd;     }
+    else if (id === "coinflip")       { down = cfHandlePuff;     up = cfHandlePuffEnd;     }
+    else if (id === "crapsnclouds")   { down = crapsHandlePuff;  up = crapsHandlePuffEnd;  }
+    else if (id === "mysterybox")     { down = mbHandlePuff;     up = mbHandlePuffEnd;     }
+    else if (id === "scratchpuff")    { down = scHandlePuff;     up = scHandlePuffEnd;     }
+    else if (id === "fortunecookie")  { down = fcHandlePuff;     up = fcHandlePuffEnd;     }
+    else if (id === "treasuremap")    { down = tmHandlePuff;     up = tmHandlePuffEnd;     }
+    // --- Fortune: Spin & Win (tap-only) ---
+    else if (id === "spinwin")        { down = () => { if(!swSpinning) puffLockIn(swDoSpin); }; up = null; }
     btPuffDown.current = down;
     btPuffUp.current   = up;
     // puffEvent handlers are always live regardless of active game
