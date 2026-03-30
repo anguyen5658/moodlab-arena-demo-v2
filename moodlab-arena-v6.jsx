@@ -10392,6 +10392,8 @@ export default function MoodLabArena() {
       const nextRound = _pipCurRound + 1;
       if(nextRound >= PIP_ROUNDS) {
         setPipPhase("result");
+        const finalPipScore = pipScore + roundCoins;
+        recordGameResult(finalPipScore > 0, finalPipScore, 15);
         playFx("crowd");
         setCommentary("That's the show! Let's see how you did!");
         triggerConfetti();
@@ -10719,9 +10721,7 @@ export default function MoodLabArena() {
       setStComment("WINNER WINNER! You survived all rounds!");
       playFx("crowd");
       triggerFlash("goal");
-      setCoins(c=>c+500);
-      notify("SURVIVOR! +500 coins!",C.gold);
-      if(!earnedBadges.includes("showchamp")) { setEarnedBadges(b => [...b, "showchamp"]); const badge = LOYALTY_BADGES.find(b=>b.id==="showchamp"); if(badge) setTimeout(()=>showAchievementPopup(badge), 800); }
+      recordGameResult(true, 80, 20);
       return;
     }
     const isFinal = playersLeft <= 3;
@@ -10813,8 +10813,7 @@ export default function MoodLabArena() {
       playFx("correct_ding"); if(eliminated>=10) playFx("crowd_ooh");
       setCommentary(eliminated+" players eliminated! "+newAlive+" remain.");
       const streakBonus = (stStreak+1) >= 5 ? 50 : (stStreak+1) >= 3 ? 25 : 10;
-      setCoins(c=>c+streakBonus);
-      notify("Correct! +"+streakBonus+" coins",C.green);
+      notify("Correct! +"+streakBonus+" streak bonus",C.green);
       if(stageRole) showMC("correct", {points:String(streakBonus)});
       elimRound(100);
     } else {
@@ -10833,6 +10832,7 @@ export default function MoodLabArena() {
     setTimeout(()=>{
       if(!isCorrect) {
         setStPhase("eliminated");
+        recordGameResult(false, 15, 20);
         return;
       }
       if(newAlive <= 1) {
@@ -10840,9 +10840,7 @@ export default function MoodLabArena() {
         setStComment("YOU ARE THE LAST ONE STANDING!");
         playFx("reveal_drumroll"); playFx("crowd");
         triggerFlash("goal");
-        setCoins(c=>c+500);
-        notify("SOLE SURVIVOR! +500 coins!",C.gold);
-        if(!earnedBadges.includes("showchamp")) { setEarnedBadges(b => [...b, "showchamp"]); const badge = LOYALTY_BADGES.find(b=>b.id==="showchamp"); if(badge) setTimeout(()=>showAchievementPopup(badge), 800); }
+        recordGameResult(true, 80, 20);
         if(stageRole) showMC("finale");
         return;
       }
@@ -11492,7 +11490,7 @@ const startSimonPuffs = () => {
     if(spPuffInterval.current){clearInterval(spPuffInterval.current);spPuffInterval.current=null;}
     if(spShowTimer.current){clearTimeout(spShowTimer.current);spShowTimer.current=null;}
     const earned = Math.min(500, spScore);
-    if(earned > 0) { setCoins(c => c + Math.round(earned * getCoinMultiplier())); notify("+"+earned+" coins!", C.green); }
+    if(earned > 0) { recordGameResult(spRound >= 5, earned, 15); }
     setSpPhase(null);
     setGameActive(null);
     setStageRole(null);setMcVisible(false);setStageElim(null);
@@ -11591,7 +11589,7 @@ const startSimonPuffs = () => {
           setCommentary("You were DISQUALIFIED! " + (validBids[0]?validBids[0].name+" wins!":"No winner!"));
           setTimeout(() => {
             if(paRoundRef.current < PA_PRIZES.length - 1) { paStartRound(paRoundRef.current + 1); }
-            else { setPaPhase("final"); setCommentary("Auction complete!"); }
+            else { setPaPhase("final"); recordGameResult(paTotalWon > 0, paTotalWon, 15); setCommentary("Auction complete!"); }
           }, 3000);
         }, 1500);
       } else if(elapsed >= PA_DANGER_ZONE) {
@@ -11624,14 +11622,14 @@ const startSimonPuffs = () => {
     setPaShowGavel(true);
     setPaPhase("result");
     playFx("auction_gavel");
+    let lastWonValue = 0;
     if(winner && winner.isYou) {
       const prize = PA_PRIZES[Math.min(paRound, PA_PRIZES.length-1)];
+      lastWonValue = prize.value;
       setPaTotalWon(t => t + prize.value);
-      setCoins(c => c + Math.round(prize.value * getCoinMultiplier()));
       triggerFlash("goal");
       spawnConfetti(30);
       playFx("coin_collect");
-      if(!earnedBadges.includes("showchamp")) { setEarnedBadges(b => [...b, "showchamp"]); const badge = LOYALTY_BADGES.find(b=>b.id==="showchamp"); if(badge) setTimeout(()=>showAchievementPopup(badge), 800); }
       setCommentary("YOU WIN! " + prize.emoji + " " + prize.name + "! Bid: " + dur.toFixed(2) + "s");
       setPaComment("SOLD to the champion puffer! +" + prize.value + " coins!");
       if(stageRole) showMC("correct",{points:String(prize.value)});
@@ -11646,8 +11644,10 @@ const startSimonPuffs = () => {
       if(paRound < PA_PRIZES.length - 1) {
         paStartRound(paRoundRef.current + 1);
       } else {
+        const finalTotal = paTotalWon + lastWonValue;
         setPaPhase("final");
-        setCommentary("Auction complete! Total won: " + paTotalWon + " value!");
+        recordGameResult(finalTotal > 0, finalTotal, 15);
+        setCommentary("Auction complete! Total won: " + finalTotal + " value!");
       }
     }, 3000);
   };
@@ -11670,7 +11670,7 @@ const startSimonPuffs = () => {
   const pdCleanup = () => { if(pdAiRef.current){clearInterval(pdAiRef.current);pdAiRef.current=null;}if(pdTimerRef.current){clearInterval(pdTimerRef.current);pdTimerRef.current=null;}setPdPhase(null);setGameActive(null);setStageRole(null);setMcVisible(false); };
   const hlPickRandom = () => { const av=HL_STATS.filter((_,i)=>!hlUsedRef.current.includes(i));if(av.length===0){hlUsedRef.current=[];return HL_STATS[Math.floor(Math.random()*HL_STATS.length)];}const pk=av[Math.floor(Math.random()*av.length)];hlUsedRef.current=[...hlUsedRef.current,HL_STATS.indexOf(pk)];return pk; };
   const startHigherLower = () => { if(stageRole === "contestant") initStageElim(); hlUsedRef.current=[];const f=hlPickRandom();const s=hlPickRandom();setHlCurrent(f);setHlNext(s);setHlStreak(0);setHlBestStreak(0);setHlScore(0);setHlRound(1);setHlRevealing(false);setHlRevealNum(0);setHlPuffStart(null);setHlPhase("playing");setCommentary("Higher or Lower?");playFx("crowd"); };
-  const hlGuess = (guess) => { if(hlPhase!=="playing"||hlRevealing||!hlNext)return;setHlRevealing(true);setHlPuffStart(null);playFx("tap");const target=hlNext.value;let step=0;const rid=setInterval(()=>{step++;setHlRevealNum(Math.round(target*(1-Math.pow(1-step/20,3))));if(step>=20){clearInterval(rid);setHlRevealNum(target);const actual=hlNext.value>hlCurrent.value?"higher":hlNext.value<hlCurrent.value?"lower":guess;const correct=guess===actual||hlNext.value===hlCurrent.value;setTimeout(()=>{if(correct){const ns=hlStreak+1;const pts=10*ns;setHlStreak(ns);if(ns===5) playFx("streak_fire");setHlBestStreak(b=>Math.max(b,ns));setHlScore(s=>s+pts);setCommentary("CORRECT! +"+pts);playFx("select");triggerFlash("goal");setHlPhase("correct");if(stageRole)showMC("correct",{points:String(pts)});elimRound(100);}else{if(hlStreak>=2) playFx("streak_break");setHlStreak(0);setCommentary("WRONG! It was "+actual.toUpperCase());playFx("whistle");triggerFlash("miss");if(stageRole)showMC("wrong");setScreenShake(true);setTimeout(()=>setScreenShake(false),400);setHlPhase("wrong");elimRound(0);}setTimeout(()=>{const nr=hlRound+1;if(nr>10){setCoins(c=>c+Math.max(10,Math.floor(hlScore/2)));setHlPhase("result");setCommentary("Game over! Score: "+hlScore);if(hlBestStreak>=5)setConfettiParticles(Array.from({length:20},(_,i)=>({id:Date.now()+i,x:Math.random()*100,y:-10-Math.random()*20,size:4+Math.random()*4,color:[C.cyan,C.gold,C.green,C.pink][i%4],rot:Math.random()*360})));}else{setHlRound(nr);setHlCurrent(hlNext);setHlNext(hlPickRandom());setHlRevealing(false);setHlRevealNum(0);setHlPhase("playing");setCommentary("Round "+nr+"/10");}},1800);},600);}},40); };
+  const hlGuess = (guess) => { if(hlPhase!=="playing"||hlRevealing||!hlNext)return;setHlRevealing(true);setHlPuffStart(null);playFx("tap");const target=hlNext.value;let step=0;const rid=setInterval(()=>{step++;setHlRevealNum(Math.round(target*(1-Math.pow(1-step/20,3))));if(step>=20){clearInterval(rid);setHlRevealNum(target);const actual=hlNext.value>hlCurrent.value?"higher":hlNext.value<hlCurrent.value?"lower":guess;const correct=guess===actual||hlNext.value===hlCurrent.value;setTimeout(()=>{if(correct){const ns=hlStreak+1;const pts=10*ns;setHlStreak(ns);if(ns===5) playFx("streak_fire");setHlBestStreak(b=>Math.max(b,ns));setHlScore(s=>s+pts);setCommentary("CORRECT! +"+pts);playFx("select");triggerFlash("goal");setHlPhase("correct");if(stageRole)showMC("correct",{points:String(pts)});elimRound(100);}else{if(hlStreak>=2) playFx("streak_break");setHlStreak(0);setCommentary("WRONG! It was "+actual.toUpperCase());playFx("whistle");triggerFlash("miss");if(stageRole)showMC("wrong");setScreenShake(true);setTimeout(()=>setScreenShake(false),400);setHlPhase("wrong");elimRound(0);}setTimeout(()=>{const nr=hlRound+1;if(nr>10){recordGameResult(hlBestStreak>=3,Math.max(10,Math.floor(hlScore/2)),15);setHlPhase("result");setCommentary("Game over! Score: "+hlScore);if(hlBestStreak>=5)setConfettiParticles(Array.from({length:20},(_,i)=>({id:Date.now()+i,x:Math.random()*100,y:-10-Math.random()*20,size:4+Math.random()*4,color:[C.cyan,C.gold,C.green,C.pink][i%4],rot:Math.random()*360})));}else{setHlRound(nr);setHlCurrent(hlNext);setHlNext(hlPickRandom());setHlRevealing(false);setHlRevealNum(0);setHlPhase("playing");setCommentary("Round "+nr+"/10");}},1800);},600);}},40); };
   const hlHandlePuff = (isLong) => { hlGuess(isLong?"higher":"lower"); };
   const hlCleanup = () => { setHlPhase(null);setGameActive(null);setHlRevealing(false);setHlPuffStart(null);hlUsedRef.current=[];setStageRole(null);setMcVisible(false);setStageElim(null); };
   const overlayBack = (onClose) => (
