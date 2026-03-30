@@ -22248,15 +22248,26 @@ const startSimonPuffs = () => {
 
       {/* CONNECT DEVICE BUTTON — floating, only when not connected on Arena hub */}
       {!bleConnected && tab==="arena" && !zone && !gameActive && !matchmaking && (
-        <div onClick={()=>{playFx("tap");setShowBlePopup(true);}} style={{position:"fixed",bottom:80,left:"50%",transform:"translateX(-50%)",zIndex:250,
-          padding:"14px 32px",borderRadius:100,cursor:"pointer",
-          background:"linear-gradient(135deg,#00E5FF,#C084FC)",
-          boxShadow:"0 4px 24px rgba(0,229,255,0.35), 0 0 50px rgba(0,229,255,0.12)",
-          display:"flex",alignItems:"center",gap:8,
-          animation:"claimPulse 2s ease-in-out infinite",
+        <div onClick={()=>{playFx("tap");setShowBlePopup(true);}} style={{position:"fixed",bottom:78,left:"50%",transform:"translateX(-50%)",zIndex:250,
+          padding:"11px 24px",borderRadius:14,cursor:"pointer",
+          ...GLASS_CARD,
+          background:"rgba(8,8,25,0.85)",
+          backdropFilter:"blur(40px) saturate(1.4)",
+          WebkitBackdropFilter:"blur(40px) saturate(1.4)",
+          border:"1px solid rgba(0,229,255,0.2)",
+          boxShadow:"0 8px 32px rgba(0,0,0,0.5), 0 0 20px rgba(0,229,255,0.08), inset 0 1px 0 rgba(255,255,255,0.06)",
+          display:"flex",alignItems:"center",gap:10,
+          transition:"all 0.3s ease",
         }}>
-          <span style={{fontSize:16}}>💨</span>
-          <span style={{fontSize:14,fontWeight:800,color:"#fff",letterSpacing:0.5}}>Connect Device to Play</span>
+          <div style={{width:32,height:32,borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",
+            background:"rgba(0,229,255,0.1)",border:"1px solid rgba(0,229,255,0.2)"}}>
+            <span style={{fontSize:14}}>💨</span>
+          </div>
+          <div>
+            <div style={{fontSize:12,fontWeight:800,color:C.text,letterSpacing:0.3}}>Connect Device to Play</div>
+            <div style={{fontSize:8,color:C.cyan,fontWeight:600,marginTop:1}}>Tap to pair your device</div>
+          </div>
+          <div style={{width:6,height:6,borderRadius:"50%",background:C.orange,animation:"pulse 1.5s infinite",marginLeft:4}}/>
         </div>
       )}
 
