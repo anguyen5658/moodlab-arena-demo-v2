@@ -12412,6 +12412,7 @@ const startSimonPuffs = () => {
                         <div onClick={(e)=>{e.stopPropagation();startDuel();}} style={{padding:"12px 24px",borderRadius:12,cursor:"pointer",background:`linear-gradient(135deg, ${C.gold}20, ${C.gold}08)`,border:`1px solid ${C.gold}40`,fontSize:14,fontWeight:800,color:C.gold,letterSpacing:1,minWidth:44,textAlign:"center"}}>🔫 REMATCH</div>
                         <div onClick={(e)=>{e.stopPropagation();resetDuel();setGameActive(null);}} style={{padding:"12px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:`1px solid rgba(139,69,19,0.3)`,fontSize:14,fontWeight:700,color:C.text2,minWidth:44,textAlign:"center"}}>Exit</div>
                       </div>
+                      <div onClick={()=>{resetDuel();setGameActive(null);setTab("me");setZone(null);setSelectedGame(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
                     </div>
                   </div>
                 )}
@@ -15469,6 +15470,7 @@ const startSimonPuffs = () => {
                     <div onClick={()=>{pcEndGame();startPuffClock();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:C.cyan+"15",border:"1px solid "+C.cyan+"30",fontSize:13,fontWeight:800,color:C.cyan}}>Play Again</div>
                     <div onClick={pcEndGame} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:C.text3+"10",border:"1px solid "+C.text3+"20",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
                   </div>
+                  <div onClick={()=>{pcEndGame();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
                 </div>
               )}
 
