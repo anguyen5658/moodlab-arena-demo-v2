@@ -7404,23 +7404,7 @@ export default function MoodLabArena() {
         </div>
 
 
-        {/* CONNECT DEVICE CARD — when BLE not connected */}
-        {!bleConnected && (
-          <div onClick={()=>setShowBlePopup(true)} style={{position:"absolute",bottom:70,left:18,right:18,zIndex:11,padding:"14px 16px",borderRadius:16,cursor:"pointer",background:"linear-gradient(135deg,rgba(0,229,255,0.08),rgba(192,132,252,0.08))",border:"1px solid rgba(0,229,255,0.15)",overflow:"hidden",animation:"arenaFadeIn 0.6s ease 0.5s both",...GLASS_CARD}}>
-            <div style={{position:"absolute",top:0,right:0,width:100,height:100,background:"radial-gradient(circle,rgba(0,229,255,0.15),transparent 70%)",borderRadius:"50%",pointerEvents:"none"}}/>
-            <div style={{display:"flex",alignItems:"center",gap:12,position:"relative",zIndex:1}}>
-              <div style={{fontSize:24}}>💨</div>
-              <div style={{flex:1}}>
-                <div style={{fontSize:13,fontWeight:800,color:C.text}}>Connect Your Cali Clear</div>
-                <div style={{fontSize:10,color:C.text2,marginTop:2}}>Tap to pair and start playing</div>
-                <div style={{display:"flex",gap:6,marginTop:6}}>
-                  <div style={{padding:"2px 8px",borderRadius:6,background:"rgba(0,229,255,0.1)",border:"1px solid rgba(0,229,255,0.2)",fontSize:8,fontWeight:700,color:C.cyan}}>1.5x Coin Bonus</div>
-                  <div style={{padding:"2px 8px",borderRadius:6,background:"rgba(192,132,252,0.1)",border:"1px solid rgba(192,132,252,0.2)",fontSize:8,fontWeight:700,color:C.purple}}>Play All Games</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        {/* Connect button moved to root level render for z-index */}
         {/* ═══ BOTTOM NAV — Floating pill dock ═══ */}
         <div style={{position:"absolute",bottom:16,left:"50%",transform:"translateX(-50%)",zIndex:10}}>
           <div style={{display:"inline-flex",alignItems:"center",gap:3,padding:"4px 5px",borderRadius:100,
@@ -22259,6 +22243,20 @@ const startSimonPuffs = () => {
               <span style={{fontSize:9,fontWeight:800,color:"#00E5FF"}}>1.5x</span>
             </div>
           )}
+        </div>
+      )}
+
+      {/* CONNECT DEVICE BUTTON — floating, only when not connected on Arena hub */}
+      {!bleConnected && tab==="arena" && !zone && !gameActive && !matchmaking && (
+        <div onClick={()=>{playFx("tap");setShowBlePopup(true);}} style={{position:"fixed",bottom:80,left:"50%",transform:"translateX(-50%)",zIndex:250,
+          padding:"14px 32px",borderRadius:100,cursor:"pointer",
+          background:"linear-gradient(135deg,#00E5FF,#C084FC)",
+          boxShadow:"0 4px 24px rgba(0,229,255,0.35), 0 0 50px rgba(0,229,255,0.12)",
+          display:"flex",alignItems:"center",gap:8,
+          animation:"claimPulse 2s ease-in-out infinite",
+        }}>
+          <span style={{fontSize:16}}>💨</span>
+          <span style={{fontSize:14,fontWeight:800,color:"#fff",letterSpacing:0.5}}>Connect Device to Play</span>
         </div>
       )}
 
