@@ -1475,6 +1475,7 @@ export default function MoodLabArena() {
   const btPuffUp         = useRef(null); // active game puff-stop handler
   const btPuffEventDown  = useRef(null); // puffEvent system puff-start handler
   const btPuffEventUp    = useRef(null); // puffEvent system puff-stop handler
+  const btPuffTimeout    = useRef(null); // safety: auto-stop after 15 s if PUFF_STOP is missed
 
   // ── Universal Puff Action Bar ──
   const [universalSweetSpot, setUniversalSweetSpot] = useState({min:55, max:80});
@@ -6442,7 +6443,9 @@ export default function MoodLabArena() {
       btDeviceRef.current = device;
 
       device.addEventListener("gattserverdisconnected", () => {
+        clearTimeout(btPuffTimeout.current); // cancel safety timeout on unexpected disconnect
         setBleConnected(false);
+        setBtPuffActive(false);
         btCharNotify.current = null;
         notify("Device disconnected", C.orange);
       });
@@ -6459,11 +6462,20 @@ export default function MoodLabArena() {
         const match = (template) => b.length === template.length && template.every((v, i) => b[i] === v);
         if (match(BLE_PUFF_START)) {
           // console.log("[BLE] PUFF START →", hex);
+          // Clear any previous safety timeout (e.g. two starts in a row)
+          clearTimeout(btPuffTimeout.current);
           setBtPuffActive(true);
           btPuffDown.current?.();
           btPuffEventDown.current?.();
+          // Safety net: if PUFF_STOP packet is never received, auto-stop after 15 s
+          btPuffTimeout.current = setTimeout(() => {
+            setBtPuffActive(false);
+            btPuffUp.current?.();
+            btPuffEventUp.current?.();
+          }, 15000);
         } else if (match(BLE_PUFF_STOP)) {
           // console.log("[BLE] PUFF STOP  →", hex);
+          clearTimeout(btPuffTimeout.current);
           setBtPuffActive(false);
           btPuffUp.current?.();
           btPuffEventUp.current?.();
@@ -6498,8 +6510,10 @@ export default function MoodLabArena() {
   };
 
   const disconnectBle = () => {
+    clearTimeout(btPuffTimeout.current); // cancel safety timeout on intentional disconnect
     if (btDeviceRef.current?.gatt?.connected) btDeviceRef.current.gatt.disconnect();
     setBleConnected(false);
+    setBtPuffActive(false);
     btCharNotify.current = null;
   };
 
