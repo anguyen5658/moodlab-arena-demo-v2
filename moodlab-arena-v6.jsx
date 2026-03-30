@@ -1038,6 +1038,7 @@ export default function MoodLabArena() {
   const [floatingReward, setFloatingReward] = useState(null);
   const [coinPulse, setCoinPulse] = useState(false);
   const [achievementPopup, setAchievementPopup] = useState(null);
+  const [chatsSent, setChatsSent] = useState(0);
   const prevBleConnected = useRef(false);
   const [selectedGame, setSelectedGame] = useState(null);
   const [matchmaking, setMatchmaking] = useState(null);
@@ -2788,7 +2789,7 @@ export default function MoodLabArena() {
 
   // ── ACTIONS ──
   const notify = useCallback((msg,color=C.cyan) => { setNotif({msg,color}); setTimeout(()=>setNotif(null),2200); }, []);
-  const sendChat = useCallback((msg) => { const t=msg||chatInput.trim(); if(!t) return; setChatMessages(p=>[...p.slice(-20),{u:"Steve",m:t,c:C.cyan,t:Date.now(),isYou:true}]); setChatInput(""); },[chatInput]);
+  const sendChat = useCallback((msg) => { const t=msg||chatInput.trim(); if(!t) return; setChatMessages(p=>[...p.slice(-20),{u:"Steve",m:t,c:C.cyan,t:Date.now(),isYou:true}]); setChatInput(""); setChatsSent(c => { const n = c + 1; if(n >= 50 && !earnedBadges.includes("social")) { setEarnedBadges(b => [...b, "social"]); const badge = LOYALTY_BADGES.find(b=>b.id==="social"); if(badge) setTimeout(()=>showAchievementPopup(badge), 800); } return n; }); },[chatInput, earnedBadges]);
   const puffLockIn = (cb) => { setPuffLocking(true); setTimeout(()=>{setPuffLocking(false);notify("✓ Locked In!",C.green);if(cb)cb();},1100); };
   const triggerInputPulse = () => { setInputPulse(true); setTimeout(()=>setInputPulse(false),600); };
 
@@ -21588,6 +21589,7 @@ const startSimonPuffs = () => {
           playFx("level_up");
           notify("TIER UP! " + LOYALTY_TIERS[i].icon + " " + LOYALTY_TIERS[i].name + " -- " + LOYALTY_TIERS[i].mult + "x multiplier!", LOYALTY_TIERS[i].color);
           spawnConfetti(50, [LOYALTY_TIERS[i].color, C.gold, "#fff"]);
+          if(LOYALTY_TIERS[i].name === "Legend" && !earnedBadges.includes("legend")) { setEarnedBadges(b => [...b, "legend"]); const badge = LOYALTY_BADGES.find(b=>b.id==="legend"); if(badge) setTimeout(()=>showAchievementPopup(badge), 1500); }
         }, 500);
         break;
       }
@@ -21625,6 +21627,8 @@ const startSimonPuffs = () => {
     if(!earnedBadges.includes("blinker") && playerProfile.blinkerCount >= 10) { setEarnedBadges(b => [...b, "blinker"]); const badge = LOYALTY_BADGES.find(b=>b.id==="blinker"); if(badge) setTimeout(()=>showAchievementPopup(badge), 800); }
     // Explorer badge: played at least as many games as exist
     if(!earnedBadges.includes("allgames") && playerProfile.gamesPlayed >= PLAY_GAMES.length) { setEarnedBadges(b => [...b, "allgames"]); const badge = LOYALTY_BADGES.find(b=>b.id==="allgames"); if(badge) setTimeout(()=>showAchievementPopup(badge), 800); }
+    // Cloud Chaser badge: played 100 games
+    if(!earnedBadges.includes("puff100") && playerProfile.gamesPlayed >= 100) { setEarnedBadges(b => [...b, "puff100"]); const badge = LOYALTY_BADGES.find(b=>b.id==="puff100"); if(badge) setTimeout(()=>showAchievementPopup(badge), 800); }
 
     if(won) {
       // Show Champ badge: win any Stage show
