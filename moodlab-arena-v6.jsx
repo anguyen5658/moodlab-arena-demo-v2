@@ -10595,15 +10595,15 @@ export default function MoodLabArena() {
             if(prev.you > prev.ai) {
               playFx("win"); spawnConfetti(50); triggerFlash("goal");
               setCommentary("CHAMPION! You dominated the Puff Dojo! 🏆💨");
-              setCoins(c=>c+500); setXp(x=>x+200);
+              recordGameResult(true, 80, 15);
             } else if(prev.ai > prev.you) {
               playFx("lose"); triggerFlash("miss");
               setCommentary("Defeated... " + (rpsResolveRef.current?.opp?.name||"AI") + " was too strong! 💀");
-              setCoins(c=>c+50); setXp(x=>x+50);
+              recordGameResult(false, 20, 15);
             } else {
               playFx("crowd");
               setCommentary("DRAW! Equal warriors in the dojo! 🤝");
-              setCoins(c=>c+200); setXp(x=>x+100);
+              recordGameResult(false, 40, 15);
             }
             return prev;
           });
@@ -10969,7 +10969,7 @@ export default function MoodLabArena() {
 
     if(!perfect) {
       const coins = error <= 0.10 ? 100 : error <= 0.25 ? 50 : error <= 0.50 ? 25 : error <= 1.0 ? 10 : 5;
-      setCoins(c=>c+coins);
+      recordGameResult(error <= 0.25, coins, 10);
       notify("+"+coins+" coins (error: "+error.toFixed(2)+"s)",error<=0.25?C.green:C.gold);
       if(stageRole) { if(error<=0.25) showMC("correct",{points:String(coins)}); else if(error>1.0) showMC("wrong"); }
     }
@@ -11000,7 +11000,7 @@ export default function MoodLabArena() {
     playFx("crowd");
     if(rank && rank.rank <= 3) {
       triggerFlash("goal");
-      setCoins(c=>c+200);
+      recordGameResult(true, 200, 10);
       notify("TOP 3 FINISH! +200 bonus coins!",C.gold);
     }
     if(stageRole) showMC("finale");
@@ -11205,9 +11205,9 @@ export default function MoodLabArena() {
       if (roundNum < 2) { bdStartRound(roundNum + 1, guard); }
       else {
         setBdPhase("final");
-        const bonus = Math.round((scoreForFinal >= 250 ? 100 : scoreForFinal >= 150 ? 50 : 20) * getCoinMultiplier());
-        setCoins(c => c + bonus);
-        setCommentary("BEAT DROP COMPLETE! +" + bonus + " coins!");
+        const baseCoins = scoreForFinal >= 250 ? 100 : scoreForFinal >= 150 ? 50 : 20;
+        recordGameResult(scoreForFinal >= 200, baseCoins, 15);
+        setCommentary("BEAT DROP COMPLETE! +" + Math.round(baseCoins * getCoinMultiplier()) + " coins!");
         if (scoreForFinal >= 250) { spawnConfetti(60, [C.pink, C.purple, C.gold, C.cyan]); playFx("win"); }
         else playFx("success");
         if(stageRole) showMC("finale");
@@ -11325,14 +11325,14 @@ export default function MoodLabArena() {
     setTimeout(() => {
       if (!guard.v) return;
       if (!survived) {
-        const bonus = Math.round((plRound >= 5 ? 60 : plRound >= 3 ? 30 : 10) * getCoinMultiplier());
-        setCoins(c => c + bonus);
+        const baseCoins = plRound >= 5 ? 60 : plRound >= 3 ? 30 : 10;
+        recordGameResult(false, baseCoins, 15);
         setPlPhase("final");
-        setCommentary("Puff Limbo over! Made it to round " + (plRound + 1) + " -- +" + bonus + " coins");
+        setCommentary("Puff Limbo over! Made it to round " + (plRound + 1) + " -- +" + Math.round(baseCoins * getCoinMultiplier()) + " coins");
         playFx(plRound >= 3 ? "success" : "save");
       } else if (plRound >= 6) {
         setPlPhase("champion");
-        setCoins(c => c + Math.round(150 * getCoinMultiplier()));
+        recordGameResult(true, 150, 15);
         setCommentary("PUFF LIMBO CHAMPION! Survived the 5.0s BLINKER round! +150 coins!");
         spawnConfetti(80, [C.gold, C.orange, C.red, C.pink]);
         playFx("win");
@@ -11666,7 +11666,7 @@ const startSimonPuffs = () => {
   const pdPickHorse = (idx) => { setPdPlayerHorse(idx);playFx("select");setCommentary(PD_HORSE_NAMES[idx]+" selected!");setPdPhase("countdown");let c=3;const cd=setInterval(()=>{c--;if(c<=0){clearInterval(cd);setPdPhase("racing");setCommentary("AND THEY'RE OFF!");playFx("whistle");triggerFlash("goal");pdStartRace(idx);}},800); };
   const pdStartRace = (pi) => { pdPosRef.current=[0,0,0,0,0,0];pdFinishRef.current=[];pdStaminaRef.current=100;pdLastPuff.current=Date.now();let tl=30;setPdRaceTime(30);pdAiRef.current=setInterval(()=>{if(Date.now()-pdLastPuff.current>500){pdStaminaRef.current=Math.min(100,pdStaminaRef.current+0.6);setPdStamina(Math.round(pdStaminaRef.current));}const np=[...pdPosRef.current];for(let i=0;i<6;i++){if(i===pi||pdFinishRef.current.includes(i))continue;const p=PD_AI[i];let mv=p.bs*(0.6+Math.random()*0.8);if(Math.random()<p.bc)mv+=p.bz;if(Math.random()<p.rc)mv=0;if(np[i]>70)mv*=1.2;if(np[i]>90)mv*=1.1;np[i]=Math.min(100,np[i]+mv*0.16);if(np[i]>=100&&!pdFinishRef.current.includes(i)){pdFinishRef.current=[...pdFinishRef.current,i];setPdFinishOrder([...pdFinishRef.current]);}}if(np[pi]>=100&&!pdFinishRef.current.includes(pi)){pdFinishRef.current=[...pdFinishRef.current,pi];setPdFinishOrder([...pdFinishRef.current]);}pdPosRef.current=np;setPdPositions([...np]);if(pdFinishRef.current.length>=6)pdEndRace(pi);},50);pdTimerRef.current=setInterval(()=>{tl--;setPdRaceTime(tl);if(tl<=10&&tl>0)setCommentary(tl+" seconds!");if(tl<=0)pdEndRace(pi);},1000); };
   const pdPuff = () => { if(pdPhase!=="racing"||pdPlayerHorse===null)return;const idx=pdPlayerHorse;pdLastPuff.current=Date.now();setPdPuffCount(p=>p+1);playFx("horse_gallop");let boost=3+Math.random()*2;if(pdStaminaRef.current<=0){boost=1;}else{pdStaminaRef.current=Math.max(0,pdStaminaRef.current-3);setPdStamina(Math.round(pdStaminaRef.current));}const np=[...pdPosRef.current];np[idx]=Math.min(100,np[idx]+boost);pdPosRef.current=np;setPdPositions([...np]);if(np[idx]>=100&&!pdFinishRef.current.includes(idx)){pdFinishRef.current=[...pdFinishRef.current,idx];setPdFinishOrder([...pdFinishRef.current]);} };
-  const pdEndRace = (pi) => { if(pdAiRef.current){clearInterval(pdAiRef.current);pdAiRef.current=null;}if(pdTimerRef.current){clearInterval(pdTimerRef.current);pdTimerRef.current=null;}const fin=[...pdFinishRef.current];const rem=[0,1,2,3,4,5].filter(i=>!fin.includes(i));rem.sort((a,b)=>pdPosRef.current[b]-pdPosRef.current[a]);const fo=[...fin,...rem];setPdFinishOrder(fo);pdFinishRef.current=fo;const place=fo.indexOf(pi)+1;setCoins(c=>c+([0,500,300,150,75,30,10][place]||10));setPdPhase("result");if(place===1){setCommentary(PD_HORSE_NAMES[pi]+" WINS!");triggerFlash("goal");playFx("crowd");playFx("horse_whinny");if(stageRole)showMC("correct",{points:"500"});setConfettiParticles(Array.from({length:30},(_,i)=>({id:Date.now()+i,x:Math.random()*100,y:-10-Math.random()*20,size:4+Math.random()*4,color:[C.green,C.gold,C.cyan,C.pink][i%4],rot:Math.random()*360})));}else if(place<=3){setCommentary("Top 3!");playFx("select");}else{setCommentary("Better luck next time!");playFx("tap");} };
+  const pdEndRace = (pi) => { if(pdAiRef.current){clearInterval(pdAiRef.current);pdAiRef.current=null;}if(pdTimerRef.current){clearInterval(pdTimerRef.current);pdTimerRef.current=null;}const fin=[...pdFinishRef.current];const rem=[0,1,2,3,4,5].filter(i=>!fin.includes(i));rem.sort((a,b)=>pdPosRef.current[b]-pdPosRef.current[a]);const fo=[...fin,...rem];setPdFinishOrder(fo);pdFinishRef.current=fo;const place=fo.indexOf(pi)+1;recordGameResult(place<=2,[0,100,60,30,15,5,2][place]||2,10);setPdPhase("result");if(place===1){setCommentary(PD_HORSE_NAMES[pi]+" WINS!");triggerFlash("goal");playFx("crowd");playFx("horse_whinny");if(stageRole)showMC("correct",{points:"500"});setConfettiParticles(Array.from({length:30},(_,i)=>({id:Date.now()+i,x:Math.random()*100,y:-10-Math.random()*20,size:4+Math.random()*4,color:[C.green,C.gold,C.cyan,C.pink][i%4],rot:Math.random()*360})));}else if(place<=3){setCommentary("Top 3!");playFx("select");}else{setCommentary("Better luck next time!");playFx("tap");} };
   const pdCleanup = () => { if(pdAiRef.current){clearInterval(pdAiRef.current);pdAiRef.current=null;}if(pdTimerRef.current){clearInterval(pdTimerRef.current);pdTimerRef.current=null;}setPdPhase(null);setGameActive(null);setStageRole(null);setMcVisible(false); };
   const hlPickRandom = () => { const av=HL_STATS.filter((_,i)=>!hlUsedRef.current.includes(i));if(av.length===0){hlUsedRef.current=[];return HL_STATS[Math.floor(Math.random()*HL_STATS.length)];}const pk=av[Math.floor(Math.random()*av.length)];hlUsedRef.current=[...hlUsedRef.current,HL_STATS.indexOf(pk)];return pk; };
   const startHigherLower = () => { if(stageRole === "contestant") initStageElim(); hlUsedRef.current=[];const f=hlPickRandom();const s=hlPickRandom();setHlCurrent(f);setHlNext(s);setHlStreak(0);setHlBestStreak(0);setHlScore(0);setHlRound(1);setHlRevealing(false);setHlRevealNum(0);setHlPuffStart(null);setHlPhase("playing");setCommentary("Higher or Lower?");playFx("crowd"); };
