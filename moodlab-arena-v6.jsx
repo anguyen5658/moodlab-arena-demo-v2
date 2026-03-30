@@ -5722,7 +5722,7 @@ export default function MoodLabArena() {
           setHtLuckyPhase("done");
           setHtLuckyPuffed(wasPuffed => {
             if(wasPuffed) {
-              setCoins(c => c + 100);
+              setCoins(c => c + Math.round(100 * getCoinMultiplier()));
               setHalftimeResult({coins:100, message:"PERFECT TIMING! +100 coins!", won:true});
               spawnConfetti(30, [C.gold, C.green, C.cyan]);
               playFx("win");
@@ -5766,7 +5766,7 @@ export default function MoodLabArena() {
       const segIdx = Math.floor(finalAngle / segAngle) % HT_WHEEL_SEGMENTS.length;
       const seg = HT_WHEEL_SEGMENTS[segIdx];
       if(seg.coins > 0) {
-        setCoins(c => c + seg.coins);
+        setCoins(c => c + Math.round(seg.coins * getCoinMultiplier()));
         setHalftimeResult({coins:seg.coins, message:seg.label === "JACKPOT" ? "JACKPOT! +500 coins!" : `+${seg.coins} coins!`, won:true});
         spawnConfetti(seg.coins > 200 ? 50 : 25, [seg.color, C.gold, C.green]);
         playFx("win");
@@ -5795,7 +5795,7 @@ export default function MoodLabArena() {
       setHtLuckyPuffed(true);
       setHtLuckyPhase("done");
       if(htTimerRef.current) clearTimeout(htTimerRef.current);
-      setCoins(c => c + 100);
+      setCoins(c => c + Math.round(100 * getCoinMultiplier()));
       setHalftimeResult({coins:100, message:"PERFECT TIMING! +100 coins!", won:true});
       spawnConfetti(30, [C.gold, C.green, C.cyan]);
       playFx("win");
@@ -5808,7 +5808,7 @@ export default function MoodLabArena() {
     setHtTriviaAnswer(answer);
     const correct = answer === htTriviaQ.correct;
     if(correct) {
-      setCoins(c => c + 75);
+      setCoins(c => c + Math.round(75 * getCoinMultiplier()));
       setHalftimeResult({coins:75, message:"CORRECT! +75 coins!", won:true});
       spawnConfetti(20, [C.green, C.gold]);
       playFx("win");
@@ -5926,7 +5926,7 @@ export default function MoodLabArena() {
       } else if(prize.label === "JACKPOT") {
         setSwShowJackpot(true);
         setSwTotalWon(prev => prev + actualValue);
-        setCoins(c => c + actualValue);
+        setCoins(c => c + Math.round(actualValue * getCoinMultiplier()));
         playFx("jackpot_alarm");
         playFx("crowd");
         spawnConfetti(80, [C.gold, C.orange, "#fff", C.cyan, C.pink]);
@@ -5934,7 +5934,7 @@ export default function MoodLabArena() {
         notify("👑 JACKPOT! +" + actualValue + " coins!", C.gold);
       } else {
         setSwTotalWon(prev => prev + actualValue);
-        setCoins(c => c + actualValue);
+        setCoins(c => c + Math.round(actualValue * getCoinMultiplier()));
         playFx("win");
         spawnConfetti(20, [prize.color, C.gold]);
         notify(prize.emoji + " +" + actualValue + " coins!", prize.color);
@@ -11492,7 +11492,7 @@ const startSimonPuffs = () => {
     if(spPuffInterval.current){clearInterval(spPuffInterval.current);spPuffInterval.current=null;}
     if(spShowTimer.current){clearTimeout(spShowTimer.current);spShowTimer.current=null;}
     const earned = Math.min(500, spScore);
-    if(earned > 0) { setCoins(c => c + earned); notify("+"+earned+" coins!", C.green); }
+    if(earned > 0) { setCoins(c => c + Math.round(earned * getCoinMultiplier())); notify("+"+earned+" coins!", C.green); }
     setSpPhase(null);
     setGameActive(null);
     setStageRole(null);setMcVisible(false);setStageElim(null);
@@ -11627,7 +11627,7 @@ const startSimonPuffs = () => {
     if(winner && winner.isYou) {
       const prize = PA_PRIZES[Math.min(paRound, PA_PRIZES.length-1)];
       setPaTotalWon(t => t + prize.value);
-      setCoins(c => c + prize.value);
+      setCoins(c => c + Math.round(prize.value * getCoinMultiplier()));
       triggerFlash("goal");
       spawnConfetti(30);
       playFx("coin_collect");
