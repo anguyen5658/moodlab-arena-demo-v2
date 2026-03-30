@@ -45,10 +45,10 @@ const FORTUNE_LEVELS = [
 // ── LOYALTY SYSTEM ──
 const LOYALTY_TIERS = [
   { name:"Bronze", icon:"🥉", color:"#CD7F32", xpReq:0, mult:1.0 },
-  { name:"Silver", icon:"🥈", color:"#C0C0C0", xpReq:2000, mult:1.2 },
-  { name:"Gold", icon:"🥇", color:"#FFD700", xpReq:8000, mult:1.5 },
-  { name:"Diamond", icon:"💎", color:"#00E5FF", xpReq:25000, mult:2.0 },
-  { name:"Legend", icon:"🔥", color:"#FF4D8D", xpReq:75000, mult:3.0 },
+  { name:"Silver", icon:"🥈", color:"#C0C0C0", xpReq:2000, mult:1.05 },
+  { name:"Gold", icon:"🥇", color:"#FFD700", xpReq:8000, mult:1.1 },
+  { name:"Diamond", icon:"💎", color:"#00E5FF", xpReq:25000, mult:1.15 },
+  { name:"Legend", icon:"🔥", color:"#FF4D8D", xpReq:75000, mult:1.2 },
 ];
 
 const DAILY_REWARDS = [
@@ -1868,7 +1868,7 @@ export default function MoodLabArena() {
         }, 1500);
       } else {
         // Reconnecting — no bonus coins
-        setTimeout(() => { notify("💨 Device Connected! 1.5x Bonus Active!", C.cyan); playFx("achievement"); }, 1500);
+        setTimeout(() => { notify("💨 Device Connected! 1.2x Bonus Active!", C.cyan); playFx("achievement"); }, 1500);
       }
     }
     prevBleConnected.current = bleConnected;
@@ -7553,7 +7553,7 @@ export default function MoodLabArena() {
           {getCurrentTier?.()?.icon} {getCurrentTier?.()?.mult}x
         </div>
         {bleConnected && <div style={{padding:"3px 8px",borderRadius:8,background:"rgba(0,229,255,0.08)",border:"1px solid rgba(0,229,255,0.15)",fontSize:9,fontWeight:700,color:C.cyan}}>
-          💨 1.5x
+          💨 1.2x
         </div>}
         {currentWinStreak >= 2 && <div style={{padding:"3px 8px",borderRadius:8,background:"rgba(255,140,60,0.08)",border:"1px solid rgba(255,140,60,0.15)",fontSize:9,fontWeight:700,color:C.orange}}>
           🔥 {currentWinStreak} streak
@@ -7858,7 +7858,7 @@ export default function MoodLabArena() {
         <div style={{padding:"3px 8px",borderRadius:8,background:`${getCurrentTier?.()?.color || C.cyan}10`,border:`1px solid ${getCurrentTier?.()?.color || C.cyan}20`,fontSize:9,fontWeight:700,color:getCurrentTier?.()?.color || C.cyan}}>
           {getCurrentTier?.()?.icon} {getCurrentTier?.()?.mult}x
         </div>
-        {bleConnected && <div style={{padding:"3px 8px",borderRadius:8,background:"rgba(0,229,255,0.08)",border:"1px solid rgba(0,229,255,0.15)",fontSize:9,fontWeight:700,color:C.cyan}}>💨 1.5x</div>}
+        {bleConnected && <div style={{padding:"3px 8px",borderRadius:8,background:"rgba(0,229,255,0.08)",border:"1px solid rgba(0,229,255,0.15)",fontSize:9,fontWeight:700,color:C.cyan}}>💨 1.2x</div>}
         {currentWinStreak >= 2 && <div style={{padding:"3px 8px",borderRadius:8,background:"rgba(255,140,60,0.08)",border:"1px solid rgba(255,140,60,0.15)",fontSize:9,fontWeight:700,color:C.orange}}>🔥 {currentWinStreak} streak</div>}
       </div>      <div style={{padding:"0 14px",position:"relative",zIndex:1}}>
 
@@ -9143,7 +9143,7 @@ export default function MoodLabArena() {
         <div style={{padding:"3px 8px",borderRadius:8,background:`${getCurrentTier?.()?.color || C.cyan}10`,border:`1px solid ${getCurrentTier?.()?.color || C.cyan}20`,fontSize:9,fontWeight:700,color:getCurrentTier?.()?.color || C.cyan}}>
           {getCurrentTier?.()?.icon} {getCurrentTier?.()?.mult}x
         </div>
-        {bleConnected && <div style={{padding:"3px 8px",borderRadius:8,background:"rgba(0,229,255,0.08)",border:"1px solid rgba(0,229,255,0.15)",fontSize:9,fontWeight:700,color:C.cyan}}>💨 1.5x</div>}
+        {bleConnected && <div style={{padding:"3px 8px",borderRadius:8,background:"rgba(0,229,255,0.08)",border:"1px solid rgba(0,229,255,0.15)",fontSize:9,fontWeight:700,color:C.cyan}}>💨 1.2x</div>}
         {currentWinStreak >= 2 && <div style={{padding:"3px 8px",borderRadius:8,background:"rgba(255,140,60,0.08)",border:"1px solid rgba(255,140,60,0.15)",fontSize:9,fontWeight:700,color:C.orange}}>🔥 {currentWinStreak} streak</div>}
       </div>
       {/* HERO AUTO-SLIDER */}
@@ -14375,7 +14375,7 @@ const startSimonPuffs = () => {
     <span>{getCurrentTier().icon} {getCurrentTier().name}</span><span style={{color:getCurrentTier().color}}>×{getCurrentTier().mult}</span>
   </div>
   {bleConnected && <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:C.text2,marginBottom:3}}>
-    <span>💨 Device Bonus</span><span style={{color:C.cyan}}>×1.5</span>
+    <span>💨 Device Bonus</span><span style={{color:C.cyan}}>×1.2</span>
   </div>}
   <div style={{borderTop:"1px solid rgba(255,255,255,0.06)",paddingTop:6,marginTop:3,display:"flex",justifyContent:"space-between",fontSize:13,fontWeight:800}}>
     <span style={{color:C.text}}>TOTAL</span><span style={{color:C.gold}}>+{Math.round(bpBaseCoins * getCoinMultiplier())} 🪙</span>
@@ -14583,7 +14583,7 @@ const startSimonPuffs = () => {
               {towPhase==="result"&&(<div style={{textAlign:"center",animation:"fadeIn 0.5s ease"}}>
                 <div style={{fontSize:50,marginBottom:8}}>{towPosition>50?"🏆":"😤"}</div>
                 <div style={{fontSize:22,fontWeight:900,color:towPosition>50?C.green:C.red}}>{towPosition>50?"YOU WIN!":"AI WINS!"}</div>
-                {(()=>{const won=towPosition>50;const base=won?60:10;return(<div style={{padding:10,borderRadius:12,background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.06)",marginTop:10,marginBottom:8}}><div style={{fontSize:9,color:C.text3,letterSpacing:1,marginBottom:6}}>REWARD BREAKDOWN</div><div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:C.text2,marginBottom:3}}><span>Base</span><span style={{color:C.gold}}>+{base} 🪙</span></div><div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:C.text2,marginBottom:3}}><span>{getCurrentTier().icon} {getCurrentTier().name}</span><span style={{color:getCurrentTier().color}}>×{getCurrentTier().mult}</span></div>{bleConnected&&<div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:C.text2,marginBottom:3}}><span>💨 Device</span><span style={{color:C.cyan}}>×1.5</span></div>}<div style={{borderTop:"1px solid rgba(255,255,255,0.06)",paddingTop:6,marginTop:3,display:"flex",justifyContent:"space-between",fontSize:13,fontWeight:800}}><span style={{color:C.text}}>TOTAL</span><span style={{color:C.gold}}>+{Math.round(base*getCoinMultiplier())} 🪙</span></div></div>);})()}
+                {(()=>{const won=towPosition>50;const base=won?60:10;return(<div style={{padding:10,borderRadius:12,background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.06)",marginTop:10,marginBottom:8}}><div style={{fontSize:9,color:C.text3,letterSpacing:1,marginBottom:6}}>REWARD BREAKDOWN</div><div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:C.text2,marginBottom:3}}><span>Base</span><span style={{color:C.gold}}>+{base} 🪙</span></div><div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:C.text2,marginBottom:3}}><span>{getCurrentTier().icon} {getCurrentTier().name}</span><span style={{color:getCurrentTier().color}}>×{getCurrentTier().mult}</span></div>{bleConnected&&<div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:C.text2,marginBottom:3}}><span>💨 Device</span><span style={{color:C.cyan}}>×1.2</span></div>}<div style={{borderTop:"1px solid rgba(255,255,255,0.06)",paddingTop:6,marginTop:3,display:"flex",justifyContent:"space-between",fontSize:13,fontWeight:800}}><span style={{color:C.text}}>TOTAL</span><span style={{color:C.gold}}>+{Math.round(base*getCoinMultiplier())} 🪙</span></div></div>);})()}
                 <div style={{display:"flex",gap:10,marginTop:12,justifyContent:"center"}}>
                   <div onClick={()=>{setTowPhase(null);startTugOfWar();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.blue}15`,border:`1px solid ${C.blue}30`,fontSize:13,fontWeight:800,color:C.blue}}>🔄 Again</div>
                   <div onClick={towEndGame} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.text3}10`,border:`1px solid ${C.text3}20`,fontSize:13,fontWeight:800,color:C.text3}}>Done ✓</div>
@@ -14781,7 +14781,7 @@ const startSimonPuffs = () => {
                       <span>{getCurrentTier().icon} {getCurrentTier().name}</span><span style={{color:getCurrentTier().color}}>×{getCurrentTier().mult}</span>
                     </div>
                     {bleConnected && <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:C.text2,marginBottom:3}}>
-                      <span>💨 Device Bonus</span><span style={{color:C.cyan}}>×1.5</span>
+                      <span>💨 Device Bonus</span><span style={{color:C.cyan}}>×1.2</span>
                     </div>}
                     <div style={{borderTop:"1px solid rgba(255,255,255,0.06)",paddingTop:6,marginTop:3,display:"flex",justifyContent:"space-between",fontSize:13,fontWeight:800}}>
                       <span style={{color:C.text}}>TOTAL</span><span style={{color:C.gold}}>+{Math.round(hpBaseCoins * getCoinMultiplier())} 🪙</span>
@@ -15237,7 +15237,7 @@ const startSimonPuffs = () => {
                   </div>
                   {/* Commentary */}
                   <div style={{fontSize:11,color:C.text2,fontStyle:"italic",marginBottom:12,maxWidth:260,margin:"0 auto 12px"}}>{commentary}</div>
-                  {(()=>{const won=youWinFinal;const draw=!youWinFinal&&!youLoseFinal;const base=won?80:draw?40:20;return(<div style={{padding:10,borderRadius:12,background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.06)",marginTop:10,marginBottom:8}}><div style={{fontSize:9,color:C.text3,letterSpacing:1,marginBottom:6}}>REWARD BREAKDOWN</div><div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:C.text2,marginBottom:3}}><span>Base</span><span style={{color:C.gold}}>+{base} 🪙</span></div><div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:C.text2,marginBottom:3}}><span>{getCurrentTier().icon} {getCurrentTier().name}</span><span style={{color:getCurrentTier().color}}>×{getCurrentTier().mult}</span></div>{bleConnected&&<div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:C.text2,marginBottom:3}}><span>💨 Device</span><span style={{color:C.cyan}}>×1.5</span></div>}<div style={{borderTop:"1px solid rgba(255,255,255,0.06)",paddingTop:6,marginTop:3,display:"flex",justifyContent:"space-between",fontSize:13,fontWeight:800}}><span style={{color:C.text}}>TOTAL</span><span style={{color:C.gold}}>+{Math.round(base*getCoinMultiplier())} 🪙</span></div></div>);})()}
+                  {(()=>{const won=youWinFinal;const draw=!youWinFinal&&!youLoseFinal;const base=won?80:draw?40:20;return(<div style={{padding:10,borderRadius:12,background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.06)",marginTop:10,marginBottom:8}}><div style={{fontSize:9,color:C.text3,letterSpacing:1,marginBottom:6}}>REWARD BREAKDOWN</div><div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:C.text2,marginBottom:3}}><span>Base</span><span style={{color:C.gold}}>+{base} 🪙</span></div><div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:C.text2,marginBottom:3}}><span>{getCurrentTier().icon} {getCurrentTier().name}</span><span style={{color:getCurrentTier().color}}>×{getCurrentTier().mult}</span></div>{bleConnected&&<div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:C.text2,marginBottom:3}}><span>💨 Device</span><span style={{color:C.cyan}}>×1.2</span></div>}<div style={{borderTop:"1px solid rgba(255,255,255,0.06)",paddingTop:6,marginTop:3,display:"flex",justifyContent:"space-between",fontSize:13,fontWeight:800}}><span style={{color:C.text}}>TOTAL</span><span style={{color:C.gold}}>+{Math.round(base*getCoinMultiplier())} 🪙</span></div></div>);})()}
                   {/* Action buttons */}
                   <div style={{display:"flex",gap:10,justifyContent:"center"}}>
                     <div onClick={(e)=>{e.stopPropagation();rpsEndGame();startRps();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.purple}15`,border:`1px solid ${C.purple}30`,fontSize:13,fontWeight:800,color:C.purple}}>🥋 Rematch</div>
@@ -16202,7 +16202,7 @@ const startSimonPuffs = () => {
               {isC&&<div style={{textAlign:"center",marginTop:8}}><div style={{fontSize:24,fontWeight:900,color:C.green}}>CORRECT!</div><div style={{fontSize:12,fontWeight:700,color:C.green}}>+{10*hlStreak} pts</div></div>}
               {isW&&<div style={{textAlign:"center",marginTop:8}}><div style={{fontSize:24,fontWeight:900,color:C.red}}>WRONG!</div><div style={{fontSize:11,color:C.red}}>Streak broken!</div></div>}
               {isP&&!hlRevealing&&(<div style={{textAlign:"center",marginTop:8,width:"100%"}}><div style={{fontSize:10,color:C.text3,marginBottom:8}}>{hlPuffStart?<span style={{color:C.gold,fontWeight:700,animation:"pulse 0.5s infinite"}}>Hold for HIGHER...</span>:<span>Short puff = LOWER | Long puff = HIGHER</span>}</div><div style={{display:"flex",gap:10,justifyContent:"center"}}><div data-hl-btn="1" onClick={(e)=>{e.stopPropagation();if(!hlRevealing)hlGuess("lower");}} style={{flex:1,maxWidth:130,padding:"12px 8px",borderRadius:12,cursor:"pointer",textAlign:"center",background:C.red+"12",border:"1px solid "+C.red+"30"}}><div style={{fontSize:20,marginBottom:2}}>{"\u2B07\uFE0F"}</div><div style={{fontSize:12,fontWeight:800,color:C.red}}>LOWER</div><div style={{fontSize:8,color:C.text3}}>Short puff</div></div><div data-hl-btn="1" onClick={(e)=>{e.stopPropagation();if(!hlRevealing)hlGuess("higher");}} style={{flex:1,maxWidth:130,padding:"12px 8px",borderRadius:12,cursor:"pointer",textAlign:"center",background:C.green+"12",border:"1px solid "+C.green+"30"}}><div style={{fontSize:20,marginBottom:2}}>{"\u2B06\uFE0F"}</div><div style={{fontSize:12,fontWeight:800,color:C.green}}>HIGHER</div><div style={{fontSize:8,color:C.text3}}>Long puff</div></div></div></div>)}
-              {isR&&(<div style={{textAlign:"center"}}><div style={{fontSize:48,marginBottom:8}}>{hlBestStreak>=7?"\uD83C\uDFC6":hlBestStreak>=5?"\uD83D\uDD25":hlBestStreak>=3?"\u2B50":"\uD83D\uDCCA"}</div><div style={{fontSize:26,fontWeight:900,color:hlScore>=100?C.gold:C.cyan,marginBottom:4}}>GAME OVER</div><div style={{fontSize:18,fontWeight:800,color:C.text,marginBottom:4}}>Score: {hlScore}</div><div style={{fontSize:13,color:C.text2,marginBottom:4}}>Best Streak: {hlBestStreak} {hlBestStreak>=5?"\uD83D\uDD25":""}</div><div style={{fontSize:14,fontWeight:700,color:C.gold,marginBottom:12}}>+{Math.max(10,Math.floor(hlScore/2))} coins</div><div style={{fontSize:11,color:C.text2,fontStyle:"italic",marginBottom:12}}>{commentary}</div>{(()=>{const won=hlBestStreak>=3;const base=Math.max(10,Math.floor(hlScore/2));return(<div style={{padding:10,borderRadius:12,background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.06)",marginTop:10,marginBottom:8}}><div style={{fontSize:9,color:C.text3,letterSpacing:1,marginBottom:6}}>REWARD BREAKDOWN</div><div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:C.text2,marginBottom:3}}><span>Base ({hlScore} pts)</span><span style={{color:C.gold}}>+{base} 🪙</span></div><div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:C.text2,marginBottom:3}}><span>{getCurrentTier().icon} {getCurrentTier().name}</span><span style={{color:getCurrentTier().color}}>×{getCurrentTier().mult}</span></div>{bleConnected&&<div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:C.text2,marginBottom:3}}><span>💨 Device</span><span style={{color:C.cyan}}>×1.5</span></div>}<div style={{borderTop:"1px solid rgba(255,255,255,0.06)",paddingTop:6,marginTop:3,display:"flex",justifyContent:"space-between",fontSize:13,fontWeight:800}}><span style={{color:C.text}}>TOTAL</span><span style={{color:C.gold}}>+{Math.round(base*getCoinMultiplier())} 🪙</span></div></div>);})()}<div style={{display:"flex",gap:10,justifyContent:"center"}}><div onClick={(e)=>{e.stopPropagation();hlCleanup();startHigherLower();setGameActive({id:"higherlower",name:"Higher or Lower",emoji:"\uD83D\uDCCA",color:C.cyan});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:C.cyan+"15",border:"1px solid "+C.cyan+"30",fontSize:13,fontWeight:800,color:C.cyan}}>Play Again</div><div onClick={(e)=>{e.stopPropagation();hlCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:C.text3+"10",border:"1px solid "+C.text3+"20",fontSize:13,fontWeight:800,color:C.text3}}>Done</div></div><div onClick={()=>{hlCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div></div>)}
+              {isR&&(<div style={{textAlign:"center"}}><div style={{fontSize:48,marginBottom:8}}>{hlBestStreak>=7?"\uD83C\uDFC6":hlBestStreak>=5?"\uD83D\uDD25":hlBestStreak>=3?"\u2B50":"\uD83D\uDCCA"}</div><div style={{fontSize:26,fontWeight:900,color:hlScore>=100?C.gold:C.cyan,marginBottom:4}}>GAME OVER</div><div style={{fontSize:18,fontWeight:800,color:C.text,marginBottom:4}}>Score: {hlScore}</div><div style={{fontSize:13,color:C.text2,marginBottom:4}}>Best Streak: {hlBestStreak} {hlBestStreak>=5?"\uD83D\uDD25":""}</div><div style={{fontSize:14,fontWeight:700,color:C.gold,marginBottom:12}}>+{Math.max(10,Math.floor(hlScore/2))} coins</div><div style={{fontSize:11,color:C.text2,fontStyle:"italic",marginBottom:12}}>{commentary}</div>{(()=>{const won=hlBestStreak>=3;const base=Math.max(10,Math.floor(hlScore/2));return(<div style={{padding:10,borderRadius:12,background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.06)",marginTop:10,marginBottom:8}}><div style={{fontSize:9,color:C.text3,letterSpacing:1,marginBottom:6}}>REWARD BREAKDOWN</div><div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:C.text2,marginBottom:3}}><span>Base ({hlScore} pts)</span><span style={{color:C.gold}}>+{base} 🪙</span></div><div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:C.text2,marginBottom:3}}><span>{getCurrentTier().icon} {getCurrentTier().name}</span><span style={{color:getCurrentTier().color}}>×{getCurrentTier().mult}</span></div>{bleConnected&&<div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:C.text2,marginBottom:3}}><span>💨 Device</span><span style={{color:C.cyan}}>×1.2</span></div>}<div style={{borderTop:"1px solid rgba(255,255,255,0.06)",paddingTop:6,marginTop:3,display:"flex",justifyContent:"space-between",fontSize:13,fontWeight:800}}><span style={{color:C.text}}>TOTAL</span><span style={{color:C.gold}}>+{Math.round(base*getCoinMultiplier())} 🪙</span></div></div>);})()}<div style={{display:"flex",gap:10,justifyContent:"center"}}><div onClick={(e)=>{e.stopPropagation();hlCleanup();startHigherLower();setGameActive({id:"higherlower",name:"Higher or Lower",emoji:"\uD83D\uDCCA",color:C.cyan});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:C.cyan+"15",border:"1px solid "+C.cyan+"30",fontSize:13,fontWeight:800,color:C.cyan}}>Play Again</div><div onClick={(e)=>{e.stopPropagation();hlCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:C.text3+"10",border:"1px solid "+C.text3+"20",fontSize:13,fontWeight:800,color:C.text3}}>Done</div></div><div onClick={()=>{hlCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div></div>)}
             </div>
           </div>
         );
@@ -21120,7 +21120,7 @@ const startSimonPuffs = () => {
                   <span style={{color:getCurrentTier().color}}>x{getCurrentTier().mult}</span>
                 </div>
                 {bleConnected && <div style={{display:"flex",justifyContent:"space-between",fontSize:12,color:C.text2,marginBottom:4}}>
-                  <span>💨 Device Bonus</span><span style={{color:C.cyan}}>x1.5</span>
+                  <span>💨 Device Bonus</span><span style={{color:C.cyan}}>×1.2</span>
                 </div>}
                 <div style={{borderTop:"1px solid rgba(255,255,255,0.08)",paddingTop:8,marginTop:4,display:"flex",justifyContent:"space-between",fontSize:14,fontWeight:800}}>
                   <span style={{color:C.text}}>TOTAL</span><span style={{color:C.gold}}>+{Math.round(vcScore * getCoinMultiplier())} 🪙</span>
@@ -21598,7 +21598,7 @@ const startSimonPuffs = () => {
 
   const getCoinMultiplier = () => {
     const tier = getCurrentTier();
-    const deviceBonus = bleConnected ? 1.5 : 1.0;
+    const deviceBonus = bleConnected ? 1.2 : 1.0;
     const mult = tier.mult * deviceBonus;
     return isNaN(mult) ? 1.0 : mult;
   };
@@ -22020,7 +22020,7 @@ const startSimonPuffs = () => {
           {bleConnected && (
             <div style={{display:"flex",alignItems:"center",gap:4,padding:"4px 10px",borderRadius:8,
               background:C.green+"12",border:"1px solid "+C.green+"25",fontSize:10,fontWeight:700,color:C.green}}>
-              {"💨 1.5x Device Bonus Active"}
+              {"💨 1.2x Device Bonus Active"}
             </div>
           )}
           {totalMultiplier > 1.0 && (
