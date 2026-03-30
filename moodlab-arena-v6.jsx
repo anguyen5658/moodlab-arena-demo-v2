@@ -14322,10 +14322,24 @@ const startSimonPuffs = () => {
                 </div></div>)}
               {bpPhase==="ai_turn"&&bpCharging&&(<div style={{width:"100%",marginTop:8}}><div style={{width:"100%",height:6,borderRadius:4,background:"rgba(255,255,255,0.05)",overflow:"hidden"}}><div style={{width:bpPuffAmount+"%",height:"100%",borderRadius:4,background:`linear-gradient(90deg,${C.orange},${C.red})`,transition:"width 0.05s linear"}}/></div><div style={{textAlign:"center",fontSize:8,color:C.orange,marginTop:4,animation:"pulse 0.5s infinite"}}>{(curP?curP.name:"AI")+" is puffing... 💨"}</div></div>)}
               {/* Result actions */}
-              {bpPhase==="result"&&(<><div style={{display:"flex",gap:10,marginTop:12,animation:"fadeIn 0.5s ease"}}>
+              {bpPhase==="result"&&(()=>{const bpWon=bpLoser&&!bpLoser.isYou;const bpBaseCoins=bpWon?80:10;return(<><div style={{padding:10,borderRadius:12,background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.06)",marginTop:12,marginBottom:8,width:"100%",maxWidth:260,animation:"fadeIn 0.5s ease"}}>
+  <div style={{fontSize:9,color:C.text3,letterSpacing:1,marginBottom:6}}>REWARD BREAKDOWN</div>
+  <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:C.text2,marginBottom:3}}>
+    <span>Base Reward</span><span style={{color:C.gold}}>+{bpBaseCoins} 🪙</span>
+  </div>
+  <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:C.text2,marginBottom:3}}>
+    <span>{getCurrentTier().icon} {getCurrentTier().name}</span><span style={{color:getCurrentTier().color}}>×{getCurrentTier().mult}</span>
+  </div>
+  {bleConnected && <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:C.text2,marginBottom:3}}>
+    <span>💨 Device Bonus</span><span style={{color:C.cyan}}>×1.5</span>
+  </div>}
+  <div style={{borderTop:"1px solid rgba(255,255,255,0.06)",paddingTop:6,marginTop:3,display:"flex",justifyContent:"space-between",fontSize:13,fontWeight:800}}>
+    <span style={{color:C.text}}>TOTAL</span><span style={{color:C.gold}}>+{Math.round(bpBaseCoins * getCoinMultiplier())} 🪙</span>
+  </div>
+</div><div style={{display:"flex",gap:10,animation:"fadeIn 0.5s ease"}}>
                 <div onClick={()=>{setBpPhase(null);startBalloonPop();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.pink}15`,border:`1px solid ${C.pink}30`,fontSize:13,fontWeight:800,color:C.pink}}>🔄 Play Again</div>
                 <div onClick={bpEndGame} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.text3}10`,border:`1px solid ${C.text3}20`,fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
-              </div><div style={{display:"flex",gap:8,marginTop:8}}><div onClick={()=>{bpEndGame();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{flex:1,padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple}}>👤 My Progress</div></div></>)}
+              </div><div style={{display:"flex",gap:8,marginTop:8}}><div onClick={()=>{bpEndGame();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{flex:1,padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple}}>👤 My Progress</div></div></>);})()}
             </div>
           </div>
         );
@@ -14684,11 +14698,11 @@ const startSimonPuffs = () => {
                 </div>
               )}
               {/* Result screen */}
-              {hpPhase==="result"&&(
+              {hpPhase==="result"&&(()=>{const hpWon=hpWinner&&hpWinner.isYou;const hpBaseCoins=hpWon?60:10;return(
                 <div style={{textAlign:"center",padding:"20px 0",animation:"fadeIn 0.5s ease"}}>
-                  <div style={{fontSize:50,marginBottom:8}}>{hpWinner&&hpWinner.isYou?"👑":"💀"}</div>
-                  <div style={{fontSize:24,fontWeight:900,color:hpWinner&&hpWinner.isYou?C.green:C.red}}>{hpWinner&&hpWinner.isYou?"SOLE SURVIVOR!":hpWinner?hpWinner.name+" WINS!":"Game Over!"}</div>
-                  <div style={{fontSize:11,color:C.text2,marginTop:4}}>{hpWinner&&hpWinner.isYou?"+120 coins!":"+15 coins"}</div>
+                  <div style={{fontSize:50,marginBottom:8}}>{hpWon?"👑":"💀"}</div>
+                  <div style={{fontSize:24,fontWeight:900,color:hpWon?C.green:C.red}}>{hpWon?"SOLE SURVIVOR!":hpWinner?hpWinner.name+" WINS!":"Game Over!"}</div>
+                  <div style={{fontSize:11,color:C.text2,marginTop:4}}>+{Math.round(hpBaseCoins * getCoinMultiplier())} coins!</div>
                   {/* Elimination order */}
                   <div style={{marginTop:12,textAlign:"left",width:"100%",maxWidth:260}}>
                     <div style={{fontSize:8,fontWeight:800,color:C.text3,letterSpacing:1,marginBottom:4}}>ELIMINATION ORDER</div>
@@ -14703,6 +14717,22 @@ const startSimonPuffs = () => {
                       <span style={{fontSize:9,color:C.gold,fontWeight:700}}>{hpWinner.isYou?"You":hpWinner.name}</span>
                     </div>}
                   </div>
+                  {/* Reward Breakdown */}
+                  <div style={{padding:10,borderRadius:12,background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.06)",marginTop:12,marginBottom:8,width:"100%",maxWidth:260}}>
+                    <div style={{fontSize:9,color:C.text3,letterSpacing:1,marginBottom:6}}>REWARD BREAKDOWN</div>
+                    <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:C.text2,marginBottom:3}}>
+                      <span>Base Reward</span><span style={{color:C.gold}}>+{hpBaseCoins} 🪙</span>
+                    </div>
+                    <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:C.text2,marginBottom:3}}>
+                      <span>{getCurrentTier().icon} {getCurrentTier().name}</span><span style={{color:getCurrentTier().color}}>×{getCurrentTier().mult}</span>
+                    </div>
+                    {bleConnected && <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:C.text2,marginBottom:3}}>
+                      <span>💨 Device Bonus</span><span style={{color:C.cyan}}>×1.5</span>
+                    </div>}
+                    <div style={{borderTop:"1px solid rgba(255,255,255,0.06)",paddingTop:6,marginTop:3,display:"flex",justifyContent:"space-between",fontSize:13,fontWeight:800}}>
+                      <span style={{color:C.text}}>TOTAL</span><span style={{color:C.gold}}>+{Math.round(hpBaseCoins * getCoinMultiplier())} 🪙</span>
+                    </div>
+                  </div>
                   {/* Actions */}
                   <div style={{display:"flex",gap:10,marginTop:16}}>
                     <div onClick={()=>{setHpPhase(null);startHotPotato();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.orange}15`,border:`1px solid ${C.orange}30`,fontSize:13,fontWeight:800,color:C.orange}}>🔄 Play Again</div>
@@ -14710,7 +14740,7 @@ const startSimonPuffs = () => {
                   </div>
                   <div style={{display:"flex",gap:8,marginTop:8}}><div onClick={()=>{hpEndGame();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{flex:1,padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple}}>👤 My Progress</div></div>
                 </div>
-              )}
+              );})()}
             </div>
           </div>
         );
