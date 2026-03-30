@@ -183,32 +183,32 @@ const LG = {
 
 // ── GAME DATA (identical content) ──
 const PLAY_GAMES = [
-  { id:"finalkick", name:"Final Kick", emoji:"⚽", players:"2", time:"1-2m", type:"Skill", color:C.cyan, desc:"Penalty kick 1v1. Chọn hướng sút, chọn hướng cản.", hot:true, inputs:["puff","button","tap"] },
-  { id:"finalkick2", name:"Final Kick 2", emoji:"⚽🔥", players:"2", time:"2-3m", type:"Precision", color:C.gold, desc:"Double puff! Aim X-axis + Y-axis separately.", hot:true, inputs:["puff","button"] },
-  { id:"finalkick3", name:"Final Kick 3D", emoji:"⚽🌐", players:"2", time:"2-3m", type:"3D Precision", color:C.purple, desc:"3D behind-the-ball view! Double puff aim in 3D.", hot:true, inputs:["puff","button"] },
-  { id:"hotpotato", name:"Hot Potato", emoji:"💣", players:"3-8", time:"1-3m", type:"Luck", color:C.orange, desc:"Bom nhảy ngẫu nhiên. Puff để pass. Ai bị nổ = loại.", inputs:["puff","button"] },
-  { id:"russian", name:"Russian Roulette", emoji:"🎲", players:"2-6", time:"1-2m", type:"Luck", color:C.red, desc:"Lần lượt puff. Random ai bị loại. Tension cực cao.", inputs:["puff","button"] },
-  { id:"wildwest", name:"Wild West Duel", emoji:"🤠", players:"2", time:"1-2m", type:"Reaction", color:C.gold, desc:"Best of 5 showdown! Wait for DRAW, puff fastest. Reaction time in ms.", hot:true, inputs:["puff","button","tap"] },
-  { id:"balloon", name:"Balloon Pop", emoji:"🎈", players:"2-8", time:"1-3m", type:"Strategy", color:C.pink, desc:"Puff bóng phình dần. Ai làm nổ thì thua.", inputs:["puff","button"] },
-  { id:"puffpong", name:"Puff Pong", emoji:"🏓", players:"2", time:"1-2m", type:"Skill", color:C.green, desc:"Bóng bàn ảo. Puff = đánh bóng. Timing là tất cả.", inputs:["puff","tap"] },
-  { id:"rhythm", name:"Rhythm Puff", emoji:"🎵", players:"1-4", time:"1-3m", type:"Rhythm", color:C.purple, desc:"Nốt nhạc rơi, puff đúng nhịp. Guitar Hero style.", inputs:["puff","button"] },
-  { id:"tugofwar", name:"Tug of War", emoji:"💪", players:"2-8", time:"30s-1m", type:"Team", color:C.blue, desc:"2 team puff liên tục. Bên mạnh hơn thắng.", hot:true, inputs:["puff","button"] },
-  { id:"hooked", name:"Hooked", emoji:"🎣", players:"1", time:"2-5m", type:"Skill", color:C.blue, desc:"Stack fishing! Puff to reel in fish. Control your suction!", inputs:["puff","button"] },
-  { id:"rps", name:"Puff RPS", emoji:"✊", players:"2", time:"1-2m", type:"Strategy", color:C.purple, desc:"Rock Paper Scissors with Puff Power!", hot:true, inputs:["puff","button"] },
-  { id:"beatdrop", name:"Beat Drop", emoji:"🎧", players:"1", time:"3-5m", type:"Music", color:C.pink, desc:"Hold your puff until the beat drops. Release on time!", inputs:["puff"] },
-  { id:"puffclock", name:"Puff Clock", emoji:"⏱️", players:"1-100+", time:"3-5m", type:"Precision", color:C.orange, desc:"Puff for EXACTLY the target time. Closest wins!", inputs:["puff"] },
-  { id:"pufflimbo", name:"Puff Limbo", emoji:"🎪", players:"1-50", time:"3-5m", type:"Endurance", color:C.orange, desc:"Target puff gets longer each round. Survive the blinker!", inputs:["puff"] },
-  { id:"puffderby", name:"Puff Derby", emoji:"🏇", players:"6", time:"2-3m", type:"Racing", color:C.green, desc:"Pick a horse. Spam puff to make it run!", inputs:["puff"] },
+  { id:"finalkick", name:"Final Kick", emoji:"⚽", players:"2", time:"1-2m", type:"Skill", color:C.cyan, desc:"Penalty kick 1v1. Chọn hướng sút, chọn hướng cản.", hot:true },
+  { id:"finalkick2", name:"Final Kick 2", emoji:"⚽🔥", players:"2", time:"2-3m", type:"Precision", color:C.gold, desc:"Double puff! Aim X-axis + Y-axis separately.", hot:true },
+  { id:"finalkick3", name:"Final Kick 3D", emoji:"⚽🌐", players:"2", time:"2-3m", type:"3D Precision", color:C.purple, desc:"3D behind-the-ball view! Double puff aim in 3D.", hot:true },
+  { id:"hotpotato", name:"Hot Potato", emoji:"💣", players:"3-8", time:"1-3m", type:"Luck", color:C.orange, desc:"Bom nhảy ngẫu nhiên. Puff để pass. Ai bị nổ = loại." },
+  { id:"russian", name:"Russian Roulette", emoji:"🎲", players:"2-6", time:"1-2m", type:"Luck", color:C.red, desc:"Lần lượt puff. Random ai bị loại. Tension cực cao." },
+  { id:"wildwest", name:"Wild West Duel", emoji:"🤠", players:"2", time:"1-2m", type:"Reaction", color:C.gold, desc:"Best of 5 showdown! Wait for DRAW, puff fastest. Reaction time in ms.", hot:true },
+  { id:"balloon", name:"Balloon Pop", emoji:"🎈", players:"2-8", time:"1-3m", type:"Strategy", color:C.pink, desc:"Puff bóng phình dần. Ai làm nổ thì thua." },
+  { id:"puffpong", name:"Puff Pong", emoji:"🏓", players:"2", time:"1-2m", type:"Skill", color:C.green, desc:"Bóng bàn ảo. Puff = đánh bóng. Timing là tất cả." },
+  { id:"rhythm", name:"Rhythm Puff", emoji:"🎵", players:"1-4", time:"1-3m", type:"Rhythm", color:C.purple, desc:"Nốt nhạc rơi, puff đúng nhịp. Guitar Hero style." },
+  { id:"tugofwar", name:"Tug of War", emoji:"💪", players:"2-8", time:"30s-1m", type:"Team", color:C.blue, desc:"2 team puff liên tục. Bên mạnh hơn thắng.", hot:true },
+  { id:"hooked", name:"Hooked", emoji:"🎣", players:"1", time:"2-5m", type:"Skill", color:C.blue, desc:"Stack fishing! Puff to reel in fish. Control your suction!" },
+  { id:"rps", name:"Puff RPS", emoji:"✊", players:"2", time:"1-2m", type:"Strategy", color:C.purple, desc:"Rock Paper Scissors with Puff Power!", hot:true },
+  { id:"beatdrop", name:"Beat Drop", emoji:"🎧", players:"1", time:"3-5m", type:"Music", color:C.pink, desc:"Hold your puff until the beat drops. Release on time!" },
+  { id:"puffclock", name:"Puff Clock", emoji:"⏱️", players:"1-100+", time:"3-5m", type:"Precision", color:C.orange, desc:"Puff for EXACTLY the target time. Closest wins!" },
+  { id:"pufflimbo", name:"Puff Limbo", emoji:"🎪", players:"1-50", time:"3-5m", type:"Endurance", color:C.orange, desc:"Target puff gets longer each round. Survive the blinker!" },
+  { id:"puffderby", name:"Puff Derby", emoji:"🏇", players:"6", time:"2-3m", type:"Racing", color:C.green, desc:"Pick a horse. Spam puff to make it run!" },
 ];
 
 const SHOW_GAMES = [
-  { id:"vibecheck", name:"Vibe Check", emoji:"🧠", players:"1-100+", time:"5-15m", type:"Trivia", color:C.gold, desc:"Trivia Game Show. Host hỏi, contestants trả lời, audience vote.", live:true, inputs:["puff","tap"] },
+  { id:"vibecheck", name:"Vibe Check", emoji:"🧠", players:"1-100+", time:"5-15m", type:"Trivia", color:C.gold, desc:"Trivia Game Show. Host hỏi, contestants trả lời, audience vote.", live:true },
   // Spin & Win moved to Fortune zone
-  { id:"higherlower", name:"Higher or Lower", emoji:"📊", players:"1-100+", time:"5-10m", type:"Knowledge", color:C.cyan, desc:"Đoán số tiếp theo cao hay thấp. Streak = thưởng lớn.", live:true, inputs:["puff","tap"] },
-  { id:"pricepuff", name:"The Price is Puff", emoji:"💰", players:"2-50+", time:"5-10m", type:"Knowledge", color:C.green, desc:"Đoán giá sản phẩm. Gần nhất thắng.", live:true, inputs:["puff","tap"] },
-  { id:"survivaltrivia", name:"Survival Trivia", emoji:"🏆", players:"2-100+", time:"5-15m", type:"Trivia", color:C.purple, desc:"Answer correctly or get eliminated. Last one standing wins!", live:true, inputs:["puff","tap"] },
-  { id:"simonpuffs", name:"Simon Puffs", emoji:"🔴", players:"1-50+", time:"3-8m", type:"Memory", color:C.red, desc:"Remember the pattern, repeat with puffs. Memory master!", live:true, inputs:["puff","button"] },
-  { id:"puffauction", name:"Puff Auction", emoji:"🔨", players:"2-50+", time:"3-8m", type:"Strategy", color:C.lime, desc:"Bid with your lungs! Biggest puff wins the auction.", live:true, inputs:["puff","button"] },
+  { id:"higherlower", name:"Higher or Lower", emoji:"📊", players:"1-100+", time:"5-10m", type:"Knowledge", color:C.cyan, desc:"Đoán số tiếp theo cao hay thấp. Streak = thưởng lớn.", live:true },
+  { id:"pricepuff", name:"The Price is Puff", emoji:"💰", players:"2-50+", time:"5-10m", type:"Knowledge", color:C.green, desc:"Đoán giá sản phẩm. Gần nhất thắng.", live:true },
+  { id:"survivaltrivia", name:"Survival Trivia", emoji:"🏆", players:"2-100+", time:"5-15m", type:"Trivia", color:C.purple, desc:"Answer correctly or get eliminated. Last one standing wins!", live:true },
+  { id:"simonpuffs", name:"Simon Puffs", emoji:"🔴", players:"1-50+", time:"3-8m", type:"Memory", color:C.red, desc:"Remember the pattern, repeat with puffs. Memory master!", live:true },
+  { id:"puffauction", name:"Puff Auction", emoji:"🔨", players:"2-50+", time:"3-8m", type:"Strategy", color:C.lime, desc:"Bid with your lungs! Biggest puff wins the auction.", live:true },
 ];
 
 const MC_LINES = {
@@ -222,18 +222,18 @@ const MC_LINES = {
 };
 
 const ORACLE_GAMES = [
-  { id:"crystalball", name:"Crystal Ball", emoji:"🔮", players:"1", time:"1-2m", type:"Prediction", color:"#9333EA", desc:"Yes/No universal predictions. Puff to decide destiny.", inputs:["puff"] },
-  { id:"strainbattle", name:"Strain Battle", emoji:"🌿", players:"1", time:"2-3m", type:"Vote", color:"#22C55E", desc:"Vote for the best strain in epic matchups.", inputs:["puff"] },
-  { id:"matchpredictor", name:"Match Predictor", emoji:"📊", players:"1", time:"1-2m", type:"Sports", color:"#3B82F6", desc:"Predict WC match outcomes. Win/Draw/Lose.", inputs:["puff"] },
-  { id:"dailypicks", name:"Daily Picks", emoji:"📅", players:"1", time:"2-3m", type:"Daily", color:"#F97316", desc:"3 daily predictions with streak multipliers.", inputs:["puff"] },
-  { id:"puffslots", name:"Puff Slots", emoji:"🎰", players:"1", time:"2-3m", type:"Fortune", color:"#FFD700", desc:"3-reel slot machine. Puff to spin the reels!", inputs:["puff"] },
-  { id:"puffblackjack", name:"Puff Blackjack", emoji:"🃏", players:"1", time:"3-5m", type:"Fortune", color:"#22C55E", desc:"Classic blackjack with puff controls. Hit or Stand!", inputs:["puff"] },
-  { id:"coinflip", name:"Coin Flip", emoji:"🪙", players:"1", time:"1-2m", type:"Fortune", color:"#F59E0B", desc:"50/50 flip with puff confidence multiplier.", inputs:["puff"] },
-  { id:"crapsnclouds", name:"Craps & Clouds", emoji:"🎲", players:"1", time:"2-3m", type:"Fortune", color:"#EF4444", desc:"Dice game where your puff controls the roll!", inputs:["puff"] },
-  { id:"mysterybox", name:"Mystery Box", emoji:"🎁", players:"1", time:"2-3m", type:"Fortune", color:"#FFD700", desc:"3 mystery boxes. Pick one. Puff to reveal!", inputs:["puff"] },
-  { id:"scratchpuff", name:"Scratch & Puff", emoji:"🎫", players:"1", time:"2-3m", type:"Fortune", color:"#EC4899", desc:"6 scratch areas. Puff to scratch. Match 3 wins!", inputs:["puff"] },
-  { id:"fortunecookie", name:"Fortune Cookie", emoji:"🥠", players:"1", time:"1-2m", type:"Fortune", color:"#F97316", desc:"Crack open wisdom + coins. Blinker = golden cookie!", inputs:["puff"] },
-  { id:"treasuremap", name:"Treasure Map", emoji:"🗺️", players:"1", time:"3-5m", type:"Fortune", color:"#FFD700", desc:"16 tiles. Find 3 treasures. Avoid 3 bombs!", inputs:["puff"] },
+  { id:"crystalball", name:"Crystal Ball", emoji:"🔮", players:"1", time:"1-2m", type:"Prediction", color:"#9333EA", desc:"Yes/No universal predictions. Puff to decide destiny." },
+  { id:"strainbattle", name:"Strain Battle", emoji:"🌿", players:"1", time:"2-3m", type:"Vote", color:"#22C55E", desc:"Vote for the best strain in epic matchups." },
+  { id:"matchpredictor", name:"Match Predictor", emoji:"📊", players:"1", time:"1-2m", type:"Sports", color:"#3B82F6", desc:"Predict WC match outcomes. Win/Draw/Lose." },
+  { id:"dailypicks", name:"Daily Picks", emoji:"📅", players:"1", time:"2-3m", type:"Daily", color:"#F97316", desc:"3 daily predictions with streak multipliers." },
+  { id:"puffslots", name:"Puff Slots", emoji:"🎰", players:"1", time:"2-3m", type:"Fortune", color:"#FFD700", desc:"3-reel slot machine. Puff to spin the reels!" },
+  { id:"puffblackjack", name:"Puff Blackjack", emoji:"🃏", players:"1", time:"3-5m", type:"Fortune", color:"#22C55E", desc:"Classic blackjack with puff controls. Hit or Stand!" },
+  { id:"coinflip", name:"Coin Flip", emoji:"🪙", players:"1", time:"1-2m", type:"Fortune", color:"#F59E0B", desc:"50/50 flip with puff confidence multiplier." },
+  { id:"crapsnclouds", name:"Craps & Clouds", emoji:"🎲", players:"1", time:"2-3m", type:"Fortune", color:"#EF4444", desc:"Dice game where your puff controls the roll!" },
+  { id:"mysterybox", name:"Mystery Box", emoji:"🎁", players:"1", time:"2-3m", type:"Fortune", color:"#FFD700", desc:"3 mystery boxes. Pick one. Puff to reveal!" },
+  { id:"scratchpuff", name:"Scratch & Puff", emoji:"🎫", players:"1", time:"2-3m", type:"Fortune", color:"#EC4899", desc:"6 scratch areas. Puff to scratch. Match 3 wins!" },
+  { id:"fortunecookie", name:"Fortune Cookie", emoji:"🥠", players:"1", time:"1-2m", type:"Fortune", color:"#F97316", desc:"Crack open wisdom + coins. Blinker = golden cookie!" },
+  { id:"treasuremap", name:"Treasure Map", emoji:"🗺️", players:"1", time:"3-5m", type:"Fortune", color:"#FFD700", desc:"16 tiles. Find 3 treasures. Avoid 3 bombs!" },
 ];
 
 const ORACLE_WC_MATCHES = [
@@ -966,9 +966,7 @@ const INPUT_MODES = [
   { id:"ask", label:"Ask", icon:"❓", desc:"Hỏi trước mỗi game", color:C.lime },
 ];
 const INPUT_TYPES = [
-  { id:"puff", label:"Puff", icon:"💨", desc:"Hút thật · MIC + Heating ON", color:C.orange },
-  { id:"dry_puff", label:"Dry Puff", icon:"🌀", desc:"MIC detect · Heating OFF", color:C.blue },
-  { id:"button", label:"Button", icon:"🔘", desc:"Nút vật lý · BLE signal", color:C.purple },
+  { id:"puff", label:"Puff", icon:"💨", desc:"MIC-detected puff action", color:C.orange },
 ];
 
 const DEVICE_MODELS = [
@@ -1039,7 +1037,10 @@ export default function MoodLabArena() {
   const [coinPulse, setCoinPulse] = useState(false);
   const [achievementPopup, setAchievementPopup] = useState(null);
   const [chatsSent, setChatsSent] = useState(0);
+  const [sessionGamesPlayed, setSessionGamesPlayed] = useState([]);
+  const [fortuneCooldown, setFortuneCooldown] = useState({});
   const prevBleConnected = useRef(false);
+  const [deviceRegistered, setDeviceRegistered] = useState(false);
   const [selectedGame, setSelectedGame] = useState(null);
   const [matchmaking, setMatchmaking] = useState(null);
   const [gameActive, setGameActive] = useState(null);
@@ -1853,10 +1854,25 @@ export default function MoodLabArena() {
   // ── BLE connection celebration ──
   useEffect(() => {
     if(bleConnected && !prevBleConnected.current) {
-      setTimeout(() => { notify("Device Connected! 1.5x Coin Bonus Active!", C.cyan); playFx("achievement"); }, 1500);
+      if(!deviceRegistered) {
+        // First-ever device connection — registration reward
+        setTimeout(() => {
+          setCoins(c => c + 500);
+          awardXP(100, "device_register");
+          notify("🎉 Device Connected! +500 coins +100 XP!", C.cyan);
+          showFloatingReward(500, 100);
+          playFx("achievement");
+          spawnConfetti(40, [C.cyan, C.gold, C.green]);
+          setDeviceRegistered(true);
+          if(!earnedBadges.includes("fp")) { const badge = LOYALTY_BADGES.find(b=>b.id==="fp"); if(badge) setTimeout(()=>showAchievementPopup(badge), 1200); }
+        }, 1500);
+      } else {
+        // Reconnecting — no bonus coins
+        setTimeout(() => { notify("💨 Device Connected! 1.5x Bonus Active!", C.cyan); playFx("achievement"); }, 1500);
+      }
     }
     prevBleConnected.current = bleConnected;
-  }, [bleConnected]);
+  }, [bleConnected, deviceRegistered]);
   // ── Coin balance pulse animation ──
   useEffect(() => { if(coins > 0) { setCoinPulse(true); setTimeout(() => setCoinPulse(false), 600); } }, [coins]);
   // tickerOffset now driven by CSS animation (tickerScroll) — no React re-renders
@@ -7405,7 +7421,24 @@ export default function MoodLabArena() {
         </div>
 
 
-        {/* Connect button moved to root level render for z-index */}
+        {/* ═══ CONNECT DEVICE — above arena hub bottom nav ═══ */}
+        {!bleConnected && (
+          <div onClick={()=>{playFx("tap");setShowBlePopup(true);}} style={{position:"absolute",bottom:68,left:"50%",transform:"translateX(-50%)",zIndex:11,
+            display:"inline-flex",alignItems:"center",gap:8,padding:"8px 18px",borderRadius:12,cursor:"pointer",
+            background:"rgba(8,8,25,0.85)",backdropFilter:"blur(40px) saturate(1.4)",WebkitBackdropFilter:"blur(40px) saturate(1.4)",
+            border:"1px solid rgba(0,229,255,0.2)",boxShadow:"0 4px 20px rgba(0,0,0,0.4), 0 0 12px rgba(0,229,255,0.06)",
+          }}>
+            <div style={{width:24,height:24,borderRadius:7,display:"flex",alignItems:"center",justifyContent:"center",
+              background:"rgba(0,229,255,0.1)",border:"1px solid rgba(0,229,255,0.2)"}}>
+              <span style={{fontSize:11}}>💨</span>
+            </div>
+            <div>
+              <div style={{fontSize:10,fontWeight:800,color:C.text,letterSpacing:0.3}}>Connect Device to Play</div>
+              <div style={{fontSize:7,color:C.cyan,fontWeight:600}}>Tap to pair</div>
+            </div>
+            <div style={{width:4,height:4,borderRadius:"50%",background:C.orange,animation:"pulse 1.5s infinite"}}/>
+          </div>
+        )}
         {/* ═══ BOTTOM NAV — Floating pill dock ═══ */}
         <div style={{position:"absolute",bottom:16,left:"50%",transform:"translateX(-50%)",zIndex:10}}>
           <div style={{display:"inline-flex",alignItems:"center",gap:3,padding:"4px 5px",borderRadius:100,
@@ -7620,19 +7653,7 @@ export default function MoodLabArena() {
           ))}
         </div>
 
-        {/* Connect device inline — Arcade hub */}
-        {!bleConnected && (
-          <div onClick={()=>{playFx("tap");setShowBlePopup(true);}} style={{display:"flex",justifyContent:"center",margin:"8px 0px",}}>
-            <div style={{display:"inline-flex",alignItems:"center",gap:8,padding:"8px 16px",borderRadius:10,cursor:"pointer",
-              background:"rgba(8,8,25,0.72)",border:"1px solid rgba(0,229,255,0.15)",
-              backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",
-            }}>
-              <span style={{fontSize:11}}>💨</span>
-              <span style={{fontSize:10,fontWeight:700,color:"#F0EEFF"}}>Connect Device to Play</span>
-              <div style={{width:4,height:4,borderRadius:"50%",background:"#FB923C",animation:"pulse 1.5s infinite"}}/>
-            </div>
-          </div>
-        )}
+        {/* Connect device handled by global fixed button */}
 
         {/* ======= ALL GAMES - Smart 2-Column Grid ======= */}
         {arcadeHubTab==="games" && <div style={{marginBottom:4}}>
@@ -7912,18 +7933,9 @@ export default function MoodLabArena() {
           </div>
         </div>
 
-        {/* Connect device inline — Stage hub */}
-        {!bleConnected && (
-          <div onClick={()=>{playFx("tap");setShowBlePopup(true);}} style={{display:"flex",justifyContent:"center",margin:"8px 0px",}}>
-            <div style={{display:"inline-flex",alignItems:"center",gap:8,padding:"8px 16px",borderRadius:10,cursor:"pointer",
-              background:"rgba(8,8,25,0.72)",border:"1px solid rgba(0,229,255,0.15)",
-              backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",
-            }}>
-              <span style={{fontSize:11}}>💨</span>
-              <span style={{fontSize:10,fontWeight:700,color:"#F0EEFF"}}>Connect Device to Play</span>
-              <div style={{width:4,height:4,borderRadius:"50%",background:"#FB923C",animation:"pulse 1.5s infinite"}}/>
-            </div>
-          </div>
+        {/* Connect device handled by global fixed button */
+        false && (
+          <div></div>
         )}
 
         {/* 4. ALL SHOWS — 2-column grid */}
@@ -9084,6 +9096,14 @@ export default function MoodLabArena() {
     ];
     const launchGame = (g) => {
       if(!bleConnected) { setShowBlePopup(true); notify("Connect your device to play! \u{1F4A8}", C.orange); return; }
+      // Fortune cooldown: 30 seconds between same game
+      const lastPlayed = fortuneCooldown[g.id];
+      if(lastPlayed && Date.now() - lastPlayed < 30000) {
+        const remaining = Math.ceil((30000 - (Date.now() - lastPlayed)) / 1000);
+        notify(`⏳ Wait ${remaining}s before playing again`, C.text3);
+        return;
+      }
+      setFortuneCooldown(prev => ({...prev, [g.id]: Date.now()}));
       // Daily challenge: "Try 1 Fortune game"
       if(!completedChallenges.includes("fortune1")) { completeChallenge("fortune1"); }
       if(g.id==="crystalball"){setGameActive({id:"crystalball",name:"Fortune Teller",emoji:"🔮",color:"#9333EA"});startCrystalBall();}
@@ -9244,19 +9264,7 @@ export default function MoodLabArena() {
 
       <div style={{padding:"0 14px",position:"relative",zIndex:1}}>
 
-        {/* Connect device inline — Fortune hub */}
-        {!bleConnected && (
-          <div onClick={()=>{playFx("tap");setShowBlePopup(true);}} style={{display:"flex",justifyContent:"center",margin:"8px 0px",}}>
-            <div style={{display:"inline-flex",alignItems:"center",gap:8,padding:"8px 16px",borderRadius:10,cursor:"pointer",
-              background:"rgba(8,8,25,0.72)",border:"1px solid rgba(0,229,255,0.15)",
-              backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",
-            }}>
-              <span style={{fontSize:11}}>💨</span>
-              <span style={{fontSize:10,fontWeight:700,color:"#F0EEFF"}}>Connect Device to Play</span>
-              <div style={{width:4,height:4,borderRadius:"50%",background:"#FB923C",animation:"pulse 1.5s infinite"}}/>
-            </div>
-          </div>
-        )}
+        {/* Connect device handled by global fixed button */}
 
         {/* TAB BAR */}
         <div style={{display:"flex",borderBottom:`1px solid ${C.gold}18`,marginBottom:10}}>
@@ -17254,7 +17262,7 @@ const startSimonPuffs = () => {
             </div>
             <div style={{display:"flex",gap:4,marginBottom:8}}>
               <span style={{fontSize:7,fontWeight:700,color:pool.color,padding:"2px 7px",borderRadius:20,...LG.tinted(pool.color)}}>⚖️ {pool.label}</span>
-              {(selectedGame.inputs||["puff"]).map(inp=>{const t=INPUT_TYPES.find(x=>x.id===inp)||INPUT_TYPES[0];return <span key={inp} style={{fontSize:7,fontWeight:700,color:t.color,padding:"2px 7px",borderRadius:20,...LG.tinted(t.color)}}>{t.icon} {t.label}</span>;})}
+              <span style={{fontSize:7,fontWeight:700,color:C.orange,padding:"2px 7px",borderRadius:20,...LG.tinted(C.orange)}}>💨 Puff</span>
             </div>
             {/* How to Play button */}
             <div onClick={()=>{playFx("tap");setShowHowToPlay(true);}} style={{
@@ -20347,7 +20355,7 @@ const startSimonPuffs = () => {
                   <div style={{flex:1,textAlign:"left"}}>
                     <div style={{fontSize:13,fontWeight:800,color:t.color}}>{t.label}</div>
                     <div style={{fontSize:8,color:C.text3}}>{t.desc}</div>
-                    <div style={{fontSize:7,color:C.text3+"80",marginTop:2}}>Pool: {t.id==="puff"?"High (2.5x rewards)":t.id==="dry_puff"?"Mid (1.5x rewards)":"Standard (1x rewards)"}</div>
+                    <div style={{fontSize:7,color:C.text3+"80",marginTop:2}}>Pool: High (2.5x rewards)</div>
                   </div>
                   <span style={{fontSize:16,color:`${t.color}40`}}>›</span>
                 </div>
@@ -21431,7 +21439,7 @@ const startSimonPuffs = () => {
 
         {/* Enter Arena button (shown at end) */}
         {optimizeStage >= 4 && (
-          <div onClick={()=>{setShowDeviceOptimize(false);playFx("success");notify("Device optimized! Arena ready!",C.green);}}
+          <div onClick={()=>{setShowDeviceOptimize(false);playFx("success");setCoins(c=>c+100);awardXP(50,"calibration");notify("⚡ Calibration complete! +100 coins!",C.green);showFloatingReward(100,50);}}
             style={{padding:"14px 40px",borderRadius:16,cursor:"pointer",textAlign:"center",
               background:`linear-gradient(135deg, ${C.green}25, ${C.lime}10)`,
               border:`2px solid ${C.green}40`,
@@ -21452,10 +21460,10 @@ const startSimonPuffs = () => {
       <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:200,background:"rgba(5,5,16,0.8)",backdropFilter:"blur(10px)",display:"flex",alignItems:"center",justifyContent:"center"}}>
         <div style={{textAlign:"center"}}>
           <div style={{width:72,height:72,borderRadius:"50%",margin:"0 auto 14px",display:"flex",alignItems:"center",justifyContent:"center",border:`3px solid ${C.gold}`,animation:"breathe 0.6s infinite",fontSize:28,boxShadow:`0 0 30px ${C.gold}30`}}>
-            {primaryInput==="button"?"🔘":primaryInput==="dry_puff"?"🌀":"💨"}
+            💨
           </div>
           <div style={{fontSize:15,fontWeight:800,color:C.gold,letterSpacing:0.5}}>
-            {primaryInput==="button"?"Press to Lock In...":primaryInput==="dry_puff"?"Dry Puff to Lock In...":"Puff to Lock In..."}
+            Puff to Lock In...
           </div>
         </div>
       </div>
@@ -21736,6 +21744,44 @@ const startSimonPuffs = () => {
     } else {
       if(currentWinStreak >= 3) notify("Streak ended at " + currentWinStreak, C.text3);
       setCurrentWinStreak(0);
+    }
+
+    // Track unique games for variety bonus
+    const gId = gameActive?.id;
+    if(gId && !sessionGamesPlayed.includes(gId)) {
+      setSessionGamesPlayed(prev => {
+        const updated = [...prev, gId];
+        // Variety bonus: 5 different games
+        if(updated.length === 5) {
+          setTimeout(() => {
+            setCoins(c => c + Math.round(50 * getCoinMultiplier()));
+            notify("🎯 Explorer Bonus! 5 games played! +50 🪙", C.purple);
+            playFx("achievement");
+          }, 1500);
+        }
+        // All 3 zones bonus
+        const zones = updated.map(id => {
+          if(PLAY_GAMES.find(g=>g.id===id)) return "arcade";
+          if(SHOW_GAMES.find(g=>g.id===id)) return "stage";
+          return "fortune";
+        });
+        const uniqueZones = [...new Set(zones)];
+        if(uniqueZones.length === 3 && prev.length > 0) {
+          const prevZones = [...new Set(prev.map(id => {
+            if(PLAY_GAMES.find(g=>g.id===id)) return "arcade";
+            if(SHOW_GAMES.find(g=>g.id===id)) return "stage";
+            return "fortune";
+          }))];
+          if(prevZones.length < 3) {
+            setTimeout(() => {
+              setCoins(c => c + Math.round(100 * getCoinMultiplier()));
+              notify("🌟 All-Rounder! All 3 zones! +100 🪙", C.gold);
+              playFx("crowd");
+            }, 2500);
+          }
+        }
+        return updated;
+      });
     }
   };
 
