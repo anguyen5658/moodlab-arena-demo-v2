@@ -7398,19 +7398,6 @@ export default function MoodLabArena() {
             </div>
           </div>
           {/* Connect device button moved to global fixed position above bottom nav */}
-          {/* Connect warning bar — Arena Hub */}
-          {!bleConnected && (
-            <div onClick={()=>{playFx("tap");setShowBlePopup(true);}} style={{
-              margin:"6px 14px",padding:"5px 12px",borderRadius:8,cursor:"pointer",
-              background:`linear-gradient(90deg,${C.orange}12,${C.gold}08)`,
-              border:`1px solid ${C.orange}15`,
-              display:"flex",alignItems:"center",justifyContent:"center",gap:5,
-            }}>
-              <div style={{width:4,height:4,borderRadius:"50%",background:C.orange,animation:"pulse 1.5s infinite"}}/>
-              <span style={{fontSize:9,fontWeight:700,color:C.orange}}>Connect for Full Experience & Rewards</span>
-              <span style={{fontSize:8,color:C.text3}}>💨</span>
-            </div>
-          )}
           {/* ═══ STATUS BAR — centered, tight gap below jumbotron ═══ */}
           <div style={{display:"flex",justifyContent:"center",marginTop:6,animation:"arenaFadeIn 0.6s ease 0.2s both"}}>
             <div style={{display:"inline-flex",alignItems:"center",gap:6,padding:"5px 14px",borderRadius:100,
@@ -7666,20 +7653,6 @@ export default function MoodLabArena() {
             }}>{t.charAt(0).toUpperCase()+t.slice(1)}</div>
           ))}
         </div>
-
-        {/* Connect warning bar — Arcade Hub */}
-        {!bleConnected && (
-          <div onClick={()=>{playFx("tap");setShowBlePopup(true);}} style={{
-            margin:"0 0 8px",padding:"5px 12px",borderRadius:8,cursor:"pointer",
-            background:`linear-gradient(90deg,${C.orange}12,${C.gold}08)`,
-            border:`1px solid ${C.orange}15`,
-            display:"flex",alignItems:"center",justifyContent:"center",gap:5,
-          }}>
-            <div style={{width:4,height:4,borderRadius:"50%",background:C.orange,animation:"pulse 1.5s infinite"}}/>
-            <span style={{fontSize:9,fontWeight:700,color:C.orange}}>Connect for Full Experience & Rewards</span>
-            <span style={{fontSize:8,color:C.text3}}>💨</span>
-          </div>
-        )}
 
         {/* ======= ALL GAMES - Smart 2-Column Grid ======= */}
         {arcadeHubTab==="games" && <div style={{marginBottom:4}}>
@@ -7949,20 +7922,6 @@ export default function MoodLabArena() {
             <div style={{fontSize:6,color:C.text3}}>Roles</div>
           </div>
         </div>
-
-        {/* Connect warning bar — Stage Hub */}
-        {!bleConnected && (
-          <div onClick={()=>{playFx("tap");setShowBlePopup(true);}} style={{
-            margin:"0 0 8px",padding:"5px 12px",borderRadius:8,cursor:"pointer",
-            background:`linear-gradient(90deg,${C.orange}12,${C.gold}08)`,
-            border:`1px solid ${C.orange}15`,
-            display:"flex",alignItems:"center",justifyContent:"center",gap:5,
-          }}>
-            <div style={{width:4,height:4,borderRadius:"50%",background:C.orange,animation:"pulse 1.5s infinite"}}/>
-            <span style={{fontSize:9,fontWeight:700,color:C.orange}}>Connect for Full Experience & Rewards</span>
-            <span style={{fontSize:8,color:C.text3}}>💨</span>
-          </div>
-        )}
 
         {/* 4. ALL SHOWS — 2-column grid */}
         <div style={{marginBottom:8}}>
@@ -9278,20 +9237,6 @@ export default function MoodLabArena() {
       </div>
 
       <div style={{padding:"0 14px",position:"relative",zIndex:1}}>
-
-        {/* Connect warning bar — Fortune Hub */}
-        {!bleConnected && (
-          <div onClick={()=>{playFx("tap");setShowBlePopup(true);}} style={{
-            margin:"0 0 8px",padding:"5px 12px",borderRadius:8,cursor:"pointer",
-            background:`linear-gradient(90deg,${C.orange}12,${C.gold}08)`,
-            border:`1px solid ${C.orange}15`,
-            display:"flex",alignItems:"center",justifyContent:"center",gap:5,
-          }}>
-            <div style={{width:4,height:4,borderRadius:"50%",background:C.orange,animation:"pulse 1.5s infinite"}}/>
-            <span style={{fontSize:9,fontWeight:700,color:C.orange}}>Connect for Full Experience & Rewards</span>
-            <span style={{fontSize:8,color:C.text3}}>💨</span>
-          </div>
-        )}
 
         {/* TAB BAR */}
         <div style={{display:"flex",borderBottom:`1px solid ${C.gold}18`,marginBottom:10}}>
@@ -17319,20 +17264,6 @@ const startSimonPuffs = () => {
               <span style={{fontSize:10,color:C.text3}}>›</span>
             </div>}
 
-            {/* Connect warning bar — Game Detail */}
-            {!bleConnected && (
-              <div onClick={()=>{playFx("tap");setShowBlePopup(true);}} style={{
-                marginBottom:8,padding:"5px 10px",borderRadius:8,cursor:"pointer",
-                background:`linear-gradient(90deg,${C.orange}12,${C.gold}08)`,
-                border:`1px solid ${C.orange}15`,
-                display:"flex",alignItems:"center",justifyContent:"center",gap:5,
-              }}>
-                <div style={{width:4,height:4,borderRadius:"50%",background:C.orange,animation:"pulse 1.5s infinite"}}/>
-                <span style={{fontSize:9,fontWeight:700,color:C.orange}}>Playing at 70% — connect for full rewards</span>
-                <span style={{fontSize:8,color:C.text3}}>💨</span>
-              </div>
-            )}
-
             {selectedGame.live ? (
             <>
             {/* ═══ STAGE SHOW — ROLE SELECTION ═══ */}
@@ -22004,19 +21935,6 @@ const startSimonPuffs = () => {
           <div style={{padding:"2px 8px",borderRadius:6,background:`${tier.color}15`,border:`1px solid ${tier.color}25`,fontSize:10,fontWeight:800,color:tier.color}}>{totalMultiplier.toFixed(1)}x</div>
         </div>
       </div>
-      {/* Connect warning bar — Me Tab */}
-      {!bleConnected && (
-        <div onClick={()=>{playFx("tap");setShowBlePopup(true);}} style={{
-          marginBottom:10,padding:"6px 12px",borderRadius:8,cursor:"pointer",
-          background:`linear-gradient(90deg,${C.orange}12,${C.gold}08)`,
-          border:`1px solid ${C.orange}15`,
-          display:"flex",alignItems:"center",justifyContent:"center",gap:5,
-        }}>
-          <div style={{width:4,height:4,borderRadius:"50%",background:C.orange,animation:"pulse 1.5s infinite"}}/>
-          <span style={{fontSize:9,fontWeight:700,color:C.orange}}>Connect device for full rewards & 1.2x bonus</span>
-          <span style={{fontSize:8,color:C.text3}}>💨</span>
-        </div>
-      )}
       {/* ── Profile Card ── */}
       <div style={{padding:20,borderRadius:20,marginBottom:14,position:"relative",zIndex:1,overflow:"hidden",
         background:`linear-gradient(135deg,${C.bg3},${tier.color}12)`,
