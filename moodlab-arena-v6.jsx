@@ -7578,19 +7578,6 @@ export default function MoodLabArena() {
       </div>
 
       {renderZoneHeader("arcade")}
-      {/* Loyalty status bar */}
-      <div style={{display:"flex",gap:6,padding:"0 14px",marginBottom:8}}>
-        <div style={{padding:"3px 8px",borderRadius:8,background:`${getCurrentTier?.()?.color || C.cyan}10`,border:`1px solid ${getCurrentTier?.()?.color || C.cyan}20`,fontSize:9,fontWeight:700,color:getCurrentTier?.()?.color || C.cyan}}>
-          {getCurrentTier?.()?.icon} {getCurrentTier?.()?.mult}x
-        </div>
-        {bleConnected && <div style={{padding:"3px 8px",borderRadius:8,background:"rgba(0,229,255,0.08)",border:"1px solid rgba(0,229,255,0.15)",fontSize:9,fontWeight:700,color:C.cyan}}>
-          💨 1.2x
-        </div>}
-        {currentWinStreak >= 2 && <div style={{padding:"3px 8px",borderRadius:8,background:"rgba(255,140,60,0.08)",border:"1px solid rgba(255,140,60,0.15)",fontSize:9,fontWeight:700,color:C.orange}}>
-          🔥 {currentWinStreak} streak
-        </div>}
-      </div>
-
       {/* ═══ 1. HERO SECTION — Auto-slider of best info ═══ */}
       {(()=>{
         const heroSlides = [
@@ -7726,16 +7713,6 @@ export default function MoodLabArena() {
                       <span style={{display:"inline-block",width:4,height:4,borderRadius:"50%",background:C.green,marginRight:3,verticalAlign:"middle"}}/>
                       {count}
                     </span>
-                  </div>
-                  {(()=>{const dl = DIFFICULTY_LEVELS.find(d=>d.level===g.difficulty)||DIFFICULTY_LEVELS[0]; return (
-                    <div style={{display:"inline-flex",alignItems:"center",gap:3,padding:"2px 6px",borderRadius:6,
-                      background:`${dl.color}12`,border:`1px solid ${dl.color}20`,marginTop:3}}>
-                      <span style={{fontSize:7}}>{dl.icon}</span>
-                      <span style={{fontSize:7,fontWeight:700,color:dl.color}}>{dl.label}</span>
-                    </div>
-                  );})()}
-                  <div style={{fontSize:8,color:(DIFFICULTY_LEVELS.find(d=>d.level===g.difficulty)||DIFFICULTY_LEVELS[0]).color,fontWeight:700,marginTop:2}}>
-                    🪙 {(DIFFICULTY_LEVELS.find(d=>d.level===g.difficulty)||DIFFICULTY_LEVELS[0]).coins} per win
                   </div>
                 </div>
               );
@@ -7892,14 +7869,7 @@ export default function MoodLabArena() {
       }}/>
 
       {renderZoneHeader("stage")}
-      {/* Loyalty status bar */}
-      <div style={{display:"flex",gap:6,padding:"0 14px",marginBottom:8}}>
-        <div style={{padding:"3px 8px",borderRadius:8,background:`${getCurrentTier?.()?.color || C.cyan}10`,border:`1px solid ${getCurrentTier?.()?.color || C.cyan}20`,fontSize:9,fontWeight:700,color:getCurrentTier?.()?.color || C.cyan}}>
-          {getCurrentTier?.()?.icon} {getCurrentTier?.()?.mult}x
-        </div>
-        {bleConnected && <div style={{padding:"3px 8px",borderRadius:8,background:"rgba(0,229,255,0.08)",border:"1px solid rgba(0,229,255,0.15)",fontSize:9,fontWeight:700,color:C.cyan}}>💨 1.2x</div>}
-        {currentWinStreak >= 2 && <div style={{padding:"3px 8px",borderRadius:8,background:"rgba(255,140,60,0.08)",border:"1px solid rgba(255,140,60,0.15)",fontSize:9,fontWeight:700,color:C.orange}}>🔥 {currentWinStreak} streak</div>}
-      </div>      <div style={{padding:"0 14px",position:"relative",zIndex:1}}>
+      <div style={{padding:"0 14px",position:"relative",zIndex:1}}>
 
         {/* 1. AUTO-SLIDER HERO */}
         {(()=>{
@@ -7996,13 +7966,6 @@ export default function MoodLabArena() {
                   <div style={{fontSize:20,marginBottom:2}}>{g.emoji}</div>
                   <div style={{fontSize:9,fontWeight:800,color:isLive?C.text:C.text2}}>{g.name}</div>
                   <div style={{fontSize:7,color:g.color,fontWeight:700,marginTop:1}}>{g.type}</div>
-                  {(()=>{const dl = DIFFICULTY_LEVELS.find(d=>d.level===g.difficulty)||DIFFICULTY_LEVELS[0]; return (
-                    <div style={{display:"inline-flex",alignItems:"center",gap:3,padding:"2px 6px",borderRadius:6,
-                      background:`${dl.color}12`,border:`1px solid ${dl.color}20`,marginTop:3}}>
-                      <span style={{fontSize:7}}>{dl.icon}</span>
-                      <span style={{fontSize:7,fontWeight:700,color:dl.color}}>{dl.label}</span>
-                    </div>
-                  );})()}
                   {!isLive && <div style={{fontSize:6,color:C.text3,marginTop:1}}>in {8+i*4}m</div>}
                 </div>
               );
@@ -9180,14 +9143,6 @@ export default function MoodLabArena() {
           <span style={{fontSize:14,color:C.text2}}>←</span>
           <span style={{fontSize:11,fontWeight:600,color:C.text2}}>Lobby</span>
         </div>
-      </div>
-      {/* Loyalty status bar */}
-      <div style={{display:"flex",gap:6,padding:"0 14px",marginBottom:8}}>
-        <div style={{padding:"3px 8px",borderRadius:8,background:`${getCurrentTier?.()?.color || C.cyan}10`,border:`1px solid ${getCurrentTier?.()?.color || C.cyan}20`,fontSize:9,fontWeight:700,color:getCurrentTier?.()?.color || C.cyan}}>
-          {getCurrentTier?.()?.icon} {getCurrentTier?.()?.mult}x
-        </div>
-        {bleConnected && <div style={{padding:"3px 8px",borderRadius:8,background:"rgba(0,229,255,0.08)",border:"1px solid rgba(0,229,255,0.15)",fontSize:9,fontWeight:700,color:C.cyan}}>💨 1.2x</div>}
-        {currentWinStreak >= 2 && <div style={{padding:"3px 8px",borderRadius:8,background:"rgba(255,140,60,0.08)",border:"1px solid rgba(255,140,60,0.15)",fontSize:9,fontWeight:700,color:C.orange}}>🔥 {currentWinStreak} streak</div>}
       </div>
       {/* HERO AUTO-SLIDER */}
       {(()=>{
@@ -17289,14 +17244,6 @@ const startSimonPuffs = () => {
             </div>
             <div style={{fontSize:20,fontWeight:900,color:C.text,textShadow:`0 0 20px ${gc}30`,marginBottom:3}}>{selectedGame.name}</div>
             <div style={{fontSize:10,color:C.text2,marginBottom:6,maxWidth:280,textAlign:"center"}}>{selectedGame.desc}</div>
-            {(()=>{const dl = DIFFICULTY_LEVELS.find(d=>d.level===selectedGame.difficulty)||DIFFICULTY_LEVELS[0]; return (
-              <div style={{display:"inline-flex",alignItems:"center",gap:4,padding:"3px 10px",borderRadius:20,
-                background:`${dl.color}12`,border:`1px solid ${dl.color}20`,marginBottom:6}}>
-                <span style={{fontSize:10}}>{dl.icon}</span>
-                <span style={{fontSize:9,fontWeight:700,color:dl.color}}>{dl.label}</span>
-                <span style={{fontSize:8,color:dl.color,opacity:0.7}}>· 🪙 {dl.coins} per win</span>
-              </div>
-            );})()}
             <div style={{display:"flex",gap:5,marginBottom:4,flexWrap:"wrap",justifyContent:"center"}}>
               <span style={{fontSize:8,fontWeight:700,color:gc,padding:"2px 8px",borderRadius:20,...LG.tinted(gc)}}>{selectedGame.type}</span>
               <span style={{fontSize:8,fontWeight:700,color:C.text2,padding:"2px 8px",borderRadius:20,...LG.tinted(C.text3)}}>👥 {selectedGame.players}</span>
