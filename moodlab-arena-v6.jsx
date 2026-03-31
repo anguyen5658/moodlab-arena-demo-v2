@@ -192,16 +192,16 @@ const LG = {
 
 // ── GAME DATA (identical content) ──
 const PLAY_GAMES = [
-  { id:"finalkick", name:"Final Kick", emoji:"⚽", players:"2", time:"1-2m", type:"Skill", color:C.cyan, desc:"Penalty kick 1v1. Chọn hướng sút, chọn hướng cản.", hot:true, difficulty:5 },
+  { id:"finalkick", name:"Final Kick", emoji:"⚽", players:"2", time:"1-2m", type:"Skill", color:C.cyan, desc:"Penalty kick 1v1. Aim your shot, pick your save direction.", hot:true, difficulty:5 },
   { id:"finalkick2", name:"Final Kick 2", emoji:"⚽🔥", players:"2", time:"2-3m", type:"Precision", color:C.gold, desc:"Double puff! Aim X-axis + Y-axis separately.", hot:true, difficulty:6 },
   { id:"finalkick3", name:"Final Kick 3D", emoji:"⚽🌐", players:"2", time:"2-3m", type:"3D Precision", color:C.purple, desc:"3D behind-the-ball view! Double puff aim in 3D.", hot:true, difficulty:6 },
-  { id:"hotpotato", name:"Hot Potato", emoji:"💣", players:"3-8", time:"1-3m", type:"Luck", color:C.orange, desc:"Bom nhảy ngẫu nhiên. Puff để pass. Ai bị nổ = loại.", difficulty:2 },
-  { id:"russian", name:"Russian Roulette", emoji:"🎲", players:"2-6", time:"1-2m", type:"Luck", color:C.red, desc:"Lần lượt puff. Random ai bị loại. Tension cực cao.", difficulty:2 },
+  { id:"hotpotato", name:"Hot Potato", emoji:"💣", players:"3-8", time:"1-3m", type:"Luck", color:C.orange, desc:"Bomb jumps randomly. Puff to pass. Get caught = eliminated.", difficulty:2 },
+  { id:"russian", name:"Russian Roulette", emoji:"🎲", players:"2-6", time:"1-2m", type:"Luck", color:C.red, desc:"Take turns puffing. Random elimination each round. Maximum tension.", difficulty:2 },
   { id:"wildwest", name:"Wild West Duel", emoji:"🤠", players:"2", time:"1-2m", type:"Reaction", color:C.gold, desc:"Best of 5 showdown! Wait for DRAW, puff fastest. Reaction time in ms.", hot:true, difficulty:5 },
-  { id:"balloon", name:"Balloon Pop", emoji:"🎈", players:"2-8", time:"1-3m", type:"Strategy", color:C.pink, desc:"Puff bóng phình dần. Ai làm nổ thì thua.", difficulty:4 },
-  { id:"puffpong", name:"Puff Pong", emoji:"🏓", players:"2", time:"1-2m", type:"Skill", color:C.green, desc:"Bóng bàn ảo. Puff = đánh bóng. Timing là tất cả.", difficulty:5 },
-  { id:"rhythm", name:"Rhythm Puff", emoji:"🎵", players:"1-4", time:"1-3m", type:"Rhythm", color:C.purple, desc:"Nốt nhạc rơi, puff đúng nhịp. Guitar Hero style.", difficulty:5 },
-  { id:"tugofwar", name:"Tug of War", emoji:"💪", players:"2-8", time:"30s-1m", type:"Team", color:C.blue, desc:"2 team puff liên tục. Bên mạnh hơn thắng.", hot:true, difficulty:4 },
+  { id:"balloon", name:"Balloon Pop", emoji:"🎈", players:"2-8", time:"1-3m", type:"Strategy", color:C.pink, desc:"Puff inflates the balloon. Pop it and you lose.", difficulty:4 },
+  { id:"puffpong", name:"Puff Pong", emoji:"🏓", players:"2", time:"1-2m", type:"Skill", color:C.green, desc:"Virtual ping pong. Puff = hit the ball. Timing is everything.", difficulty:5 },
+  { id:"rhythm", name:"Rhythm Puff", emoji:"🎵", players:"1-4", time:"1-3m", type:"Rhythm", color:C.purple, desc:"Notes fall down, puff on beat. Guitar Hero style.", difficulty:5 },
+  { id:"tugofwar", name:"Tug of War", emoji:"💪", players:"2-8", time:"30s-1m", type:"Team", color:C.blue, desc:"Two teams puff nonstop. Stronger side wins.", hot:true, difficulty:4 },
   { id:"hooked", name:"Hooked", emoji:"🎣", players:"1", time:"2-5m", type:"Skill", color:C.blue, desc:"Stack fishing! Puff to reel in fish. Control your suction!", difficulty:4 },
   { id:"rps", name:"Puff RPS", emoji:"✊", players:"2", time:"1-2m", type:"Strategy", color:C.purple, desc:"Rock Paper Scissors with Puff Power!", hot:true, difficulty:2 },
   { id:"beatdrop", name:"Beat Drop", emoji:"🎧", players:"1", time:"3-5m", type:"Music", color:C.pink, desc:"Hold your puff until the beat drops. Release on time!", difficulty:4 },
@@ -211,10 +211,10 @@ const PLAY_GAMES = [
 ];
 
 const SHOW_GAMES = [
-  { id:"vibecheck", name:"Vibe Check", emoji:"🧠", players:"1-100+", time:"5-15m", type:"Trivia", color:C.gold, desc:"Trivia Game Show. Host hỏi, contestants trả lời, audience vote.", live:true, difficulty:3 },
+  { id:"vibecheck", name:"Vibe Check", emoji:"🧠", players:"1-100+", time:"5-15m", type:"Trivia", color:C.gold, desc:"Trivia Game Show. Host asks, contestants answer, audience votes.", live:true, difficulty:3 },
   // Spin & Win moved to Fortune zone
-  { id:"higherlower", name:"Higher or Lower", emoji:"📊", players:"1-100+", time:"5-10m", type:"Knowledge", color:C.cyan, desc:"Đoán số tiếp theo cao hay thấp. Streak = thưởng lớn.", live:true, difficulty:3 },
-  { id:"pricepuff", name:"The Price is Puff", emoji:"💰", players:"2-50+", time:"5-10m", type:"Knowledge", color:C.green, desc:"Đoán giá sản phẩm. Gần nhất thắng.", live:true, difficulty:4 },
+  { id:"higherlower", name:"Higher or Lower", emoji:"📊", players:"1-100+", time:"5-10m", type:"Knowledge", color:C.cyan, desc:"Guess if the next number is higher or lower. Streak = big rewards.", live:true, difficulty:3 },
+  { id:"pricepuff", name:"The Price is Puff", emoji:"💰", players:"2-50+", time:"5-10m", type:"Knowledge", color:C.green, desc:"Guess the product price. Closest wins.", live:true, difficulty:4 },
   { id:"survivaltrivia", name:"Survival Trivia", emoji:"🏆", players:"2-100+", time:"5-15m", type:"Trivia", color:C.purple, desc:"Answer correctly or get eliminated. Last one standing wins!", live:true, difficulty:3 },
   { id:"simonpuffs", name:"Simon Puffs", emoji:"🔴", players:"1-50+", time:"3-8m", type:"Memory", color:C.red, desc:"Remember the pattern, repeat with puffs. Memory master!", live:true, difficulty:3 },
   { id:"puffauction", name:"Puff Auction", emoji:"🔨", players:"2-50+", time:"3-8m", type:"Strategy", color:C.lime, desc:"Bid with your lungs! Biggest puff wins the auction.", live:true, difficulty:4 },
@@ -353,9 +353,9 @@ const PREDICT_TYPES = [
   { id:"match", name:"Match Predictor", emoji:"🏟️", desc:"Win/Draw/Lose", color:C.purple },
   { id:"score", name:"Score Predictor", emoji:"🎯", desc:"Exact score ×10", color:C.cyan },
   { id:"mvp", name:"MVP Pick", emoji:"⭐", desc:"Best player", color:C.gold },
-  { id:"bracket", name:"Bracket Challenge", emoji:"🗓️", desc:"Cả giải", color:C.lime },
-  { id:"showpred", name:"Show Predictor", emoji:"🎪", desc:"Ai thắng show?", color:C.pink },
-  { id:"daily", name:"Daily Picks", emoji:"📅", desc:"3-5 câu/ngày", color:C.orange },
+  { id:"bracket", name:"Bracket Challenge", emoji:"🗓️", desc:"Full tournament bracket", color:C.lime },
+  { id:"showpred", name:"Show Predictor", emoji:"🎪", desc:"Who wins the show?", color:C.pink },
+  { id:"daily", name:"Daily Picks", emoji:"📅", desc:"3-5 picks per day", color:C.orange },
 ];
 
 const MATCHES = [
@@ -908,11 +908,11 @@ const WC_2026_GROUPS = {
 };
 
 const VC_QUESTIONS = [
-  { q:"World Cup 2026 tổ chức ở bao nhiêu thành phố?", opts:["12","14","16","20"], correct:2 },
-  { q:"Đội nào vô địch World Cup nhiều nhất?", opts:["Đức","Argentina","Italy","Brazil"], correct:3 },
-  { q:"World Cup 2026 có bao nhiêu đội?", opts:["32","40","48","64"], correct:2 },
-  { q:"Chung kết WC 2026 ở đâu?", opts:["Dallas","Miami","LA","New Jersey"], correct:3 },
-  { q:"Tổng số trận WC 2026?", opts:["64","80","96","104"], correct:3 },
+  { q:"How many host cities does World Cup 2026 have?", opts:["12","14","16","20"], correct:2 },
+  { q:"Which team has won the most World Cups?", opts:["Germany","Argentina","Italy","Brazil"], correct:3 },
+  { q:"How many teams compete in World Cup 2026?", opts:["32","40","48","64"], correct:2 },
+  { q:"Where is the WC 2026 final?", opts:["Dallas","Miami","LA","New Jersey"], correct:3 },
+  { q:"Total matches in WC 2026?", opts:["64","80","96","104"], correct:3 },
 ];
 
 // ── UNIVERSAL PUFF ACTION BAR CONFIG ──
@@ -970,9 +970,9 @@ const CHAT_BOTS = ["VibeKing","ChillMaster","NeonQueen","BlazedPanda","CloudNine
 const CHAT_MSGS = ["Let's go! 🔥","Ez 😎","GG 👏","Nah that's cap 💀","LETSGOOO 🎉","🤯🤯🤯","Hmm tricky 🤔","W play 🏆","Clutch! 💪","Prediction locked 🔮"];
 
 const INPUT_MODES = [
-  { id:"auto", label:"Auto", icon:"🤖", desc:"App tự chọn tối ưu theo game & device", color:C.cyan },
-  { id:"fixed", label:"Fixed", icon:"📌", desc:"Luôn dùng 1 kiểu input bạn chọn", color:C.gold },
-  { id:"ask", label:"Ask", icon:"❓", desc:"Hỏi trước mỗi game", color:C.lime },
+  { id:"auto", label:"Auto", icon:"🤖", desc:"App auto-selects best input for game & device", color:C.cyan },
+  { id:"fixed", label:"Fixed", icon:"📌", desc:"Always use one input type you choose", color:C.gold },
+  { id:"ask", label:"Ask", icon:"❓", desc:"Ask before each game", color:C.lime },
 ];
 const INPUT_TYPES = [
   { id:"puff", label:"Puff", icon:"💨", desc:"MIC-detected puff action", color:C.orange },
@@ -1862,6 +1862,36 @@ export default function MoodLabArena() {
   // Fortune jackpot growing + lucky hour system
   useEffect(()=>{if(tick%30===0)setFortuneJackpot(j=>j+Math.floor(Math.random()*50)+10);},[tick]);
   useEffect(()=>{if(tick%300===0&&Math.random()<0.1){setFortuneLuckyHour(true);playFx("lucky_hour");}if(fortuneLuckyHour&&tick%3600===0)setFortuneLuckyHour(false);},[tick,fortuneLuckyHour]);
+  // ── Load loyalty data from localStorage ──
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem('moodlab_loyalty'));
+      if(saved) {
+        if(saved.coins !== undefined) setCoins(saved.coins);
+        if(saved.xp !== undefined) setXp(saved.xp);
+        if(saved.dailyStreak !== undefined) setDailyStreak(saved.dailyStreak);
+        if(saved.dailyCheckedIn !== undefined) setDailyCheckedIn(saved.dailyCheckedIn);
+        if(saved.earnedBadges?.length) setEarnedBadges(saved.earnedBadges);
+        if(saved.ownedItems?.length) setOwnedItems(saved.ownedItems);
+        if(saved.completedChallenges?.length) setCompletedChallenges(saved.completedChallenges);
+        if(saved.currentWinStreak !== undefined) setCurrentWinStreak(saved.currentWinStreak);
+        if(saved.bestWinStreak !== undefined) setBestWinStreak(saved.bestWinStreak);
+        if(saved.deviceRegistered !== undefined) setDeviceRegistered(saved.deviceRegistered);
+        if(saved.deviceActivated !== undefined) setDeviceActivated(saved.deviceActivated);
+        if(saved.chatsSent !== undefined) setChatsSent(saved.chatsSent);
+      }
+    } catch(e) {}
+  }, []);
+  // ── Save loyalty data whenever it changes ──
+  useEffect(() => {
+    try {
+      localStorage.setItem('moodlab_loyalty', JSON.stringify({
+        coins, xp, dailyStreak, dailyCheckedIn, earnedBadges,
+        ownedItems, completedChallenges, currentWinStreak, bestWinStreak,
+        deviceRegistered, deviceActivated, chatsSent
+      }));
+    } catch(e) {}
+  }, [coins, xp, dailyStreak, dailyCheckedIn, earnedBadges, ownedItems, completedChallenges, currentWinStreak, bestWinStreak, deviceRegistered, deviceActivated, chatsSent]);
   // ── Welcome Back bonus for returning players ──
   useEffect(() => {
     const stored = localStorage.getItem('moodlab_lastActive');
@@ -6216,7 +6246,6 @@ export default function MoodLabArena() {
           <span style={pillStyle(C.gold)}>16 Games</span>
           <span style={pillStyle(C.green)}>Win Rate 62%</span>
           <span style={pillStyle(C.gold)}>Jackpot {Math.floor(fortuneJackpot/1000)}K</span>
-          <span style={pillStyle((FORTUNE_LEVELS.find(l=>l.name===fortuneLevel.level)||FORTUNE_LEVELS[1]).color)}>Level: {fortuneLevel.level.split(" ")[0]}</span>
         </div>
         {/* Quick actions */}
         <div style={{display:"flex",gap:6,marginTop:10}}>
@@ -16232,6 +16261,7 @@ const startSimonPuffs = () => {
                   <div onClick={(e)=>{e.stopPropagation();cbCleanup();startCrystalBall();setGameActive({id:"crystalball",name:"Crystal Ball",emoji:"🔮",color:"#9333EA"});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(147,51,234,0.15)",border:"1px solid rgba(147,51,234,0.30)",fontSize:13,fontWeight:800,color:"#9333EA"}}>Play Again</div>
                   <div onClick={(e)=>{e.stopPropagation();cbCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
                 </div>
+                <div onClick={(e)=>{e.stopPropagation();cbCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
               </div>)}
             </div>
           </div>
@@ -16304,6 +16334,7 @@ const startSimonPuffs = () => {
                   <div onClick={(e)=>{e.stopPropagation();sbCleanup();startStrainBattle();setGameActive({id:"strainbattle",name:"Strain Battle",emoji:"🌿",color:"#22C55E"});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(34,197,94,0.15)",border:"1px solid rgba(34,197,94,0.30)",fontSize:13,fontWeight:800,color:"#22C55E"}}>Play Again</div>
                   <div onClick={(e)=>{e.stopPropagation();sbCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
                 </div>
+                <div onClick={(e)=>{e.stopPropagation();sbCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
               </div>)}
             </div>
           </div>
@@ -16375,6 +16406,7 @@ const startSimonPuffs = () => {
                   <div onClick={(e)=>{e.stopPropagation();mpCleanup();startMatchPredictor();setGameActive({id:"matchpredictor",name:"Match Predictor",emoji:"📊",color:"#3B82F6"});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(59,130,246,0.15)",border:"1px solid rgba(59,130,246,0.30)",fontSize:13,fontWeight:800,color:"#3B82F6"}}>Play Again</div>
                   <div onClick={(e)=>{e.stopPropagation();mpCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
                 </div>
+                <div onClick={(e)=>{e.stopPropagation();mpCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
               </div>)}
             </div>
           </div>
@@ -16455,6 +16487,7 @@ const startSimonPuffs = () => {
                   <div onClick={(e)=>{e.stopPropagation();dpCleanup();startDailyPicks();setGameActive({id:"dailypicks",name:"Daily Picks",emoji:"📅",color:"#F97316"});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(249,115,22,0.15)",border:"1px solid rgba(249,115,22,0.30)",fontSize:13,fontWeight:800,color:"#F97316"}}>Play Again</div>
                   <div onClick={(e)=>{e.stopPropagation();dpCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
                 </div>
+                <div onClick={(e)=>{e.stopPropagation();dpCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
               </div>)}
             </div>
           </div>
@@ -16515,6 +16548,7 @@ const startSimonPuffs = () => {
                   <div onClick={(e)=>{e.stopPropagation();slotsCleanup();startPuffSlots();setGameActive({id:"puffslots",name:"Puff Slots",emoji:"🎰",color:"#FFD700"});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,215,0,0.15)",border:"1px solid rgba(255,215,0,0.30)",fontSize:13,fontWeight:800,color:"#FFD700"}}>Play Again</div>
                   <div onClick={(e)=>{e.stopPropagation();slotsCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
                 </div>
+                <div onClick={(e)=>{e.stopPropagation();slotsCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
               </div>)}
               <div style={{fontSize:11,color:C.text3,fontStyle:"italic",marginTop:8}}>{commentary}</div>
             </div>
@@ -16590,6 +16624,7 @@ const startSimonPuffs = () => {
                   <div onClick={(e)=>{e.stopPropagation();bjCleanup();startPuffBlackjack();setGameActive({id:"puffblackjack",name:"Puff Blackjack",emoji:"🃏",color:"#22C55E"});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(34,197,94,0.15)",border:"1px solid rgba(34,197,94,0.30)",fontSize:13,fontWeight:800,color:"#22C55E"}}>Play Again</div>
                   <div onClick={(e)=>{e.stopPropagation();bjCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
                 </div>
+                <div onClick={(e)=>{e.stopPropagation();bjCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
               </div>)}
               <div style={{fontSize:11,color:C.text3,fontStyle:"italic",marginTop:8}}>{commentary}</div>
             </div>
@@ -16665,6 +16700,7 @@ const startSimonPuffs = () => {
                   <div onClick={(e)=>{e.stopPropagation();cfCleanup();startCoinFlip();setGameActive({id:"coinflip",name:"Coin Flip",emoji:"🪙",color:"#F59E0B"});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(245,158,11,0.15)",border:"1px solid rgba(245,158,11,0.30)",fontSize:13,fontWeight:800,color:"#F59E0B"}}>Play Again</div>
                   <div onClick={(e)=>{e.stopPropagation();cfCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
                 </div>
+                <div onClick={(e)=>{e.stopPropagation();cfCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
               </div>)}
               <div style={{fontSize:11,color:C.text3,fontStyle:"italic",marginTop:8}}>{commentary}</div>
             </div>
@@ -16735,6 +16771,7 @@ const startSimonPuffs = () => {
                   <div onClick={(e)=>{e.stopPropagation();crapsCleanup();startCrapsNClouds();setGameActive({id:"crapsnclouds",name:"Craps & Clouds",emoji:"🎲",color:"#EF4444"});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(239,68,68,0.15)",border:"1px solid rgba(239,68,68,0.30)",fontSize:13,fontWeight:800,color:"#EF4444"}}>Play Again</div>
                   <div onClick={(e)=>{e.stopPropagation();crapsCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
                 </div>
+                <div onClick={(e)=>{e.stopPropagation();crapsCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
               </div>)}
               <div style={{fontSize:11,color:C.text3,fontStyle:"italic",marginTop:8}}>{commentary}</div>
             </div>
@@ -16797,6 +16834,7 @@ const startSimonPuffs = () => {
                   <div onClick={(e)=>{e.stopPropagation();mbCleanup();startMysteryBox();setGameActive({id:"mysterybox",name:"Mystery Box",emoji:"🎁",color:C.gold});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.gold}15`,border:`1px solid ${C.gold}30`,fontSize:13,fontWeight:800,color:C.gold}}>Play Again</div>
                   <div onClick={(e)=>{e.stopPropagation();mbCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
                 </div>
+                <div onClick={(e)=>{e.stopPropagation();mbCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
               </div>)}
               <div style={{fontSize:11,color:C.text3,fontStyle:"italic",marginTop:8}}>{commentary}</div>
             </div>
@@ -16860,6 +16898,7 @@ const startSimonPuffs = () => {
                   <div onClick={(e)=>{e.stopPropagation();scCleanup();startScratchPuff();setGameActive({id:"scratchpuff",name:"Scratch & Puff",emoji:"🎫",color:C.pink});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.pink}15`,border:`1px solid ${C.pink}30`,fontSize:13,fontWeight:800,color:C.pink}}>Play Again</div>
                   <div onClick={(e)=>{e.stopPropagation();scCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
                 </div>
+                <div onClick={(e)=>{e.stopPropagation();scCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
               </div>)}
               <div style={{fontSize:11,color:C.text3,fontStyle:"italic",marginTop:8}}>{commentary}</div>
             </div>
@@ -16916,6 +16955,7 @@ const startSimonPuffs = () => {
                   <div onClick={(e)=>{e.stopPropagation();fcCleanup();startFortuneCookie();setGameActive({id:"fortunecookie",name:"Fortune Cookie",emoji:"🥠",color:C.orange});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.orange}15`,border:`1px solid ${C.orange}30`,fontSize:13,fontWeight:800,color:C.orange}}>Play Again</div>
                   <div onClick={(e)=>{e.stopPropagation();fcCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
                 </div>
+                <div onClick={(e)=>{e.stopPropagation();fcCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
               </div>)}
               <div style={{fontSize:11,color:C.text3,fontStyle:"italic",marginTop:8}}>{commentary}</div>
             </div>
@@ -16985,6 +17025,7 @@ const startSimonPuffs = () => {
                     <div onClick={(e)=>{e.stopPropagation();tmCleanup();startTreasureMap();setGameActive({id:"treasuremap",name:"Treasure Map",emoji:"🗺️",color:C.gold});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.gold}15`,border:`1px solid ${C.gold}30`,fontSize:13,fontWeight:800,color:C.gold}}>Play Again</div>
                     <div onClick={(e)=>{e.stopPropagation();tmCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
                   </div>
+                  <div onClick={(e)=>{e.stopPropagation();tmCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
                 </div>
               )}
               <div style={{fontSize:11,color:C.text3,fontStyle:"italic",marginTop:8}}>{commentary}</div>
@@ -17171,6 +17212,7 @@ const startSimonPuffs = () => {
                   <div onClick={()=>{pipCleanup();startPriceIsPuff();}} style={{padding:"12px 24px",borderRadius:12,cursor:"pointer",background:C.green+"15",border:"1px solid "+C.green+"30",fontSize:13,fontWeight:800,color:C.green}}>Play Again</div>
                   <div onClick={()=>{pipCleanup();setGameActive(null);}} style={{padding:"12px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.05)",border:"1px solid "+C.border,fontSize:13,fontWeight:800,color:C.text3}}>Exit</div>
                 </div>
+                <div onClick={(e)=>{e.stopPropagation();pipCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
               </div>
             )}
           </div>
@@ -21757,12 +21799,14 @@ const startSimonPuffs = () => {
   };
 
     const getCurrentRank = () => {
-    const r = RANKS.find(r => r.name === playerProfile.rank);
-    return r || RANKS[0];
+    const t = LOYALTY_TIERS.find(t => t.name === playerProfile.rank);
+    const tier = t || LOYALTY_TIERS[0];
+    return { ...tier, emoji: tier.icon };
   };
   const getNextRank = () => {
-    const idx = RANKS.findIndex(r => r.name === playerProfile.rank);
-    return idx < RANKS.length - 1 ? RANKS[idx + 1] : null;
+    const idx = LOYALTY_TIERS.findIndex(t => t.name === playerProfile.rank);
+    if (idx < 0) return LOYALTY_TIERS.length > 1 ? { ...LOYALTY_TIERS[1], emoji: LOYALTY_TIERS[1].icon } : null;
+    return idx < LOYALTY_TIERS.length - 1 ? { ...LOYALTY_TIERS[idx + 1], emoji: LOYALTY_TIERS[idx + 1].icon } : null;
   };
   const getWinRate = () => playerProfile.gamesPlayed > 0 ? Math.round((playerProfile.gamesWon / playerProfile.gamesPlayed) * 100) : 0;
   const getFavGame = () => PLAY_GAMES.find(g => g.id === playerProfile.favoriteGame);
@@ -22287,14 +22331,11 @@ const startSimonPuffs = () => {
                     <div style={{fontSize:9,color:C.text3,marginTop:2}}>{"+"+ch.xpReward+" XP"}</div>
                   </div>
                 </div>
-                <button onClick={()=>completeChallenge(ch.id)} style={{padding:"8px 14px",borderRadius:10,border:"none",fontSize:11,fontWeight:700,
-                  cursor:done?"default":"pointer",
-                  background:done?C.bg3:`linear-gradient(135deg,${C.green}20,${C.cyan}15)`,
-                  color:done?C.text3:C.green,
-                  border:done?"none":`1px solid ${C.green}25`,
-                  boxShadow:done?"none":`0 0 10px ${C.green}10`}}>
-                  {done ? "Done" : "+"+Math.round(ch.reward*getCoinMultiplier())+" 🪙"}
-                </button>
+                <div style={{padding:"8px 14px",borderRadius:10,fontSize:11,fontWeight:700,
+                  background:done?C.bg3:`${C.green}12`,color:done?C.text3:C.green,
+                  border:done?"none":`1px solid ${C.green}20`}}>
+                  {done ? "✅ Done" : "+"+Math.round(ch.reward*getCoinMultiplier())+" 🪙 (auto)"}
+                </div>
               </div>
             );
           })}
@@ -22591,7 +22632,7 @@ const startSimonPuffs = () => {
       )}
 
       {/* Tab Title (hide during arena zone focus — image BG handles it) */}
-      {(tab!=="arena" || zone || arenaView==="hub") && (
+      {(tab!=="arena" || zone || arenaView==="hub") && tab!=="me" && (
         <div style={{padding:"6px 14px 10px",position:"relative",zIndex:5}}>
           <div style={{fontSize:20,fontWeight:900,letterSpacing:-0.5}}>
             {tab==="control"?"Control":tab==="arena"?(zone?Z[zone]?.name:"Arena"):tab==="live"?"Live":"Me"}
