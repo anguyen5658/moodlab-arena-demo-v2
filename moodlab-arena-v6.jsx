@@ -23165,9 +23165,9 @@ const startSimonPuffs = () => {
       <div style={{position:"relative",zIndex:5,flex:1,overflow:(tab==="arena"&&!zone)?"hidden":"auto",paddingBottom:(tab==="arena"&&!zone)?0:80}}>
         {tab==="control" && renderControl()}
         {tab==="arena" && !zone && renderArenaHub()}
-        {tab==="arena" && zone==="arcade" && renderArcade()}
-        {tab==="arena" && zone==="stage" && renderStage()}
-        {tab==="arena" && zone==="oracle" && renderOracle()}
+        {tab==="arena" && (zone==="arcade" || (gameActive && (zone==="oracle" || zone==="stage"))) && renderArcade()}
+        {tab==="arena" && zone==="stage" && !gameActive && renderStage()}
+        {tab==="arena" && zone==="oracle" && !gameActive && renderOracle()}
         {tab==="arena" && zone==="wall" && renderWall()}
         {tab==="arena" && zone==="worldcup" && renderWorldCupHub()}
         {tab==="live" && renderLive()}
