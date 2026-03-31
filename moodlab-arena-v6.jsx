@@ -21675,8 +21675,17 @@ const startSimonPuffs = () => {
       return (
         <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:200,maxWidth:430,margin:"0 auto",background:C.bg}}>
           <div style={{position:"relative",height:"100%",background:s.category==="World Cup"||s.type==="match"?
-            "linear-gradient(180deg, #1a0a20 0%, #0a0f1a 50%, #050510 100%)":
-            "linear-gradient(180deg, #0a1628 0%, #1a0a2e 50%, #050510 100%)"}}>
+            "linear-gradient(180deg, #0a0515 0%, #0a0f1a 30%, #080518 60%, #050510 100%)":
+            "linear-gradient(180deg, #0a0515 0%, #1a0a2e 30%, #0c0820 60%, #050510 100%)",overflow:"hidden"}}>
+
+            {/* Ambient theater lights */}
+            <div style={{position:"absolute",inset:0,pointerEvents:"none",zIndex:0,overflow:"hidden"}}>
+              <div style={{position:"absolute",top:"-5%",left:"-15%",width:"50%",height:"40%",background:"radial-gradient(ellipse, rgba(244,114,182,0.06) 0%, transparent 70%)",filter:"blur(40px)",animation:"liveAmbientDrift 12s ease-in-out infinite"}}/>
+              <div style={{position:"absolute",top:"15%",right:"-10%",width:"45%",height:"35%",background:"radial-gradient(ellipse, rgba(34,211,238,0.05) 0%, transparent 70%)",filter:"blur(50px)",animation:"liveAmbientDrift 15s ease-in-out infinite 3s"}}/>
+              <div style={{position:"absolute",bottom:"20%",left:"20%",width:"40%",height:"30%",background:"radial-gradient(ellipse, rgba(192,132,252,0.04) 0%, transparent 70%)",filter:"blur(60px)",animation:"liveAmbientDrift 18s ease-in-out infinite 6s"}}/>
+              {/* Noise texture */}
+              <div style={{position:"absolute",inset:0,opacity:0.025,backgroundImage:"url(\"data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")"}}/>
+            </div>
 
             {/* Top Bar */}
             <div style={{position:"absolute",top:0,left:0,right:0,zIndex:10,padding:"44px 14px 8px",background:"linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, transparent 100%)"}}>
@@ -21714,13 +21723,15 @@ const startSimonPuffs = () => {
             )}
             {s.category!=="World Cup"&&s.type!=="match" && (
               <div style={{position:"absolute",top:"22%",left:"50%",transform:"translateX(-50%)",textAlign:"center"}}>
-                <div style={{width:96,height:96,borderRadius:"50%",background:`linear-gradient(135deg, ${C.purple}30, ${C.pink}30)`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:48,border:`2px solid ${C.purple}30`,animation:"float 3s ease-in-out infinite"}}>{s.avatar}</div>
+                {/* Glow halo behind avatar */}
+                <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:140,height:140,borderRadius:"50%",background:`radial-gradient(circle, ${C.purple}15 0%, ${C.pink}08 40%, transparent 70%)`,filter:"blur(20px)",animation:"energyPulse 4s ease-in-out infinite"}}/>
+                <div style={{width:96,height:96,borderRadius:"50%",background:`linear-gradient(135deg, ${C.purple}30, ${C.pink}30)`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:48,border:`2px solid ${C.purple}40`,animation:"float 3s ease-in-out infinite",boxShadow:`0 0 30px ${C.purple}20, 0 0 60px ${C.pink}10`,position:"relative",zIndex:1}}>{s.avatar}</div>
                 <div style={{marginTop:8,fontSize:12,color:C.text2}}>🎙 Speaking...</div>
               </div>
             )}
 
-            {/* Floating reactions */}
-            {liveFloatingReactions.map(r=><div key={r.id} style={{position:"absolute",left:`${r.x}%`,bottom:"35%",fontSize:24,animation:"liveFloatUp 2.8s ease-out forwards",pointerEvents:"none",zIndex:5}}>{r.emoji}</div>)}
+            {/* Floating reactions with glow trails */}
+            {liveFloatingReactions.map(r=><div key={r.id} style={{position:"absolute",left:`${r.x}%`,bottom:"35%",fontSize:24,animation:"liveFloatUp 2.8s ease-out forwards",pointerEvents:"none",zIndex:5,filter:"drop-shadow(0 0 6px rgba(255,255,255,0.2))",textShadow:"0 0 12px rgba(255,255,255,0.15)"}}>{r.emoji}</div>)}
 
             {/* Overlay Cards — Prediction / Challenge / Halftime */}
             <div style={{position:"absolute",top:"44%",left:0,right:0,zIndex:6}}>
@@ -21769,38 +21780,47 @@ const startSimonPuffs = () => {
             </div>
 
             {/* Bottom — Chat, Reactions, Actions */}
-            <div style={{position:"absolute",bottom:0,left:0,right:0,zIndex:8,background:"linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.4) 50%, transparent 100%)",padding:"60px 0 0"}}>
-              {/* Chat messages */}
-              <div style={{maxHeight:110,overflow:"hidden",padding:"0 12px",marginBottom:8}}>
-                {liveChatMsgs.slice(-5).map((m,i)=><div key={i} style={{fontSize:12,marginBottom:3,display:"flex",gap:6}}><span style={{fontWeight:700,color:m.c,flexShrink:0}}>{m.user}:</span><span style={{color:C.text2}}>{m.msg}</span></div>)}
+            <div style={{position:"absolute",bottom:0,left:0,right:0,zIndex:8,background:"linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.5) 50%, transparent 100%)",padding:"60px 0 0"}}>
+              {/* Chat messages with glass bubbles */}
+              <div style={{maxHeight:120,overflow:"hidden",padding:"0 12px",marginBottom:8,position:"relative"}}>
+                {/* Fade indicator at top */}
+                <div style={{position:"absolute",top:0,left:0,right:0,height:20,background:"linear-gradient(to bottom, rgba(0,0,0,0.5), transparent)",zIndex:1,pointerEvents:"none"}}/>
+                {liveChatMsgs.slice(-5).map((m,i)=>(
+                  <div key={i} style={{fontSize:12,marginBottom:4,display:"flex",gap:6,alignItems:"flex-start",animation:"liveChatSlideIn 0.3s ease-out"}}>
+                    <div style={{padding:"4px 8px",borderRadius:10,background:"rgba(255,255,255,0.06)",backdropFilter:"blur(10px)",WebkitBackdropFilter:"blur(10px)",border:"1px solid rgba(255,255,255,0.06)",display:"flex",gap:6,maxWidth:"90%"}}>
+                      <span style={{fontWeight:700,color:m.c,flexShrink:0,fontSize:11}}>{m.user}</span>
+                      <span style={{color:C.text2,fontSize:11}}>{m.msg}</span>
+                    </div>
+                  </div>
+                ))}
               </div>
 
-              {/* Reaction bar */}
-              <div style={{display:"flex",gap:4,padding:"0 12px",marginBottom:8}}>
-                {LIVE_REACTIONS.map((e,i)=><div key={i} onClick={()=>addLiveReaction(e)} style={{width:36,height:36,borderRadius:12,background:"rgba(255,255,255,0.06)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,cursor:"pointer"}}>{e}</div>)}
+              {/* Reaction bar -- glass pills */}
+              <div style={{display:"flex",gap:5,padding:"0 12px",marginBottom:8}}>
+                {LIVE_REACTIONS.map((e,i)=><div key={i} onClick={(ev)=>{addLiveReaction(e);ev.currentTarget.style.animation="liveReactionPop 0.3s ease-out";setTimeout(()=>{if(ev.currentTarget)ev.currentTarget.style.animation="";},300);}} style={{width:38,height:38,borderRadius:20,background:"rgba(255,255,255,0.06)",backdropFilter:"blur(8px)",WebkitBackdropFilter:"blur(8px)",border:"1px solid rgba(255,255,255,0.08)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,cursor:"pointer",transition:"transform 0.15s"}}>{e}</div>)}
               </div>
 
               {/* Puff + Wave + Tip */}
               <div style={{display:"flex",gap:8,padding:"0 12px",marginBottom:8}}>
-                <div onClick={()=>{setLivePuffCount(p=>p+1);addLiveReaction("💨");playFx("puff");}} style={{flex:1,padding:"11px 0",borderRadius:12,background:`linear-gradient(135deg, ${C.pink}, ${C.blue})`,color:"#fff",fontSize:13,fontWeight:800,cursor:"pointer",textAlign:"center"}}>💨 PUFF</div>
-                <div onClick={()=>{for(let i=0;i<5;i++) setTimeout(()=>addLiveReaction("🌊"),i*80);notify("PUFF WAVE!",C.gold);playFx("win");}} style={{flex:1,padding:"11px 0",borderRadius:12,background:`linear-gradient(135deg, ${C.pink}, ${C.gold})`,color:"#fff",fontSize:13,fontWeight:800,cursor:"pointer",textAlign:"center"}}>🌊 WAVE!</div>
-                <div onClick={()=>setLiveShowTip(!liveShowTip)} style={{width:46,height:46,borderRadius:12,border:`1px solid ${C.gold}30`,background:`${C.gold}08`,fontSize:18,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>🪙</div>
+                <div onClick={()=>{setLivePuffCount(p=>p+1);addLiveReaction("💨");playFx("puff");}} style={{flex:1,padding:"11px 0",borderRadius:12,background:`linear-gradient(135deg, ${C.pink}, ${C.blue})`,color:"#fff",fontSize:13,fontWeight:800,cursor:"pointer",textAlign:"center",boxShadow:`0 2px 16px ${C.pink}30`}}>💨 PUFF</div>
+                <div onClick={()=>{for(let i=0;i<5;i++) setTimeout(()=>addLiveReaction("🌊"),i*80);notify("PUFF WAVE!",C.gold);playFx("win");}} style={{flex:1,padding:"11px 0",borderRadius:12,background:`linear-gradient(135deg, ${C.pink}, ${C.gold})`,color:"#fff",fontSize:13,fontWeight:800,cursor:"pointer",textAlign:"center",boxShadow:`0 2px 16px ${C.gold}30`}}>🌊 WAVE!</div>
+                <div onClick={()=>setLiveShowTip(!liveShowTip)} style={{width:46,height:46,borderRadius:12,border:`1px solid ${C.gold}30`,background:`${C.gold}08`,fontSize:18,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",backdropFilter:"blur(8px)",WebkitBackdropFilter:"blur(8px)"}}>🪙</div>
               </div>
 
               {/* Tip panel */}
               {liveShowTip && (
-                <div style={{padding:"10px 12px",margin:"0 12px 8px",background:`${C.gold}06`,borderRadius:14,border:`1px solid ${C.gold}15`}}>
+                <div style={{padding:"10px 12px",margin:"0 12px 8px",...GLASS_CARD,borderRadius:14,borderColor:`${C.gold}20`,background:`rgba(8,8,25,0.8)`}}>
                   <div style={{fontSize:11,fontWeight:700,color:C.gold,marginBottom:8}}>🪙 Tip {s.host} -- Balance: {coins.toLocaleString()}</div>
                   <div style={{display:"flex",gap:8}}>
-                    {[10,50,100,500].map(a=><div key={a} onClick={()=>{setCoins(p=>Math.max(0,p-a));setLiveShowTip(false);addLiveReaction("🪙");notify(`Tipped ${a} coins to ${s.host}!`,C.gold);playFx("coin");}} style={{flex:1,padding:"8px 0",borderRadius:10,border:`1px solid ${C.gold}20`,background:`${C.gold}06`,fontSize:13,fontWeight:700,color:C.gold,cursor:"pointer",textAlign:"center"}}>{a}</div>)}
+                    {[10,50,100,500].map(a=><div key={a} onClick={()=>{setCoins(p=>Math.max(0,p-a));setLiveShowTip(false);addLiveReaction("🪙");notify(`Tipped ${a} coins to ${s.host}!`,C.gold);playFx("coin");}} style={{flex:1,padding:"8px 0",borderRadius:10,border:`1px solid ${C.gold}20`,background:`${C.gold}08`,fontSize:13,fontWeight:700,color:C.gold,cursor:"pointer",textAlign:"center"}}>{a}</div>)}
                   </div>
                 </div>
               )}
 
               {/* Chat input */}
               <div style={{display:"flex",gap:8,padding:"0 12px 16px"}}>
-                <input value={liveChatInput} onChange={e=>setLiveChatInput(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&liveChatInput.trim()){setLiveChatMsgs(p=>[...p,{user:"You",msg:liveChatInput,c:C.cyan}]);setLiveChatInput("");}}} placeholder="Say something..." style={{flex:1,padding:"11px 16px",borderRadius:12,border:`1px solid ${C.border}`,background:C.glass,color:C.text,fontSize:13,outline:"none",fontFamily:"inherit"}}/>
-                <div onClick={()=>{if(liveChatInput.trim()){setLiveChatMsgs(p=>[...p,{user:"You",msg:liveChatInput,c:C.cyan}]);setLiveChatInput("");}}} style={{width:46,height:46,borderRadius:12,background:C.pink,color:"#fff",fontSize:16,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>↑</div>
+                <input value={liveChatInput} onChange={e=>setLiveChatInput(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&liveChatInput.trim()){setLiveChatMsgs(p=>[...p,{user:"You",msg:liveChatInput,c:C.cyan}]);setLiveChatInput("");}}} placeholder="Say something..." style={{flex:1,padding:"11px 16px",borderRadius:12,border:`1px solid rgba(255,255,255,0.08)`,background:"rgba(255,255,255,0.05)",backdropFilter:"blur(10px)",WebkitBackdropFilter:"blur(10px)",color:C.text,fontSize:13,outline:"none",fontFamily:"inherit"}}/>
+                <div onClick={()=>{if(liveChatInput.trim()){setLiveChatMsgs(p=>[...p,{user:"You",msg:liveChatInput,c:C.cyan}]);setLiveChatInput("");}}} style={{width:46,height:46,borderRadius:12,background:`linear-gradient(135deg, ${C.pink}, ${C.purple})`,color:"#fff",fontSize:16,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:`0 2px 12px ${C.pink}30`}}>↑</div>
               </div>
             </div>
           </div>
@@ -21812,12 +21832,42 @@ const startSimonPuffs = () => {
     // ── EXPLORE SCREEN ──
     const heroSlide = LIVE_HERO_SLIDES[liveHeroIdx];
     return (
-      <div>
-        {/* Header */}
-        <div style={{padding:"2px 14px 8px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+      <div style={{position:"relative",minHeight:"100%"}}>
+        {/* Atmospheric background -- dark theater/lounge */}
+        <div style={{position:"absolute",inset:0,zIndex:0,overflow:"hidden",pointerEvents:"none"}}>
+          {/* Deep gradient base */}
+          <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg, #0a0515 0%, #050510 30%, #0c0820 60%, #050510 100%)"}}/>
+          {/* Pink/purple ambient glow -- top left */}
+          <div style={{position:"absolute",top:"-10%",left:"-20%",width:"60%",height:"50%",background:"radial-gradient(ellipse, rgba(244,114,182,0.08) 0%, transparent 70%)",filter:"blur(40px)"}}/>
+          {/* Cyan glow -- right */}
+          <div style={{position:"absolute",top:"20%",right:"-15%",width:"50%",height:"40%",background:"radial-gradient(ellipse, rgba(34,211,238,0.06) 0%, transparent 70%)",filter:"blur(50px)"}}/>
+          {/* Gold spotlight -- center bottom */}
+          <div style={{position:"absolute",bottom:"10%",left:"30%",width:"40%",height:"30%",background:"radial-gradient(ellipse, rgba(251,191,36,0.04) 0%, transparent 70%)",filter:"blur(60px)"}}/>
+          {/* Floating particles */}
+          {[...Array(15)].map((_,i)=>(
+            <div key={i} style={{position:"absolute",width:2+Math.random()*2,height:2+Math.random()*2,borderRadius:"50%",
+              background:["rgba(244,114,182,0.3)","rgba(34,211,238,0.3)","rgba(251,191,36,0.2)","rgba(192,132,252,0.3)"][i%4],
+              left:(5+Math.random()*90)+"%",top:(5+Math.random()*90)+"%",
+              animation:`floatParticle ${8+Math.random()*12}s ease-in-out infinite ${Math.random()*5}s`,
+              filter:"blur(1px)"}}/>
+          ))}
+          {/* Noise texture overlay */}
+          <div style={{position:"absolute",inset:0,opacity:0.03,
+            backgroundImage:"url(\"data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")"}}/>
+          {/* Horizontal neon line -- like stage lighting */}
+          <div style={{position:"absolute",top:"15%",left:"10%",right:"10%",height:1,
+            background:"linear-gradient(90deg, transparent, rgba(244,114,182,0.15), rgba(34,211,238,0.1), transparent)",
+            boxShadow:"0 0 20px rgba(244,114,182,0.1)"}}/>
+        </div>
+
+        {/* Header -- theatrical */}
+        <div style={{position:"relative",zIndex:1,padding:"2px 14px 8px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
           <div>
-            <div style={{fontSize:24,fontWeight:800,letterSpacing:-0.5}}>Live</div>
-            <div style={{fontSize:11,color:C.text3,marginTop:1}}>Discover creators & streams</div>
+            <div style={{display:"flex",alignItems:"center",gap:8}}>
+              <span style={{fontSize:24,fontWeight:800,letterSpacing:-0.5,background:"linear-gradient(135deg, #FF4D8D, #C084FC)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>Live</span>
+              <span style={{width:8,height:8,borderRadius:"50%",background:C.red,animation:"pulse 1.2s infinite",boxShadow:`0 0 8px ${C.red}, 0 0 16px ${C.red}60`}}/>
+            </div>
+            <div style={{fontSize:11,color:C.text3,marginTop:1,letterSpacing:0.5}}>Watch  ·  Stream  ·  Puff Together</div>
           </div>
           <div style={{display:"flex",gap:8}}>
             {["🔔","🔍"].map((e,i)=><div key={i} style={{width:36,height:36,borderRadius:12,...GLASS_CLEAR,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16}}>{e}</div>)}
@@ -21825,7 +21875,7 @@ const startSimonPuffs = () => {
         </div>
 
         {/* Hero Slider */}
-        <div style={{margin:"8px 14px",borderRadius:20,overflow:"hidden",position:"relative",height:250,cursor:"pointer"}} onClick={()=>openLiveStream({id:1,host:heroSlide.host.name,avatar:heroSlide.host.avatar,viewers:1247,category:"World Cup",title:heroSlide.title,puffs:3420,badge:heroSlide.host.badge,followers:12400,type:heroSlide.type})}>
+        <div style={{margin:"8px 14px",borderRadius:20,overflow:"hidden",position:"relative",zIndex:1,height:250,cursor:"pointer"}} onClick={()=>openLiveStream({id:1,host:heroSlide.host.name,avatar:heroSlide.host.avatar,viewers:1247,category:"World Cup",title:heroSlide.title,puffs:3420,badge:heroSlide.host.badge,followers:12400,type:heroSlide.type})}>
           <div style={{position:"absolute",inset:0,background:heroSlide.gradient,transition:"opacity 0.6s ease"}}/>
           <div style={{position:"absolute",inset:0,opacity:0.04,backgroundImage:"linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)",backgroundSize:"40px 40px"}}/>
           <div style={{position:"relative",zIndex:2,height:"100%",display:"flex",flexDirection:"column",padding:18}}>
@@ -21904,7 +21954,7 @@ const startSimonPuffs = () => {
         </div>
 
         {/* Categories */}
-        <div style={{display:"flex",gap:6,padding:"10px 14px",overflowX:"auto"}}>
+        <div style={{position:"relative",zIndex:1,display:"flex",gap:6,padding:"10px 14px",overflowX:"auto"}}>
           {LIVE_CATEGORIES.map(cat=>(
             <div key={cat.name} onClick={()=>setLiveCategory(cat.name)} style={{padding:"6px 14px",borderRadius:20,border:liveCategory===cat.name?`1.5px solid ${cat.c}`:`1px solid ${C.border}`,background:liveCategory===cat.name?`${cat.c}12`:"transparent",cursor:"pointer",whiteSpace:"nowrap",fontSize:12,fontWeight:600,color:liveCategory===cat.name?cat.c:C.text3,display:"flex",alignItems:"center",gap:4,transition:"all 0.2s"}}>
               <span>{cat.icon}</span> {cat.name}
@@ -21914,7 +21964,7 @@ const startSimonPuffs = () => {
         </div>
 
         {/* Arena x Live Strip */}
-        <div style={{padding:"10px 14px 4px"}}>
+        <div style={{position:"relative",zIndex:1,padding:"10px 14px 4px"}}>
           <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:10}}>
             <span style={{fontSize:12}}>🎮</span>
             <span style={{fontSize:13,fontWeight:700}}>Arena × Live</span>
@@ -21943,7 +21993,7 @@ const startSimonPuffs = () => {
         </div>
 
         {/* Live Now */}
-        <div style={{padding:"12px 14px 4px"}}>
+        <div style={{position:"relative",zIndex:1,padding:"12px 14px 4px"}}>
           <div style={{fontSize:15,fontWeight:700,marginBottom:12,display:"flex",alignItems:"center",gap:6}}>
             <span style={{color:C.red,animation:"pulse 1.2s infinite"}}>●</span>
             {liveCategory==="Following"?"Following -- Live":"Live Now"}
@@ -21951,49 +22001,67 @@ const startSimonPuffs = () => {
           </div>
           {filteredLiveStreams.length===0 && liveCategory==="Following" && <div style={{textAlign:"center",padding:32,color:C.text3,fontSize:13}}>No followed creators are live.<br/>Follow creators below!</div>}
           <div style={{display:"flex",flexDirection:"column",gap:10}}>
-            {filteredLiveStreams.map(s=>(
-              <div key={s.id} onClick={()=>openLiveStream(s)} style={{display:"flex",gap:12,padding:12,borderRadius:16,...GLASS_CARD,cursor:"pointer"}}>
-                <div style={{width:76,height:76,borderRadius:14,background:`linear-gradient(135deg, ${C.bg3}, ${s.category==="Chill"?"rgba(192,132,252,0.1)":s.category==="Brand"?"rgba(251,191,36,0.1)":"rgba(34,211,238,0.1)"})`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:30,position:"relative",flexShrink:0}}>
+            {filteredLiveStreams.map(s=>{
+              const catColor = s.category==="Chill"?C.purple:s.category==="Brand"?C.gold:s.category==="World Cup"?C.gold:C.cyan;
+              return (
+              <div key={s.id} onClick={()=>openLiveStream(s)} style={{display:"flex",gap:12,padding:12,borderRadius:16,...GLASS_CARD,cursor:"pointer",position:"relative",overflow:"hidden",transition:"box-shadow 0.3s"}}>
+                {/* Gradient accent strip at top */}
+                <div style={{position:"absolute",top:0,left:0,right:0,height:2,background:`linear-gradient(90deg, ${catColor}, ${catColor}40, transparent)`,borderRadius:"16px 16px 0 0"}}/>
+                <div style={{width:76,height:76,borderRadius:14,background:`linear-gradient(135deg, ${C.bg3}, ${catColor}15)`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:30,position:"relative",flexShrink:0,border:`1px solid ${catColor}15`}}>
                   {s.avatar}
-                  <div style={{position:"absolute",top:5,right:5,background:C.red,borderRadius:4,padding:"1px 5px",fontSize:8,fontWeight:800,color:"#fff"}}>LIVE</div>
+                  <div style={{position:"absolute",top:5,right:5,background:C.red,borderRadius:4,padding:"1px 5px",fontSize:8,fontWeight:800,color:"#fff",boxShadow:`0 0 6px ${C.red}60`}}>LIVE</div>
                 </div>
                 <div style={{flex:1,minWidth:0,display:"flex",flexDirection:"column",justifyContent:"center"}}>
                   <div style={{fontSize:13,fontWeight:700,marginBottom:3,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{s.title}</div>
                   <div style={{display:"flex",alignItems:"center",gap:6,fontSize:11,color:C.text3,marginBottom:4}}>
                     <span>{s.host}</span><LiveBadgeTag type={s.badge} s={8}/>
                   </div>
-                  <div style={{display:"flex",gap:10,fontSize:10,color:C.text3}}>
-                    <span>👁 {s.viewers}</span><span>💨 {s.puffs}</span>
+                  <div style={{display:"flex",gap:12,fontSize:10,color:C.text3}}>
+                    <span style={{display:"flex",alignItems:"center",gap:3}}>
+                      <span style={{width:5,height:5,borderRadius:"50%",background:C.green,animation:"pulse 1.5s infinite",boxShadow:`0 0 4px ${C.green}`}}/>
+                      {s.viewers.toLocaleString()} watching
+                    </span>
+                    <span>💨 {s.puffs.toLocaleString()}</span>
                   </div>
                 </div>
               </div>
-            ))}
+            );})}
           </div>
         </div>
 
         {/* Featured Creators */}
-        <div style={{padding:"20px 14px 4px"}}>
+        <div style={{position:"relative",zIndex:1,padding:"20px 14px 4px"}}>
           <div style={{fontSize:15,fontWeight:700,marginBottom:12,display:"flex",alignItems:"center",gap:6}}>⭐ Featured Creators<span style={{fontSize:10,color:C.text3,fontWeight:400,marginLeft:"auto"}}>See all →</span></div>
           <div style={{display:"flex",gap:10,overflowX:"auto",paddingBottom:8}}>
-            {LIVE_CREATORS.map(cr=>(
-              <div key={cr.name} style={{minWidth:136,padding:14,textAlign:"center",flexShrink:0,borderRadius:16,...GLASS_CARD}}>
-                <div style={{fontSize:30,marginBottom:6}}>{cr.avatar}</div>
+            {LIVE_CREATORS.map(cr=>{
+              const ringColor = cr.badge==="vip"?C.gold:cr.badge==="og"?C.purple:cr.badge==="mod"?C.cyan:C.pink;
+              return (
+              <div key={cr.name} style={{minWidth:136,padding:14,textAlign:"center",flexShrink:0,borderRadius:16,...GLASS_CARD,position:"relative",overflow:"hidden"}}>
+                {/* Subtle top glow */}
+                <div style={{position:"absolute",top:0,left:"20%",right:"20%",height:1,background:`linear-gradient(90deg, transparent, ${ringColor}40, transparent)`}}/>
+                {/* Avatar with glowing ring */}
+                <div style={{width:56,height:56,borderRadius:"50%",margin:"0 auto 8px",background:`linear-gradient(135deg, ${ringColor}20, ${C.bg3})`,border:`2px solid ${ringColor}50`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:28,boxShadow:`0 0 16px ${ringColor}20, inset 0 0 8px ${ringColor}10`}}>
+                  {cr.avatar}
+                </div>
                 <div style={{fontSize:12,fontWeight:700,marginBottom:4}}>{cr.name}</div>
                 <LiveBadgeTag type={cr.badge} s={8}/>
                 <div style={{fontSize:10,color:C.text3,marginTop:4}}>{cr.followers} followers</div>
                 <div style={{fontSize:9,color:C.text3,marginTop:1}}>🕐 {cr.schedule}</div>
-                <div onClick={e=>{e.stopPropagation();setLiveFollowed(p=>({...p,[cr.name]:!p[cr.name]}));playFx("coin");}} style={{width:"100%",padding:"6px 0",borderRadius:10,border:liveFollowed[cr.name]?`1px solid ${C.orange}`:"none",background:liveFollowed[cr.name]?"transparent":`linear-gradient(135deg, ${C.orange}, ${C.pink})`,fontSize:10,fontWeight:700,color:liveFollowed[cr.name]?C.orange:"#fff",cursor:"pointer",marginTop:8,textAlign:"center"}}>
+                <div onClick={e=>{e.stopPropagation();setLiveFollowed(p=>({...p,[cr.name]:!p[cr.name]}));playFx("coin");}} style={{width:"100%",padding:"6px 0",borderRadius:10,border:liveFollowed[cr.name]?`1px solid ${C.orange}`:"none",background:liveFollowed[cr.name]?"transparent":`linear-gradient(135deg, ${C.orange}, ${C.pink})`,fontSize:10,fontWeight:700,color:liveFollowed[cr.name]?C.orange:"#fff",cursor:"pointer",marginTop:8,textAlign:"center",boxShadow:liveFollowed[cr.name]?"none":`0 2px 12px rgba(251,146,60,0.2)`}}>
                   {liveFollowed[cr.name]?"✓ Following":"Follow"}
                 </div>
               </div>
-            ))}
+            );})}
           </div>
         </div>
 
         {/* Go Live FAB */}
         <div style={{position:"fixed",bottom:88,right:"calc(50% - 195px)",zIndex:40}}>
-          <div onClick={()=>notify("Go Live -- Coming soon!",C.pink)} style={{width:56,height:56,borderRadius:16,background:`linear-gradient(135deg, ${C.red}, ${C.pink})`,border:"none",color:"#fff",fontSize:22,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:`0 4px 24px rgba(236,72,153,0.35)`}}>📷</div>
-          <div style={{fontSize:9,fontWeight:800,color:C.pink,textAlign:"center",marginTop:4,letterSpacing:0.5}}>GO LIVE</div>
+          <div onClick={()=>notify("Go Live -- Coming soon!",C.pink)} style={{width:62,height:62,borderRadius:18,background:`linear-gradient(135deg, ${C.red}, ${C.pink})`,border:"none",color:"#fff",fontSize:22,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:`0 4px 24px rgba(236,72,153,0.4), 0 0 40px rgba(236,72,153,0.15)`,position:"relative"}}>
+            <span style={{position:"absolute",top:8,right:8,width:7,height:7,borderRadius:"50%",background:"#fff",animation:"pulse 1.5s infinite",boxShadow:"0 0 6px rgba(255,255,255,0.6)"}}/>
+            📡
+          </div>
+          <div style={{fontSize:9,fontWeight:800,color:C.pink,textAlign:"center",marginTop:4,letterSpacing:1,textShadow:`0 0 10px ${C.pink}40`}}>GO LIVE</div>
         </div>
 
         <div style={{height:80}}/>
@@ -22376,41 +22444,81 @@ const startSimonPuffs = () => {
       flex:1,padding:"10px 0",borderRadius:12,fontSize:12,fontWeight:700,cursor:"pointer",textAlign:"center",
       background:loyaltyTab===id?`linear-gradient(135deg,${color||C.pink},${color||C.pink}cc)`:`rgba(255,255,255,0.04)`,
       color:loyaltyTab===id?"#fff":C.text3,
-      border:loyaltyTab===id?`1px solid ${color||C.pink}40`:`1px solid ${C.border}`,
-      boxShadow:loyaltyTab===id?`0 0 20px ${color||C.pink}35, 0 4px 12px rgba(0,0,0,0.3)`:"0 2px 8px rgba(0,0,0,0.15)",
-      transition:"all 0.3s cubic-bezier(0.4,0,0.2,1)",
-      backdropFilter:loyaltyTab===id?"none":"blur(12px)",
-      WebkitBackdropFilter:loyaltyTab===id?"none":"blur(12px)",
+      border:loyaltyTab===id?`1px solid ${color||C.pink}50`:`1px solid ${C.border}`,
+      boxShadow:loyaltyTab===id?`0 0 25px ${color||C.pink}40, 0 4px 16px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.15)`:"0 2px 8px rgba(0,0,0,0.2)",
+      transition:"all 0.35s cubic-bezier(0.4,0,0.2,1)",
+      transform:loyaltyTab===id?"scale(1.03)":"scale(1)",
+      backdropFilter:loyaltyTab===id?"none":"blur(16px)",
+      WebkitBackdropFilter:loyaltyTab===id?"none":"blur(16px)",
+      position:"relative",
+      letterSpacing:loyaltyTab===id?0.5:0,
     });
     return (
     <div style={{padding:"0 14px",position:"relative"}}>
-      {/* Ambient background */}
-      <div style={{position:"absolute",top:0,left:0,right:0,height:400,pointerEvents:"none",zIndex:0,
-        background:`radial-gradient(ellipse 80% 50% at 50% 0%, ${tier.color}18, transparent 70%), radial-gradient(ellipse 60% 40% at 20% 10%, ${C.purple}0a, transparent 50%), radial-gradient(ellipse 50% 40% at 80% 30%, ${C.pink}08, transparent 50%)`,
-      }}/>
+      {/* Immersive VIP lounge atmosphere */}
+      <div style={{position:"absolute",inset:0,zIndex:0,overflow:"hidden",pointerEvents:"none"}}>
+        {/* Deep base gradient */}
+        <div style={{position:"absolute",inset:0,background:`linear-gradient(180deg, ${tier.color}08 0%, #050510 25%, #080818 50%, ${C.purple}05 80%, #050510 100%)`}}/>
+        {/* Tier-colored ambient glow - top center */}
+        <div style={{position:"absolute",top:"-15%",left:"20%",width:"60%",height:"40%",
+          background:`radial-gradient(ellipse, ${tier.color}12 0%, transparent 70%)`,
+          filter:"blur(50px)",animation:"vipBreathe 6s ease-in-out infinite"}}/>
+        {/* Purple accent - bottom right */}
+        <div style={{position:"absolute",bottom:"10%",right:"-10%",width:"50%",height:"35%",
+          background:"radial-gradient(ellipse, rgba(192,132,252,0.06) 0%, transparent 70%)",
+          filter:"blur(40px)"}}/>
+        {/* Subtle pink - left */}
+        <div style={{position:"absolute",top:"40%",left:"-15%",width:"40%",height:"30%",
+          background:"radial-gradient(ellipse, rgba(255,77,141,0.04) 0%, transparent 70%)",
+          filter:"blur(50px)"}}/>
+        {/* Floating particles - tier colored */}
+        {[...Array(10)].map((_,i)=>(
+          <div key={i} style={{position:"absolute",width:2+Math.random()*2,height:2+Math.random()*2,borderRadius:"50%",
+            background:`${tier.color}40`,
+            left:(8+Math.random()*84)+"%",top:(8+Math.random()*84)+"%",
+            animation:`floatParticle ${10+Math.random()*10}s ease-in-out infinite ${Math.random()*5}s`,
+            filter:"blur(1px)"}}/>
+        ))}
+        {/* Noise texture */}
+        <div style={{position:"absolute",inset:0,opacity:0.025,
+          backgroundImage:"url(\"data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")"}}/>
+        {/* Horizontal accent line - VIP style */}
+        <div style={{position:"absolute",top:"22%",left:"15%",right:"15%",height:1,
+          background:`linear-gradient(90deg, transparent, ${tier.color}15, ${C.purple}10, transparent)`,
+          boxShadow:`0 0 15px ${tier.color}08`}}/>
+      </div>
 
-      {/* ── PROFILE HEADER ── */}
+      {/* ── PROFILE HEADER ── VIP Luxury Card */}
       <div style={{padding:20,borderRadius:22,marginBottom:16,position:"relative",zIndex:1,overflow:"hidden",
         background:`linear-gradient(145deg,${C.bg3},${tier.color}10,${C.bg2})`,
-        boxShadow:`0 0 50px ${tier.color}10, 0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06)`,
-        animation:"tierGlow 3s ease-in-out infinite","--tier-glow":`${tier.color}20`}}>
-        {/* Animated gradient border overlay */}
-        <div style={{position:"absolute",inset:0,borderRadius:22,padding:1,pointerEvents:"none",
-          background:`linear-gradient(135deg,${tier.color}50,${C.purple}30,${C.cyan}40,${tier.color}50)`,backgroundSize:"300% 300%",
+        boxShadow:`0 0 60px ${tier.color}15, 0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08)`,
+        animation:"tierGlow 3s ease-in-out infinite","--tier-glow":`${tier.color}25`}}>
+        {/* Animated gradient border overlay - enhanced */}
+        <div style={{position:"absolute",inset:0,borderRadius:22,padding:1.5,pointerEvents:"none",
+          background:`linear-gradient(135deg,${tier.color}60,${C.purple}40,${C.cyan}50,${tier.color}60)`,backgroundSize:"300% 300%",
           animation:"borderShift 4s ease infinite",WebkitMask:"linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",WebkitMaskComposite:"xor",maskComposite:"exclude"}}/>
+        {/* VIP card inner glow */}
+        <div style={{position:"absolute",top:0,left:"20%",width:"60%",height:"50%",
+          background:`radial-gradient(ellipse, ${tier.color}08 0%, transparent 70%)`,
+          filter:"blur(20px)",pointerEvents:"none"}}/>
 
         {/* Top row: avatar + info + action icons */}
         <div style={{display:"flex",gap:14,alignItems:"flex-start"}}>
-          {/* Avatar with animated glowing ring */}
+          {/* Avatar with multi-layer glowing ring */}
           <div style={{position:"relative",flexShrink:0}}>
+            {/* Outer glow layer */}
+            <div style={{position:"absolute",inset:-8,borderRadius:26,
+              background:`radial-gradient(circle, ${tier.color}15 40%, transparent 70%)`,
+              filter:"blur(8px)",animation:"vipBreathe 4s ease-in-out infinite"}}/>
+            {/* Spinning conic gradient ring */}
             <div style={{position:"absolute",inset:-4,borderRadius:22,
               background:`conic-gradient(from 0deg, ${tier.color}, ${C.purple}, ${C.cyan}, ${tier.color})`,
-              animation:"spin 6s linear infinite",opacity:0.5,filter:"blur(3px)"}}/>
+              animation:"spin 6s linear infinite",opacity:0.6,filter:"blur(3px)"}}/>
             <div style={{width:72,height:72,borderRadius:20,position:"relative",
               background:`linear-gradient(135deg,${tier.color}40,${C.purple}25,${C.bg3})`,
-              border:`2px solid ${tier.color}60`,
+              border:`2px solid ${tier.color}70`,
               display:"flex",alignItems:"center",justifyContent:"center",fontSize:34,
-              boxShadow:`0 0 30px ${tier.color}25, inset 0 0 15px ${tier.color}10`}}>
+              boxShadow:`0 0 35px ${tier.color}30, 0 0 60px ${tier.color}10, inset 0 0 15px ${tier.color}12`}}>
               {ownedItems.includes("avatar_cat") ? "🐱" : ownedItems.includes("avatar_alien") ? "👽" : "🌟"}
             </div>
             <div style={{position:"absolute",bottom:-3,right:-3,width:20,height:20,borderRadius:"50%",
@@ -22482,19 +22590,23 @@ const startSimonPuffs = () => {
           )}
         </div>
 
-        {/* Stats row: Coins, Friends, Streak */}
-        <div style={{display:"flex",gap:0,marginTop:16,borderTop:`1px solid ${C.border}`,paddingTop:14}}>
+        {/* Stats row: Digital readout style */}
+        <div style={{display:"flex",gap:6,marginTop:16,borderTop:`1px solid ${C.border}`,paddingTop:14}}>
           {[
             {l:"Coins",v:coins.toLocaleString(),icon:"🪙",c:C.gold},
             {l:"Friends",v:"17,524",icon:"👥",c:C.cyan},
             {l:"Streak",v:dailyStreak.toString(),icon:"🔥",c:C.orange},
           ].map((s,i)=>(
-            <div key={i} style={{flex:1,textAlign:"center",
-              borderRight:i<2?`1px solid ${C.border}`:"none"}}>
+            <div key={i} style={{flex:1,textAlign:"center",padding:"8px 4px",borderRadius:10,
+              background:`linear-gradient(180deg, ${s.c}06, transparent)`,
+              border:`1px solid ${s.c}10`,
+              position:"relative",overflow:"hidden"}}>
+              <div style={{position:"absolute",top:0,left:0,right:0,height:1,
+                background:`linear-gradient(90deg, transparent, ${s.c}20, transparent)`}}/>
               <div style={{fontSize:11}}>{s.icon}</div>
               <div style={{fontFamily:"'Courier New',monospace",fontSize:18,fontWeight:900,color:s.c,
-                textShadow:`0 0 10px ${s.c}25`}}>{s.v}</div>
-              <div style={{fontSize:8,color:C.text3,fontWeight:700,letterSpacing:0.8,textTransform:"uppercase",marginTop:1}}>{s.l}</div>
+                textShadow:`0 0 12px ${s.c}30, 0 0 24px ${s.c}10`}}>{s.v}</div>
+              <div style={{fontSize:7,color:C.text3,fontWeight:800,letterSpacing:1.2,textTransform:"uppercase",marginTop:1}}>{s.l}</div>
             </div>
           ))}
         </div>
@@ -22518,10 +22630,10 @@ const startSimonPuffs = () => {
             {l:"Beast",v:playerProfile.blinkerCount,icon:"🔥",c:C.orange},
           ].map((s,i)=>(
             <div key={i} style={{padding:"12px 4px",borderRadius:14,textAlign:"center",position:"relative",overflow:"hidden",
-              background:`linear-gradient(135deg, ${s.c}08, ${s.c}03)`,
-              backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",
-              border:`1px solid ${s.c}18`,
-              boxShadow:`0 4px 20px rgba(0,0,0,0.35), 0 0 20px ${s.c}06`}}>
+              background:`linear-gradient(135deg, ${s.c}0a, ${s.c}04, rgba(8,8,24,0.6))`,
+              backdropFilter:"blur(24px)",WebkitBackdropFilter:"blur(24px)",
+              border:`1px solid ${s.c}20`,
+              boxShadow:`0 4px 24px rgba(0,0,0,0.4), 0 0 25px ${s.c}08, inset 0 1px 0 rgba(255,255,255,0.05)`}}>
               <div style={{fontSize:14}}>{s.icon}</div>
               <div style={{fontFamily:"'Courier New',monospace",fontSize:16,fontWeight:900,color:s.c,
                 textShadow:`0 0 10px ${s.c}30`}}>{s.v}</div>
@@ -22679,11 +22791,11 @@ const startSimonPuffs = () => {
             {l:"Streak",v:bestWinStreak,icon:"🔥",c:C.orange},
             {l:"Earned",v:coins.toLocaleString(),icon:"🪙",c:C.gold},
           ].map((s,i)=>(
-            <div key={i} style={{padding:"12px 4px",borderRadius:14,textAlign:"center",
-              background:`linear-gradient(135deg, ${s.c}08, ${s.c}03)`,
-              backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",
-              border:`1px solid ${s.c}18`,
-              boxShadow:`0 4px 20px rgba(0,0,0,0.35), 0 0 20px ${s.c}06`}}>
+            <div key={i} style={{padding:"12px 4px",borderRadius:14,textAlign:"center",position:"relative",overflow:"hidden",
+              background:`linear-gradient(135deg, ${s.c}0a, ${s.c}04, rgba(8,8,24,0.6))`,
+              backdropFilter:"blur(24px)",WebkitBackdropFilter:"blur(24px)",
+              border:`1px solid ${s.c}20`,
+              boxShadow:`0 4px 24px rgba(0,0,0,0.4), 0 0 25px ${s.c}08, inset 0 1px 0 rgba(255,255,255,0.05)`}}>
               <div style={{fontSize:14}}>{s.icon}</div>
               <div style={{fontFamily:"'Courier New',monospace",fontSize:16,fontWeight:900,color:s.c,
                 textShadow:`0 0 10px ${s.c}30`}}>{s.v}</div>
@@ -23191,6 +23303,10 @@ const startSimonPuffs = () => {
         @keyframes gentleFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
         @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
         @keyframes liveFloatUp{0%{opacity:1;transform:translateY(0) scale(1)}40%{opacity:.9;transform:translateY(-50px) scale(1.15)}100%{opacity:0;transform:translateY(-150px) scale(.7)}}
+        @keyframes floatParticle{0%,100%{transform:translateY(0) translateX(0);opacity:0.3}25%{transform:translateY(-20px) translateX(10px);opacity:0.6}50%{transform:translateY(-10px) translateX(-5px);opacity:0.4}75%{transform:translateY(-30px) translateX(15px);opacity:0.5}}
+        @keyframes liveChatSlideIn{from{opacity:0;transform:translateX(-12px)}to{opacity:1;transform:translateX(0)}}
+        @keyframes liveReactionPop{0%{transform:scale(1)}50%{transform:scale(1.3)}100%{transform:scale(1)}}
+        @keyframes liveAmbientDrift{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(5px,-8px) scale(1.05)}66%{transform:translate(-5px,5px) scale(0.97)}}
         input::placeholder{color:#6E6A95}
         @keyframes countPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
         @keyframes arenaFadeIn{from{opacity:0;transform:translateY(15px) scale(0.97)}to{opacity:1;transform:translateY(0) scale(1)}}
@@ -23201,6 +23317,7 @@ const startSimonPuffs = () => {
         @keyframes kioskRevealR{from{opacity:0;transform:perspective(1000px) rotateY(-6deg) translateX(20px)}to{opacity:1;transform:perspective(1000px) rotateY(-1.5deg) translateX(0)}}
         @keyframes neonSign{0%,100%{text-shadow:0 0 7px var(--nc),0 0 15px var(--nc),0 0 30px var(--nc)}50%{text-shadow:0 0 4px var(--nc),0 0 10px var(--nc),0 0 20px var(--nc)}}
         @keyframes tierGlow{0%,100%{box-shadow:0 0 20px var(--tier-glow,rgba(255,217,61,0.15))}50%{box-shadow:0 0 35px var(--tier-glow,rgba(255,217,61,0.25))}}
+        @keyframes vipBreathe{0%,100%{opacity:0.6;transform:scale(1)}50%{opacity:1;transform:scale(1.05)}}
         @keyframes claimPulse{0%,100%{transform:scale(1);box-shadow:0 0 16px rgba(52,211,153,0.15)}50%{transform:scale(1.01);box-shadow:0 0 24px rgba(52,211,153,0.3)}}
         @keyframes corridorPulse{0%,100%{opacity:0.5}50%{opacity:0.8}}
         @keyframes walkFlash{0%{opacity:0}15%{opacity:1}85%{opacity:1}100%{opacity:0}}
