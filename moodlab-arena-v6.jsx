@@ -124,6 +124,46 @@ const MOCK_COLLECTIONS = [
   { name:"Limited Avatars", count:2, total:6, icon:"👾", color:"#C084FC" },
 ];
 
+// ── LIVE TAB DATA ──
+const LIVE_HERO_SLIDES = [
+  {id:"wc",type:"match",tag:"⚽ FIFA WORLD CUP 2026",tagColor:"#FFD93D",title:"Brazil vs Argentina",subtitle:"Quarter Final — Watch Party",host:{name:"VibeKing",avatar:"👑",badge:"Partner"},meta:"1,247 watching • 3,420 puffs",cta:"JOIN WATCH PARTY",gradient:"linear-gradient(135deg, #0c1445 0%, #1a0a30 40%, #2d0a24 100%)",visual:{teamA:"🇧🇷",teamB:"🇦🇷",score:"LIVE"}},
+  {id:"celeb",type:"kol",tag:"🔥 FEATURED CREATOR",tagColor:"#FF4D8D",title:"SnoopCloud420",subtitle:"Celebrity Chill Session",host:{name:"SnoopCloud420",avatar:"🎤",badge:"Partner"},meta:"8,912 watching • VIP",cta:"WATCH NOW",gradient:"linear-gradient(135deg, #1a0a2e 0%, #0a1628 40%, #0c2a1a 100%)",visual:{emoji:"🎤",ring:"#C084FC"}},
+  {id:"gameshow",type:"gameshow",tag:"🎮 ARENA × LIVE",tagColor:"#00E5FF",title:"Vibe Check LIVE",subtitle:"Trivia Game Show — Play along!",host:{name:"AI Host Max",avatar:"🤖",badge:"Official"},meta:"342 watching • 1,200 playing",cta:"JOIN AS AUDIENCE",gradient:"linear-gradient(135deg, #1a0a2e 0%, #2d0a24 40%, #0c1445 100%)",visual:{emoji:"🧠",ring:"#00E5FF",emoji2:"⚡",emoji3:"🏆"}},
+  {id:"brand",type:"brand",tag:"📦 BRAND DROP",tagColor:"#34D399",title:"Cali Clear × Mood Lab",subtitle:"Exclusive Launch Stream",host:{name:"Cali Clear",avatar:"✨",badge:"Official"},meta:"Tomorrow 8PM • Giveaways",cta:"GET NOTIFIED",gradient:"linear-gradient(135deg, #1a1a0a 0%, #0a1a14 40%, #0a0f1a 100%)",visual:{emoji:"✨",ring:"#34D399"}},
+  {id:"tournament",type:"tournament",tag:"🏆 TOURNAMENT FINALS",tagColor:"#FFD93D",title:"FK Championship Final",subtitle:"PuffDaddy vs NeonNinja",host:{name:"Arena",avatar:"🏆",badge:"Official"},meta:"LIVE • 2,100 spectators",cta:"WATCH FINAL",gradient:"linear-gradient(135deg, #0a0f1a 0%, #1a1a0a 40%, #2d0a24 100%)",visual:{p1:"🔥",p2:"⚡",vs:true}},
+];
+
+const LIVE_STREAMS = [
+  {id:1,host:"ChillQueen",avatar:"🌙",viewers:892,category:"Chill",title:"Late Night Chill Sesh 🌌",puffs:1205,badge:"Partner",followers:8200},
+  {id:2,host:"GameMaster420",avatar:"🎮",viewers:634,category:"Games",title:"Hot Potato Tournament 🥔🔥",puffs:876,badge:"Creator",followers:3100},
+  {id:3,host:"CloudNine",avatar:"☁️",viewers:421,category:"Chill",title:"Morning Mist Session ☀️",puffs:340,badge:"Creator",followers:1800},
+  {id:4,host:"NeonVibes",avatar:"✨",viewers:315,category:"Brand",title:"Stack Launch Party 🎉",puffs:2100,badge:"Official",followers:25000},
+  {id:5,host:"TerpQueen",avatar:"🧪",viewers:189,category:"Chill",title:"Strain Review: OG Kush 🌿",puffs:450,badge:"Creator",followers:2400},
+];
+
+const LIVE_CATEGORIES = [
+  {name:"All",icon:"🔥",c:"#FF4D8D"},{name:"Following",icon:"♡",c:"#FB923C"},
+  {name:"World Cup",icon:"⚽",c:"#FFD93D"},{name:"Arena",icon:"🎮",c:"#00E5FF"},
+  {name:"Chill",icon:"🌙",c:"#C084FC"},{name:"Games",icon:"🕹️",c:"#34D399"},
+];
+
+const LIVE_ARENA_ITEMS = [
+  {icon:"🧠",title:"Vibe Check",status:"LIVE NOW",statusColor:"#FF4444",sub:"342 playing",isLive:true},
+  {icon:"⚽",title:"Final Kick",status:"FINALS",statusColor:"#FFD93D",sub:"2.1K watching",isLive:true},
+  {icon:"🎡",title:"Spin & Win",status:"IN 30 MIN",statusColor:"#FB923C",sub:"KOL hosted"},
+  {icon:"🔮",title:"WC Predictor",status:"OPEN",statusColor:"#34D399",sub:"BRA vs ARG"},
+];
+
+const LIVE_CREATORS = [
+  {name:"DankReviews",avatar:"🔬",badge:"Partner",followers:"15.2K",schedule:"Mon/Thu 9PM"},
+  {name:"CloudChaser",avatar:"🌬️",badge:"Partner",followers:"9.8K",schedule:"Daily 8PM"},
+  {name:"TerpQueen",avatar:"🧪",badge:"Creator",followers:"4.1K",schedule:"Fri/Sat 10PM"},
+  {name:"VapeSensei",avatar:"🥷",badge:"Partner",followers:"22K",schedule:"Wed/Sun 7PM"},
+];
+
+const LIVE_REACTIONS = ["🔥","😱","💨","😂","💀","👏","⚽","🎉"];
+const LIVE_BADGE = {Creator:{icon:"⚡",c:"#00E5FF"},Partner:{icon:"💎",c:"#FFD93D"},Official:{icon:"✦",c:"#FF4D8D"}};
+
 
 const C = {
   bg:"#050510", bg2:"#0a0a20", bg3:"#0f0f2a", card:"#12123a",
@@ -1049,6 +1089,25 @@ export default function MoodLabArena() {
   const [tab, setTab] = useState("arena");
   const [zone, setZone] = useState(null); // null=hub, "arcade"|"stage"|"oracle"|"wall"|"worldcup"
   const [liveTab, setLiveTab] = useState("now");
+  // ── Live Tab State ──
+  const [liveScreen, setLiveScreen] = useState("explore"); // explore | watch
+  const [liveCategory, setLiveCategory] = useState("All");
+  const [liveHeroIdx, setLiveHeroIdx] = useState(0);
+  const [liveHeroProgress, setLiveHeroProgress] = useState(0);
+  const [selectedStream, setSelectedStream] = useState(null);
+  const [liveChatMsgs, setLiveChatMsgs] = useState([
+    {user:"PuffDaddy",msg:"LET'S GO! 🔥",c:"#FFD93D"},
+    {user:"CloudRider",msg:"Puff wave!! 💨",c:"#00E5FF"},
+    {user:"VibeCheck",msg:"This is amazing",c:"#34D399"},
+  ]);
+  const [liveViewers, setLiveViewers] = useState(0);
+  const [livePuffCount, setLivePuffCount] = useState(0);
+  const [liveFollowed, setLiveFollowed] = useState({});
+  const [liveFloatingReactions, setLiveFloatingReactions] = useState([]);
+  const [liveChatInput, setLiveChatInput] = useState("");
+  const [liveShowTip, setLiveShowTip] = useState(false);
+  const [liveIsFollowingHost, setLiveIsFollowingHost] = useState(false);
+  const [liveActiveCard, setLiveActiveCard] = useState("prediction");
   const [meTab, setMeTab] = useState("stats");
 
   // ── Arena State ──
@@ -1886,6 +1945,40 @@ export default function MoodLabArena() {
   // Fortune jackpot growing + lucky hour system
   useEffect(()=>{if(tick%30===0)setFortuneJackpot(j=>j+Math.floor(Math.random()*50)+10);},[tick]);
   useEffect(()=>{if(tick%300===0&&Math.random()<0.1){setFortuneLuckyHour(true);playFx("lucky_hour");}if(fortuneLuckyHour&&tick%3600===0)setFortuneLuckyHour(false);},[tick,fortuneLuckyHour]);
+
+  // ── Live Tab: Auto-chat + viewer count ──
+  useEffect(() => {
+    if(tab !== "live" || liveScreen !== "watch") return;
+    const names = ["PuffDaddy","CloudRider","VibeCheck","NeonNinja","ChillMaster","SmokeSignal","TerpQueen","CloudNine"];
+    const msgs = ["LET'S GO! 🔥","Puff wave!! 💨","This is amazing","Who else vibing?","GOAL!!! ⚽","Legend host 👑","Just followed!","Collab puff 🫧"];
+    const cs = [C.pink,C.cyan,C.gold,C.purple,C.green,C.orange];
+    const i = setInterval(() => {
+      setLiveChatMsgs(p => [...p.slice(-14), {
+        user: names[Math.floor(Math.random()*names.length)],
+        msg: msgs[Math.floor(Math.random()*msgs.length)],
+        c: cs[Math.floor(Math.random()*cs.length)]
+      }]);
+    }, 2800);
+    const v = setInterval(() => setLiveViewers(p => p + Math.floor(Math.random()*11)-3), 2000);
+    return () => { clearInterval(i); clearInterval(v); };
+  }, [tab, liveScreen]);
+
+  // ── Live Tab: Hero slider auto-cycle ──
+  useEffect(() => {
+    if(tab !== "live" || liveScreen !== "explore") return;
+    setLiveHeroProgress(0);
+    const INTERVAL = 5000;
+    const start = Date.now();
+    const t = setInterval(() => {
+      const elapsed = Date.now() - start;
+      setLiveHeroProgress(Math.min(elapsed / INTERVAL, 1));
+      if(elapsed >= INTERVAL) {
+        setLiveHeroIdx(p => (p + 1) % LIVE_HERO_SLIDES.length);
+      }
+    }, 40);
+    return () => clearInterval(t);
+  }, [tab, liveScreen, liveHeroIdx]);
+
   // ── Load loyalty data from localStorage ──
   useEffect(() => {
     try {
@@ -6432,7 +6525,7 @@ export default function MoodLabArena() {
             {[{id:"control",l:"Control",i:"🎛",c:C.cyan},{id:"arena",l:"Arena",i:"🎮",c:C.cyan},{id:"live",l:"Live",i:"📡",c:C.pink},{id:"me",l:"Me",i:"👤",c:C.purple}].map(t=>{
               const active = tab===t.id;
               return (
-                <div key={t.id} onClick={()=>{playFx("nav");if(t.id!=="arena"&&t.id!=="me"){notify("Coming Soon — Arena Demo Only",C.cyan);return;}setTab(t.id);setZone(null);setArenaView("hub");setSelectedGame(null);setGameActive(null);}} style={{
+                <div key={t.id} onClick={()=>{playFx("nav");if(t.id!=="arena"&&t.id!=="me"&&t.id!=="live"){notify("Coming Soon — Arena Demo Only",C.cyan);return;}setTab(t.id);setZone(null);setArenaView("hub");setSelectedGame(null);setGameActive(null);if(t.id==="live")setLiveScreen("explore");}} style={{
                   display:"flex",alignItems:"center",gap:active?5:0,
                   padding:active?"7px 14px":"7px 10px",
                   borderRadius:100,cursor:"pointer",
@@ -7514,7 +7607,7 @@ export default function MoodLabArena() {
             {[{id:"control",l:"Control",i:"🎛",c:C.cyan},{id:"arena",l:"Arena",i:"🎮",c:C.cyan},{id:"live",l:"Live",i:"📡",c:C.pink},{id:"me",l:"Me",i:"👤",c:C.purple}].map(t=>{
               const active = tab===t.id;
               return (
-                <div key={t.id} onClick={()=>{playFx("nav");if(t.id!=="arena"&&t.id!=="me"){notify("Coming Soon — Arena Demo Only",C.cyan);return;}setTab(t.id);setZone(null);setArenaView("hub");setSelectedGame(null);setGameActive(null);}} style={{
+                <div key={t.id} onClick={()=>{playFx("nav");if(t.id!=="arena"&&t.id!=="me"&&t.id!=="live"){notify("Coming Soon — Arena Demo Only",C.cyan);return;}setTab(t.id);setZone(null);setArenaView("hub");setSelectedGame(null);setGameActive(null);if(t.id==="live")setLiveScreen("explore");}} style={{
                   display:"flex",alignItems:"center",gap:active?5:0,
                   padding:active?"7px 14px":"7px 10px",
                   borderRadius:100,cursor:"pointer",
@@ -21552,61 +21645,361 @@ const startSimonPuffs = () => {
   // ═════════════════════════════════════════
   // ── RENDER: LIVE TAB ──
   // ═════════════════════════════════════════
-  const renderLive = () => (
-    <div style={{padding:"0 14px"}}>
-      <div style={{display:"flex",gap:6,marginBottom:14}}>
-        {[{id:"now",l:"🔴 Live Now"},{id:"upcoming",l:"📅 Upcoming"},{id:"watch",l:"📺 Watch Party"}].map(t=>(
-          <div key={t.id} onClick={()=>setLiveTab(t.id)} style={{padding:"6px 12px",borderRadius:100,cursor:"pointer",background:liveTab===t.id?`${C.pink}12`:`${C.text3}05`,border:`1px solid ${liveTab===t.id?C.pink+"30":C.border}`,color:liveTab===t.id?C.pink:C.text3,fontSize:11,fontWeight:700,transition:"all 0.25s"}}>{t.l}</div>
-        ))}
+
+  const openLiveStream = (s) => {
+    setSelectedStream(s);
+    setLiveScreen("watch");
+    setLiveViewers(s.viewers||1247);
+    setLivePuffCount(s.puffs||3420);
+    setLiveIsFollowingHost(!!liveFollowed[s.host]);
+    setLiveActiveCard("prediction");
+  };
+
+  const addLiveReaction = (emoji) => {
+    const id = Date.now()+Math.random(); const x = 12+Math.random()*76;
+    setLiveFloatingReactions(p=>[...p.slice(-12),{id,emoji,x}]);
+    setTimeout(()=>setLiveFloatingReactions(p=>p.filter(r=>r.id!==id)),2800);
+  };
+
+  const filteredLiveStreams = liveCategory==="All" ? LIVE_STREAMS : liveCategory==="Following" ? LIVE_STREAMS.filter(s=>liveFollowed[s.host]) : LIVE_STREAMS.filter(s=>s.category===liveCategory||(liveCategory==="Games"&&s.category==="Games"));
+
+  const LiveBadgeTag = ({type,s:sz=10}) => {
+    const b = LIVE_BADGE[type]; if(!b) return null;
+    return <span style={{display:"inline-flex",alignItems:"center",gap:2,padding:"2px 6px",borderRadius:6,background:`${b.c}15`,fontSize:sz,fontWeight:700,color:b.c,letterSpacing:0.3}}>{b.icon} {type}</span>;
+  };
+
+  const renderLive = () => {
+    // ── WATCH SCREEN ──
+    if(liveScreen==="watch" && selectedStream) {
+      const s = selectedStream;
+      return (
+        <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:200,maxWidth:430,margin:"0 auto",background:C.bg}}>
+          <div style={{position:"relative",height:"100%",background:s.category==="World Cup"||s.type==="match"?
+            "linear-gradient(180deg, #1a0a20 0%, #0a0f1a 50%, #050510 100%)":
+            "linear-gradient(180deg, #0a1628 0%, #1a0a2e 50%, #050510 100%)"}}>
+
+            {/* Top Bar */}
+            <div style={{position:"absolute",top:0,left:0,right:0,zIndex:10,padding:"44px 14px 8px",background:"linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, transparent 100%)"}}>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                <div onClick={()=>{setLiveScreen("explore");playFx("nav");}} style={{width:34,height:34,borderRadius:10,background:"rgba(255,255,255,0.1)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,cursor:"pointer",color:C.text}}>←</div>
+                <div style={{display:"flex",alignItems:"center",gap:8}}>
+                  <div style={{background:C.red,borderRadius:6,padding:"3px 10px",fontSize:10,fontWeight:800,display:"flex",alignItems:"center",gap:4,color:"#fff"}}><span style={{width:5,height:5,borderRadius:"50%",background:"#fff",animation:"pulse 1s infinite"}}/> LIVE</div>
+                  <span style={{fontSize:11,color:C.text2}}>👁 {liveViewers.toLocaleString()}</span>
+                  <span style={{fontSize:11,color:C.text2}}>💨 {livePuffCount.toLocaleString()}</span>
+                </div>
+                <div onClick={()=>notify("⚡ Raid feature coming soon!",C.gold)} style={{width:34,height:34,borderRadius:10,background:"rgba(255,255,255,0.1)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,cursor:"pointer"}}>⚡</div>
+              </div>
+
+              {/* Host info bar */}
+              <div style={{display:"flex",alignItems:"center",gap:8,marginTop:10}}>
+                <div style={{width:38,height:38,borderRadius:12,background:`linear-gradient(135deg, ${C.pink}30, ${C.purple}30)`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>{s.avatar}</div>
+                <div style={{flex:1}}>
+                  <div style={{display:"flex",alignItems:"center",gap:6}}><span style={{fontSize:13,fontWeight:700}}>{s.host}</span><LiveBadgeTag type={s.badge} s={9}/></div>
+                  <div style={{fontSize:10,color:C.text3}}>{(s.followers||0).toLocaleString()} followers</div>
+                </div>
+                <div onClick={()=>{setLiveIsFollowingHost(!liveIsFollowingHost);setLiveFollowed(p=>({...p,[s.host]:!liveIsFollowingHost}));playFx("coin");}} style={{padding:"7px 18px",borderRadius:10,border:liveIsFollowingHost?`1px solid ${C.orange}`:"none",background:liveIsFollowingHost?"transparent":`linear-gradient(135deg, ${C.orange}, ${C.pink})`,fontSize:11,fontWeight:800,color:liveIsFollowingHost?C.orange:"#fff",cursor:"pointer"}}>{liveIsFollowingHost?"✓ Following":"Follow"}</div>
+              </div>
+            </div>
+
+            {/* Center Visual */}
+            {(s.category==="World Cup"||s.type==="match") && (
+              <div style={{position:"absolute",top:"22%",left:"50%",transform:"translateX(-50%)",textAlign:"center"}}>
+                <div style={{display:"flex",alignItems:"center",gap:24}}>
+                  <div><div style={{fontSize:44}}>🇧🇷</div><div style={{fontSize:22,fontWeight:900,color:C.gold,marginTop:4}}>2</div></div>
+                  <div style={{width:44,height:44,borderRadius:12,background:"rgba(251,191,36,0.1)",border:"1px solid rgba(251,191,36,0.15)",display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:14,fontWeight:900,color:C.gold}}>VS</span></div>
+                  <div><div style={{fontSize:44}}>🇦🇷</div><div style={{fontSize:22,fontWeight:900,color:C.gold,marginTop:4}}>1</div></div>
+                </div>
+                <div style={{fontSize:10,color:C.text3,marginTop:8}}>⏱ 67:32 -- 2nd Half</div>
+              </div>
+            )}
+            {s.category!=="World Cup"&&s.type!=="match" && (
+              <div style={{position:"absolute",top:"22%",left:"50%",transform:"translateX(-50%)",textAlign:"center"}}>
+                <div style={{width:96,height:96,borderRadius:"50%",background:`linear-gradient(135deg, ${C.purple}30, ${C.pink}30)`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:48,border:`2px solid ${C.purple}30`,animation:"float 3s ease-in-out infinite"}}>{s.avatar}</div>
+                <div style={{marginTop:8,fontSize:12,color:C.text2}}>🎙 Speaking...</div>
+              </div>
+            )}
+
+            {/* Floating reactions */}
+            {liveFloatingReactions.map(r=><div key={r.id} style={{position:"absolute",left:`${r.x}%`,bottom:"35%",fontSize:24,animation:"liveFloatUp 2.8s ease-out forwards",pointerEvents:"none",zIndex:5}}>{r.emoji}</div>)}
+
+            {/* Overlay Cards — Prediction / Challenge / Halftime */}
+            <div style={{position:"absolute",top:"44%",left:0,right:0,zIndex:6}}>
+              <div style={{display:"flex",gap:6,padding:"0 12px",marginBottom:6}}>
+                {[["prediction","🔮","Prediction"],["challenge","🏁","Challenge"],["arena","🎮","Halftime"]].map(([k,ico,lbl])=>(
+                  <div key={k} onClick={()=>setLiveActiveCard(k)} style={{padding:"5px 14px",borderRadius:8,border:`1px solid ${liveActiveCard===k?(k==="arena"?C.cyan:C.gold):C.border}`,background:liveActiveCard===k?`${k==="arena"?C.cyan:C.gold}10`:"transparent",fontSize:10,fontWeight:700,color:liveActiveCard===k?(k==="arena"?C.cyan:C.gold):C.text3,cursor:"pointer"}}>{ico} {lbl}</div>
+                ))}
+              </div>
+              {liveActiveCard==="prediction" && (
+                <div style={{...GLASS_CARD,borderRadius:16,padding:14,margin:"0 12px",borderColor:"rgba(255,217,61,0.15)",background:"rgba(255,217,61,0.06)"}}>
+                  <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:8}}><span>🔮</span><span style={{fontSize:11,fontWeight:700,color:C.gold}}>PREDICTION</span><span style={{fontSize:10,color:C.text3,marginLeft:"auto"}}>+50 🪙</span></div>
+                  <div style={{fontSize:13,fontWeight:600,marginBottom:10}}>Next goal before 75th minute?</div>
+                  <div style={{display:"flex",gap:8}}>
+                    {[["✅ YES",62],["❌ NO",38]].map(([l,p])=>(
+                      <div key={l} onClick={()=>{setCoins(c=>c+50);notify("+50 coins! Prediction placed",C.gold);playFx("coin");}} style={{flex:1,padding:"10px 6px",borderRadius:12,border:`1px solid ${C.border}`,background:C.glass,cursor:"pointer",textAlign:"center"}}>
+                        <div style={{fontSize:13,fontWeight:700,color:C.text}}>{l}</div><div style={{fontSize:10,color:C.text3,marginTop:2}}>{p}%</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {liveActiveCard==="challenge" && (
+                <div style={{...GLASS_CARD,borderRadius:16,padding:14,margin:"0 12px",borderColor:`${C.pink}20`,background:`${C.pink}08`}}>
+                  <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:6}}><span>🏁</span><span style={{fontSize:11,fontWeight:800,color:C.pink}}>CREATOR CHALLENGE</span><span style={{fontSize:10,color:C.text3,marginLeft:"auto"}}>100 🪙</span></div>
+                  <div style={{fontSize:16,fontWeight:800,marginBottom:4}}>PUFF RACE</div>
+                  <div style={{fontSize:11,color:C.text2,marginBottom:10}}>Most puffs in 30 seconds wins!</div>
+                  <div onClick={()=>{notify("Challenge joined! Puff now!",C.pink);playFx("start");}} style={{width:"100%",padding:"10px 0",borderRadius:12,border:"none",background:`linear-gradient(135deg, ${C.pink}, ${C.purple})`,color:"#fff",fontSize:12,fontWeight:800,cursor:"pointer",textAlign:"center",letterSpacing:1}}>JOIN CHALLENGE</div>
+                </div>
+              )}
+              {liveActiveCard==="arena" && (
+                <div style={{...GLASS_CARD,borderRadius:16,padding:14,margin:"0 12px",borderColor:`${C.cyan}18`,background:`${C.cyan}06`}}>
+                  <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:8}}><span>🎮</span><span style={{fontSize:11,fontWeight:800,color:C.cyan}}>HALFTIME -- ARENA MINI-GAME</span></div>
+                  <div style={{fontSize:10,color:C.text2,marginBottom:10}}>Halftime break! Play Arena games without leaving the stream.</div>
+                  <div style={{display:"flex",gap:8}}>
+                    {[{icon:"⚽",name:"Final Kick",desc:"Quick 1v1",color:C.gold},{icon:"🧠",name:"WC Trivia",desc:"5 questions",color:C.purple}].map(g=>(
+                      <div key={g.name} onClick={()=>{notify("Mini-game starting...",g.color);playFx("start");}} style={{flex:1,padding:"12px 8px",borderRadius:12,border:`1px solid ${g.color}25`,background:`${g.color}08`,cursor:"pointer",textAlign:"center"}}>
+                        <div style={{fontSize:22,marginBottom:4}}>{g.icon}</div>
+                        <div style={{fontSize:12,fontWeight:700,color:g.color}}>{g.name}</div>
+                        <div style={{fontSize:9,color:C.text3,marginTop:2}}>{g.desc}</div>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{marginTop:8,fontSize:9,color:C.text3,textAlign:"center"}}>⏱ Halftime ends in 12:45 -- game results shown in stream</div>
+                </div>
+              )}
+            </div>
+
+            {/* Bottom — Chat, Reactions, Actions */}
+            <div style={{position:"absolute",bottom:0,left:0,right:0,zIndex:8,background:"linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.4) 50%, transparent 100%)",padding:"60px 0 0"}}>
+              {/* Chat messages */}
+              <div style={{maxHeight:110,overflow:"hidden",padding:"0 12px",marginBottom:8}}>
+                {liveChatMsgs.slice(-5).map((m,i)=><div key={i} style={{fontSize:12,marginBottom:3,display:"flex",gap:6}}><span style={{fontWeight:700,color:m.c,flexShrink:0}}>{m.user}:</span><span style={{color:C.text2}}>{m.msg}</span></div>)}
+              </div>
+
+              {/* Reaction bar */}
+              <div style={{display:"flex",gap:4,padding:"0 12px",marginBottom:8}}>
+                {LIVE_REACTIONS.map((e,i)=><div key={i} onClick={()=>addLiveReaction(e)} style={{width:36,height:36,borderRadius:12,background:"rgba(255,255,255,0.06)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,cursor:"pointer"}}>{e}</div>)}
+              </div>
+
+              {/* Puff + Wave + Tip */}
+              <div style={{display:"flex",gap:8,padding:"0 12px",marginBottom:8}}>
+                <div onClick={()=>{setLivePuffCount(p=>p+1);addLiveReaction("💨");playFx("puff");}} style={{flex:1,padding:"11px 0",borderRadius:12,background:`linear-gradient(135deg, ${C.pink}, ${C.blue})`,color:"#fff",fontSize:13,fontWeight:800,cursor:"pointer",textAlign:"center"}}>💨 PUFF</div>
+                <div onClick={()=>{for(let i=0;i<5;i++) setTimeout(()=>addLiveReaction("🌊"),i*80);notify("PUFF WAVE!",C.gold);playFx("win");}} style={{flex:1,padding:"11px 0",borderRadius:12,background:`linear-gradient(135deg, ${C.pink}, ${C.gold})`,color:"#fff",fontSize:13,fontWeight:800,cursor:"pointer",textAlign:"center"}}>🌊 WAVE!</div>
+                <div onClick={()=>setLiveShowTip(!liveShowTip)} style={{width:46,height:46,borderRadius:12,border:`1px solid ${C.gold}30`,background:`${C.gold}08`,fontSize:18,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>🪙</div>
+              </div>
+
+              {/* Tip panel */}
+              {liveShowTip && (
+                <div style={{padding:"10px 12px",margin:"0 12px 8px",background:`${C.gold}06`,borderRadius:14,border:`1px solid ${C.gold}15`}}>
+                  <div style={{fontSize:11,fontWeight:700,color:C.gold,marginBottom:8}}>🪙 Tip {s.host} -- Balance: {coins.toLocaleString()}</div>
+                  <div style={{display:"flex",gap:8}}>
+                    {[10,50,100,500].map(a=><div key={a} onClick={()=>{setCoins(p=>Math.max(0,p-a));setLiveShowTip(false);addLiveReaction("🪙");notify(`Tipped ${a} coins to ${s.host}!`,C.gold);playFx("coin");}} style={{flex:1,padding:"8px 0",borderRadius:10,border:`1px solid ${C.gold}20`,background:`${C.gold}06`,fontSize:13,fontWeight:700,color:C.gold,cursor:"pointer",textAlign:"center"}}>{a}</div>)}
+                  </div>
+                </div>
+              )}
+
+              {/* Chat input */}
+              <div style={{display:"flex",gap:8,padding:"0 12px 16px"}}>
+                <input value={liveChatInput} onChange={e=>setLiveChatInput(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&liveChatInput.trim()){setLiveChatMsgs(p=>[...p,{user:"You",msg:liveChatInput,c:C.cyan}]);setLiveChatInput("");}}} placeholder="Say something..." style={{flex:1,padding:"11px 16px",borderRadius:12,border:`1px solid ${C.border}`,background:C.glass,color:C.text,fontSize:13,outline:"none",fontFamily:"inherit"}}/>
+                <div onClick={()=>{if(liveChatInput.trim()){setLiveChatMsgs(p=>[...p,{user:"You",msg:liveChatInput,c:C.cyan}]);setLiveChatInput("");}}} style={{width:46,height:46,borderRadius:12,background:C.pink,color:"#fff",fontSize:16,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>↑</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      );
+    }
+
+    // ── EXPLORE SCREEN ──
+    const heroSlide = LIVE_HERO_SLIDES[liveHeroIdx];
+    return (
+      <div>
+        {/* Header */}
+        <div style={{padding:"2px 14px 8px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+          <div>
+            <div style={{fontSize:24,fontWeight:800,letterSpacing:-0.5}}>Live</div>
+            <div style={{fontSize:11,color:C.text3,marginTop:1}}>Discover creators & streams</div>
+          </div>
+          <div style={{display:"flex",gap:8}}>
+            {["🔔","🔍"].map((e,i)=><div key={i} style={{width:36,height:36,borderRadius:12,...GLASS_CLEAR,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16}}>{e}</div>)}
+          </div>
+        </div>
+
+        {/* Hero Slider */}
+        <div style={{margin:"8px 14px",borderRadius:20,overflow:"hidden",position:"relative",height:250,cursor:"pointer"}} onClick={()=>openLiveStream({id:1,host:heroSlide.host.name,avatar:heroSlide.host.avatar,viewers:1247,category:"World Cup",title:heroSlide.title,puffs:3420,badge:heroSlide.host.badge,followers:12400,type:heroSlide.type})}>
+          <div style={{position:"absolute",inset:0,background:heroSlide.gradient,transition:"opacity 0.6s ease"}}/>
+          <div style={{position:"absolute",inset:0,opacity:0.04,backgroundImage:"linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)",backgroundSize:"40px 40px"}}/>
+          <div style={{position:"relative",zIndex:2,height:"100%",display:"flex",flexDirection:"column",padding:18}}>
+            {/* Tag */}
+            <div style={{display:"flex",alignItems:"center",gap:8}}>
+              <div style={{display:"flex",alignItems:"center",gap:5,padding:"3px 10px",borderRadius:8,background:`${heroSlide.tagColor}15`,border:`1px solid ${heroSlide.tagColor}25`}}>
+                <span style={{width:5,height:5,borderRadius:"50%",background:heroSlide.tagColor,animation:"pulse 1.2s infinite",boxShadow:`0 0 6px ${heroSlide.tagColor}`}}/>
+                <span style={{fontSize:10,fontWeight:700,color:heroSlide.tagColor,letterSpacing:0.5}}>{heroSlide.tag}</span>
+              </div>
+            </div>
+
+            {/* Center visual */}
+            <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center"}}>
+              {heroSlide.type==="match" ? (
+                <div style={{display:"flex",alignItems:"center",gap:24}}>
+                  <div style={{fontSize:44,filter:"drop-shadow(0 4px 12px rgba(0,0,0,0.3))"}}>{heroSlide.visual.teamA}</div>
+                  <div style={{textAlign:"center"}}>
+                    <div style={{width:44,height:44,borderRadius:12,background:"rgba(251,191,36,0.12)",border:"1px solid rgba(251,191,36,0.2)",display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:13,fontWeight:900,color:C.gold}}>VS</span></div>
+                    <div style={{fontSize:9,color:C.gold,marginTop:4,fontWeight:700,letterSpacing:1}}>{heroSlide.visual.score}</div>
+                  </div>
+                  <div style={{fontSize:44,filter:"drop-shadow(0 4px 12px rgba(0,0,0,0.3))"}}>{heroSlide.visual.teamB}</div>
+                </div>
+              ) : heroSlide.type==="gameshow" ? (
+                <div style={{display:"flex",alignItems:"center",gap:12}}>
+                  <div style={{width:52,height:52,borderRadius:14,background:`${C.purple}15`,border:`1.5px solid ${C.purple}25`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:28,animation:"float 2.5s ease-in-out infinite"}}>{heroSlide.visual.emoji2}</div>
+                  <div style={{width:68,height:68,borderRadius:18,background:`${heroSlide.visual.ring}15`,border:`2px solid ${heroSlide.visual.ring}30`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:36,boxShadow:`0 0 40px ${heroSlide.visual.ring}10`}}>{heroSlide.visual.emoji}</div>
+                  <div style={{width:52,height:52,borderRadius:14,background:`${C.gold}15`,border:`1.5px solid ${C.gold}25`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:28,animation:"float 3s ease-in-out infinite 0.5s"}}>{heroSlide.visual.emoji3}</div>
+                </div>
+              ) : heroSlide.type==="tournament" ? (
+                <div style={{display:"flex",alignItems:"center",gap:16}}>
+                  <div style={{textAlign:"center"}}>
+                    <div style={{width:56,height:56,borderRadius:16,background:`${C.red}12`,border:`2px solid ${C.red}25`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:28}}>{heroSlide.visual.p1}</div>
+                    <div style={{fontSize:10,fontWeight:700,color:C.text2,marginTop:4}}>PuffDaddy</div>
+                  </div>
+                  <div style={{textAlign:"center"}}>
+                    <div style={{width:40,height:40,borderRadius:10,background:"rgba(251,191,36,0.1)",border:"1px solid rgba(251,191,36,0.2)",display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontSize:12,fontWeight:900,color:C.gold}}>VS</span></div>
+                    <div style={{fontSize:8,color:C.gold,marginTop:3,fontWeight:700,letterSpacing:1}}>FINAL</div>
+                  </div>
+                  <div style={{textAlign:"center"}}>
+                    <div style={{width:56,height:56,borderRadius:16,background:`${C.cyan}12`,border:`2px solid ${C.cyan}25`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:28}}>{heroSlide.visual.p2}</div>
+                    <div style={{fontSize:10,fontWeight:700,color:C.text2,marginTop:4}}>NeonNinja</div>
+                  </div>
+                </div>
+              ) : (
+                <div style={{width:72,height:72,borderRadius:20,background:`${heroSlide.visual.ring}12`,border:`2px solid ${heroSlide.visual.ring}30`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:36,boxShadow:`0 0 40px ${heroSlide.visual.ring}15`,animation:"float 3s ease-in-out infinite"}}>{heroSlide.visual.emoji}</div>
+              )}
+            </div>
+
+            {/* Bottom info */}
+            <div>
+              <div style={{fontSize:20,fontWeight:800,color:C.text,lineHeight:1.2,marginBottom:2,textShadow:"0 2px 8px rgba(0,0,0,0.4)"}}>{heroSlide.title}</div>
+              <div style={{fontSize:12,color:C.text2,marginBottom:8}}>{heroSlide.subtitle}</div>
+              <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
+                <div style={{display:"flex",alignItems:"center",gap:6}}>
+                  <span style={{fontSize:14}}>{heroSlide.host.avatar}</span>
+                  <span style={{fontSize:11,fontWeight:600,color:C.text2}}>{heroSlide.host.name}</span>
+                  <LiveBadgeTag type={heroSlide.host.badge} s={8}/>
+                </div>
+                <span style={{fontSize:10,color:C.text3}}>•</span>
+                <span style={{fontSize:10,color:C.text3}}>{heroSlide.meta}</span>
+              </div>
+              {/* CTA + Dots */}
+              <div style={{display:"flex",alignItems:"center",gap:12}}>
+                <div onClick={e=>{e.stopPropagation();openLiveStream({id:1,host:heroSlide.host.name,avatar:heroSlide.host.avatar,viewers:1247,category:"World Cup",title:heroSlide.title,puffs:3420,badge:heroSlide.host.badge,followers:12400,type:heroSlide.type});}} style={{flex:1,padding:"11px 0",borderRadius:12,border:"none",background:`linear-gradient(135deg, ${heroSlide.tagColor}, ${C.orange})`,color:"#fff",fontSize:13,fontWeight:800,cursor:"pointer",letterSpacing:0.8,textAlign:"center",boxShadow:"0 4px 16px rgba(0,0,0,0.3)"}}>{heroSlide.cta}</div>
+                <div style={{display:"flex",gap:4,alignItems:"center"}}>
+                  {LIVE_HERO_SLIDES.map((_,i)=>(
+                    <div key={i} onClick={e=>{e.stopPropagation();setLiveHeroIdx(i);setLiveHeroProgress(0);}} style={{width:i===liveHeroIdx?24:6,height:6,borderRadius:3,cursor:"pointer",background:"rgba(255,255,255,0.15)",position:"relative",overflow:"hidden",transition:"width 0.3s ease"}}>
+                      {i===liveHeroIdx && <div style={{position:"absolute",left:0,top:0,bottom:0,width:`${liveHeroProgress*100}%`,borderRadius:3,background:heroSlide.tagColor,transition:"width 0.04s linear"}}/>}
+                      {i!==liveHeroIdx && <div style={{position:"absolute",inset:0,borderRadius:3,background:"rgba(255,255,255,0.25)"}}/>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Categories */}
+        <div style={{display:"flex",gap:6,padding:"10px 14px",overflowX:"auto"}}>
+          {LIVE_CATEGORIES.map(cat=>(
+            <div key={cat.name} onClick={()=>setLiveCategory(cat.name)} style={{padding:"6px 14px",borderRadius:20,border:liveCategory===cat.name?`1.5px solid ${cat.c}`:`1px solid ${C.border}`,background:liveCategory===cat.name?`${cat.c}12`:"transparent",cursor:"pointer",whiteSpace:"nowrap",fontSize:12,fontWeight:600,color:liveCategory===cat.name?cat.c:C.text3,display:"flex",alignItems:"center",gap:4,transition:"all 0.2s"}}>
+              <span>{cat.icon}</span> {cat.name}
+              {cat.name==="Following" && Object.values(liveFollowed).filter(Boolean).length>0 && <span style={{background:cat.c,color:"#fff",borderRadius:8,padding:"0 5px",fontSize:9,fontWeight:800,minWidth:14,textAlign:"center"}}>{Object.values(liveFollowed).filter(Boolean).length}</span>}
+            </div>
+          ))}
+        </div>
+
+        {/* Arena x Live Strip */}
+        <div style={{padding:"10px 14px 4px"}}>
+          <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:10}}>
+            <span style={{fontSize:12}}>🎮</span>
+            <span style={{fontSize:13,fontWeight:700}}>Arena × Live</span>
+            <span style={{fontSize:9,padding:"2px 6px",borderRadius:5,background:`${C.cyan}15`,color:C.cyan,fontWeight:700}}>CROSS-TAB</span>
+            <span onClick={()=>{setTab("arena");setZone(null);playFx("nav");}} style={{fontSize:10,color:C.text3,fontWeight:400,marginLeft:"auto",cursor:"pointer"}}>Go to Arena →</span>
+          </div>
+          <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:6}}>
+            {LIVE_ARENA_ITEMS.map((a,i)=>(
+              <div key={i} style={{minWidth:140,padding:"12px 14px",borderRadius:14,...GLASS_CARD,border:a.isLive?`1px solid ${a.statusColor}20`:`1px solid ${C.glassBorder}`,flexShrink:0,position:"relative",overflow:"hidden"}}>
+                {a.isLive && <div style={{position:"absolute",top:0,left:0,right:0,height:2,background:`linear-gradient(90deg, ${a.statusColor}, transparent)`}}/>}
+                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
+                  <span style={{fontSize:22}}>{a.icon}</span>
+                  <div>
+                    <div style={{fontSize:12,fontWeight:700}}>{a.title}</div>
+                    <div style={{fontSize:9,fontWeight:700,color:a.statusColor,letterSpacing:0.5,display:"flex",alignItems:"center",gap:3}}>
+                      {a.isLive && <span style={{width:4,height:4,borderRadius:"50%",background:a.statusColor,animation:"pulse 1.2s infinite"}}/>}
+                      {a.status}
+                    </div>
+                  </div>
+                </div>
+                <div style={{fontSize:10,color:C.text3,marginBottom:8}}>{a.sub}</div>
+                <div onClick={()=>notify("Joining stream...",a.statusColor||C.cyan)} style={{width:"100%",padding:"5px 0",borderRadius:8,border:`1px solid ${a.statusColor}30`,background:`${a.statusColor}08`,fontSize:10,fontWeight:700,color:a.statusColor,cursor:"pointer",textAlign:"center"}}>{a.isLive?"Watch":"Remind"}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Live Now */}
+        <div style={{padding:"12px 14px 4px"}}>
+          <div style={{fontSize:15,fontWeight:700,marginBottom:12,display:"flex",alignItems:"center",gap:6}}>
+            <span style={{color:C.red,animation:"pulse 1.2s infinite"}}>●</span>
+            {liveCategory==="Following"?"Following -- Live":"Live Now"}
+            <span style={{fontSize:11,color:C.text3,fontWeight:400,marginLeft:"auto"}}>{filteredLiveStreams.length} streams</span>
+          </div>
+          {filteredLiveStreams.length===0 && liveCategory==="Following" && <div style={{textAlign:"center",padding:32,color:C.text3,fontSize:13}}>No followed creators are live.<br/>Follow creators below!</div>}
+          <div style={{display:"flex",flexDirection:"column",gap:10}}>
+            {filteredLiveStreams.map(s=>(
+              <div key={s.id} onClick={()=>openLiveStream(s)} style={{display:"flex",gap:12,padding:12,borderRadius:16,...GLASS_CARD,cursor:"pointer"}}>
+                <div style={{width:76,height:76,borderRadius:14,background:`linear-gradient(135deg, ${C.bg3}, ${s.category==="Chill"?"rgba(192,132,252,0.1)":s.category==="Brand"?"rgba(251,191,36,0.1)":"rgba(34,211,238,0.1)"})`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:30,position:"relative",flexShrink:0}}>
+                  {s.avatar}
+                  <div style={{position:"absolute",top:5,right:5,background:C.red,borderRadius:4,padding:"1px 5px",fontSize:8,fontWeight:800,color:"#fff"}}>LIVE</div>
+                </div>
+                <div style={{flex:1,minWidth:0,display:"flex",flexDirection:"column",justifyContent:"center"}}>
+                  <div style={{fontSize:13,fontWeight:700,marginBottom:3,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{s.title}</div>
+                  <div style={{display:"flex",alignItems:"center",gap:6,fontSize:11,color:C.text3,marginBottom:4}}>
+                    <span>{s.host}</span><LiveBadgeTag type={s.badge} s={8}/>
+                  </div>
+                  <div style={{display:"flex",gap:10,fontSize:10,color:C.text3}}>
+                    <span>👁 {s.viewers}</span><span>💨 {s.puffs}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Featured Creators */}
+        <div style={{padding:"20px 14px 4px"}}>
+          <div style={{fontSize:15,fontWeight:700,marginBottom:12,display:"flex",alignItems:"center",gap:6}}>⭐ Featured Creators<span style={{fontSize:10,color:C.text3,fontWeight:400,marginLeft:"auto"}}>See all →</span></div>
+          <div style={{display:"flex",gap:10,overflowX:"auto",paddingBottom:8}}>
+            {LIVE_CREATORS.map(cr=>(
+              <div key={cr.name} style={{minWidth:136,padding:14,textAlign:"center",flexShrink:0,borderRadius:16,...GLASS_CARD}}>
+                <div style={{fontSize:30,marginBottom:6}}>{cr.avatar}</div>
+                <div style={{fontSize:12,fontWeight:700,marginBottom:4}}>{cr.name}</div>
+                <LiveBadgeTag type={cr.badge} s={8}/>
+                <div style={{fontSize:10,color:C.text3,marginTop:4}}>{cr.followers} followers</div>
+                <div style={{fontSize:9,color:C.text3,marginTop:1}}>🕐 {cr.schedule}</div>
+                <div onClick={e=>{e.stopPropagation();setLiveFollowed(p=>({...p,[cr.name]:!p[cr.name]}));playFx("coin");}} style={{width:"100%",padding:"6px 0",borderRadius:10,border:liveFollowed[cr.name]?`1px solid ${C.orange}`:"none",background:liveFollowed[cr.name]?"transparent":`linear-gradient(135deg, ${C.orange}, ${C.pink})`,fontSize:10,fontWeight:700,color:liveFollowed[cr.name]?C.orange:"#fff",cursor:"pointer",marginTop:8,textAlign:"center"}}>
+                  {liveFollowed[cr.name]?"✓ Following":"Follow"}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Go Live FAB */}
+        <div style={{position:"fixed",bottom:88,right:"calc(50% - 195px)",zIndex:40}}>
+          <div onClick={()=>notify("Go Live -- Coming soon!",C.pink)} style={{width:56,height:56,borderRadius:16,background:`linear-gradient(135deg, ${C.red}, ${C.pink})`,border:"none",color:"#fff",fontSize:22,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:`0 4px 24px rgba(236,72,153,0.35)`}}>📷</div>
+          <div style={{fontSize:9,fontWeight:800,color:C.pink,textAlign:"center",marginTop:4,letterSpacing:0.5}}>GO LIVE</div>
+        </div>
+
+        <div style={{height:80}}/>
       </div>
-      {liveTab==="now" && [
-        {t:"🧠 Vibe Check — WC Edition",h:"MC Tuấn",v:1247,c:C.gold,act:()=>setShowVibeCheck(true)},
-        {t:"⚽ Final Kick Tournament — SF",h:"System",v:856,c:C.cyan,act:()=>notify("📡 Watching...",C.cyan)},
-        {t:"📺 Watch Party: USA vs Mexico",h:"Community",v:3421,c:C.lime,act:()=>setLiveTab("watch")},
-      ].map((s,i)=>(
-        <div key={i} onClick={s.act} style={{padding:"14px",borderRadius:14,marginBottom:10,cursor:"pointer",background:`radial-gradient(ellipse at 0% 50%, ${s.c}06, ${C.bg2} 60%)`,border:`1px solid ${s.c}12`,position:"relative"}}>
-          <div style={{position:"absolute",top:10,right:10,display:"flex",alignItems:"center",gap:3}}><div style={{width:5,height:5,borderRadius:"50%",background:C.red,animation:"pulse 1.5s infinite"}}/><span style={{fontSize:9,fontWeight:700,color:C.red}}>LIVE</span></div>
-          <div style={{fontSize:14,fontWeight:800,color:C.text,marginBottom:4,paddingRight:48}}>{s.t}</div>
-          <div style={{display:"flex",gap:6}}><span style={{fontSize:9,color:C.text3,padding:"2px 6px",borderRadius:3,background:`${C.text3}08`}}>👁 {s.v.toLocaleString()}</span><span style={{fontSize:9,color:C.text3,padding:"2px 6px",borderRadius:3,background:`${C.text3}08`}}>🎤 {s.h}</span></div>
-        </div>
-      ))}
-      {liveTab==="upcoming" && [
-        {t:"Spin & Win Mega Friday",time:"8:00 PM",h:"DJ Minh",e:"🎰"},
-        {t:"Watch Party: BRA vs GER",time:"3:00 AM",h:"Community",e:"📺"},
-        {t:"WC Trivia Special",time:"Tomorrow 7PM",h:"KOL Hà Anh",e:"🧠"},
-      ].map((s,i)=>(
-        <div key={i} style={{padding:"12px 14px",borderRadius:12,marginBottom:8,background:C.bg2,border:`1px solid ${C.border}`,display:"flex",alignItems:"center",gap:10}}>
-          <span style={{fontSize:24}}>{s.e}</span>
-          <div style={{flex:1}}><div style={{fontSize:13,fontWeight:700,color:C.text}}>{s.t}</div><div style={{fontSize:10,color:C.text3,marginTop:1}}>🎤 {s.h} · ⏰ {s.time}</div></div>
-          <div onClick={()=>notify("🔔 Reminder set!",C.gold)} style={{padding:"5px 10px",borderRadius:6,cursor:"pointer",background:`${C.gold}08`,border:`1px solid ${C.gold}15`,fontSize:10,fontWeight:700,color:C.gold}}>🔔</div>
-        </div>
-      ))}
-      {liveTab==="watch" && (
-        <div>
-          <div style={{padding:"18px",borderRadius:16,marginBottom:12,textAlign:"center",background:`radial-gradient(ellipse at 50% 0%, ${C.lime}08, ${C.bg2} 60%)`,border:`1px solid ${C.lime}12`}}>
-            <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:5,marginBottom:10}}>
-              <div style={{width:5,height:5,borderRadius:"50%",background:C.red,animation:"pulse 1.5s infinite"}}/><span style={{fontSize:9,fontWeight:700,color:C.red,letterSpacing:1}}>LIVE · {liveScore.min+Math.floor(tick/3)%10}'</span>
-            </div>
-            <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:16}}>
-              <div><div style={{fontSize:26}}>🇺🇸</div><div style={{fontSize:12,fontWeight:700,color:C.text,marginTop:3}}>USA</div></div>
-              <div style={{fontFamily:"'Courier New',monospace",fontSize:32,fontWeight:900,color:C.text,letterSpacing:3}}>{liveScore.home} — {liveScore.away}</div>
-              <div><div style={{fontSize:26}}>🇲🇽</div><div style={{fontSize:12,fontWeight:700,color:C.text,marginTop:3}}>MEX</div></div>
-            </div>
-            <div onClick={()=>{setLiveScore(s=>({...s,home:s.home+1}));notify("⚽ GOAL! USA!",C.lime);}} style={{display:"inline-block",marginTop:12,padding:"6px 14px",borderRadius:8,cursor:"pointer",background:`${C.lime}12`,border:`1px solid ${C.lime}25`,fontSize:11,fontWeight:700,color:C.lime}}>⚽ Sim Goal</div>
-          </div>
-          <div style={{padding:"12px",borderRadius:12,marginBottom:12,background:`${C.lime}04`,border:`1px solid ${C.lime}10`}}>
-            <div style={{fontSize:11,fontWeight:700,color:C.lime,marginBottom:6}}>⚡ Quick Predict — Next Goal?</div>
-            <div style={{display:"flex",gap:6}}>
-              {["🇺🇸 USA","None","🇲🇽 MEX"].map((o,i)=>(
-                <div key={i} onClick={()=>puffLockIn(()=>{setCoins(c=>c+10);})} style={{flex:1,padding:"7px",borderRadius:7,textAlign:"center",cursor:"pointer",background:`${C.text3}05`,border:`1px solid ${C.border}`,fontSize:10,fontWeight:600,color:C.text2}}>{o}</div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-      <div style={{height:80}}/>
-    </div>
-  );
+    );
+  };
 
   // ═════════════════════════════════════════
 
@@ -22648,7 +23041,7 @@ const startSimonPuffs = () => {
       )}
 
       {/* Tab Title (hide during arena zone focus — image BG handles it) */}
-      {(tab!=="arena" || zone || arenaView==="hub") && tab!=="me" && (
+      {(tab!=="arena" || zone || arenaView==="hub") && tab!=="me" && tab!=="live" && (
         <div style={{padding:"6px 14px 10px",position:"relative",zIndex:5}}>
           <div style={{fontSize:20,fontWeight:900,letterSpacing:-0.5}}>
             {tab==="control"?"Control":tab==="arena"?(zone?Z[zone]?.name:"Arena"):tab==="live"?"Live":"Me"}
@@ -22761,7 +23154,7 @@ const startSimonPuffs = () => {
           {[{id:"control",l:"Control",i:"🎛",c:C.cyan},{id:"arena",l:"Arena",i:"🎮",c:C.cyan},{id:"live",l:"Live",i:"📡",c:C.pink},{id:"me",l:"Me",i:"👤",c:C.purple}].map(t=>{
             const active = tab===t.id;
             return (
-              <div key={t.id} onClick={()=>{playFx("nav");if(t.id!=="arena"&&t.id!=="me"){notify("Coming Soon — Arena Demo Only",C.cyan);return;}setTab(t.id);setZone(null);setArenaView("hub");setSelectedGame(null);setGameActive(null);}} style={{
+              <div key={t.id} onClick={()=>{playFx("nav");if(t.id!=="arena"&&t.id!=="me"&&t.id!=="live"){notify("Coming Soon — Arena Demo Only",C.cyan);return;}setTab(t.id);setZone(null);setArenaView("hub");setSelectedGame(null);setGameActive(null);if(t.id==="live")setLiveScreen("explore");}} style={{
                 display:"flex",alignItems:"center",gap:active?5:0,
                 padding:active?"9px 14px":"9px 12px",
                 borderRadius:100,cursor:"pointer",minHeight:44,
@@ -22796,6 +23189,9 @@ const startSimonPuffs = () => {
         @keyframes gridScan{0%{transform:translateY(100%)}100%{transform:translateY(-100%)}}
         @keyframes energyPulse{0%,100%{transform:translate(-50%,-50%) scale(1);opacity:0.15}50%{transform:translate(-50%,-50%) scale(1.15);opacity:0.04}}
         @keyframes gentleFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+        @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+        @keyframes liveFloatUp{0%{opacity:1;transform:translateY(0) scale(1)}40%{opacity:.9;transform:translateY(-50px) scale(1.15)}100%{opacity:0;transform:translateY(-150px) scale(.7)}}
+        input::placeholder{color:#6E6A95}
         @keyframes countPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
         @keyframes arenaFadeIn{from{opacity:0;transform:translateY(15px) scale(0.97)}to{opacity:1;transform:translateY(0) scale(1)}}
         @keyframes glowShift{0%,100%{box-shadow:0 0 40px rgba(0,229,255,0.06),0 0 80px rgba(255,217,61,0.03)}50%{box-shadow:0 0 60px rgba(192,132,252,0.06),0 0 100px rgba(255,77,141,0.03)}}
