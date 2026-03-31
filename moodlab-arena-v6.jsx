@@ -6840,21 +6840,21 @@ export default function MoodLabArena() {
     // --- Stage: Trivia games (duration-based: TAP=A, SHORT=B, MED=C, LONG=D) ---
     else if (id === "vibecheck")       { down = vcPuffStart;  up = vcPuffStop;  }
     else if (id === "survivaltrivia")  { down = stPuffStart;  up = stPuffStop;  }
-    // --- Fortune / Oracle games (hold-based) ---
-    else if (id === "crystalball")    { down = cbHandlePuff;     up = cbHandlePuffEnd;     }
-    else if (id === "strainbattle")   { down = sbHandlePuff;     up = sbHandlePuffEnd;     }
-    else if (id === "matchpredictor") { down = mpHandlePuff;     up = mpHandlePuffEnd;     }
-    else if (id === "dailypicks")     { down = dpHandlePuff;     up = dpHandlePuffEnd;     }
-    else if (id === "puffslots")      { down = slotsHandlePuff;  up = slotsHandlePuffEnd;  }
-    else if (id === "puffblackjack")  { down = bjHandlePuff;     up = bjHandlePuffEnd;     }
-    else if (id === "coinflip")       { down = cfHandlePuff;     up = cfHandlePuffEnd;     }
-    else if (id === "crapsnclouds")   { down = crapsHandlePuff;  up = crapsHandlePuffEnd;  }
-    else if (id === "mysterybox")     { down = mbHandlePuff;     up = mbHandlePuffEnd;     }
-    else if (id === "scratchpuff")    { down = scHandlePuff;     up = scHandlePuffEnd;     }
-    else if (id === "fortunecookie")  { down = fcHandlePuff;     up = fcHandlePuffEnd;     }
-    else if (id === "treasuremap")    { down = tmHandlePuff;     up = tmHandlePuffEnd;     }
+    // --- Fortune / Oracle games (hold-based) --- wrapped in try/catch to prevent TDZ errors
+    else if (id === "crystalball")    { try { down = cbHandlePuff;     up = cbHandlePuffEnd;     } catch(e){} }
+    else if (id === "strainbattle")   { try { down = sbHandlePuff;     up = sbHandlePuffEnd;     } catch(e){} }
+    else if (id === "matchpredictor") { try { down = mpHandlePuff;     up = mpHandlePuffEnd;     } catch(e){} }
+    else if (id === "dailypicks")     { try { down = dpHandlePuff;     up = dpHandlePuffEnd;     } catch(e){} }
+    else if (id === "puffslots")      { try { down = slotsHandlePuff;  up = slotsHandlePuffEnd;  } catch(e){} }
+    else if (id === "puffblackjack")  { try { down = bjHandlePuff;     up = bjHandlePuffEnd;     } catch(e){} }
+    else if (id === "coinflip")       { try { down = cfHandlePuff;     up = cfHandlePuffEnd;     } catch(e){} }
+    else if (id === "crapsnclouds")   { try { down = crapsHandlePuff;  up = crapsHandlePuffEnd;  } catch(e){} }
+    else if (id === "mysterybox")     { try { down = mbHandlePuff;     up = mbHandlePuffEnd;     } catch(e){} }
+    else if (id === "scratchpuff")    { try { down = scHandlePuff;     up = scHandlePuffEnd;     } catch(e){} }
+    else if (id === "fortunecookie")  { try { down = fcHandlePuff;     up = fcHandlePuffEnd;     } catch(e){} }
+    else if (id === "treasuremap")    { try { down = tmHandlePuff;     up = tmHandlePuffEnd;     } catch(e){} }
     // --- Fortune: Spin & Win (tap-only) ---
-    else if (id === "spinwin")        { down = () => { if(!swSpinning) puffLockIn(swDoSpin); }; up = null; }
+    else if (id === "spinwin")        { try { down = () => { if(!swSpinning) puffLockIn(swDoSpin); }; up = null; } catch(e){} }
     btPuffDown.current = down;
     btPuffUp.current   = up;
     // puffEvent handlers are always live regardless of active game
