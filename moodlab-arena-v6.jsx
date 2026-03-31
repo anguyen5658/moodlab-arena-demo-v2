@@ -22250,9 +22250,24 @@ const startSimonPuffs = () => {
             animation:dailyCheckedIn?"none":"claimPulse 2s ease-in-out infinite"}}>
             {dailyCheckedIn ? "Claimed Today" : "Claim Daily Reward"}
           </button>
-          {!bleConnected && !dailyCheckedIn && (
-            <div style={{textAlign:"center",marginTop:8,fontSize:10,color:C.orange,fontWeight:600}}>
-              💨 Connect device to also earn coins
+          {!dailyCheckedIn && (
+            <div style={{marginTop:10,padding:"10px 12px",borderRadius:10,background:`${C.bg}80`,border:`1px solid ${C.border}`}}>
+              <div style={{fontSize:9,color:C.text3,letterSpacing:1,marginBottom:6}}>YOUR DAILY MULTIPLIER</div>
+              <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:C.text2,marginBottom:3}}>
+                <span>{getCurrentTier().icon} {getCurrentTier().name} Tier</span>
+                <span style={{color:getCurrentTier().color,fontWeight:700}}>×{getCurrentTier().mult}</span>
+              </div>
+              {bleConnected && <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:C.text2,marginBottom:3}}>
+                <span>💨 Device Connected</span>
+                <span style={{color:C.cyan,fontWeight:700}}>×1.2</span>
+              </div>}
+              <div style={{borderTop:`1px solid ${C.border}`,paddingTop:6,marginTop:3,display:"flex",justifyContent:"space-between",fontSize:13,fontWeight:800}}>
+                <span style={{color:C.text}}>Total Bonus</span>
+                <span style={{color:C.gold}}>×{getCoinMultiplier().toFixed(2)}</span>
+              </div>
+              {!bleConnected && <div style={{fontSize:9,color:C.orange,marginTop:4}}>
+                💨 Connect device for ×1.2 bonus on daily rewards
+              </div>}
             </div>
           )}
         </div>
@@ -22304,7 +22319,7 @@ const startSimonPuffs = () => {
                   color:done?C.text3:C.green,
                   border:done?"none":`1px solid ${C.green}25`,
                   boxShadow:done?"none":`0 0 10px ${C.green}10`}}>
-                  {done ? "Done" : "+"+ch.reward+" 🪙"}
+                  {done ? "Done" : "+"+Math.round(ch.reward*getCoinMultiplier())+" 🪙"}
                 </button>
               </div>
             );
@@ -22318,6 +22333,13 @@ const startSimonPuffs = () => {
                 background:"linear-gradient(90deg,transparent,rgba(255,217,61,0.1),transparent)",
                 animation:"lightSweep 3s ease-in-out infinite",pointerEvents:"none"}}/>
               {"🏆 ALL DONE! Bonus claimed! 🏆"}
+            </div>
+          )}
+          {getCoinMultiplier() > 1.0 && (
+            <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,marginTop:10,padding:"6px 12px",borderRadius:8,background:`${C.gold}08`,border:`1px solid ${C.gold}15`}}>
+              <span style={{fontSize:10,color:C.text3}}>Rewards multiplied by</span>
+              <span style={{fontSize:12,fontWeight:800,color:C.gold}}>×{getCoinMultiplier().toFixed(2)}</span>
+              <span style={{fontSize:9,color:C.text3}}>({getCurrentTier().icon} {bleConnected?"+ 💨":""})</span>
             </div>
           )}
         </div>
