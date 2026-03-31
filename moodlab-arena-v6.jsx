@@ -51,6 +51,15 @@ const LOYALTY_TIERS = [
   { name:"Legend", icon:"🔥", color:"#FF4D8D", xpReq:75000, mult:1.2 },
 ];
 
+const DIFFICULTY_LEVELS = [
+  { level:1, label:"Chill", icon:"\u{1F331}", color:"#34D399", coins:20 },
+  { level:2, label:"Easy", icon:"\u{1F60E}", color:"#00E5FF", coins:30 },
+  { level:3, label:"Medium", icon:"\u{1F525}", color:"#FB923C", coins:50 },
+  { level:4, label:"Hard", icon:"\u{1F4AA}", color:"#C084FC", coins:60 },
+  { level:5, label:"Intense", icon:"\u26A1", color:"#FFD93D", coins:80 },
+  { level:6, label:"Expert", icon:"\u{1F451}", color:"#FF4D8D", coins:100 },
+];
+
 const DAILY_REWARDS = [
   { day:1, xp:20, coins:10 },
   { day:2, xp:25, coins:15 },
@@ -183,32 +192,32 @@ const LG = {
 
 // ── GAME DATA (identical content) ──
 const PLAY_GAMES = [
-  { id:"finalkick", name:"Final Kick", emoji:"⚽", players:"2", time:"1-2m", type:"Skill", color:C.cyan, desc:"Penalty kick 1v1. Chọn hướng sút, chọn hướng cản.", hot:true },
-  { id:"finalkick2", name:"Final Kick 2", emoji:"⚽🔥", players:"2", time:"2-3m", type:"Precision", color:C.gold, desc:"Double puff! Aim X-axis + Y-axis separately.", hot:true },
-  { id:"finalkick3", name:"Final Kick 3D", emoji:"⚽🌐", players:"2", time:"2-3m", type:"3D Precision", color:C.purple, desc:"3D behind-the-ball view! Double puff aim in 3D.", hot:true },
-  { id:"hotpotato", name:"Hot Potato", emoji:"💣", players:"3-8", time:"1-3m", type:"Luck", color:C.orange, desc:"Bom nhảy ngẫu nhiên. Puff để pass. Ai bị nổ = loại." },
-  { id:"russian", name:"Russian Roulette", emoji:"🎲", players:"2-6", time:"1-2m", type:"Luck", color:C.red, desc:"Lần lượt puff. Random ai bị loại. Tension cực cao." },
-  { id:"wildwest", name:"Wild West Duel", emoji:"🤠", players:"2", time:"1-2m", type:"Reaction", color:C.gold, desc:"Best of 5 showdown! Wait for DRAW, puff fastest. Reaction time in ms.", hot:true },
-  { id:"balloon", name:"Balloon Pop", emoji:"🎈", players:"2-8", time:"1-3m", type:"Strategy", color:C.pink, desc:"Puff bóng phình dần. Ai làm nổ thì thua." },
-  { id:"puffpong", name:"Puff Pong", emoji:"🏓", players:"2", time:"1-2m", type:"Skill", color:C.green, desc:"Bóng bàn ảo. Puff = đánh bóng. Timing là tất cả." },
-  { id:"rhythm", name:"Rhythm Puff", emoji:"🎵", players:"1-4", time:"1-3m", type:"Rhythm", color:C.purple, desc:"Nốt nhạc rơi, puff đúng nhịp. Guitar Hero style." },
-  { id:"tugofwar", name:"Tug of War", emoji:"💪", players:"2-8", time:"30s-1m", type:"Team", color:C.blue, desc:"2 team puff liên tục. Bên mạnh hơn thắng.", hot:true },
-  { id:"hooked", name:"Hooked", emoji:"🎣", players:"1", time:"2-5m", type:"Skill", color:C.blue, desc:"Stack fishing! Puff to reel in fish. Control your suction!" },
-  { id:"rps", name:"Puff RPS", emoji:"✊", players:"2", time:"1-2m", type:"Strategy", color:C.purple, desc:"Rock Paper Scissors with Puff Power!", hot:true },
-  { id:"beatdrop", name:"Beat Drop", emoji:"🎧", players:"1", time:"3-5m", type:"Music", color:C.pink, desc:"Hold your puff until the beat drops. Release on time!" },
-  { id:"puffclock", name:"Puff Clock", emoji:"⏱️", players:"1-100+", time:"3-5m", type:"Precision", color:C.orange, desc:"Puff for EXACTLY the target time. Closest wins!" },
-  { id:"pufflimbo", name:"Puff Limbo", emoji:"🎪", players:"1-50", time:"3-5m", type:"Endurance", color:C.orange, desc:"Target puff gets longer each round. Survive the blinker!" },
-  { id:"puffderby", name:"Puff Derby", emoji:"🏇", players:"6", time:"2-3m", type:"Racing", color:C.green, desc:"Pick a horse. Spam puff to make it run!" },
+  { id:"finalkick", name:"Final Kick", emoji:"⚽", players:"2", time:"1-2m", type:"Skill", color:C.cyan, desc:"Penalty kick 1v1. Chọn hướng sút, chọn hướng cản.", hot:true, difficulty:5 },
+  { id:"finalkick2", name:"Final Kick 2", emoji:"⚽🔥", players:"2", time:"2-3m", type:"Precision", color:C.gold, desc:"Double puff! Aim X-axis + Y-axis separately.", hot:true, difficulty:6 },
+  { id:"finalkick3", name:"Final Kick 3D", emoji:"⚽🌐", players:"2", time:"2-3m", type:"3D Precision", color:C.purple, desc:"3D behind-the-ball view! Double puff aim in 3D.", hot:true, difficulty:6 },
+  { id:"hotpotato", name:"Hot Potato", emoji:"💣", players:"3-8", time:"1-3m", type:"Luck", color:C.orange, desc:"Bom nhảy ngẫu nhiên. Puff để pass. Ai bị nổ = loại.", difficulty:2 },
+  { id:"russian", name:"Russian Roulette", emoji:"🎲", players:"2-6", time:"1-2m", type:"Luck", color:C.red, desc:"Lần lượt puff. Random ai bị loại. Tension cực cao.", difficulty:2 },
+  { id:"wildwest", name:"Wild West Duel", emoji:"🤠", players:"2", time:"1-2m", type:"Reaction", color:C.gold, desc:"Best of 5 showdown! Wait for DRAW, puff fastest. Reaction time in ms.", hot:true, difficulty:5 },
+  { id:"balloon", name:"Balloon Pop", emoji:"🎈", players:"2-8", time:"1-3m", type:"Strategy", color:C.pink, desc:"Puff bóng phình dần. Ai làm nổ thì thua.", difficulty:4 },
+  { id:"puffpong", name:"Puff Pong", emoji:"🏓", players:"2", time:"1-2m", type:"Skill", color:C.green, desc:"Bóng bàn ảo. Puff = đánh bóng. Timing là tất cả.", difficulty:5 },
+  { id:"rhythm", name:"Rhythm Puff", emoji:"🎵", players:"1-4", time:"1-3m", type:"Rhythm", color:C.purple, desc:"Nốt nhạc rơi, puff đúng nhịp. Guitar Hero style.", difficulty:5 },
+  { id:"tugofwar", name:"Tug of War", emoji:"💪", players:"2-8", time:"30s-1m", type:"Team", color:C.blue, desc:"2 team puff liên tục. Bên mạnh hơn thắng.", hot:true, difficulty:4 },
+  { id:"hooked", name:"Hooked", emoji:"🎣", players:"1", time:"2-5m", type:"Skill", color:C.blue, desc:"Stack fishing! Puff to reel in fish. Control your suction!", difficulty:4 },
+  { id:"rps", name:"Puff RPS", emoji:"✊", players:"2", time:"1-2m", type:"Strategy", color:C.purple, desc:"Rock Paper Scissors with Puff Power!", hot:true, difficulty:2 },
+  { id:"beatdrop", name:"Beat Drop", emoji:"🎧", players:"1", time:"3-5m", type:"Music", color:C.pink, desc:"Hold your puff until the beat drops. Release on time!", difficulty:4 },
+  { id:"puffclock", name:"Puff Clock", emoji:"⏱️", players:"1-100+", time:"3-5m", type:"Precision", color:C.orange, desc:"Puff for EXACTLY the target time. Closest wins!", difficulty:5 },
+  { id:"pufflimbo", name:"Puff Limbo", emoji:"🎪", players:"1-50", time:"3-5m", type:"Endurance", color:C.orange, desc:"Target puff gets longer each round. Survive the blinker!", difficulty:5 },
+  { id:"puffderby", name:"Puff Derby", emoji:"🏇", players:"6", time:"2-3m", type:"Racing", color:C.green, desc:"Pick a horse. Spam puff to make it run!", difficulty:2 },
 ];
 
 const SHOW_GAMES = [
-  { id:"vibecheck", name:"Vibe Check", emoji:"🧠", players:"1-100+", time:"5-15m", type:"Trivia", color:C.gold, desc:"Trivia Game Show. Host hỏi, contestants trả lời, audience vote.", live:true },
+  { id:"vibecheck", name:"Vibe Check", emoji:"🧠", players:"1-100+", time:"5-15m", type:"Trivia", color:C.gold, desc:"Trivia Game Show. Host hỏi, contestants trả lời, audience vote.", live:true, difficulty:3 },
   // Spin & Win moved to Fortune zone
-  { id:"higherlower", name:"Higher or Lower", emoji:"📊", players:"1-100+", time:"5-10m", type:"Knowledge", color:C.cyan, desc:"Đoán số tiếp theo cao hay thấp. Streak = thưởng lớn.", live:true },
-  { id:"pricepuff", name:"The Price is Puff", emoji:"💰", players:"2-50+", time:"5-10m", type:"Knowledge", color:C.green, desc:"Đoán giá sản phẩm. Gần nhất thắng.", live:true },
-  { id:"survivaltrivia", name:"Survival Trivia", emoji:"🏆", players:"2-100+", time:"5-15m", type:"Trivia", color:C.purple, desc:"Answer correctly or get eliminated. Last one standing wins!", live:true },
-  { id:"simonpuffs", name:"Simon Puffs", emoji:"🔴", players:"1-50+", time:"3-8m", type:"Memory", color:C.red, desc:"Remember the pattern, repeat with puffs. Memory master!", live:true },
-  { id:"puffauction", name:"Puff Auction", emoji:"🔨", players:"2-50+", time:"3-8m", type:"Strategy", color:C.lime, desc:"Bid with your lungs! Biggest puff wins the auction.", live:true },
+  { id:"higherlower", name:"Higher or Lower", emoji:"📊", players:"1-100+", time:"5-10m", type:"Knowledge", color:C.cyan, desc:"Đoán số tiếp theo cao hay thấp. Streak = thưởng lớn.", live:true, difficulty:3 },
+  { id:"pricepuff", name:"The Price is Puff", emoji:"💰", players:"2-50+", time:"5-10m", type:"Knowledge", color:C.green, desc:"Đoán giá sản phẩm. Gần nhất thắng.", live:true, difficulty:4 },
+  { id:"survivaltrivia", name:"Survival Trivia", emoji:"🏆", players:"2-100+", time:"5-15m", type:"Trivia", color:C.purple, desc:"Answer correctly or get eliminated. Last one standing wins!", live:true, difficulty:3 },
+  { id:"simonpuffs", name:"Simon Puffs", emoji:"🔴", players:"1-50+", time:"3-8m", type:"Memory", color:C.red, desc:"Remember the pattern, repeat with puffs. Memory master!", live:true, difficulty:3 },
+  { id:"puffauction", name:"Puff Auction", emoji:"🔨", players:"2-50+", time:"3-8m", type:"Strategy", color:C.lime, desc:"Bid with your lungs! Biggest puff wins the auction.", live:true, difficulty:4 },
 ];
 
 const MC_LINES = {
@@ -222,18 +231,18 @@ const MC_LINES = {
 };
 
 const ORACLE_GAMES = [
-  { id:"crystalball", name:"Crystal Ball", emoji:"🔮", players:"1", time:"1-2m", type:"Prediction", color:"#9333EA", desc:"Yes/No universal predictions. Puff to decide destiny." },
-  { id:"strainbattle", name:"Strain Battle", emoji:"🌿", players:"1", time:"2-3m", type:"Vote", color:"#22C55E", desc:"Vote for the best strain in epic matchups." },
-  { id:"matchpredictor", name:"Match Predictor", emoji:"📊", players:"1", time:"1-2m", type:"Sports", color:"#3B82F6", desc:"Predict WC match outcomes. Win/Draw/Lose." },
-  { id:"dailypicks", name:"Daily Picks", emoji:"📅", players:"1", time:"2-3m", type:"Daily", color:"#F97316", desc:"3 daily predictions with streak multipliers." },
-  { id:"puffslots", name:"Puff Slots", emoji:"🎰", players:"1", time:"2-3m", type:"Fortune", color:"#FFD700", desc:"3-reel slot machine. Puff to spin the reels!" },
-  { id:"puffblackjack", name:"Puff Blackjack", emoji:"🃏", players:"1", time:"3-5m", type:"Fortune", color:"#22C55E", desc:"Classic blackjack with puff controls. Hit or Stand!" },
-  { id:"coinflip", name:"Coin Flip", emoji:"🪙", players:"1", time:"1-2m", type:"Fortune", color:"#F59E0B", desc:"50/50 flip with puff confidence multiplier." },
-  { id:"crapsnclouds", name:"Craps & Clouds", emoji:"🎲", players:"1", time:"2-3m", type:"Fortune", color:"#EF4444", desc:"Dice game where your puff controls the roll!" },
-  { id:"mysterybox", name:"Mystery Box", emoji:"🎁", players:"1", time:"2-3m", type:"Fortune", color:"#FFD700", desc:"3 mystery boxes. Pick one. Puff to reveal!" },
-  { id:"scratchpuff", name:"Scratch & Puff", emoji:"🎫", players:"1", time:"2-3m", type:"Fortune", color:"#EC4899", desc:"6 scratch areas. Puff to scratch. Match 3 wins!" },
-  { id:"fortunecookie", name:"Fortune Cookie", emoji:"🥠", players:"1", time:"1-2m", type:"Fortune", color:"#F97316", desc:"Crack open wisdom + coins. Blinker = golden cookie!" },
-  { id:"treasuremap", name:"Treasure Map", emoji:"🗺️", players:"1", time:"3-5m", type:"Fortune", color:"#FFD700", desc:"16 tiles. Find 3 treasures. Avoid 3 bombs!" },
+  { id:"crystalball", name:"Crystal Ball", emoji:"🔮", players:"1", time:"1-2m", type:"Prediction", color:"#9333EA", desc:"Yes/No universal predictions. Puff to decide destiny.", difficulty:1 },
+  { id:"strainbattle", name:"Strain Battle", emoji:"🌿", players:"1", time:"2-3m", type:"Vote", color:"#22C55E", desc:"Vote for the best strain in epic matchups.", difficulty:1 },
+  { id:"matchpredictor", name:"Match Predictor", emoji:"📊", players:"1", time:"1-2m", type:"Sports", color:"#3B82F6", desc:"Predict WC match outcomes. Win/Draw/Lose.", difficulty:1 },
+  { id:"dailypicks", name:"Daily Picks", emoji:"📅", players:"1", time:"2-3m", type:"Daily", color:"#F97316", desc:"3 daily predictions with streak multipliers.", difficulty:1 },
+  { id:"puffslots", name:"Puff Slots", emoji:"🎰", players:"1", time:"2-3m", type:"Fortune", color:"#FFD700", desc:"3-reel slot machine. Puff to spin the reels!", difficulty:1 },
+  { id:"puffblackjack", name:"Puff Blackjack", emoji:"🃏", players:"1", time:"3-5m", type:"Fortune", color:"#22C55E", desc:"Classic blackjack with puff controls. Hit or Stand!", difficulty:1 },
+  { id:"coinflip", name:"Coin Flip", emoji:"🪙", players:"1", time:"1-2m", type:"Fortune", color:"#F59E0B", desc:"50/50 flip with puff confidence multiplier.", difficulty:1 },
+  { id:"crapsnclouds", name:"Craps & Clouds", emoji:"🎲", players:"1", time:"2-3m", type:"Fortune", color:"#EF4444", desc:"Dice game where your puff controls the roll!", difficulty:1 },
+  { id:"mysterybox", name:"Mystery Box", emoji:"🎁", players:"1", time:"2-3m", type:"Fortune", color:"#FFD700", desc:"3 mystery boxes. Pick one. Puff to reveal!", difficulty:1 },
+  { id:"scratchpuff", name:"Scratch & Puff", emoji:"🎫", players:"1", time:"2-3m", type:"Fortune", color:"#EC4899", desc:"6 scratch areas. Puff to scratch. Match 3 wins!", difficulty:1 },
+  { id:"fortunecookie", name:"Fortune Cookie", emoji:"🥠", players:"1", time:"1-2m", type:"Fortune", color:"#F97316", desc:"Crack open wisdom + coins. Blinker = golden cookie!", difficulty:1 },
+  { id:"treasuremap", name:"Treasure Map", emoji:"🗺️", players:"1", time:"3-5m", type:"Fortune", color:"#FFD700", desc:"16 tiles. Find 3 treasures. Avoid 3 bombs!", difficulty:1 },
 ];
 
 const ORACLE_WC_MATCHES = [
@@ -7718,8 +7727,15 @@ export default function MoodLabArena() {
                       {count}
                     </span>
                   </div>
-                  <div style={{fontSize:9,color:bleConnected?C.gold:C.orange,fontWeight:700,marginTop:4}}>
-                    🪙 ~{Math.round((g.type==="Luck"?30:50) * (bleConnected?1.0:0.7))} per game {!bleConnected && "(70%)"}
+                  {(()=>{const dl = DIFFICULTY_LEVELS.find(d=>d.level===g.difficulty)||DIFFICULTY_LEVELS[0]; return (
+                    <div style={{display:"inline-flex",alignItems:"center",gap:3,padding:"2px 6px",borderRadius:6,
+                      background:`${dl.color}12`,border:`1px solid ${dl.color}20`,marginTop:3}}>
+                      <span style={{fontSize:7}}>{dl.icon}</span>
+                      <span style={{fontSize:7,fontWeight:700,color:dl.color}}>{dl.label}</span>
+                    </div>
+                  );})()}
+                  <div style={{fontSize:8,color:(DIFFICULTY_LEVELS.find(d=>d.level===g.difficulty)||DIFFICULTY_LEVELS[0]).color,fontWeight:700,marginTop:2}}>
+                    🪙 {(DIFFICULTY_LEVELS.find(d=>d.level===g.difficulty)||DIFFICULTY_LEVELS[0]).coins} per win
                   </div>
                 </div>
               );
@@ -7980,6 +7996,13 @@ export default function MoodLabArena() {
                   <div style={{fontSize:20,marginBottom:2}}>{g.emoji}</div>
                   <div style={{fontSize:9,fontWeight:800,color:isLive?C.text:C.text2}}>{g.name}</div>
                   <div style={{fontSize:7,color:g.color,fontWeight:700,marginTop:1}}>{g.type}</div>
+                  {(()=>{const dl = DIFFICULTY_LEVELS.find(d=>d.level===g.difficulty)||DIFFICULTY_LEVELS[0]; return (
+                    <div style={{display:"inline-flex",alignItems:"center",gap:3,padding:"2px 6px",borderRadius:6,
+                      background:`${dl.color}12`,border:`1px solid ${dl.color}20`,marginTop:3}}>
+                      <span style={{fontSize:7}}>{dl.icon}</span>
+                      <span style={{fontSize:7,fontWeight:700,color:dl.color}}>{dl.label}</span>
+                    </div>
+                  );})()}
                   {!isLive && <div style={{fontSize:6,color:C.text3,marginTop:1}}>in {8+i*4}m</div>}
                 </div>
               );
@@ -17266,6 +17289,14 @@ const startSimonPuffs = () => {
             </div>
             <div style={{fontSize:20,fontWeight:900,color:C.text,textShadow:`0 0 20px ${gc}30`,marginBottom:3}}>{selectedGame.name}</div>
             <div style={{fontSize:10,color:C.text2,marginBottom:6,maxWidth:280,textAlign:"center"}}>{selectedGame.desc}</div>
+            {(()=>{const dl = DIFFICULTY_LEVELS.find(d=>d.level===selectedGame.difficulty)||DIFFICULTY_LEVELS[0]; return (
+              <div style={{display:"inline-flex",alignItems:"center",gap:4,padding:"3px 10px",borderRadius:20,
+                background:`${dl.color}12`,border:`1px solid ${dl.color}20`,marginBottom:6}}>
+                <span style={{fontSize:10}}>{dl.icon}</span>
+                <span style={{fontSize:9,fontWeight:700,color:dl.color}}>{dl.label}</span>
+                <span style={{fontSize:8,color:dl.color,opacity:0.7}}>· 🪙 {dl.coins} per win</span>
+              </div>
+            );})()}
             <div style={{display:"flex",gap:5,marginBottom:4,flexWrap:"wrap",justifyContent:"center"}}>
               <span style={{fontSize:8,fontWeight:700,color:gc,padding:"2px 8px",borderRadius:20,...LG.tinted(gc)}}>{selectedGame.type}</span>
               <span style={{fontSize:8,fontWeight:700,color:C.text2,padding:"2px 8px",borderRadius:20,...LG.tinted(C.text3)}}>👥 {selectedGame.players}</span>
@@ -21956,19 +21987,24 @@ const startSimonPuffs = () => {
     const xpProgress = nextTier ? Math.min(((xp - tier.xpReq) / (nextTier.xpReq - tier.xpReq)) * 100, 100) : 100;
     const totalMultiplier = getCoinMultiplier();
     const earnedBadgeCount = earnedBadges.length;
+    const memberDays = Math.floor((Date.now() - playerProfile.joinDate) / 86400000);
+    const ownedItemCount = ownedItems.length;
     const ltPill = (id, label, color) => ({
-      padding:"6px 14px",borderRadius:99,fontSize:11,fontWeight:700,cursor:"pointer",whiteSpace:"nowrap",
-      background:loyaltyTab===id?`linear-gradient(135deg,${color||C.pink},${color||C.pink}cc)`:"transparent",
+      padding:"7px 16px",borderRadius:99,fontSize:11,fontWeight:700,cursor:"pointer",whiteSpace:"nowrap",
+      background:loyaltyTab===id?`linear-gradient(135deg,${color||C.pink},${color||C.pink}cc)`:`rgba(255,255,255,0.04)`,
       color:loyaltyTab===id?"#fff":C.text3,
-      border:loyaltyTab===id?"none":"1px solid "+C.border,
-      boxShadow:loyaltyTab===id?`0 0 15px ${color||C.pink}30`:"none",
-      transition:"all 0.25s ease",
+      border:loyaltyTab===id?`1px solid ${color||C.pink}40`:`1px solid ${C.border}`,
+      boxShadow:loyaltyTab===id?`0 0 20px ${color||C.pink}35, 0 4px 12px rgba(0,0,0,0.3)`:"0 2px 8px rgba(0,0,0,0.15)",
+      transform:loyaltyTab===id?"scale(1.05)":"scale(1)",
+      transition:"all 0.3s cubic-bezier(0.4,0,0.2,1)",
+      backdropFilter:loyaltyTab===id?"none":"blur(12px)",
+      WebkitBackdropFilter:loyaltyTab===id?"none":"blur(12px)",
     });
     return (
     <div style={{padding:"0 14px",position:"relative"}}>
       {/* Ambient background */}
-      <div style={{position:"absolute",top:0,left:0,right:0,height:300,pointerEvents:"none",zIndex:0,
-        background:`radial-gradient(ellipse 80% 50% at 50% 0%, ${tier.color}15, transparent 70%), radial-gradient(ellipse 60% 40% at 20% 10%, ${C.purple}08, transparent 50%), radial-gradient(ellipse 50% 40% at 80% 30%, ${C.pink}06, transparent 50%)`,
+      <div style={{position:"absolute",top:0,left:0,right:0,height:350,pointerEvents:"none",zIndex:0,
+        background:`radial-gradient(ellipse 80% 50% at 50% 0%, ${tier.color}18, transparent 70%), radial-gradient(ellipse 60% 40% at 20% 10%, ${C.purple}0a, transparent 50%), radial-gradient(ellipse 50% 40% at 80% 30%, ${C.pink}08, transparent 50%)`,
       }}/>
       {/* ── Me Header ── */}
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14,position:"relative",zIndex:1}}>
@@ -21979,51 +22015,64 @@ const startSimonPuffs = () => {
         </div>
       </div>
       {/* ── Profile Card ── */}
-      <div style={{padding:18,borderRadius:18,marginBottom:14,position:"relative",zIndex:1,
+      <div style={{padding:20,borderRadius:20,marginBottom:14,position:"relative",zIndex:1,overflow:"hidden",
         background:`linear-gradient(135deg,${C.bg3},${tier.color}12)`,
-        border:`1px solid ${tier.color}30`,
         boxShadow:`0 0 40px ${tier.color}10, inset 0 1px 0 rgba(255,255,255,0.06)`,
         animation:"tierGlow 3s ease-in-out infinite","--tier-glow":`${tier.color}20`}}>
+        {/* Animated gradient border overlay */}
+        <div style={{position:"absolute",inset:0,borderRadius:20,padding:1,pointerEvents:"none",
+          background:`linear-gradient(135deg,${tier.color}50,${C.purple}30,${C.cyan}40,${tier.color}50)`,backgroundSize:"300% 300%",
+          animation:"borderShift 4s ease infinite",WebkitMask:"linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",WebkitMaskComposite:"xor",maskComposite:"exclude"}}/>
         <div style={{display:"flex",gap:14,alignItems:"center"}}>
-          {/* Avatar with glowing ring */}
+          {/* Avatar with animated glowing ring */}
           <div style={{position:"relative"}}>
-            <div style={{width:66,height:66,borderRadius:18,
+            <div style={{position:"absolute",inset:-4,borderRadius:22,
+              background:`conic-gradient(from 0deg, ${tier.color}, ${C.purple}, ${C.cyan}, ${tier.color})`,
+              animation:"spin 6s linear infinite",opacity:0.5,filter:"blur(3px)"}}/>
+            <div style={{width:72,height:72,borderRadius:20,position:"relative",
               background:`linear-gradient(135deg,${tier.color}40,${C.purple}25,${C.bg3})`,
               border:`2px solid ${tier.color}60`,
-              display:"flex",alignItems:"center",justifyContent:"center",fontSize:32,
-              boxShadow:`0 0 24px ${tier.color}20, inset 0 0 12px ${tier.color}10`}}>
+              display:"flex",alignItems:"center",justifyContent:"center",fontSize:34,
+              boxShadow:`0 0 30px ${tier.color}25, inset 0 0 15px ${tier.color}10`}}>
               {ownedItems.includes("avatar_cat") ? "🐱" : ownedItems.includes("avatar_alien") ? "👽" : "🌟"}
             </div>
-            <div style={{position:"absolute",bottom:-2,right:-2,width:18,height:18,borderRadius:"50%",
+            <div style={{position:"absolute",bottom:-3,right:-3,width:20,height:20,borderRadius:"50%",
               background:`linear-gradient(135deg,${tier.color},${C.gold})`,display:"flex",alignItems:"center",justifyContent:"center",
-              fontSize:10,border:`2px solid ${C.bg3}`}}>{tier.icon}</div>
+              fontSize:11,border:`2px solid ${C.bg3}`,boxShadow:`0 0 8px ${tier.color}40`}}>{tier.icon}</div>
           </div>
           <div style={{flex:1}}>
             <div style={{display:"flex",alignItems:"center",gap:8}}>
-              <span style={{fontSize:17,fontWeight:900,color:C.text,letterSpacing:0.3}}>{USER.name}</span>
+              <span style={{fontSize:18,fontWeight:900,color:C.text,letterSpacing:0.3}}>{USER.name}</span>
             </div>
-            <div style={{display:"flex",gap:10,marginTop:5}}>
+            <div style={{display:"flex",gap:10,marginTop:4}}>
               <span style={{fontSize:10,color:C.orange,fontWeight:700}}>{"🔥 "+playerProfile.streak+" streak"}</span>
               <span style={{fontSize:10,color:C.text3}}>{"🏅 "+earnedBadgeCount+" badges"}</span>
             </div>
+            <div style={{fontSize:9,color:C.text3,marginTop:3}}>{"Member for "+memberDays+" days"}</div>
             <div style={{marginTop:8}}>
               <div style={{display:"flex",justifyContent:"space-between",fontSize:9,color:C.text3,marginBottom:3}}>
                 <span style={{fontWeight:600}}>{"XP: "+xp.toLocaleString()}</span>
                 <span>{nextTier ? nextTier.name+" ("+nextTier.xpReq.toLocaleString()+")" : "MAX TIER"}</span>
               </div>
-              <div style={{height:8,borderRadius:4,background:C.bg,overflow:"hidden",boxShadow:"inset 0 1px 3px rgba(0,0,0,0.4)"}}>
-                <div style={{height:"100%",width:xpProgress+"%",borderRadius:4,
+              <div style={{height:10,borderRadius:5,background:C.bg,overflow:"hidden",boxShadow:"inset 0 1px 3px rgba(0,0,0,0.5)",position:"relative"}}>
+                <div style={{height:"100%",width:xpProgress+"%",borderRadius:5,position:"relative",overflow:"hidden",
                   background:`linear-gradient(90deg,${tier.color},${C.cyan},${C.purple})`,backgroundSize:"200% 100%",
                   animation:"borderShift 3s ease infinite",
-                  transition:"width 0.5s ease",boxShadow:`0 0 8px ${tier.color}40`}}/>
+                  transition:"width 0.5s ease",boxShadow:`0 0 12px ${tier.color}40`}}>
+                  {/* Shimmer sweep on XP bar */}
+                  <div style={{position:"absolute",top:0,left:"-100%",width:"100%",height:"100%",
+                    background:"linear-gradient(90deg,transparent,rgba(255,255,255,0.25),transparent)",
+                    animation:"lightSweep 3s ease-in-out infinite",pointerEvents:"none"}}/>
+                </div>
               </div>
             </div>
           </div>
         </div>
         {/* Featured badges */}
-        <div style={{display:"flex",gap:6,marginTop:12,alignItems:"center"}}>
+        <div style={{display:"flex",gap:6,marginTop:14,alignItems:"center"}}>
           {LOYALTY_BADGES.filter(b=>earnedBadges.includes(b.id)).slice(0,4).map(b=>(
-            <span key={b.id} style={{fontSize:18,background:C.bg,borderRadius:8,padding:"3px 7px",border:"1px solid "+C.border}}>{b.icon}</span>
+            <span key={b.id} style={{fontSize:18,background:`rgba(255,255,255,0.04)`,borderRadius:8,padding:"4px 8px",
+              border:`1px solid ${C.gold}20`,boxShadow:`0 0 8px ${C.gold}08`}}>{b.icon}</span>
           ))}
           <span style={{fontSize:10,color:C.text3,marginLeft:4}}>Featured</span>
         </div>
@@ -22049,16 +22098,19 @@ const startSimonPuffs = () => {
       </div>
 
       {/* ── Stats Row ── */}
-      <div style={{display:"flex",gap:6,marginBottom:14,position:"relative",zIndex:1}}>
+      <div style={{display:"flex",gap:8,marginBottom:14,position:"relative",zIndex:1}}>
         {[{l:"Coins",v:coins.toLocaleString(),icon:"🪙",c:C.gold},{l:"Games",v:playerProfile.gamesPlayed.toString(),icon:"🎮",c:C.cyan},{l:"Win%",v:winRate+"%",icon:"🏆",c:C.green},{l:"Streak",v:dailyStreak+"d",icon:"🔥",c:C.orange}].map((s,i)=>(
-          <div key={i} style={{flex:1,padding:"10px 4px",borderRadius:12,textAlign:"center",
-            ...GLASS_CARD,background:`rgba(8,8,25,0.65)`,
-            border:`1px solid ${s.c}15`,
-            boxShadow:`0 4px 16px rgba(0,0,0,0.3), 0 0 20px ${s.c}06`,
-            transition:"box-shadow 0.3s ease, transform 0.2s ease"}}>
-            <div style={{fontSize:14}}>{s.icon}</div>
-            <div style={{fontFamily:"'Courier New',monospace",fontSize:18,fontWeight:900,color:s.c,textShadow:`0 0 10px ${s.c}30`}}>{s.v}</div>
-            <div style={{fontSize:7,color:C.text3,marginTop:2,fontWeight:700,letterSpacing:0.8,textTransform:"uppercase"}}>{s.l}</div>
+          <div key={i} style={{flex:1,padding:"12px 4px",borderRadius:14,textAlign:"center",
+            background:`linear-gradient(135deg, ${s.c}08, ${s.c}03)`,
+            backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",
+            border:`1px solid ${s.c}18`,
+            boxShadow:`0 4px 20px rgba(0,0,0,0.35), 0 0 25px ${s.c}08`,
+            transition:"all 0.3s ease"}}>
+            <div style={{fontSize:16}}>{s.icon}</div>
+            <div style={{fontFamily:"'Courier New',monospace",fontSize:22,fontWeight:900,color:s.c,
+              textShadow:`0 0 12px ${s.c}30`,
+              animation:s.l==="Streak"?"countPulse 2s ease-in-out infinite":"none"}}>{s.v}</div>
+            <div style={{fontSize:8,color:C.text3,marginTop:3,fontWeight:700,letterSpacing:0.8,textTransform:"uppercase"}}>{s.l}</div>
           </div>
         ))}
       </div>
@@ -22084,112 +22136,175 @@ const startSimonPuffs = () => {
           </div>
         )}
         {/* Tier Progress */}
-        <div style={{...GLASS_CARD,borderRadius:14,padding:14,marginBottom:10}}>
-          <div style={{fontSize:11,fontWeight:700,letterSpacing:2,color:C.text3,marginBottom:10}}>TIER PROGRESS</div>
+        <div style={{...GLASS_CARD,borderRadius:16,padding:16,marginBottom:12}}>
+          <div style={{fontSize:11,fontWeight:700,letterSpacing:2,color:C.text3,marginBottom:12}}>TIER PROGRESS</div>
           <div style={{display:"flex",gap:0,justifyContent:"center",alignItems:"center",position:"relative"}}>
             {/* Connecting line behind icons */}
-            <div style={{position:"absolute",top:16,left:"12%",right:"12%",height:3,borderRadius:2,background:C.bg,zIndex:0}}>
-              <div style={{height:"100%",borderRadius:2,
+            <div style={{position:"absolute",top:18,left:"12%",right:"12%",height:4,borderRadius:2,background:C.bg,zIndex:0,overflow:"hidden"}}>
+              <div style={{height:"100%",borderRadius:2,position:"relative",overflow:"hidden",
                 background:`linear-gradient(90deg,${tier.color},${C.cyan})`,
                 width:`${Math.min(100,tier.idx/(LOYALTY_TIERS.length-1)*100)}%`,
-                transition:"width 0.5s ease",boxShadow:`0 0 6px ${tier.color}40`}}/>
+                transition:"width 0.5s ease",boxShadow:`0 0 8px ${tier.color}40`}}>
+                <div style={{position:"absolute",top:0,left:"-100%",width:"100%",height:"100%",
+                  background:"linear-gradient(90deg,transparent,rgba(255,255,255,0.3),transparent)",
+                  animation:"lightSweep 3s ease-in-out infinite",pointerEvents:"none"}}/>
+              </div>
             </div>
             {LOYALTY_TIERS.map((t,i)=>(
               <div key={i} style={{textAlign:"center",opacity:i<=tier.idx?1:0.3,transition:"all 0.3s",flex:1,position:"relative",zIndex:1}}>
-                <div style={{fontSize:32,
-                  filter:i===tier.idx?"drop-shadow(0 0 8px "+t.color+")":"none",
+                <div style={{fontSize:36,
+                  filter:i===tier.idx?"drop-shadow(0 0 10px "+t.color+")":"none",
                   animation:i===tier.idx?"countPulse 2s ease-in-out infinite":"none"}}>{t.icon}</div>
-                <div style={{fontSize:9,fontWeight:700,color:t.color,marginTop:3}}>{t.name}</div>
+                <div style={{fontSize:10,fontWeight:700,color:t.color,marginTop:3}}>{t.name}</div>
                 <div style={{fontSize:8,color:C.text3}}>{t.mult+"x"}</div>
               </div>
             ))}
           </div>
-          {nextTier && <div style={{marginTop:10,padding:"8px 12px",borderRadius:8,background:C.bg,fontSize:11,color:C.text2}}>
+          {nextTier && <div style={{marginTop:12,padding:"10px 14px",borderRadius:10,
+            background:`linear-gradient(135deg, ${C.bg}, ${nextTier.color}06)`,
+            border:`1px solid ${nextTier.color}15`,
+            fontSize:12,color:C.text2}}>
             {"Next: "}<strong style={{color:nextTier.color}}>{nextTier.name}</strong>{" -- "+((nextTier.xpReq - xp) > 0 ? (nextTier.xpReq - xp).toLocaleString() : 0)+" XP to go"}
           </div>}
         </div>
 
-        {/* Quick Stats */}
-        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:10}}>
+        {/* Puff Stats */}
+        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:12}}>
           {[
             {label:"Puffs",value:playerProfile.totalPuffs,icon:"💨",color:C.cyan},
             {label:"Blinkers",value:playerProfile.blinkerCount,icon:"💀",color:C.red},
             {label:"Puff Time",value:Math.floor(playerProfile.totalPuffTime/60)+"m",icon:"⏱️",color:C.purple},
           ].map((st,i)=>(
-            <div key={i} style={{...GLASS_CARD,borderRadius:12,padding:12,textAlign:"center"}}>
-              <div style={{fontSize:16}}>{st.icon}</div>
-              <div style={{fontFamily:"monospace",fontSize:16,fontWeight:800,color:st.color}}>{st.value}</div>
-              <div style={{fontSize:8,color:C.text3,fontWeight:600,letterSpacing:0.5}}>{st.label.toUpperCase()}</div>
+            <div key={i} style={{...GLASS_CARD,borderRadius:14,padding:14,textAlign:"center",
+              background:`linear-gradient(135deg, ${st.color}06, rgba(8,8,25,0.72))`,
+              border:`1px solid ${st.color}15`}}>
+              <div style={{fontSize:18}}>{st.icon}</div>
+              <div style={{fontFamily:"monospace",fontSize:18,fontWeight:800,color:st.color,textShadow:`0 0 8px ${st.color}20`}}>{st.value}</div>
+              <div style={{fontSize:8,color:C.text3,fontWeight:700,letterSpacing:0.5,marginTop:2}}>{st.label.toUpperCase()}</div>
             </div>
           ))}
         </div>
 
-        {/* Quick Actions */}
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-          <div style={{...GLASS_CARD,borderRadius:12,padding:14,cursor:"pointer",textAlign:"center"}} onClick={()=>setLoyaltyTab("daily")}>
-            <div style={{fontSize:18}}>📅</div>
-            <div style={{fontSize:12,fontWeight:700,color:C.green,marginTop:4}}>Daily Check-in</div>
-            <div style={{fontSize:10,color:C.text3}}>{dailyCheckedIn?"Claimed today":"Claim now!"}</div>
-          </div>
-          <div style={{...GLASS_CARD,borderRadius:12,padding:14,cursor:"pointer",textAlign:"center"}} onClick={()=>setLoyaltyTab("challenges")}>
-            <div style={{fontSize:18}}>🎯</div>
-            <div style={{fontSize:12,fontWeight:700,color:C.orange,marginTop:4}}>Challenges</div>
-            <div style={{fontSize:10,color:C.text3}}>{completedChallenges.length+"/"+DAILY_CHALLENGES.length+" done"}</div>
-          </div>
-          <div style={{...GLASS_CARD,borderRadius:12,padding:14,cursor:"pointer",textAlign:"center"}} onClick={()=>setLoyaltyTab("shop")}>
-            <div style={{fontSize:18}}>🛒</div>
-            <div style={{fontSize:12,fontWeight:700,color:C.gold,marginTop:4}}>Shop</div>
-            <div style={{fontSize:10,color:C.text3}}>{SHOP_ITEMS.length+" items"}</div>
-          </div>
-          <div style={{...GLASS_CARD,borderRadius:12,padding:14,cursor:"pointer",textAlign:"center"}} onClick={()=>setLoyaltyTab("badges")}>
-            <div style={{fontSize:18}}>🏅</div>
-            <div style={{fontSize:12,fontWeight:700,color:C.purple,marginTop:4}}>Badges</div>
-            <div style={{fontSize:10,color:C.text3}}>{earnedBadgeCount+"/"+LOYALTY_BADGES.length+" earned"}</div>
+        {/* Recent Activity */}
+        <div style={{...GLASS_CARD,borderRadius:16,padding:16,marginBottom:12}}>
+          <div style={{fontSize:11,fontWeight:700,letterSpacing:2,color:C.text3,marginBottom:12}}>RECENT ACTIVITY</div>
+          {playerProfile.gamesPlayed > 0 ? (
+            <div style={{display:"flex",flexDirection:"column",gap:8}}>
+              {[
+                {game:playerProfile.favoriteGame==="finalkick"?"Final Kick":"Games",result:"Won",coins:"+25",xpLabel:"+40 XP",icon:"🎮",color:C.green,time:"Today"},
+                {game:"Arena Session",result:playerProfile.gamesWon>0?"Won":"Played",coins:"+15",xpLabel:"+20 XP",icon:"🏟️",color:C.cyan,time:"Today"},
+                {game:"Daily Check-in",result:dailyCheckedIn?"Claimed":"Pending",coins:dailyCheckedIn?"+10":"--",xpLabel:"+20 XP",icon:"📅",color:dailyCheckedIn?C.green:C.orange,time:"Today"},
+              ].map((act,i)=>(
+                <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",borderRadius:12,
+                  background:`linear-gradient(135deg, ${act.color}06, transparent)`,
+                  border:`1px solid ${act.color}10`}}>
+                  <div style={{fontSize:20}}>{act.icon}</div>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:12,fontWeight:700,color:C.text}}>{act.game}</div>
+                    <div style={{fontSize:9,color:C.text3}}>{act.time}</div>
+                  </div>
+                  <div style={{textAlign:"right"}}>
+                    <div style={{fontSize:11,fontWeight:700,color:act.color}}>{act.result}</div>
+                    <div style={{fontSize:9,color:C.text3}}>{act.xpLabel}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div style={{textAlign:"center",padding:16,color:C.text3,fontSize:12}}>
+              Play your first game to see activity here!
+            </div>
+          )}
+        </div>
+
+        {/* Next Milestone */}
+        <div style={{...GLASS_CARD,borderRadius:16,padding:16,position:"relative",overflow:"hidden"}}>
+          <div style={{position:"absolute",top:0,left:"-100%",width:"100%",height:"100%",
+            background:"linear-gradient(90deg,transparent,rgba(255,255,255,0.03),transparent)",
+            animation:"lightSweep 5s ease-in-out infinite",pointerEvents:"none"}}/>
+          <div style={{fontSize:11,fontWeight:700,letterSpacing:2,color:C.text3,marginBottom:10}}>NEXT MILESTONE</div>
+          <div style={{display:"flex",gap:12,alignItems:"center"}}>
+            <div style={{width:48,height:48,borderRadius:14,
+              background:`linear-gradient(135deg,${tier.color}20,${C.purple}15)`,
+              border:`1px solid ${tier.color}25`,
+              display:"flex",alignItems:"center",justifyContent:"center",fontSize:24}}>
+              {nextTier ? nextTier.icon : earnedBadgeCount < LOYALTY_BADGES.length ? "🏅" : "🌟"}
+            </div>
+            <div style={{flex:1}}>
+              <div style={{fontSize:13,fontWeight:800,color:C.text}}>
+                {nextTier ? "Reach "+nextTier.name+" Tier" : earnedBadgeCount < LOYALTY_BADGES.length ? "Earn All Badges" : "Legend Status Achieved"}
+              </div>
+              <div style={{fontSize:10,color:C.text2,marginTop:2}}>
+                {nextTier ? (nextTier.xpReq - xp > 0 ? (nextTier.xpReq - xp).toLocaleString()+" XP remaining" : "Almost there!") :
+                  earnedBadgeCount < LOYALTY_BADGES.length ? (LOYALTY_BADGES.length - earnedBadgeCount)+" badges to go" : "All milestones complete!"}
+              </div>
+              {nextTier && <div style={{height:6,borderRadius:3,background:C.bg,overflow:"hidden",marginTop:6}}>
+                <div style={{height:"100%",borderRadius:3,width:xpProgress+"%",
+                  background:`linear-gradient(90deg,${tier.color},${nextTier.color})`,
+                  transition:"width 0.5s ease"}}/>
+              </div>}
+            </div>
           </div>
         </div>
       </>}
 
       {/* ═══ DAILY TAB ═══ */}
       {loyaltyTab==="daily" && <>
-        <div style={{...GLASS_CARD,borderRadius:14,padding:14,marginBottom:10,position:"relative",overflow:"hidden"}}>
+        <div style={{...GLASS_CARD,borderRadius:16,padding:16,marginBottom:12,position:"relative",overflow:"hidden"}}>
           {/* Subtle confetti pattern background */}
-          <div style={{position:"absolute",top:0,left:0,right:0,bottom:0,opacity:0.03,pointerEvents:"none",
+          <div style={{position:"absolute",top:0,left:0,right:0,bottom:0,opacity:0.04,pointerEvents:"none",
             backgroundImage:`radial-gradient(circle 2px at 15% 20%, ${C.gold} 1px, transparent 1px), radial-gradient(circle 2px at 45% 60%, ${C.cyan} 1px, transparent 1px), radial-gradient(circle 2px at 75% 30%, ${C.pink} 1px, transparent 1px), radial-gradient(circle 2px at 85% 80%, ${C.green} 1px, transparent 1px), radial-gradient(circle 1.5px at 30% 85%, ${C.purple} 1px, transparent 1px), radial-gradient(circle 1.5px at 60% 15%, ${C.orange} 1px, transparent 1px)`}}/>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12,position:"relative"}}>
-            <div style={{fontSize:14,fontWeight:700,color:C.text}}>Daily Check-in</div>
-            <div style={{fontSize:12,color:C.orange,fontWeight:700}}>{"🔥 "+dailyStreak+" streak"}</div>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14,position:"relative"}}>
+            <div>
+              <div style={{fontSize:15,fontWeight:800,color:C.text}}>Daily Check-in</div>
+              <div style={{fontSize:10,color:C.text3,marginTop:2}}>{"Day "+((dailyStreak%7)||7)+" of 7"}</div>
+            </div>
+            <div style={{display:"flex",alignItems:"center",gap:6}}>
+              <div style={{fontSize:13,color:C.orange,fontWeight:800,
+                animation:"countPulse 2s ease-in-out infinite"}}>{"🔥 "+dailyStreak}</div>
+              <div style={{fontSize:10,color:C.text3}}>streak</div>
+            </div>
           </div>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:5,position:"relative"}}>
+          {/* Progress bar for week */}
+          <div style={{height:4,borderRadius:2,background:C.bg,overflow:"hidden",marginBottom:14,position:"relative"}}>
+            <div style={{height:"100%",borderRadius:2,
+              background:`linear-gradient(90deg,${C.green},${C.cyan})`,
+              width:`${Math.min(100,((dailyStreak%7)||7)/7*100)}%`,
+              transition:"width 0.3s ease",boxShadow:`0 0 6px ${C.green}40`}}/>
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:6,position:"relative"}}>
             {DAILY_REWARDS.map((d,i)=>{
               const isCurrent = (dailyStreak%7)===i && !dailyCheckedIn;
               const isPast = i < (dailyStreak%7) || (dailyCheckedIn && i <= (dailyStreak-1)%7);
               const isDay7 = d.day===7;
               return (
-                <div key={i} style={{padding:"7px 3px",borderRadius:10,textAlign:"center",
-                  background:isDay7?`linear-gradient(135deg,${C.gold}18,${C.orange}10)`:C.bg,
-                  border:`1px solid ${isCurrent?C.green+"60":isDay7?C.gold+"40":C.border}`,
-                  opacity:isPast?0.45:1,
-                  boxShadow:isDay7&&!isPast?`0 0 12px ${C.gold}15`:"none",
+                <div key={i} style={{padding:"8px 3px",borderRadius:12,textAlign:"center",
+                  background:isDay7?`linear-gradient(135deg,${C.gold}18,${C.orange}10)`:isCurrent?`linear-gradient(135deg,${C.green}10,${C.cyan}08)`:C.bg,
+                  border:`1px solid ${isCurrent?C.green+"70":isDay7?C.gold+"40":C.border}`,
+                  opacity:isPast?0.4:1,
+                  boxShadow:isCurrent?`0 0 16px ${C.green}20`:isDay7&&!isPast?`0 0 14px ${C.gold}18`:"none",
+                  animation:isCurrent?"countPulse 2s ease-in-out infinite":"none",
                   transition:"all 0.3s ease"}}>
-                  <div style={{fontSize:8,fontWeight:700,color:isDay7?C.gold:C.text3}}>{isDay7?"👑":"D"+d.day}</div>
-                  <div style={{fontSize:12,fontWeight:800,color:isPast?C.text3:isDay7?C.gold:C.cyan}}>{"+"+d.xp+" XP"}</div>
-                  {d.coins && <div style={{fontSize:7,color:bleConnected?C.gold:C.text3}}>{bleConnected?"+"+d.coins+" 🪙":"🔒 "+d.coins}</div>}
-                  {d.bonus && <div style={{fontSize:7,marginTop:1}}>{d.bonus}</div>}
-                  {isPast && <div style={{fontSize:9,marginTop:1}}>{"✅"}</div>}
+                  <div style={{fontSize:9,fontWeight:800,color:isDay7?C.gold:isCurrent?C.green:C.text3}}>{isDay7?"👑":"D"+d.day}</div>
+                  <div style={{fontSize:13,fontWeight:900,color:isPast?C.text3:isDay7?C.gold:isCurrent?C.green:C.cyan,marginTop:2}}>{"+"+d.xp}</div>
+                  <div style={{fontSize:7,color:C.text3}}>XP</div>
+                  {d.coins && <div style={{fontSize:7,color:bleConnected?C.gold:C.text3,marginTop:2}}>{bleConnected?"+"+d.coins+" 🪙":"🔒"}</div>}
+                  {d.bonus && <div style={{fontSize:8,marginTop:1}}>{d.bonus}</div>}
+                  {isPast && <div style={{fontSize:10,marginTop:1}}>{"✅"}</div>}
                 </div>
               );
             })}
           </div>
-          <button onClick={claimDaily} style={{width:"100%",marginTop:12,padding:"10px 0",borderRadius:10,border:"none",fontWeight:700,fontSize:14,
-            cursor:dailyCheckedIn?"default":"pointer",
+          <button onClick={claimDaily} style={{width:"100%",marginTop:14,padding:"12px 0",borderRadius:12,border:"none",fontWeight:800,fontSize:15,
+            cursor:dailyCheckedIn?"default":"pointer",letterSpacing:0.3,
             background:dailyCheckedIn?C.bg3:`linear-gradient(90deg,${C.green},${C.cyan})`,
             color:dailyCheckedIn?C.text3:"#fff",
-            boxShadow:dailyCheckedIn?"none":`0 0 16px ${C.green}25`,
+            boxShadow:dailyCheckedIn?"none":`0 0 20px ${C.green}30, 0 4px 12px rgba(0,0,0,0.3)`,
             animation:dailyCheckedIn?"none":"claimPulse 2s ease-in-out infinite"}}>
             {dailyCheckedIn ? "Claimed Today" : "Claim Daily Reward"}
           </button>
           {!bleConnected && !dailyCheckedIn && (
-            <div style={{textAlign:"center",marginTop:6,fontSize:10,color:C.orange,fontWeight:600}}>
+            <div style={{textAlign:"center",marginTop:8,fontSize:10,color:C.orange,fontWeight:600}}>
               💨 Connect device to also earn coins
             </div>
           )}
@@ -22198,32 +22313,64 @@ const startSimonPuffs = () => {
 
       {/* ═══ CHALLENGES TAB ═══ */}
       {loyaltyTab==="challenges" && <>
-        <div style={{...GLASS_CARD,borderRadius:14,padding:14,marginBottom:10}}>
-          <div style={{fontSize:14,fontWeight:700,color:C.text,marginBottom:12}}>Daily Challenges</div>
+        <div style={{...GLASS_CARD,borderRadius:16,padding:16,marginBottom:12}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+            <div style={{fontSize:15,fontWeight:800,color:C.text}}>Daily Challenges</div>
+            <div style={{fontSize:10,fontWeight:700,color:completedChallenges.length>=DAILY_CHALLENGES.length?C.gold:C.text3}}>
+              {completedChallenges.length+"/"+DAILY_CHALLENGES.length+" complete"}
+            </div>
+          </div>
+          {/* Overall progress bar */}
+          <div style={{height:4,borderRadius:2,background:C.bg,overflow:"hidden",marginBottom:14}}>
+            <div style={{height:"100%",borderRadius:2,
+              background:completedChallenges.length>=DAILY_CHALLENGES.length?`linear-gradient(90deg,${C.gold},${C.orange})`:`linear-gradient(90deg,${C.green},${C.cyan})`,
+              width:`${(completedChallenges.length/DAILY_CHALLENGES.length)*100}%`,
+              transition:"width 0.5s ease",boxShadow:`0 0 6px ${C.green}30`}}/>
+          </div>
           {DAILY_CHALLENGES.map((ch,i)=>{
             const done = completedChallenges.includes(ch.id);
             return (
               <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",
-                padding:"10px 12px",borderRadius:10,background:C.bg,marginBottom:6,border:"1px solid "+C.border}}>
-                <div style={{display:"flex",alignItems:"center",gap:8}}>
-                  <span style={{fontSize:16}}>{ch.icon}</span>
+                padding:"12px 14px",borderRadius:14,marginBottom:8,position:"relative",overflow:"hidden",
+                background:done?`linear-gradient(135deg, ${C.green}06, transparent)`:C.bg,
+                border:`1px solid ${done?C.green+"20":C.border}`,
+                transition:"all 0.3s ease"}}>
+                {done && <div style={{position:"absolute",top:0,left:"-100%",width:"100%",height:"100%",
+                  background:"linear-gradient(90deg,transparent,rgba(52,211,153,0.05),transparent)",
+                  animation:"lightSweep 5s ease-in-out infinite",pointerEvents:"none"}}/>}
+                <div style={{display:"flex",alignItems:"center",gap:10}}>
+                  <div style={{width:36,height:36,borderRadius:10,
+                    background:done?`${C.green}15`:`${C.bg3}`,
+                    border:`1px solid ${done?C.green+"25":C.border}`,
+                    display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>
+                    {done ? "✅" : ch.icon}
+                  </div>
                   <div>
-                    <div style={{fontSize:12,color:done?C.text3:C.text,fontWeight:600}}>{ch.task}</div>
-                    <div style={{fontSize:9,color:C.text3,marginTop:1}}>{"+"+ch.xpReward+" XP"}</div>
+                    <div style={{fontSize:12,color:done?C.text3:C.text,fontWeight:700,
+                      textDecoration:done?"line-through":"none"}}>{ch.task}</div>
+                    <div style={{fontSize:9,color:C.text3,marginTop:2}}>{"+"+ch.xpReward+" XP"}</div>
                   </div>
                 </div>
-                <button onClick={()=>completeChallenge(ch.id)} style={{padding:"6px 12px",borderRadius:8,border:"none",fontSize:11,fontWeight:700,
+                <button onClick={()=>completeChallenge(ch.id)} style={{padding:"8px 14px",borderRadius:10,border:"none",fontSize:11,fontWeight:700,
                   cursor:done?"default":"pointer",
-                  background:done?C.bg3:C.green+"18",color:done?C.text3:C.green}}>
-                  {done ? "Done" : "+"+ch.reward+" coins"}
+                  background:done?C.bg3:`linear-gradient(135deg,${C.green}20,${C.cyan}15)`,
+                  color:done?C.text3:C.green,
+                  border:done?"none":`1px solid ${C.green}25`,
+                  boxShadow:done?"none":`0 0 10px ${C.green}10`}}>
+                  {done ? "Done" : "+"+ch.reward+" 🪙"}
                 </button>
               </div>
             );
           })}
           {completedChallenges.length >= DAILY_CHALLENGES.length && (
-            <div style={{textAlign:"center",padding:10,borderRadius:10,background:C.gold+"12",border:"1px solid "+C.gold+"25",
-              fontSize:12,fontWeight:700,color:C.gold,marginTop:4}}>
-              {"ALL DONE! Bonus claimed!"}
+            <div style={{textAlign:"center",padding:14,borderRadius:14,position:"relative",overflow:"hidden",
+              background:`linear-gradient(135deg,${C.gold}15,${C.orange}10)`,
+              border:`1px solid ${C.gold}30`,
+              fontSize:13,fontWeight:800,color:C.gold,marginTop:6}}>
+              <div style={{position:"absolute",top:0,left:"-100%",width:"100%",height:"100%",
+                background:"linear-gradient(90deg,transparent,rgba(255,217,61,0.1),transparent)",
+                animation:"lightSweep 3s ease-in-out infinite",pointerEvents:"none"}}/>
+              {"🏆 ALL DONE! Bonus claimed! 🏆"}
             </div>
           )}
         </div>
@@ -22231,28 +22378,47 @@ const startSimonPuffs = () => {
 
       {/* ═══ BADGES TAB ═══ */}
       {loyaltyTab==="badges" && <>
-        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
-          <div style={{fontSize:11,color:C.text2}}>{earnedBadgeCount+"/"+LOYALTY_BADGES.length+" earned"}</div>
-          <div style={{padding:"2px 8px",borderRadius:8,background:`${C.purple}15`,border:`1px solid ${C.purple}25`,fontSize:10,fontWeight:800,color:C.purple}}>{earnedBadgeCount}</div>
+        <div style={{...GLASS_CARD,borderRadius:16,padding:14,marginBottom:12}}>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+            <div style={{fontSize:15,fontWeight:800,color:C.text}}>Badge Collection</div>
+            <div style={{display:"flex",alignItems:"center",gap:6}}>
+              <div style={{padding:"4px 12px",borderRadius:10,
+                background:`linear-gradient(135deg,${C.purple}18,${C.pink}10)`,
+                border:`1px solid ${C.purple}25`,fontSize:12,fontWeight:900,color:C.purple}}>
+                {earnedBadgeCount+"/"+LOYALTY_BADGES.length}
+              </div>
+            </div>
+          </div>
+          {/* Badge progress bar */}
+          <div style={{height:4,borderRadius:2,background:C.bg,overflow:"hidden",marginTop:10}}>
+            <div style={{height:"100%",borderRadius:2,
+              background:`linear-gradient(90deg,${C.purple},${C.pink})`,
+              width:`${(earnedBadgeCount/LOYALTY_BADGES.length)*100}%`,
+              transition:"width 0.5s ease",boxShadow:`0 0 6px ${C.purple}30`}}/>
+          </div>
         </div>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8}}>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10}}>
           {LOYALTY_BADGES.map(b=>{
             const earned = earnedBadges.includes(b.id);
             return (
-              <div key={b.id} style={{...GLASS_CARD,padding:12,borderRadius:12,textAlign:"center",
-                background:earned?`rgba(8,8,25,0.6)`:C.bg3,
-                border:`1px solid ${earned?C.gold+"25":C.border}`,
-                opacity:earned?1:0.35,position:"relative",overflow:"hidden",
-                boxShadow:earned?`0 0 12px ${C.gold}08`:"none"}}>
-                {/* Shimmer effect on earned badges */}
+              <div key={b.id} style={{...GLASS_CARD,padding:14,borderRadius:16,textAlign:"center",
+                background:earned?`linear-gradient(135deg, rgba(255,217,61,0.06), rgba(8,8,25,0.65))`:C.bg3,
+                border:`1px solid ${earned?C.gold+"30":C.border}`,
+                opacity:earned?1:0.4,position:"relative",overflow:"hidden",
+                boxShadow:earned?`0 0 20px ${C.gold}10, 0 4px 16px rgba(0,0,0,0.3)`:"none",
+                transition:"all 0.3s ease"}}>
+                {/* Gold shimmer effect on earned badges */}
                 {earned && <div style={{position:"absolute",top:0,left:"-100%",width:"100%",height:"100%",
-                  background:"linear-gradient(90deg,transparent,rgba(255,255,255,0.06),transparent)",
-                  animation:"lightSweep 4s ease-in-out infinite",pointerEvents:"none"}}/>}
-                <div style={{fontSize:32,filter:earned?"drop-shadow(0 0 6px rgba(255,217,61,0.3))":"grayscale(1)"}}>{b.icon}</div>
-                <div style={{fontSize:11,fontWeight:700,color:earned?C.text:C.text3,marginTop:4}}>{b.name}</div>
-                <div style={{fontSize:9,color:C.text3,marginTop:2}}>{b.desc}</div>
-                {earned && <div style={{fontSize:8,color:C.green,marginTop:4,fontWeight:700,letterSpacing:0.5}}>{"EARNED"}</div>}
-                {!earned && <div style={{fontSize:8,color:C.text3,marginTop:4}}>{"Locked"}</div>}
+                  background:`linear-gradient(90deg,transparent,rgba(255,217,61,0.08),transparent)`,
+                  animation:"lightSweep 3.5s ease-in-out infinite",pointerEvents:"none"}}/>}
+                <div style={{fontSize:36,
+                  filter:earned?"drop-shadow(0 0 8px rgba(255,217,61,0.35))":"grayscale(1)",
+                  animation:earned?"gentleFloat 3s ease-in-out infinite":"none"}}>{b.icon}</div>
+                <div style={{fontSize:11,fontWeight:700,color:earned?C.text:C.text3,marginTop:6}}>{b.name}</div>
+                <div style={{fontSize:9,color:C.text3,marginTop:3,lineHeight:1.3}}>{b.desc}</div>
+                {earned && <div style={{fontSize:8,color:C.gold,marginTop:6,fontWeight:800,letterSpacing:1,
+                  textShadow:`0 0 6px ${C.gold}30`}}>{"EARNED"}</div>}
+                {!earned && <div style={{fontSize:8,color:C.text3,marginTop:6,fontWeight:600}}>{"🔒 Locked"}</div>}
               </div>
             );
           })}
@@ -22261,19 +22427,36 @@ const startSimonPuffs = () => {
 
       {/* ═══ SHOP TAB ═══ */}
       {loyaltyTab==="shop" && <>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
-          <div style={{fontSize:11,color:C.text2}}>{"Spend your coins"}</div>
-          <div style={{display:"flex",alignItems:"center",gap:4,fontSize:12,fontWeight:800,color:C.gold}}>
-            {"🪙 "+coins.toLocaleString()}
+        <div style={{...GLASS_CARD,borderRadius:16,padding:14,marginBottom:12}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <div>
+              <div style={{fontSize:15,fontWeight:800,color:C.text}}>Shop</div>
+              <div style={{fontSize:10,color:C.text3,marginTop:2}}>{ownedItemCount+" of "+SHOP_ITEMS.length+" items owned"}</div>
+            </div>
+            <div style={{display:"flex",alignItems:"center",gap:6,padding:"6px 12px",borderRadius:10,
+              background:`linear-gradient(135deg,${C.gold}15,${C.orange}08)`,border:`1px solid ${C.gold}25`}}>
+              <span style={{fontSize:14}}>🪙</span>
+              <span style={{fontSize:14,fontWeight:900,color:C.gold}}>{coins.toLocaleString()}</span>
+            </div>
           </div>
         </div>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
           {SHOP_ITEMS.map((item,i)=>{
             const bought = ownedItems.includes(item.id);
             const canAfford = coins >= item.price;
             const tierLocked = item.tier && tier.idx < LOYALTY_TIERS.findIndex(t => t.name === item.tier);
+            const isBestValue = i===6;
             return (
-              <div key={i} style={{...GLASS_CARD,borderRadius:12,padding:14,textAlign:"center",opacity:bought?0.5:1,position:"relative",overflow:"hidden"}}>
+              <div key={i} style={{...GLASS_CARD,borderRadius:16,padding:16,textAlign:"center",
+                opacity:bought?0.5:1,position:"relative",overflow:"hidden",
+                background:bought?C.bg3:`linear-gradient(135deg, rgba(8,8,25,0.72), rgba(8,8,25,0.65))`,
+                border:`1px solid ${bought?C.border:isBestValue&&!bought?C.gold+"35":C.border}`,
+                boxShadow:isBestValue&&!bought?`0 0 16px ${C.gold}10`:"0 4px 16px rgba(0,0,0,0.3)",
+                transition:"all 0.3s ease"}}>
+                {/* BEST VALUE tag */}
+                {isBestValue && !bought && <div style={{position:"absolute",top:8,left:8,
+                  background:`linear-gradient(90deg,${C.gold},${C.orange})`,color:"#000",fontSize:7,fontWeight:800,
+                  padding:"2px 6px",borderRadius:4,letterSpacing:0.5,zIndex:3}}>BEST VALUE</div>}
                 {/* POPULAR tag on 2nd item */}
                 {i===1 && !bought && <div style={{position:"absolute",top:8,right:-20,
                   background:`linear-gradient(90deg,${C.pink},${C.orange})`,color:"#fff",fontSize:8,fontWeight:800,
@@ -22284,19 +22467,25 @@ const startSimonPuffs = () => {
                   padding:"1px 6px",borderRadius:4,letterSpacing:0.5}}>NEW</div>}
                 {/* Lock overlay for tier-locked items */}
                 {tierLocked && !bought && <div style={{position:"absolute",inset:0,
-                  background:"rgba(5,5,16,0.6)",backdropFilter:"blur(2px)",
-                  display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",zIndex:2,borderRadius:12}}>
-                  <div style={{fontSize:24}}>🔒</div>
-                  <div style={{fontSize:9,fontWeight:700,color:C.text3,marginTop:4}}>{item.tier+" Tier Required"}</div>
+                  background:"rgba(5,5,16,0.7)",backdropFilter:"blur(3px)",
+                  display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",zIndex:2,borderRadius:16}}>
+                  <div style={{fontSize:28}}>🔒</div>
+                  <div style={{fontSize:10,fontWeight:800,color:C.text3,marginTop:4}}>{item.tier+" Tier"}</div>
+                  <div style={{fontSize:8,color:C.text3,marginTop:1}}>Required</div>
                 </div>}
-                <div style={{fontSize:32,marginBottom:6}}>{item.icon}</div>
-                <div style={{fontSize:12,fontWeight:700,color:C.text}}>{item.name}</div>
-                <div style={{fontSize:10,color:C.text3,marginTop:2}}>{item.cat+(item.tier?" -- "+item.tier+" tier":"")}</div>
-                <button onClick={()=>buyShopItem(item)} style={{marginTop:8,padding:"6px 16px",borderRadius:8,border:"none",fontSize:12,fontWeight:700,
+                <div style={{fontSize:36,marginBottom:8,
+                  filter:bought?"grayscale(0.5)":"none"}}>{item.icon}</div>
+                <div style={{fontSize:13,fontWeight:700,color:C.text}}>{item.name}</div>
+                <div style={{fontSize:10,color:C.text3,marginTop:3}}>{item.cat}</div>
+                {item.tier && !tierLocked && <div style={{fontSize:8,color:tier.color,fontWeight:700,marginTop:2}}>
+                  {item.tier+" Tier"}
+                </div>}
+                <button onClick={()=>buyShopItem(item)} style={{marginTop:10,padding:"8px 18px",borderRadius:10,border:"none",fontSize:12,fontWeight:700,
                   cursor:bought||!canAfford||tierLocked?"default":"pointer",
-                  background:bought?C.bg3:tierLocked?C.text3+"12":`linear-gradient(90deg,${C.gold},${C.orange})`,
+                  background:bought?C.bg3:tierLocked?C.text3+"12":`linear-gradient(135deg,${C.gold},${C.orange})`,
                   color:bought?C.text3:tierLocked?C.text3:canAfford?"#000":C.red,
-                  boxShadow:bought||tierLocked?"none":`0 0 10px ${C.gold}15`}}>
+                  boxShadow:bought||tierLocked?"none":`0 0 12px ${C.gold}18`,
+                  transition:"all 0.3s ease"}}>
                   {bought ? "Owned" : tierLocked ? "Locked" : item.price+" coins"}
                 </button>
               </div>
