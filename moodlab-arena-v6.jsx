@@ -102,6 +102,28 @@ const LOYALTY_BADGES = [
   { id:"allgames", icon:"🎯", name:"Explorer", desc:"Try every game" },
 ];
 
+const MOCK_FRIENDS = [
+  { name:"CloudChaser", avatar:"😎", status:"online", playing:"Final Kick" },
+  { name:"PuffMaster", avatar:"🤖", status:"online", playing:"Puff Slots" },
+  { name:"BlinkerQueen", avatar:"👑", status:"online", playing:null },
+  { name:"VapeGod420", avatar:"🔥", status:"away", playing:null },
+  { name:"ChillPill", avatar:"😌", status:"offline", playing:null },
+  { name:"NeonQueen", avatar:"💜", status:"online", playing:"Vibe Check" },
+];
+
+const MOCK_COMMUNITIES = [
+  { name:"Cali Clear Fam", members:1247, icon:"🌿", active:true },
+  { name:"WC 2026 Predictions", members:834, icon:"⚽", active:true },
+  { name:"Blinker Gang", members:420, icon:"💀", active:false },
+  { name:"Arena Champions", members:2103, icon:"🏆", active:true },
+];
+
+const MOCK_COLLECTIONS = [
+  { name:"Rare Puff Effects", count:3, total:8, icon:"💨", color:"#00E5FF" },
+  { name:"Arena Trophies", count:5, total:12, icon:"🏆", color:"#FFD93D" },
+  { name:"Limited Avatars", count:2, total:6, icon:"👾", color:"#C084FC" },
+];
+
 
 const C = {
   bg:"#050510", bg2:"#0a0a20", bg3:"#0f0f2a", card:"#12123a",
@@ -1040,6 +1062,8 @@ export default function MoodLabArena() {
   const [ownedItems, setOwnedItems] = useState([]);
   const [earnedBadges, setEarnedBadges] = useState(["fp"]);
   const [completedChallenges, setCompletedChallenges] = useState([]);
+  const [unreadMessages] = useState(3);
+  const [unreadNotifs] = useState(5);
   const [currentWinStreak, setCurrentWinStreak] = useState(0);
   const [bestWinStreak, setBestWinStreak] = useState(0);
   const [floatingReward, setFloatingReward] = useState(null);
@@ -21954,13 +21978,13 @@ const startSimonPuffs = () => {
     const earnedBadgeCount = earnedBadges.length;
     const memberDays = Math.floor((Date.now() - playerProfile.joinDate) / 86400000);
     const ownedItemCount = ownedItems.length;
+    const userLevel = Math.floor(xp / 500) + 1;
     const ltPill = (id, label, color) => ({
-      padding:"7px 16px",borderRadius:99,fontSize:11,fontWeight:700,cursor:"pointer",whiteSpace:"nowrap",
+      flex:1,padding:"10px 0",borderRadius:12,fontSize:12,fontWeight:700,cursor:"pointer",textAlign:"center",
       background:loyaltyTab===id?`linear-gradient(135deg,${color||C.pink},${color||C.pink}cc)`:`rgba(255,255,255,0.04)`,
       color:loyaltyTab===id?"#fff":C.text3,
       border:loyaltyTab===id?`1px solid ${color||C.pink}40`:`1px solid ${C.border}`,
       boxShadow:loyaltyTab===id?`0 0 20px ${color||C.pink}35, 0 4px 12px rgba(0,0,0,0.3)`:"0 2px 8px rgba(0,0,0,0.15)",
-      transform:loyaltyTab===id?"scale(1.05)":"scale(1)",
       transition:"all 0.3s cubic-bezier(0.4,0,0.2,1)",
       backdropFilter:loyaltyTab===id?"none":"blur(12px)",
       WebkitBackdropFilter:loyaltyTab===id?"none":"blur(12px)",
@@ -21968,29 +21992,24 @@ const startSimonPuffs = () => {
     return (
     <div style={{padding:"0 14px",position:"relative"}}>
       {/* Ambient background */}
-      <div style={{position:"absolute",top:0,left:0,right:0,height:350,pointerEvents:"none",zIndex:0,
+      <div style={{position:"absolute",top:0,left:0,right:0,height:400,pointerEvents:"none",zIndex:0,
         background:`radial-gradient(ellipse 80% 50% at 50% 0%, ${tier.color}18, transparent 70%), radial-gradient(ellipse 60% 40% at 20% 10%, ${C.purple}0a, transparent 50%), radial-gradient(ellipse 50% 40% at 80% 30%, ${C.pink}08, transparent 50%)`,
       }}/>
-      {/* ── Me Header ── */}
-      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14,position:"relative",zIndex:1}}>
-        <div style={{fontSize:22,fontWeight:900,color:C.text}}>Me</div>
-        <div style={{display:"flex",alignItems:"center",gap:6}}>
-          <div style={{fontSize:12,fontWeight:700,color:tier.color}}>{tier.icon} {tier.name}</div>
-          <div style={{padding:"2px 8px",borderRadius:6,background:`${tier.color}15`,border:`1px solid ${tier.color}25`,fontSize:10,fontWeight:800,color:tier.color}}>{totalMultiplier.toFixed(1)}x</div>
-        </div>
-      </div>
-      {/* ── Profile Card ── */}
-      <div style={{padding:20,borderRadius:20,marginBottom:14,position:"relative",zIndex:1,overflow:"hidden",
-        background:`linear-gradient(135deg,${C.bg3},${tier.color}12)`,
-        boxShadow:`0 0 40px ${tier.color}10, inset 0 1px 0 rgba(255,255,255,0.06)`,
+
+      {/* ── PROFILE HEADER ── */}
+      <div style={{padding:20,borderRadius:22,marginBottom:16,position:"relative",zIndex:1,overflow:"hidden",
+        background:`linear-gradient(145deg,${C.bg3},${tier.color}10,${C.bg2})`,
+        boxShadow:`0 0 50px ${tier.color}10, 0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06)`,
         animation:"tierGlow 3s ease-in-out infinite","--tier-glow":`${tier.color}20`}}>
         {/* Animated gradient border overlay */}
-        <div style={{position:"absolute",inset:0,borderRadius:20,padding:1,pointerEvents:"none",
+        <div style={{position:"absolute",inset:0,borderRadius:22,padding:1,pointerEvents:"none",
           background:`linear-gradient(135deg,${tier.color}50,${C.purple}30,${C.cyan}40,${tier.color}50)`,backgroundSize:"300% 300%",
           animation:"borderShift 4s ease infinite",WebkitMask:"linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",WebkitMaskComposite:"xor",maskComposite:"exclude"}}/>
-        <div style={{display:"flex",gap:14,alignItems:"center"}}>
+
+        {/* Top row: avatar + info + action icons */}
+        <div style={{display:"flex",gap:14,alignItems:"flex-start"}}>
           {/* Avatar with animated glowing ring */}
-          <div style={{position:"relative"}}>
+          <div style={{position:"relative",flexShrink:0}}>
             <div style={{position:"absolute",inset:-4,borderRadius:22,
               background:`conic-gradient(from 0deg, ${tier.color}, ${C.purple}, ${C.cyan}, ${tier.color})`,
               animation:"spin 6s linear infinite",opacity:0.5,filter:"blur(3px)"}}/>
@@ -22005,26 +22024,29 @@ const startSimonPuffs = () => {
               background:`linear-gradient(135deg,${tier.color},${C.gold})`,display:"flex",alignItems:"center",justifyContent:"center",
               fontSize:11,border:`2px solid ${C.bg3}`,boxShadow:`0 0 8px ${tier.color}40`}}>{tier.icon}</div>
           </div>
-          <div style={{flex:1}}>
-            <div style={{display:"flex",alignItems:"center",gap:8}}>
-              <span style={{fontSize:18,fontWeight:900,color:C.text,letterSpacing:0.3}}>{USER.name}</span>
+          <div style={{flex:1,minWidth:0}}>
+            <div style={{display:"flex",alignItems:"center",gap:6}}>
+              <span style={{fontSize:17,fontWeight:900,color:C.text,letterSpacing:0.3}}>Cameron Williamson</span>
             </div>
-            <div style={{display:"flex",gap:10,marginTop:4}}>
-              <span style={{fontSize:10,color:C.orange,fontWeight:700}}>{"🔥 "+playerProfile.streak+" streak"}</span>
-              <span style={{fontSize:10,color:C.text3}}>{"🏅 "+earnedBadgeCount+" badges"}</span>
+            <div style={{display:"flex",alignItems:"center",gap:6,marginTop:3}}>
+              <span style={{fontSize:11,color:C.text3}}>@camwill</span>
+              <span style={{width:7,height:7,borderRadius:"50%",background:C.green,boxShadow:`0 0 6px ${C.green}60`}}/>
             </div>
-            <div style={{fontSize:9,color:C.text3,marginTop:3}}>{"Member for "+memberDays+" days"}</div>
-            <div style={{marginTop:8}}>
-              <div style={{display:"flex",justifyContent:"space-between",fontSize:9,color:C.text3,marginBottom:3}}>
-                <span style={{fontWeight:600}}>{"XP: "+xp.toLocaleString()}</span>
-                <span>{nextTier ? nextTier.name+" ("+nextTier.xpReq.toLocaleString()+")" : "MAX TIER"}</span>
+            <div style={{display:"flex",alignItems:"center",gap:6,marginTop:4}}>
+              <span style={{fontSize:11,fontWeight:700,color:tier.color}}>{tier.icon} {tier.name}</span>
+              <span style={{fontSize:10,color:C.text3}}>Lv {userLevel}</span>
+            </div>
+            {/* XP Progress bar */}
+            <div style={{marginTop:6}}>
+              <div style={{display:"flex",justifyContent:"space-between",fontSize:8,color:C.text3,marginBottom:2}}>
+                <span style={{fontWeight:600}}>{"XP "+xp.toLocaleString()}</span>
+                <span>{nextTier ? nextTier.name : "MAX"}</span>
               </div>
-              <div style={{height:10,borderRadius:5,background:C.bg,overflow:"hidden",boxShadow:"inset 0 1px 3px rgba(0,0,0,0.5)",position:"relative"}}>
-                <div style={{height:"100%",width:xpProgress+"%",borderRadius:5,position:"relative",overflow:"hidden",
+              <div style={{height:8,borderRadius:4,background:C.bg,overflow:"hidden",boxShadow:"inset 0 1px 3px rgba(0,0,0,0.5)",position:"relative"}}>
+                <div style={{height:"100%",width:xpProgress+"%",borderRadius:4,position:"relative",overflow:"hidden",
                   background:`linear-gradient(90deg,${tier.color},${C.cyan},${C.purple})`,backgroundSize:"200% 100%",
                   animation:"borderShift 3s ease infinite",
                   transition:"width 0.5s ease",boxShadow:`0 0 12px ${tier.color}40`}}>
-                  {/* Shimmer sweep on XP bar */}
                   <div style={{position:"absolute",top:0,left:"-100%",width:"100%",height:"100%",
                     background:"linear-gradient(90deg,transparent,rgba(255,255,255,0.25),transparent)",
                     animation:"lightSweep 3s ease-in-out infinite",pointerEvents:"none"}}/>
@@ -22033,78 +22055,92 @@ const startSimonPuffs = () => {
             </div>
           </div>
         </div>
-        {/* Featured badges */}
-        <div style={{display:"flex",gap:6,marginTop:14,alignItems:"center"}}>
-          {LOYALTY_BADGES.filter(b=>earnedBadges.includes(b.id)).slice(0,4).map(b=>(
-            <span key={b.id} style={{fontSize:18,background:`rgba(255,255,255,0.04)`,borderRadius:8,padding:"4px 8px",
-              border:`1px solid ${C.gold}20`,boxShadow:`0 0 8px ${C.gold}08`}}>{b.icon}</span>
-          ))}
-          <span style={{fontSize:10,color:C.text3,marginLeft:4}}>Featured</span>
-        </div>
-        {/* Multiplier badges */}
-        <div style={{display:"flex",gap:6,marginTop:10,flexWrap:"wrap"}}>
-          <div style={{display:"flex",alignItems:"center",gap:4,padding:"4px 10px",borderRadius:8,
-            background:tier.color+"12",border:"1px solid "+tier.color+"25",fontSize:10,fontWeight:700,color:tier.color}}>
-            {tier.icon+" "+tier.mult+"x "+tier.name+" Multiplier"}
-          </div>
-          {bleConnected && (
-            <div style={{display:"flex",alignItems:"center",gap:4,padding:"4px 10px",borderRadius:8,
-              background:C.green+"12",border:"1px solid "+C.green+"25",fontSize:10,fontWeight:700,color:C.green}}>
-              {"💨 1.2x Device Bonus Active"}
-            </div>
-          )}
-          {totalMultiplier > 1.0 && (
-            <div style={{display:"flex",alignItems:"center",gap:4,padding:"4px 10px",borderRadius:8,
-              background:C.gold+"12",border:"1px solid "+C.gold+"25",fontSize:10,fontWeight:800,color:C.gold}}>
-              {"= "+totalMultiplier.toFixed(1)+"x Total"}
-            </div>
-          )}
-        </div>
-      </div>
 
-      {/* ── Stats Row ── */}
-      <div style={{display:"flex",gap:8,marginBottom:14,position:"relative",zIndex:1}}>
-        {[{l:"Coins",v:coins.toLocaleString(),icon:"🪙",c:C.gold},{l:"Games",v:playerProfile.gamesPlayed.toString(),icon:"🎮",c:C.cyan},{l:"Win%",v:winRate+"%",icon:"🏆",c:C.green},{l:"Streak",v:dailyStreak+"d",icon:"🔥",c:C.orange}].map((s,i)=>(
-          <div key={i} style={{flex:1,padding:"12px 4px",borderRadius:14,textAlign:"center",
-            background:`linear-gradient(135deg, ${s.c}08, ${s.c}03)`,
-            backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",
-            border:`1px solid ${s.c}18`,
-            boxShadow:`0 4px 20px rgba(0,0,0,0.35), 0 0 25px ${s.c}08`,
-            transition:"all 0.3s ease"}}>
-            <div style={{fontSize:16}}>{s.icon}</div>
-            <div style={{fontFamily:"'Courier New',monospace",fontSize:22,fontWeight:900,color:s.c,
-              textShadow:`0 0 12px ${s.c}30`,
-              animation:s.l==="Streak"?"countPulse 2s ease-in-out infinite":"none"}}>{s.v}</div>
-            <div style={{fontSize:8,color:C.text3,marginTop:3,fontWeight:700,letterSpacing:0.8,textTransform:"uppercase"}}>{s.l}</div>
+        {/* Action icons row */}
+        <div style={{display:"flex",gap:10,marginTop:14,alignItems:"center"}}>
+          <div onClick={()=>notify("Messages coming soon",C.cyan)} style={{cursor:"pointer",position:"relative",
+            padding:"6px 10px",borderRadius:10,background:`rgba(255,255,255,0.05)`,border:`1px solid ${C.border}`,
+            display:"flex",alignItems:"center",gap:5,fontSize:13}}>
+            {"💬"}
+            {unreadMessages>0 && <span style={{position:"absolute",top:-4,right:-4,width:16,height:16,borderRadius:"50%",
+              background:C.pink,fontSize:9,fontWeight:800,color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",
+              boxShadow:`0 0 8px ${C.pink}60`}}>{unreadMessages}</span>}
           </div>
-        ))}
+          <div onClick={()=>notify("Notifications coming soon",C.orange)} style={{cursor:"pointer",position:"relative",
+            padding:"6px 10px",borderRadius:10,background:`rgba(255,255,255,0.05)`,border:`1px solid ${C.border}`,
+            display:"flex",alignItems:"center",gap:5,fontSize:13}}>
+            {"🔔"}
+            {unreadNotifs>0 && <span style={{position:"absolute",top:-4,right:-4,width:16,height:16,borderRadius:"50%",
+              background:C.orange,fontSize:9,fontWeight:800,color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",
+              boxShadow:`0 0 8px ${C.orange}60`}}>{unreadNotifs}</span>}
+          </div>
+          <div onClick={()=>notify("Settings coming soon",C.text2)} style={{cursor:"pointer",
+            padding:"6px 10px",borderRadius:10,background:`rgba(255,255,255,0.05)`,border:`1px solid ${C.border}`,
+            fontSize:13}}>
+            {"⚙️"}
+          </div>
+          <div style={{flex:1}}/>
+          {/* Multiplier badge */}
+          {totalMultiplier > 1.0 && (
+            <div style={{padding:"4px 10px",borderRadius:8,
+              background:`${C.gold}12`,border:`1px solid ${C.gold}25`,fontSize:10,fontWeight:800,color:C.gold}}>
+              {totalMultiplier.toFixed(1)+"x"}
+            </div>
+          )}
+        </div>
+
+        {/* Stats row: Coins, Friends, Streak */}
+        <div style={{display:"flex",gap:0,marginTop:16,borderTop:`1px solid ${C.border}`,paddingTop:14}}>
+          {[
+            {l:"Coins",v:coins.toLocaleString(),icon:"🪙",c:C.gold},
+            {l:"Friends",v:"17,524",icon:"👥",c:C.cyan},
+            {l:"Streak",v:dailyStreak.toString(),icon:"🔥",c:C.orange},
+          ].map((s,i)=>(
+            <div key={i} style={{flex:1,textAlign:"center",
+              borderRight:i<2?`1px solid ${C.border}`:"none"}}>
+              <div style={{fontSize:11}}>{s.icon}</div>
+              <div style={{fontFamily:"'Courier New',monospace",fontSize:18,fontWeight:900,color:s.c,
+                textShadow:`0 0 10px ${s.c}25`}}>{s.v}</div>
+              <div style={{fontSize:8,color:C.text3,fontWeight:700,letterSpacing:0.8,textTransform:"uppercase",marginTop:1}}>{s.l}</div>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* ── Tab Pills ── */}
-      <div style={{display:"flex",gap:6,marginBottom:14,overflowX:"auto",paddingBottom:2,position:"relative",zIndex:1}}>
+      <div style={{display:"flex",gap:8,marginBottom:16,position:"relative",zIndex:1}}>
         <div style={ltPill("overview","Overview",C.pink)} onClick={()=>setLoyaltyTab("overview")}>Overview</div>
-        <div style={ltPill("daily","Daily",C.green)} onClick={()=>setLoyaltyTab("daily")}>Daily</div>
-        <div style={ltPill("challenges","Challenges",C.orange)} onClick={()=>setLoyaltyTab("challenges")}>Challenges</div>
-        <div style={ltPill("badges","Badges",C.purple)} onClick={()=>setLoyaltyTab("badges")}>Badges</div>
-        <div style={ltPill("shop","Shop",C.gold)} onClick={()=>setLoyaltyTab("shop")}>Shop</div>
+        <div style={ltPill("arena","Arena",C.cyan)} onClick={()=>setLoyaltyTab("arena")}>Arena</div>
+        <div style={ltPill("social","Social",C.purple)} onClick={()=>setLoyaltyTab("social")}>Social</div>
       </div>
 
       {/* ═══ OVERVIEW TAB ═══ */}
       {loyaltyTab==="overview" && <>
-        {/* Welcome Banner for new users */}
-        {playerProfile.gamesPlayed < 5 && (
-          <div style={{padding:16,borderRadius:16,marginBottom:14,
-            background:"linear-gradient(135deg, rgba(0,229,255,0.08), rgba(192,132,252,0.08), rgba(255,77,141,0.06))",
-            border:"1px solid rgba(255,255,255,0.08)"}}>
-            <div style={{fontSize:14,fontWeight:800,color:C.text}}>Welcome to Mood Lab!</div>
-            <div style={{fontSize:11,color:C.text2,marginTop:4}}>Connect your device, play games, and level up your tier to earn more coins!</div>
-          </div>
-        )}
-        {/* Tier Progress */}
+        {/* Usage Stats Row */}
+        <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:14}}>
+          {[
+            {l:"Puffs",v:playerProfile.totalPuffs,icon:"💨",c:C.cyan},
+            {l:"THC",v:"143mg",icon:"🌿",c:C.green},
+            {l:"CBD",v:"143mg",icon:"💊",c:C.purple},
+            {l:"Beast",v:playerProfile.blinkerCount,icon:"🔥",c:C.orange},
+          ].map((s,i)=>(
+            <div key={i} style={{padding:"12px 4px",borderRadius:14,textAlign:"center",position:"relative",overflow:"hidden",
+              background:`linear-gradient(135deg, ${s.c}08, ${s.c}03)`,
+              backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",
+              border:`1px solid ${s.c}18`,
+              boxShadow:`0 4px 20px rgba(0,0,0,0.35), 0 0 20px ${s.c}06`}}>
+              <div style={{fontSize:14}}>{s.icon}</div>
+              <div style={{fontFamily:"'Courier New',monospace",fontSize:16,fontWeight:900,color:s.c,
+                textShadow:`0 0 10px ${s.c}30`}}>{s.v}</div>
+              <div style={{fontSize:7,color:C.text3,marginTop:2,fontWeight:700,letterSpacing:0.6,textTransform:"uppercase"}}>{s.l}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Tier Progress Ladder */}
         <div style={{...GLASS_CARD,borderRadius:16,padding:16,marginBottom:12}}>
           <div style={{fontSize:11,fontWeight:700,letterSpacing:2,color:C.text3,marginBottom:12}}>TIER PROGRESS</div>
           <div style={{display:"flex",gap:0,justifyContent:"center",alignItems:"center",position:"relative"}}>
-            {/* Connecting line behind icons */}
             <div style={{position:"absolute",top:18,left:"12%",right:"12%",height:4,borderRadius:2,background:C.bg,zIndex:0,overflow:"hidden"}}>
               <div style={{height:"100%",borderRadius:2,position:"relative",overflow:"hidden",
                 background:`linear-gradient(90deg,${tier.color},${C.cyan})`,
@@ -22117,150 +22153,48 @@ const startSimonPuffs = () => {
             </div>
             {LOYALTY_TIERS.map((t,i)=>(
               <div key={i} style={{textAlign:"center",opacity:i<=tier.idx?1:0.3,transition:"all 0.3s",flex:1,position:"relative",zIndex:1}}>
-                <div style={{fontSize:36,
+                <div style={{fontSize:30,
                   filter:i===tier.idx?"drop-shadow(0 0 10px "+t.color+")":"none",
                   animation:i===tier.idx?"countPulse 2s ease-in-out infinite":"none"}}>{t.icon}</div>
-                <div style={{fontSize:10,fontWeight:700,color:t.color,marginTop:3}}>{t.name}</div>
-                <div style={{fontSize:8,color:C.text3}}>{t.mult+"x"}</div>
+                <div style={{fontSize:9,fontWeight:700,color:t.color,marginTop:2}}>{t.name}</div>
+                <div style={{fontSize:7,color:C.text3}}>{t.mult+"x"}</div>
               </div>
             ))}
           </div>
-          {nextTier && <div style={{marginTop:12,padding:"10px 14px",borderRadius:10,
+          {nextTier && <div style={{marginTop:10,padding:"8px 12px",borderRadius:10,
             background:`linear-gradient(135deg, ${C.bg}, ${nextTier.color}06)`,
             border:`1px solid ${nextTier.color}15`,
-            fontSize:12,color:C.text2}}>
+            fontSize:11,color:C.text2}}>
             {"Next: "}<strong style={{color:nextTier.color}}>{nextTier.name}</strong>{" -- "+((nextTier.xpReq - xp) > 0 ? (nextTier.xpReq - xp).toLocaleString() : 0)+" XP to go"}
           </div>}
         </div>
 
-        {/* Puff Stats */}
-        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:12}}>
-          {[
-            {label:"Puffs",value:playerProfile.totalPuffs,icon:"💨",color:C.cyan},
-            {label:"Blinkers",value:playerProfile.blinkerCount,icon:"💀",color:C.red},
-            {label:"Puff Time",value:Math.floor(playerProfile.totalPuffTime/60)+"m",icon:"⏱️",color:C.purple},
-          ].map((st,i)=>(
-            <div key={i} style={{...GLASS_CARD,borderRadius:14,padding:14,textAlign:"center",
-              background:`linear-gradient(135deg, ${st.color}06, rgba(8,8,25,0.72))`,
-              border:`1px solid ${st.color}15`}}>
-              <div style={{fontSize:18}}>{st.icon}</div>
-              <div style={{fontFamily:"monospace",fontSize:18,fontWeight:800,color:st.color,textShadow:`0 0 8px ${st.color}20`}}>{st.value}</div>
-              <div style={{fontSize:8,color:C.text3,fontWeight:700,letterSpacing:0.5,marginTop:2}}>{st.label.toUpperCase()}</div>
-            </div>
-          ))}
-        </div>
-
-        {/* Recent Activity */}
-        <div style={{...GLASS_CARD,borderRadius:16,padding:16,marginBottom:12}}>
-          <div style={{fontSize:11,fontWeight:700,letterSpacing:2,color:C.text3,marginBottom:12}}>RECENT ACTIVITY</div>
-          {playerProfile.gamesPlayed > 0 ? (
-            <div style={{display:"flex",flexDirection:"column",gap:8}}>
-              {[
-                {game:playerProfile.favoriteGame==="finalkick"?"Final Kick":"Games",result:"Won",coins:"+25",xpLabel:"+40 XP",icon:"🎮",color:C.green,time:"Today"},
-                {game:"Arena Session",result:playerProfile.gamesWon>0?"Won":"Played",coins:"+15",xpLabel:"+20 XP",icon:"🏟️",color:C.cyan,time:"Today"},
-                {game:"Daily Check-in",result:dailyCheckedIn?"Claimed":"Pending",coins:dailyCheckedIn?"+10":"--",xpLabel:"+20 XP",icon:"📅",color:dailyCheckedIn?C.green:C.orange,time:"Today"},
-              ].map((act,i)=>(
-                <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",borderRadius:12,
-                  background:`linear-gradient(135deg, ${act.color}06, transparent)`,
-                  border:`1px solid ${act.color}10`}}>
-                  <div style={{fontSize:20}}>{act.icon}</div>
-                  <div style={{flex:1}}>
-                    <div style={{fontSize:12,fontWeight:700,color:C.text}}>{act.game}</div>
-                    <div style={{fontSize:9,color:C.text3}}>{act.time}</div>
-                  </div>
-                  <div style={{textAlign:"right"}}>
-                    <div style={{fontSize:11,fontWeight:700,color:act.color}}>{act.result}</div>
-                    <div style={{fontSize:9,color:C.text3}}>{act.xpLabel}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div style={{textAlign:"center",padding:16,color:C.text3,fontSize:12}}>
-              Play your first game to see activity here!
-            </div>
-          )}
-        </div>
-
-        {/* Next Milestone */}
-        <div style={{...GLASS_CARD,borderRadius:16,padding:16,position:"relative",overflow:"hidden"}}>
-          <div style={{position:"absolute",top:0,left:"-100%",width:"100%",height:"100%",
-            background:"linear-gradient(90deg,transparent,rgba(255,255,255,0.03),transparent)",
-            animation:"lightSweep 5s ease-in-out infinite",pointerEvents:"none"}}/>
-          <div style={{fontSize:11,fontWeight:700,letterSpacing:2,color:C.text3,marginBottom:10}}>NEXT MILESTONE</div>
-          <div style={{display:"flex",gap:12,alignItems:"center"}}>
-            <div style={{width:48,height:48,borderRadius:14,
-              background:`linear-gradient(135deg,${tier.color}20,${C.purple}15)`,
-              border:`1px solid ${tier.color}25`,
-              display:"flex",alignItems:"center",justifyContent:"center",fontSize:24}}>
-              {nextTier ? nextTier.icon : earnedBadgeCount < LOYALTY_BADGES.length ? "🏅" : "🌟"}
-            </div>
-            <div style={{flex:1}}>
-              <div style={{fontSize:13,fontWeight:800,color:C.text}}>
-                {nextTier ? "Reach "+nextTier.name+" Tier" : earnedBadgeCount < LOYALTY_BADGES.length ? "Earn All Badges" : "Legend Status Achieved"}
-              </div>
-              <div style={{fontSize:10,color:C.text2,marginTop:2}}>
-                {nextTier ? (nextTier.xpReq - xp > 0 ? (nextTier.xpReq - xp).toLocaleString()+" XP remaining" : "Almost there!") :
-                  earnedBadgeCount < LOYALTY_BADGES.length ? (LOYALTY_BADGES.length - earnedBadgeCount)+" badges to go" : "All milestones complete!"}
-              </div>
-              {nextTier && <div style={{height:6,borderRadius:3,background:C.bg,overflow:"hidden",marginTop:6}}>
-                <div style={{height:"100%",borderRadius:3,width:xpProgress+"%",
-                  background:`linear-gradient(90deg,${tier.color},${nextTier.color})`,
-                  transition:"width 0.5s ease"}}/>
-              </div>}
-            </div>
-          </div>
-        </div>
-      </>}
-
-      {/* ═══ DAILY TAB ═══ */}
-      {loyaltyTab==="daily" && <>
+        {/* Daily Check-in compact */}
         <div style={{...GLASS_CARD,borderRadius:16,padding:16,marginBottom:12,position:"relative",overflow:"hidden"}}>
-          {/* Subtle confetti pattern background */}
-          <div style={{position:"absolute",top:0,left:0,right:0,bottom:0,opacity:0.04,pointerEvents:"none",
-            backgroundImage:`radial-gradient(circle 2px at 15% 20%, ${C.gold} 1px, transparent 1px), radial-gradient(circle 2px at 45% 60%, ${C.cyan} 1px, transparent 1px), radial-gradient(circle 2px at 75% 30%, ${C.pink} 1px, transparent 1px), radial-gradient(circle 2px at 85% 80%, ${C.green} 1px, transparent 1px), radial-gradient(circle 1.5px at 30% 85%, ${C.purple} 1px, transparent 1px), radial-gradient(circle 1.5px at 60% 15%, ${C.orange} 1px, transparent 1px)`}}/>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14,position:"relative"}}>
-            <div>
-              <div style={{fontSize:15,fontWeight:800,color:C.text}}>Daily Check-in</div>
-              <div style={{fontSize:10,color:C.text3,marginTop:2}}>{"Day "+((dailyStreak%7)||7)+" of 7"}</div>
-            </div>
-            <div style={{display:"flex",alignItems:"center",gap:6}}>
-              <div style={{fontSize:13,color:C.orange,fontWeight:800,
-                animation:"countPulse 2s ease-in-out infinite"}}>{"🔥 "+dailyStreak}</div>
-              <div style={{fontSize:10,color:C.text3}}>streak</div>
-            </div>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+            <div style={{fontSize:11,fontWeight:700,letterSpacing:2,color:C.text3}}>DAILY CHECK-IN</div>
+            <div style={{fontSize:11,color:C.orange,fontWeight:800}}>{"🔥 "+dailyStreak+" streak"}</div>
           </div>
-          {/* Progress bar for week */}
-          <div style={{height:4,borderRadius:2,background:C.bg,overflow:"hidden",marginBottom:14,position:"relative"}}>
-            <div style={{height:"100%",borderRadius:2,
-              background:`linear-gradient(90deg,${C.green},${C.cyan})`,
-              width:`${Math.min(100,((dailyStreak%7)||7)/7*100)}%`,
-              transition:"width 0.3s ease",boxShadow:`0 0 6px ${C.green}40`}}/>
-          </div>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:6,position:"relative"}}>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:5,marginBottom:12}}>
             {DAILY_REWARDS.map((d,i)=>{
               const isCurrent = (dailyStreak%7)===i && !dailyCheckedIn;
               const isPast = i < (dailyStreak%7) || (dailyCheckedIn && i <= (dailyStreak-1)%7);
               const isDay7 = d.day===7;
               return (
-                <div key={i} style={{padding:"8px 3px",borderRadius:12,textAlign:"center",
+                <div key={i} style={{padding:"6px 2px",borderRadius:10,textAlign:"center",
                   background:isDay7?`linear-gradient(135deg,${C.gold}18,${C.orange}10)`:isCurrent?`linear-gradient(135deg,${C.green}10,${C.cyan}08)`:C.bg,
                   border:`1px solid ${isCurrent?C.green+"70":isDay7?C.gold+"40":C.border}`,
                   opacity:isPast?0.4:1,
-                  boxShadow:isCurrent?`0 0 16px ${C.green}20`:isDay7&&!isPast?`0 0 14px ${C.gold}18`:"none",
-                  animation:isCurrent?"countPulse 2s ease-in-out infinite":"none",
-                  transition:"all 0.3s ease"}}>
-                  <div style={{fontSize:9,fontWeight:800,color:isDay7?C.gold:isCurrent?C.green:C.text3}}>{isDay7?"👑":"D"+d.day}</div>
-                  <div style={{fontSize:13,fontWeight:900,color:isPast?C.text3:isDay7?C.gold:isCurrent?C.green:C.cyan,marginTop:2}}>{"+"+d.xp}</div>
-                  <div style={{fontSize:7,color:C.text3}}>XP</div>
-                  {d.coins && <div style={{fontSize:7,color:bleConnected?C.gold:C.text3,marginTop:2}}>{bleConnected?"+"+d.coins+" 🪙":"🔒"}</div>}
-                  {d.bonus && <div style={{fontSize:8,marginTop:1}}>{d.bonus}</div>}
-                  {isPast && <div style={{fontSize:10,marginTop:1}}>{"✅"}</div>}
+                  boxShadow:isCurrent?`0 0 12px ${C.green}20`:"none",
+                  animation:isCurrent?"countPulse 2s ease-in-out infinite":"none"}}>
+                  <div style={{fontSize:8,fontWeight:800,color:isDay7?C.gold:isCurrent?C.green:C.text3}}>{isDay7?"👑":"D"+d.day}</div>
+                  <div style={{fontSize:11,fontWeight:900,color:isPast?C.text3:isDay7?C.gold:isCurrent?C.green:C.cyan,marginTop:1}}>{"+"+d.xp}</div>
+                  {isPast && <div style={{fontSize:8,marginTop:1}}>{"✅"}</div>}
                 </div>
               );
             })}
           </div>
-          <button onClick={claimDaily} style={{width:"100%",marginTop:14,padding:"12px 0",borderRadius:12,border:"none",fontWeight:800,fontSize:15,
+          <button onClick={claimDaily} style={{width:"100%",padding:"10px 0",borderRadius:12,border:"none",fontWeight:800,fontSize:14,
             cursor:dailyCheckedIn?"default":"pointer",letterSpacing:0.3,
             background:dailyCheckedIn?C.bg3:`linear-gradient(90deg,${C.green},${C.cyan})`,
             color:dailyCheckedIn?C.text3:"#fff",
@@ -22268,213 +22202,295 @@ const startSimonPuffs = () => {
             animation:dailyCheckedIn?"none":"claimPulse 2s ease-in-out infinite"}}>
             {dailyCheckedIn ? "Claimed Today" : "Claim Daily Reward"}
           </button>
-          {!dailyCheckedIn && (
-            <div style={{marginTop:10,padding:"10px 12px",borderRadius:10,background:`${C.bg}80`,border:`1px solid ${C.border}`}}>
-              <div style={{fontSize:9,color:C.text3,letterSpacing:1,marginBottom:6}}>YOUR DAILY MULTIPLIER</div>
-              <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:C.text2,marginBottom:3}}>
-                <span>{getCurrentTier().icon} {getCurrentTier().name} Tier</span>
-                <span style={{color:getCurrentTier().color,fontWeight:700}}>×{getCurrentTier().mult}</span>
-              </div>
-              {bleConnected && <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:C.text2,marginBottom:3}}>
-                <span>💨 Device Connected</span>
-                <span style={{color:C.cyan,fontWeight:700}}>×1.2</span>
-              </div>}
-              <div style={{borderTop:`1px solid ${C.border}`,paddingTop:6,marginTop:3,display:"flex",justifyContent:"space-between",fontSize:13,fontWeight:800}}>
-                <span style={{color:C.text}}>Total Bonus</span>
-                <span style={{color:C.gold}}>×{getCoinMultiplier().toFixed(2)}</span>
-              </div>
-              {!bleConnected && <div style={{fontSize:9,color:C.orange,marginTop:4}}>
-                💨 Connect device for ×1.2 bonus on daily rewards
-              </div>}
-            </div>
-          )}
         </div>
-      </>}
 
-      {/* ═══ CHALLENGES TAB ═══ */}
-      {loyaltyTab==="challenges" && <>
+        {/* Today's Challenges */}
         <div style={{...GLASS_CARD,borderRadius:16,padding:16,marginBottom:12}}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
-            <div style={{fontSize:15,fontWeight:800,color:C.text}}>Daily Challenges</div>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+            <div style={{fontSize:11,fontWeight:700,letterSpacing:2,color:C.text3}}>{"TODAY'S CHALLENGES"}</div>
             <div style={{fontSize:10,fontWeight:700,color:completedChallenges.length>=DAILY_CHALLENGES.length?C.gold:C.text3}}>
-              {completedChallenges.length+"/"+DAILY_CHALLENGES.length+" complete"}
+              {completedChallenges.length+"/"+DAILY_CHALLENGES.length}
             </div>
           </div>
-          {/* Overall progress bar */}
-          <div style={{height:4,borderRadius:2,background:C.bg,overflow:"hidden",marginBottom:14}}>
+          <div style={{height:3,borderRadius:2,background:C.bg,overflow:"hidden",marginBottom:10}}>
             <div style={{height:"100%",borderRadius:2,
               background:completedChallenges.length>=DAILY_CHALLENGES.length?`linear-gradient(90deg,${C.gold},${C.orange})`:`linear-gradient(90deg,${C.green},${C.cyan})`,
               width:`${(completedChallenges.length/DAILY_CHALLENGES.length)*100}%`,
-              transition:"width 0.5s ease",boxShadow:`0 0 6px ${C.green}30`}}/>
+              transition:"width 0.5s ease"}}/>
           </div>
-          {DAILY_CHALLENGES.map((ch,i)=>{
+          {DAILY_CHALLENGES.slice(0,3).map((ch,i)=>{
             const done = completedChallenges.includes(ch.id);
             return (
-              <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",
-                padding:"12px 14px",borderRadius:14,marginBottom:8,position:"relative",overflow:"hidden",
+              <div key={i} style={{display:"flex",alignItems:"center",gap:10,
+                padding:"10px 12px",borderRadius:12,marginBottom:6,
                 background:done?`linear-gradient(135deg, ${C.green}06, transparent)`:C.bg,
-                border:`1px solid ${done?C.green+"20":C.border}`,
-                transition:"all 0.3s ease"}}>
-                {done && <div style={{position:"absolute",top:0,left:"-100%",width:"100%",height:"100%",
-                  background:"linear-gradient(90deg,transparent,rgba(52,211,153,0.05),transparent)",
-                  animation:"lightSweep 5s ease-in-out infinite",pointerEvents:"none"}}/>}
-                <div style={{display:"flex",alignItems:"center",gap:10}}>
-                  <div style={{width:36,height:36,borderRadius:10,
-                    background:done?`${C.green}15`:`${C.bg3}`,
-                    border:`1px solid ${done?C.green+"25":C.border}`,
-                    display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>
-                    {done ? "✅" : ch.icon}
-                  </div>
-                  <div>
-                    <div style={{fontSize:12,color:done?C.text3:C.text,fontWeight:700,
-                      textDecoration:done?"line-through":"none"}}>{ch.task}</div>
-                    <div style={{fontSize:9,color:C.text3,marginTop:2}}>{"+"+ch.xpReward+" XP"}</div>
-                  </div>
+                border:`1px solid ${done?C.green+"20":C.border}`}}>
+                <div style={{width:30,height:30,borderRadius:8,
+                  background:done?`${C.green}15`:`${C.bg3}`,border:`1px solid ${done?C.green+"25":C.border}`,
+                  display:"flex",alignItems:"center",justifyContent:"center",fontSize:14}}>
+                  {done ? "✅" : ch.icon}
                 </div>
-                <div style={{padding:"8px 14px",borderRadius:10,fontSize:11,fontWeight:700,
-                  background:done?C.bg3:`${C.green}12`,color:done?C.text3:C.green,
-                  border:done?"none":`1px solid ${C.green}20`}}>
-                  {done ? "✅ Done" : "+"+Math.round(ch.reward*getCoinMultiplier())+" 🪙 (auto)"}
+                <div style={{flex:1}}>
+                  <div style={{fontSize:11,color:done?C.text3:C.text,fontWeight:700,
+                    textDecoration:done?"line-through":"none"}}>{ch.task}</div>
+                </div>
+                <div style={{fontSize:10,fontWeight:700,color:done?C.text3:C.green}}>
+                  {done ? "Done" : "+"+Math.round(ch.reward*getCoinMultiplier())+" 🪙"}
                 </div>
               </div>
             );
           })}
-          {completedChallenges.length >= DAILY_CHALLENGES.length && (
-            <div style={{textAlign:"center",padding:14,borderRadius:14,position:"relative",overflow:"hidden",
-              background:`linear-gradient(135deg,${C.gold}15,${C.orange}10)`,
-              border:`1px solid ${C.gold}30`,
-              fontSize:13,fontWeight:800,color:C.gold,marginTop:6}}>
-              <div style={{position:"absolute",top:0,left:"-100%",width:"100%",height:"100%",
-                background:"linear-gradient(90deg,transparent,rgba(255,217,61,0.1),transparent)",
-                animation:"lightSweep 3s ease-in-out infinite",pointerEvents:"none"}}/>
-              {"🏆 ALL DONE! Bonus claimed! 🏆"}
+        </div>
+
+        {/* Recent Activity */}
+        <div style={{...GLASS_CARD,borderRadius:16,padding:16,marginBottom:12}}>
+          <div style={{fontSize:11,fontWeight:700,letterSpacing:2,color:C.text3,marginBottom:10}}>RECENT ACTIVITY</div>
+          {playerProfile.gamesPlayed > 0 ? (
+            <div style={{display:"flex",flexDirection:"column",gap:6}}>
+              {[
+                {game:playerProfile.favoriteGame==="finalkick"?"Final Kick":"Games",result:"Won",xpLabel:"+40 XP",icon:"🎮",color:C.green,time:"2h ago"},
+                {game:"Arena Session",result:playerProfile.gamesWon>0?"Won":"Played",xpLabel:"+20 XP",icon:"🏟️",color:C.cyan,time:"4h ago"},
+                {game:"Daily Check-in",result:dailyCheckedIn?"Claimed":"Pending",xpLabel:"+20 XP",icon:"📅",color:dailyCheckedIn?C.green:C.orange,time:"Today"},
+                {game:"Badge Earned",result:"First Puff",xpLabel:"+50 XP",icon:"🏅",color:C.gold,time:"Yesterday"},
+              ].map((act,i)=>(
+                <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 10px",borderRadius:10,
+                  background:`linear-gradient(135deg, ${act.color}04, transparent)`,
+                  border:`1px solid ${act.color}08`}}>
+                  <div style={{fontSize:16}}>{act.icon}</div>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:11,fontWeight:700,color:C.text}}>{act.game}</div>
+                    <div style={{fontSize:8,color:C.text3}}>{act.time}</div>
+                  </div>
+                  <div style={{textAlign:"right"}}>
+                    <div style={{fontSize:10,fontWeight:700,color:act.color}}>{act.result}</div>
+                    <div style={{fontSize:8,color:C.text3}}>{act.xpLabel}</div>
+                  </div>
+                </div>
+              ))}
             </div>
-          )}
-          {getCoinMultiplier() > 1.0 && (
-            <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,marginTop:10,padding:"6px 12px",borderRadius:8,background:`${C.gold}08`,border:`1px solid ${C.gold}15`}}>
-              <span style={{fontSize:10,color:C.text3}}>Rewards multiplied by</span>
-              <span style={{fontSize:12,fontWeight:800,color:C.gold}}>×{getCoinMultiplier().toFixed(2)}</span>
-              <span style={{fontSize:9,color:C.text3}}>({getCurrentTier().icon} {bleConnected?"+ 💨":""})</span>
+          ) : (
+            <div style={{textAlign:"center",padding:14,color:C.text3,fontSize:11}}>
+              Play your first game to see activity here!
             </div>
           )}
         </div>
       </>}
 
-      {/* ═══ BADGES TAB ═══ */}
-      {loyaltyTab==="badges" && <>
+      {/* ═══ ARENA TAB ═══ */}
+      {loyaltyTab==="arena" && <>
+        {/* Game Stats */}
+        <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:14}}>
+          {[
+            {l:"Played",v:playerProfile.gamesPlayed,icon:"🎮",c:C.cyan},
+            {l:"Win%",v:winRate+"%",icon:"🏆",c:C.green},
+            {l:"Streak",v:bestWinStreak,icon:"🔥",c:C.orange},
+            {l:"Earned",v:coins.toLocaleString(),icon:"🪙",c:C.gold},
+          ].map((s,i)=>(
+            <div key={i} style={{padding:"12px 4px",borderRadius:14,textAlign:"center",
+              background:`linear-gradient(135deg, ${s.c}08, ${s.c}03)`,
+              backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",
+              border:`1px solid ${s.c}18`,
+              boxShadow:`0 4px 20px rgba(0,0,0,0.35), 0 0 20px ${s.c}06`}}>
+              <div style={{fontSize:14}}>{s.icon}</div>
+              <div style={{fontFamily:"'Courier New',monospace",fontSize:16,fontWeight:900,color:s.c,
+                textShadow:`0 0 10px ${s.c}30`}}>{s.v}</div>
+              <div style={{fontSize:7,color:C.text3,marginTop:2,fontWeight:700,letterSpacing:0.6,textTransform:"uppercase"}}>{s.l}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Badges Collection */}
         <div style={{...GLASS_CARD,borderRadius:16,padding:14,marginBottom:12}}>
-          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-            <div style={{fontSize:15,fontWeight:800,color:C.text}}>Badge Collection</div>
-            <div style={{display:"flex",alignItems:"center",gap:6}}>
-              <div style={{padding:"4px 12px",borderRadius:10,
-                background:`linear-gradient(135deg,${C.purple}18,${C.pink}10)`,
-                border:`1px solid ${C.purple}25`,fontSize:12,fontWeight:900,color:C.purple}}>
-                {earnedBadgeCount+"/"+LOYALTY_BADGES.length}
-              </div>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
+            <div style={{fontSize:13,fontWeight:800,color:C.text}}>Badge Collection</div>
+            <div style={{padding:"3px 10px",borderRadius:10,
+              background:`linear-gradient(135deg,${C.purple}18,${C.pink}10)`,
+              border:`1px solid ${C.purple}25`,fontSize:11,fontWeight:900,color:C.purple}}>
+              {earnedBadgeCount+"/"+LOYALTY_BADGES.length}
             </div>
           </div>
-          {/* Badge progress bar */}
-          <div style={{height:4,borderRadius:2,background:C.bg,overflow:"hidden",marginTop:10}}>
+          <div style={{height:3,borderRadius:2,background:C.bg,overflow:"hidden",marginBottom:10}}>
             <div style={{height:"100%",borderRadius:2,
               background:`linear-gradient(90deg,${C.purple},${C.pink})`,
               width:`${(earnedBadgeCount/LOYALTY_BADGES.length)*100}%`,
               transition:"width 0.5s ease",boxShadow:`0 0 6px ${C.purple}30`}}/>
           </div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8}}>
+            {LOYALTY_BADGES.map(b=>{
+              const earned = earnedBadges.includes(b.id);
+              return (
+                <div key={b.id} style={{padding:10,borderRadius:14,textAlign:"center",position:"relative",overflow:"hidden",
+                  background:earned?`linear-gradient(135deg, rgba(255,217,61,0.06), rgba(8,8,25,0.65))`:C.bg3,
+                  border:`1px solid ${earned?C.gold+"30":C.border}`,
+                  opacity:earned?1:0.35,
+                  boxShadow:earned?`0 0 16px ${C.gold}08`:"none",
+                  transition:"all 0.3s ease"}}>
+                  {earned && <div style={{position:"absolute",top:0,left:"-100%",width:"100%",height:"100%",
+                    background:`linear-gradient(90deg,transparent,rgba(255,217,61,0.08),transparent)`,
+                    animation:"lightSweep 3.5s ease-in-out infinite",pointerEvents:"none"}}/>}
+                  <div style={{fontSize:28,
+                    filter:earned?"drop-shadow(0 0 6px rgba(255,217,61,0.3))":"grayscale(1)",
+                    animation:earned?"gentleFloat 3s ease-in-out infinite":"none"}}>{b.icon}</div>
+                  <div style={{fontSize:9,fontWeight:700,color:earned?C.text:C.text3,marginTop:4}}>{b.name}</div>
+                  {earned && <div style={{fontSize:7,color:C.gold,marginTop:2,fontWeight:800,letterSpacing:0.8}}>EARNED</div>}
+                  {!earned && <div style={{fontSize:7,color:C.text3,marginTop:2}}>🔒</div>}
+                </div>
+              );
+            })}
+          </div>
         </div>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10}}>
-          {LOYALTY_BADGES.map(b=>{
-            const earned = earnedBadges.includes(b.id);
-            return (
-              <div key={b.id} style={{...GLASS_CARD,padding:14,borderRadius:16,textAlign:"center",
-                background:earned?`linear-gradient(135deg, rgba(255,217,61,0.06), rgba(8,8,25,0.65))`:C.bg3,
-                border:`1px solid ${earned?C.gold+"30":C.border}`,
-                opacity:earned?1:0.4,position:"relative",overflow:"hidden",
-                boxShadow:earned?`0 0 20px ${C.gold}10, 0 4px 16px rgba(0,0,0,0.3)`:"none",
-                transition:"all 0.3s ease"}}>
-                {/* Gold shimmer effect on earned badges */}
-                {earned && <div style={{position:"absolute",top:0,left:"-100%",width:"100%",height:"100%",
-                  background:`linear-gradient(90deg,transparent,rgba(255,217,61,0.08),transparent)`,
-                  animation:"lightSweep 3.5s ease-in-out infinite",pointerEvents:"none"}}/>}
-                <div style={{fontSize:36,
-                  filter:earned?"drop-shadow(0 0 8px rgba(255,217,61,0.35))":"grayscale(1)",
-                  animation:earned?"gentleFloat 3s ease-in-out infinite":"none"}}>{b.icon}</div>
-                <div style={{fontSize:11,fontWeight:700,color:earned?C.text:C.text3,marginTop:6}}>{b.name}</div>
-                <div style={{fontSize:9,color:C.text3,marginTop:3,lineHeight:1.3}}>{b.desc}</div>
-                {earned && <div style={{fontSize:8,color:C.gold,marginTop:6,fontWeight:800,letterSpacing:1,
-                  textShadow:`0 0 6px ${C.gold}30`}}>{"EARNED"}</div>}
-                {!earned && <div style={{fontSize:8,color:C.text3,marginTop:6,fontWeight:600}}>{"🔒 Locked"}</div>}
-              </div>
-            );
-          })}
+
+        {/* Shop */}
+        <div style={{...GLASS_CARD,borderRadius:16,padding:14,marginBottom:12}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+            <div style={{fontSize:13,fontWeight:800,color:C.text}}>Shop</div>
+            <div style={{display:"flex",alignItems:"center",gap:5,padding:"4px 10px",borderRadius:10,
+              background:`linear-gradient(135deg,${C.gold}15,${C.orange}08)`,border:`1px solid ${C.gold}25`}}>
+              <span style={{fontSize:12}}>🪙</span>
+              <span style={{fontSize:12,fontWeight:900,color:C.gold}}>{coins.toLocaleString()}</span>
+            </div>
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8}}>
+            {SHOP_ITEMS.map((item,i)=>{
+              const bought = ownedItems.includes(item.id);
+              const canAfford = coins >= item.price;
+              const tierLocked = item.tier && tier.idx < LOYALTY_TIERS.findIndex(t => t.name === item.tier);
+              return (
+                <div key={i} onClick={()=>!bought&&!tierLocked&&buyShopItem(item)} style={{padding:10,borderRadius:14,textAlign:"center",
+                  cursor:bought||tierLocked||!canAfford?"default":"pointer",
+                  opacity:bought?0.45:1,position:"relative",overflow:"hidden",
+                  background:bought?C.bg3:`linear-gradient(135deg, rgba(8,8,25,0.72), rgba(8,8,25,0.65))`,
+                  border:`1px solid ${bought?C.border:C.border}`,
+                  transition:"all 0.3s ease"}}>
+                  {tierLocked && !bought && <div style={{position:"absolute",inset:0,
+                    background:"rgba(5,5,16,0.7)",backdropFilter:"blur(2px)",
+                    display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",zIndex:2,borderRadius:14}}>
+                    <div style={{fontSize:18}}>🔒</div>
+                    <div style={{fontSize:7,fontWeight:800,color:C.text3,marginTop:2}}>{item.tier}</div>
+                  </div>}
+                  <div style={{fontSize:28,marginBottom:4,filter:bought?"grayscale(0.5)":"none"}}>{item.icon}</div>
+                  <div style={{fontSize:9,fontWeight:700,color:C.text}}>{item.name}</div>
+                  <div style={{fontSize:8,marginTop:3,fontWeight:700,
+                    color:bought?C.text3:canAfford?C.gold:C.red}}>
+                    {bought ? "Owned" : tierLocked ? "Locked" : item.price+" 🪙"}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Puff Stats */}
+        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:12}}>
+          {[
+            {label:"Total Puffs",value:playerProfile.totalPuffs,icon:"💨",color:C.cyan},
+            {label:"Blinkers",value:playerProfile.blinkerCount,icon:"💀",color:C.red},
+            {label:"Puff Time",value:Math.floor(playerProfile.totalPuffTime/60)+"m",icon:"⏱️",color:C.purple},
+          ].map((st,i)=>(
+            <div key={i} style={{...GLASS_CARD,borderRadius:14,padding:12,textAlign:"center",
+              background:`linear-gradient(135deg, ${st.color}06, rgba(8,8,25,0.72))`,
+              border:`1px solid ${st.color}15`}}>
+              <div style={{fontSize:16}}>{st.icon}</div>
+              <div style={{fontFamily:"monospace",fontSize:16,fontWeight:800,color:st.color,textShadow:`0 0 8px ${st.color}20`}}>{st.value}</div>
+              <div style={{fontSize:7,color:C.text3,fontWeight:700,letterSpacing:0.5,marginTop:2}}>{st.label.toUpperCase()}</div>
+            </div>
+          ))}
         </div>
       </>}
 
-      {/* ═══ SHOP TAB ═══ */}
-      {loyaltyTab==="shop" && <>
-        <div style={{...GLASS_CARD,borderRadius:16,padding:14,marginBottom:12}}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-            <div>
-              <div style={{fontSize:15,fontWeight:800,color:C.text}}>Shop</div>
-              <div style={{fontSize:10,color:C.text3,marginTop:2}}>{ownedItemCount+" of "+SHOP_ITEMS.length+" items owned"}</div>
-            </div>
-            <div style={{display:"flex",alignItems:"center",gap:6,padding:"6px 12px",borderRadius:10,
-              background:`linear-gradient(135deg,${C.gold}15,${C.orange}08)`,border:`1px solid ${C.gold}25`}}>
-              <span style={{fontSize:14}}>🪙</span>
-              <span style={{fontSize:14,fontWeight:900,color:C.gold}}>{coins.toLocaleString()}</span>
+      {/* ═══ SOCIAL TAB ═══ */}
+      {loyaltyTab==="social" && <>
+        {/* Friends Online */}
+        <div style={{...GLASS_CARD,borderRadius:16,padding:16,marginBottom:12}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+            <div style={{fontSize:13,fontWeight:800,color:C.text}}>Friends Online</div>
+            <div style={{fontSize:10,color:C.green,fontWeight:700}}>
+              {MOCK_FRIENDS.filter(f=>f.status==="online").length+" online"}
             </div>
           </div>
-        </div>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
-          {SHOP_ITEMS.map((item,i)=>{
-            const bought = ownedItems.includes(item.id);
-            const canAfford = coins >= item.price;
-            const tierLocked = item.tier && tier.idx < LOYALTY_TIERS.findIndex(t => t.name === item.tier);
-            const isBestValue = i===6;
-            return (
-              <div key={i} style={{...GLASS_CARD,borderRadius:16,padding:16,textAlign:"center",
-                opacity:bought?0.5:1,position:"relative",overflow:"hidden",
-                background:bought?C.bg3:`linear-gradient(135deg, rgba(8,8,25,0.72), rgba(8,8,25,0.65))`,
-                border:`1px solid ${bought?C.border:isBestValue&&!bought?C.gold+"35":C.border}`,
-                boxShadow:isBestValue&&!bought?`0 0 16px ${C.gold}10`:"0 4px 16px rgba(0,0,0,0.3)",
-                transition:"all 0.3s ease"}}>
-                {/* BEST VALUE tag */}
-                {isBestValue && !bought && <div style={{position:"absolute",top:8,left:8,
-                  background:`linear-gradient(90deg,${C.gold},${C.orange})`,color:"#000",fontSize:7,fontWeight:800,
-                  padding:"2px 6px",borderRadius:4,letterSpacing:0.5,zIndex:3}}>BEST VALUE</div>}
-                {/* POPULAR tag on 2nd item */}
-                {i===1 && !bought && <div style={{position:"absolute",top:8,right:-20,
-                  background:`linear-gradient(90deg,${C.pink},${C.orange})`,color:"#fff",fontSize:8,fontWeight:800,
-                  padding:"2px 24px",transform:"rotate(35deg)",letterSpacing:0.5}}>POPULAR</div>}
-                {/* NEW tag on last item */}
-                {i===SHOP_ITEMS.length-1 && !bought && <div style={{position:"absolute",top:8,left:8,
-                  background:`linear-gradient(90deg,${C.cyan},${C.green})`,color:"#000",fontSize:8,fontWeight:800,
-                  padding:"1px 6px",borderRadius:4,letterSpacing:0.5}}>NEW</div>}
-                {/* Lock overlay for tier-locked items */}
-                {tierLocked && !bought && <div style={{position:"absolute",inset:0,
-                  background:"rgba(5,5,16,0.7)",backdropFilter:"blur(3px)",
-                  display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",zIndex:2,borderRadius:16}}>
-                  <div style={{fontSize:28}}>🔒</div>
-                  <div style={{fontSize:10,fontWeight:800,color:C.text3,marginTop:4}}>{item.tier+" Tier"}</div>
-                  <div style={{fontSize:8,color:C.text3,marginTop:1}}>Required</div>
-                </div>}
-                <div style={{fontSize:36,marginBottom:8,
-                  filter:bought?"grayscale(0.5)":"none"}}>{item.icon}</div>
-                <div style={{fontSize:13,fontWeight:700,color:C.text}}>{item.name}</div>
-                <div style={{fontSize:10,color:C.text3,marginTop:3}}>{item.cat}</div>
-                {item.tier && !tierLocked && <div style={{fontSize:8,color:tier.color,fontWeight:700,marginTop:2}}>
-                  {item.tier+" Tier"}
-                </div>}
-                <button onClick={()=>buyShopItem(item)} style={{marginTop:10,padding:"8px 18px",borderRadius:10,border:"none",fontSize:12,fontWeight:700,
-                  cursor:bought||!canAfford||tierLocked?"default":"pointer",
-                  background:bought?C.bg3:tierLocked?C.text3+"12":`linear-gradient(135deg,${C.gold},${C.orange})`,
-                  color:bought?C.text3:tierLocked?C.text3:canAfford?"#000":C.red,
-                  boxShadow:bought||tierLocked?"none":`0 0 12px ${C.gold}18`,
-                  transition:"all 0.3s ease"}}>
-                  {bought ? "Owned" : tierLocked ? "Locked" : item.price+" coins"}
-                </button>
+          {MOCK_FRIENDS.map((f,i)=>(
+            <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 10px",borderRadius:12,marginBottom:6,
+              background:f.status==="online"?`linear-gradient(135deg, ${C.green}04, transparent)`:`rgba(255,255,255,0.02)`,
+              border:`1px solid ${f.status==="online"?C.green+"12":C.border}`}}>
+              <div style={{position:"relative"}}>
+                <div style={{width:36,height:36,borderRadius:10,
+                  background:`linear-gradient(135deg, ${C.bg3}, ${C.purple}15)`,
+                  display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,
+                  border:`1px solid ${C.border}`}}>
+                  {f.avatar}
+                </div>
+                <div style={{position:"absolute",bottom:-1,right:-1,width:10,height:10,borderRadius:"50%",
+                  border:`2px solid ${C.bg3}`,
+                  background:f.status==="online"?C.green:f.status==="away"?C.orange:C.text3,
+                  boxShadow:f.status==="online"?`0 0 6px ${C.green}60`:"none"}}/>
               </div>
-            );
-          })}
+              <div style={{flex:1}}>
+                <div style={{fontSize:12,fontWeight:700,color:C.text}}>{f.name}</div>
+                {f.playing ? (
+                  <div style={{fontSize:9,color:C.cyan,marginTop:1}}>{"Playing "+f.playing}</div>
+                ) : (
+                  <div style={{fontSize:9,color:C.text3,marginTop:1}}>
+                    {f.status==="online"?"In the Arena":f.status==="away"?"Away":"Offline"}
+                  </div>
+                )}
+              </div>
+              {f.status==="online" && (
+                <div onClick={()=>notify("Challenge coming soon",C.cyan)} style={{cursor:"pointer",
+                  padding:"5px 10px",borderRadius:8,fontSize:9,fontWeight:700,
+                  background:`${C.cyan}12`,border:`1px solid ${C.cyan}20`,color:C.cyan}}>
+                  Challenge
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Communities */}
+        <div style={{...GLASS_CARD,borderRadius:16,padding:16,marginBottom:12}}>
+          <div style={{fontSize:13,fontWeight:800,color:C.text,marginBottom:12}}>Communities</div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+            {MOCK_COMMUNITIES.map((c,i)=>(
+              <div key={i} onClick={()=>notify("Community hub coming soon",C.purple)} style={{cursor:"pointer",
+                padding:14,borderRadius:14,textAlign:"center",position:"relative",overflow:"hidden",
+                background:`linear-gradient(135deg, rgba(8,8,25,0.72), rgba(8,8,25,0.6))`,
+                border:`1px solid ${c.active?C.purple+"20":C.border}`,
+                boxShadow:c.active?`0 0 16px ${C.purple}08`:"none",
+                transition:"all 0.3s ease"}}>
+                <div style={{fontSize:28,marginBottom:6}}>{c.icon}</div>
+                <div style={{fontSize:11,fontWeight:700,color:C.text}}>{c.name}</div>
+                <div style={{fontSize:9,color:C.text3,marginTop:3}}>{c.members.toLocaleString()+" members"}</div>
+                {c.active && <div style={{position:"absolute",top:8,right:8,width:6,height:6,borderRadius:"50%",
+                  background:C.green,boxShadow:`0 0 6px ${C.green}60`}}/>}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Collection */}
+        <div style={{...GLASS_CARD,borderRadius:16,padding:16,marginBottom:12}}>
+          <div style={{fontSize:13,fontWeight:800,color:C.text,marginBottom:12}}>Collection</div>
+          {MOCK_COLLECTIONS.map((c,i)=>(
+            <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",borderRadius:12,marginBottom:6,
+              background:`linear-gradient(135deg, ${c.color}04, transparent)`,
+              border:`1px solid ${c.color}10`}}>
+              <div style={{width:36,height:36,borderRadius:10,
+                background:`linear-gradient(135deg, ${c.color}15, ${C.bg3})`,
+                border:`1px solid ${c.color}20`,
+                display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>
+                {c.icon}
+              </div>
+              <div style={{flex:1}}>
+                <div style={{fontSize:12,fontWeight:700,color:C.text}}>{c.name}</div>
+                <div style={{height:4,borderRadius:2,background:C.bg,overflow:"hidden",marginTop:4,width:"100%"}}>
+                  <div style={{height:"100%",borderRadius:2,
+                    background:`linear-gradient(90deg,${c.color},${c.color}aa)`,
+                    width:`${(c.count/c.total)*100}%`,
+                    transition:"width 0.5s ease"}}/>
+                </div>
+              </div>
+              <div style={{fontSize:11,fontWeight:800,color:c.color}}>{c.count+"/"+c.total}</div>
+            </div>
+          ))}
         </div>
       </>}
 
