@@ -7452,24 +7452,7 @@ export default function MoodLabArena() {
         </div>
 
 
-        {/* ═══ CONNECT DEVICE — above arena hub bottom nav ═══ */}
-        {!bleConnected && (
-          <div onClick={()=>{playFx("tap");setShowBlePopup(true);}} style={{position:"absolute",bottom:68,left:"50%",transform:"translateX(-50%)",zIndex:11,
-            display:"inline-flex",alignItems:"center",gap:8,padding:"8px 18px",borderRadius:12,cursor:"pointer",
-            background:"rgba(8,8,25,0.85)",backdropFilter:"blur(40px) saturate(1.4)",WebkitBackdropFilter:"blur(40px) saturate(1.4)",
-            border:"1px solid rgba(0,229,255,0.2)",boxShadow:"0 4px 20px rgba(0,0,0,0.4), 0 0 12px rgba(0,229,255,0.06)",
-          }}>
-            <div style={{width:24,height:24,borderRadius:7,display:"flex",alignItems:"center",justifyContent:"center",
-              background:"rgba(0,229,255,0.1)",border:"1px solid rgba(0,229,255,0.2)"}}>
-              <span style={{fontSize:11}}>💨</span>
-            </div>
-            <div>
-              <div style={{fontSize:10,fontWeight:800,color:C.text,letterSpacing:0.3}}>{deviceActivated ? "Connect for Full Rewards" : "Connect to Activate Arena"}</div>
-              <div style={{fontSize:7,color:C.cyan,fontWeight:600}}>{deviceActivated ? "Playing at 70% without device" : "Required to unlock games"}</div>
-            </div>
-            <div style={{width:4,height:4,borderRadius:"50%",background:C.orange,animation:"pulse 1.5s infinite"}}/>
-          </div>
-        )}
+        {/* Connect device warning bar moved to global position below ticker */}
         {/* ═══ BOTTOM NAV — Floating pill dock ═══ */}
         <div style={{position:"absolute",bottom:16,left:"50%",transform:"translateX(-50%)",zIndex:10}}>
           <div style={{display:"inline-flex",alignItems:"center",gap:3,padding:"4px 5px",borderRadius:100,
@@ -22590,6 +22573,32 @@ const startSimonPuffs = () => {
       {/* Live Ticker — universal across all pages */}
       {renderTicker()}
 
+      {/* Connect warning bar — right below ticker, only when not connected */}
+      {!bleConnected && deviceActivated && !gameActive && !matchmaking && (
+        <div onClick={()=>{playFx("tap");setShowBlePopup(true);}} style={{
+          padding:"6px 14px",cursor:"pointer",
+          background:`linear-gradient(90deg,${C.orange}15,${C.gold}10)`,
+          borderBottom:`1px solid ${C.orange}20`,
+          display:"flex",alignItems:"center",justifyContent:"center",gap:6,
+        }}>
+          <div style={{width:5,height:5,borderRadius:"50%",background:C.orange,animation:"pulse 1.5s infinite"}}/>
+          <span style={{fontSize:10,fontWeight:700,color:C.orange}}>Connect for Full Experience & Rewards</span>
+          <span style={{fontSize:9,color:C.text3}}>Tap to pair 💨</span>
+        </div>
+      )}
+      {!bleConnected && !deviceActivated && !gameActive && !matchmaking && (
+        <div onClick={()=>{playFx("tap");setShowBlePopup(true);}} style={{
+          padding:"6px 14px",cursor:"pointer",
+          background:`linear-gradient(90deg,${C.red}12,${C.orange}08)`,
+          borderBottom:`1px solid ${C.red}20`,
+          display:"flex",alignItems:"center",justifyContent:"center",gap:6,
+        }}>
+          <div style={{width:5,height:5,borderRadius:"50%",background:C.red,animation:"pulse 1.5s infinite"}}/>
+          <span style={{fontSize:10,fontWeight:700,color:C.red}}>Connect Device to Activate Arena</span>
+          <span style={{fontSize:9,color:C.text3}}>Required 💨</span>
+        </div>
+      )}
+
       {/* Tab Title (hide during arena zone focus — image BG handles it) */}
       {(tab!=="arena" || zone || arenaView==="hub") && (
         <div style={{padding:"6px 14px 10px",position:"relative",zIndex:5}}>
@@ -22694,27 +22703,7 @@ const startSimonPuffs = () => {
 
       {/* Nav buttons are in index.html OUTSIDE React — controlled via window.__moodlabGoHome/GoBack */}
 
-      {/* CONNECT DEVICE — global, above bottom nav, only when not connected */}
-      {!bleConnected && !gameActive && !matchmaking && (
-        <div onClick={()=>{playFx("tap");setShowBlePopup(true);}} style={{position:"fixed",bottom:62,left:"50%",transform:"translateX(-50%)",zIndex:250,
-          display:"inline-flex",alignItems:"center",gap:10,padding:"9px 20px",borderRadius:12,cursor:"pointer",
-          background:"rgba(8,8,25,0.85)",
-          backdropFilter:"blur(40px) saturate(1.4)",
-          WebkitBackdropFilter:"blur(40px) saturate(1.4)",
-          border:"1px solid rgba(0,229,255,0.2)",
-          boxShadow:"0 4px 20px rgba(0,0,0,0.4), 0 0 15px rgba(0,229,255,0.06)",
-        }}>
-          <div style={{width:28,height:28,borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",
-            background:"rgba(0,229,255,0.1)",border:"1px solid rgba(0,229,255,0.2)"}}>
-            <span style={{fontSize:12}}>💨</span>
-          </div>
-          <div>
-            <div style={{fontSize:11,fontWeight:800,color:"#F0EEFF",letterSpacing:0.3}}>{deviceActivated ? "Connect for Full Rewards" : "Connect to Activate Arena"}</div>
-            <div style={{fontSize:7,color:"#00E5FF",fontWeight:600,marginTop:1}}>{deviceActivated ? "Playing at 70% without device" : "Required to unlock games"}</div>
-          </div>
-          <div style={{width:5,height:5,borderRadius:"50%",background:"#FB923C",animation:"pulse 1.5s infinite",marginLeft:2}}/>
-        </div>
-      )}
+      {/* Connect device warning bar is now positioned below the ticker globally */}
 
       {/* Bottom Nav — Floating pill dock (hidden on arena hub) */}
       <div style={{position:"fixed",bottom:16,left:"50%",transform:"translateX(-50%)",zIndex:50,display:(tab==="arena"&&!zone)?"none":"flex",justifyContent:"center"}}>
