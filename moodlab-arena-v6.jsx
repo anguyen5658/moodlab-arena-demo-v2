@@ -6910,8 +6910,8 @@ export default function MoodLabArena() {
     else if (id === "treasuremap")    { down = () => tmHandlePuff();     up = () => tmHandlePuffEnd();     }
     // --- Fortune: Spin & Win (tap-only) ---
     else if (id === "spinwin")        { down = () => { if(!swSpinning) puffLockIn(swDoSpin); }; up = null; }
-    else if (id === "tankwar")        { down = twPuffStart;  up = twPuffStop;  }
-    else if (id === "fishwar")        { down = fwPuffStart; up = fwPuffStop;  }
+    else if (id === "tankwar")        { down = () => twPuffStart();  up = () => twPuffStop();  }
+    else if (id === "fishwar")        { down = () => fwPuffStart(); up = () => fwPuffStop();  }
     btPuffDown.current = down;
     btPuffUp.current   = up;
     // puffEvent handlers are always live regardless of active game
