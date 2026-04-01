@@ -15821,7 +15821,6 @@ const startSimonPuffs = () => {
             onMouseUp={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;rpsStopPuff();}}
             onTouchStart={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;e.preventDefault();if(isPuff)rpsStartPuff();}}
             onTouchEnd={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;e.preventDefault();rpsStopPuff();}}>
-            {renderGameChatPanel("PUFF RPS")}
             {/* Dojo background — dark purple/blue with neon */}
             <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg, #0a0520 0%, #12083a 20%, #1a0e4a 40%, #0f0830 65%, #080418 100%)",zIndex:0}}/>
             {/* Neon glow accents */}
@@ -23271,16 +23270,18 @@ const startSimonPuffs = () => {
       setCurrentWinStreak(0);
     }
 
-    // ── Comedy Engine triggers on game result ──
+    // ── Comedy Engine triggers on game result (wrapped in try-catch for safety) ──
     const _gid = gameActive?.id || "";
-    if(won) {
-      setTimeout(()=>triggerVictoryParade(), 500);
-      setTimeout(()=>triggerStonerCommentary("big_play", _gid), 800);
-      setTimeout(()=>triggerReactionCam(), 1200);
-    } else {
-      setTimeout(()=>triggerShameCam(), 500);
-      setTimeout(()=>triggerStonerCommentary("ai_wins", _gid), 1000);
-    }
+    try {
+      if(won) {
+        setTimeout(()=>{try{triggerVictoryParade();}catch(e){console.error("comedy:victory",e);}}, 500);
+        setTimeout(()=>{try{triggerStonerCommentary("big_play", _gid);}catch(e){}}, 800);
+        setTimeout(()=>{try{triggerReactionCam();}catch(e){}}, 1200);
+      } else {
+        setTimeout(()=>{try{triggerShameCam();}catch(e){console.error("comedy:shame",e);}}, 500);
+        setTimeout(()=>{try{triggerStonerCommentary("ai_wins", _gid);}catch(e){}}, 1000);
+      }
+    } catch(e) { console.error("comedy engine error:", e); }
 
     // Track unique games for variety bonus
     const gId = gameActive?.id;
@@ -24261,7 +24262,7 @@ const startSimonPuffs = () => {
         <div style={{position:"fixed",top:"30%",left:"50%",transform:"translate(-50%,-50%)",zIndex:300,pointerEvents:"none",animation:"fadeIn 0.3s ease"}}>
           <div style={{padding:"16px 28px",borderRadius:16,background:"rgba(239,68,68,0.15)",border:"2px solid rgba(239,68,68,0.5)",backdropFilter:"blur(12px)",boxShadow:"0 0 40px rgba(239,68,68,0.3)",textAlign:"center"}}>
             <div style={{fontSize:28,marginBottom:4}}>📸</div>
-            <div style={{fontSize:18,fontWeight:900,color:"#EF4444",letterSpacing:3}}>{pickArr(SHAME_MESSAGES)}</div>
+            <div style={{fontSize:18,fontWeight:900,color:"#EF4444",letterSpacing:3}}>SHAME CAM</div>
             <div style={{fontSize:9,color:"rgba(255,255,255,0.5)",marginTop:4}}>The whole arena saw that</div>
           </div>
         </div>
@@ -24270,7 +24271,7 @@ const startSimonPuffs = () => {
         <div style={{position:"fixed",top:"25%",left:"50%",transform:"translate(-50%,-50%)",zIndex:300,pointerEvents:"none",animation:"fadeIn 0.3s ease"}}>
           <div style={{padding:"16px 28px",borderRadius:16,background:"rgba(255,215,0,0.12)",border:"2px solid rgba(255,215,0,0.5)",backdropFilter:"blur(12px)",boxShadow:"0 0 40px rgba(255,215,0,0.3)",textAlign:"center"}}>
             <div style={{fontSize:28,marginBottom:4}}>🏆</div>
-            <div style={{fontSize:18,fontWeight:900,color:C.gold,letterSpacing:3}}>{pickArr(HYPE_MESSAGES)}</div>
+            <div style={{fontSize:18,fontWeight:900,color:C.gold,letterSpacing:3}}>PLAY OF THE GAME</div>
             <div style={{fontSize:9,color:"rgba(255,255,255,0.5)",marginTop:4}}>Everyone is watching</div>
           </div>
         </div>
