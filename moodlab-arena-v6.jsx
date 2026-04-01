@@ -199,6 +199,131 @@ const SPECTATOR_TICKER_MSGS = [
   "entered spectator mode",
 ];
 
+// ═══════════════════════════════════════════════════════════════
+// MULTIPLAYER HUMOR ENGINE — Shared Comedy Systems
+// ═══════════════════════════════════════════════════════════════
+
+// 50 Bot Personalities for simulated multiplayer
+const BOT_POOL = [
+  {name:"ChillMaster42",emoji:"😎",style:"chill",catchphrase:"no stress vibes only"},
+  {name:"BlinkerKing",emoji:"💀",style:"reckless",catchphrase:"blinker or nothing"},
+  {name:"NeonQueen",emoji:"👸",style:"competitive",catchphrase:"bow down"},
+  {name:"BlazedPanda",emoji:"🐼",style:"troll",catchphrase:"lmao"},
+  {name:"PuffDaddy",emoji:"💨",style:"tryhard",catchphrase:"let's get this W"},
+  {name:"CloudNine99",emoji:"☁️",style:"chill",catchphrase:"floating rn"},
+  {name:"THC_Tony",emoji:"🌿",style:"reckless",catchphrase:"SEND IT"},
+  {name:"SativaQueen",emoji:"👑",style:"competitive",catchphrase:"too easy"},
+  {name:"CosmicSteve",emoji:"🌌",style:"chill",catchphrase:"we are all stardust bro"},
+  {name:"BongRipper",emoji:"🫁",style:"reckless",catchphrase:"FULL SEND"},
+  {name:"ZenMaster",emoji:"🧘",style:"chill",catchphrase:"the puff flows through me"},
+  {name:"GiggleQueen",emoji:"😂",style:"troll",catchphrase:"LMAOOO"},
+  {name:"SmokeRider",emoji:"🏍️",style:"competitive",catchphrase:"eat my smoke"},
+  {name:"MunchieKing",emoji:"🍕",style:"troll",catchphrase:"brb ordering food"},
+  {name:"CaliDreamer",emoji:"🌴",style:"chill",catchphrase:"california vibes"},
+  {name:"PuffPrincess",emoji:"👸",style:"competitive",catchphrase:"undefeated"},
+  {name:"StoneyCurtis",emoji:"🎬",style:"troll",catchphrase:"that's a wrap"},
+  {name:"DabMaster",emoji:"🔥",style:"tryhard",catchphrase:"precision is key"},
+  {name:"HighRoller",emoji:"🎰",style:"reckless",catchphrase:"all in baby"},
+  {name:"KushKommander",emoji:"⭐",style:"tryhard",catchphrase:"execute the plan"},
+  {name:"LaughingBuddha",emoji:"😆",style:"chill",catchphrase:"hahaha nice"},
+  {name:"TerpQueen",emoji:"🍋",style:"competitive",catchphrase:"taste the victory"},
+  {name:"420Blazer",emoji:"🔥",style:"reckless",catchphrase:"YOLO"},
+  {name:"ChronicChamp",emoji:"🏆",style:"tryhard",catchphrase:"another W"},
+  {name:"PurpleHaze",emoji:"💜",style:"chill",catchphrase:"groovy"},
+  {name:"JointVenture",emoji:"🤝",style:"troll",catchphrase:"teamwork makes the dream work... jk"},
+  {name:"EdibleEddie",emoji:"🍪",style:"chill",catchphrase:"kicked in 2 hours ago"},
+  {name:"RollingThunder",emoji:"⚡",style:"reckless",catchphrase:"BOOM"},
+  {name:"GreenGoblin",emoji:"👺",style:"troll",catchphrase:"hehehehe"},
+  {name:"IndicaIvy",emoji:"🌙",style:"chill",catchphrase:"so sleepy but still winning"},
+  {name:"WaxWizard",emoji:"🧙",style:"tryhard",catchphrase:"calculated"},
+  {name:"HempHero",emoji:"🦸",style:"competitive",catchphrase:"justice puffs"},
+  {name:"BubbleHash",emoji:"🫧",style:"chill",catchphrase:"pop"},
+  {name:"PreRollPete",emoji:"📦",style:"troll",catchphrase:"pre-rolled this W"},
+  {name:"VapeGod",emoji:"⛅",style:"reckless",catchphrase:"clouds for days"},
+  {name:"GummyBear",emoji:"🐻",style:"chill",catchphrase:"sweet"},
+  {name:"HashBrown",emoji:"🥔",style:"troll",catchphrase:"baked. literally."},
+  {name:"NugNinja",emoji:"🥷",style:"competitive",catchphrase:"you didn't see me coming"},
+  {name:"OGKushOG",emoji:"🏛️",style:"tryhard",catchphrase:"respect the OG"},
+  {name:"BakedAlaska",emoji:"🏔️",style:"chill",catchphrase:"cold vibes warm heart"},
+  {name:"StrainHunter",emoji:"🔍",style:"competitive",catchphrase:"found the gas"},
+  {name:"SeshGremlin",emoji:"👹",style:"troll",catchphrase:"one more round"},
+  {name:"CrossFaded",emoji:"🌀",style:"reckless",catchphrase:"seeing double"},
+  {name:"DankMemer",emoji:"🐸",style:"troll",catchphrase:"it's a meme bro"},
+  {name:"CouchLock",emoji:"🛋️",style:"chill",catchphrase:"can't move. won't move."},
+  {name:"RosinPress",emoji:"💎",style:"tryhard",catchphrase:"pressure makes diamonds"},
+  {name:"GlassBlower",emoji:"🏺",style:"competitive",catchphrase:"artisan puffs only"},
+  {name:"SpaceCase",emoji:"🚀",style:"reckless",catchphrase:"TO THE MOON"},
+  {name:"MoodLabRat",emoji:"🐀",style:"tryhard",catchphrase:"lab tested, arena approved"},
+  {name:"HighFiveGuy",emoji:"🖐️",style:"chill",catchphrase:"high five! ...get it?"},
+];
+
+// Crowd Roast Messages — triggered on spectacular fails
+const CROWD_ROASTS = {
+  general_fail:["Bro forgot which game he was playing 💀","The AI literally paused to let you catch up and you STILL lost","Someone call 911... for that performance 🚑","Your grandma just texted: 'I could do better' 👵","That was so bad the Wi-Fi tried to disconnect 📡","Even the bots are embarrassed FOR you 🤖😬","The screen went dark out of RESPECT for that L","Participation trophy incoming 🏆... oh wait, you didn't even participate","The couch is where you belong after THAT 🛋️","Plot twist: the game was playing YOU"],
+  weak_puff:["That was a WHISPER not a PUFF 🤫","0.3 second blinker attempt... legendary fail 😭","My grandma puffs harder and she doesn't even smoke 👵","Did you just... breathe normally? That's not how this works 💨","Even the DEVICE is judging you right now","That puff was so short the screen didn't even register it","Lungs.exe has stopped working 🫁❌","The air barely LEFT your mouth","That's not a puff, that's a SIGH 😮‍💨"],
+  slow_reaction:["Did you fall asleep? Genuine question 😴","Your reaction time is measured in CALENDAR DAYS 📅","The AI had time to ORDER FOOD and come back 🍕","Bro is playing in slow motion 🐌","By the time you reacted, the game was OVER","Reaction time: yes ⏱️ (that's it. just 'yes')","Were you reading the terms and conditions?"],
+  losing_streak:["At this point just give the AI YOUR coins 💰","3 losses in a row... the couch is calling 🛋️","The bots are starting to feel BAD for you 🥺","Maybe try... a different game? Or a different hobby?","Your streak is legendary... legendarily BAD 📉"],
+  blinker_fail:["Blinker attempt: DENIED BY LUNGS 🫁❌","The device said 'no thank you' to that blinker 🚫","You tried to blinker and your body said ABSOLUTELY NOT","Blinker.exe has crashed. Restart lungs? 🔄","That blinker attempt was more of a blinkER... emphasis on the ER 🏥"],
+  comeback:["WAIT... IS THIS A COMEBACK?! 👀","From the ashes like a very high phoenix 🔥🦅","THE PLOT THICKENS 📖","Did someone switch players?! What happened?!","REDEMPTION ARC ACTIVATED 🎬"],
+};
+
+// Stoner Commentary — universal AI commentator
+const STONER_COMMENTARY = {
+  charging:["Is he charging up or just vibing? Hard to tell 🤔","The suspense... or maybe they forgot they were playing","Loading... loading... still loading... 🔄","Either that's focus or they're asleep with eyes open"],
+  big_play:["WHAT DID I JUST WITNESS 🤯","That was DISGUSTING (in a good way) 🔥","Somebody clip that! SOMEBODY CLIP THAT! 📹","The crowd is LOSING THEIR MINDS right now","That play just went VIRAL in the multiverse 🌌"],
+  ai_wins:["A ROBOT outplayed you while you're on the couch 🤖","The AI sends its regards 🤖👑","Congratulations, you just lost to math 📐","The algorithm chose violence today","Even Siri could've done better 🫠"],
+  close_call:["BY A HAIR! 💇","One MILLISECOND! That's cruel 😤","The universe said 'not today' 🌍","So close you can TASTE the victory... but can't swallow it"],
+  blinker_moment:["BLINKER! Someone check if they're still conscious! 💀","5 SECONDS! Their lungs just filed a complaint! 🫁📝","THE BLINKER! THE ABSOLUTE MADLAD! 🤪","That blinker had INTENT. That blinker had PURPOSE.","Ladies and gentlemen, we have a BLINKER in the building 🏛️"],
+  spectacle:["I can't believe what I'm seeing 👀","This is CINEMA 🎬","Peak entertainment right here, ladies and gentlemen","The algorithm couldn't have scripted this better"],
+};
+
+// Audience Reactions — simulated spectator messages
+const AUDIENCE_REACTIONS = [
+  "{name} just SPIT OUT their drink 🥤💀","{name} is recording this for TikTok 📱😂",
+  "{name} fell off the couch laughing 🛋️😂","{name} is SCREAMING at their screen 📺😱",
+  "{name} just woke up their roommate 🏠💀","{name} can't breathe from laughing 😂🫁",
+  "{name}: 'I'm literally crying right now' 😭","{name} dropped their phone 📱💥",
+  "{name}: 'BRO WHAT' 🤯","{name} is sharing this in the group chat 📲",
+  "{name}: 'This is the funniest thing I've seen all week' 😂",
+  "{name} is pacing around their room 🚶‍♂️","{name}: 'NO WAY' (×47 times) 💀",
+  "{name} just choked on their edible 🍪😵","{name} is cry-laughing 😭😂",
+  "{name}: 'I need to lie down after that' 🛏️",
+];
+
+// Shame / Hype overlay labels
+const SHAME_MESSAGES = ["CAUGHT IN 4K 📸","SHAME CAM 🎥","EMOTIONAL DAMAGE 💔","SIT DOWN 🪑","HUMBLED 🧎","VIOLATION ⚠️","L + RATIO","PACK WATCH 📦"];
+const HYPE_MESSAGES = ["PLAY OF THE GAME 🏆","HIGHLIGHT REEL 🎬","CERTIFIED GOAT 🐐","SOMEBODY CLIP THAT 📹","HALL OF FAME 🏛️","ABSOLUTELY FILTHY 🔥","GENERATIONAL TALENT 🌟","TOP 10 ANIME MOMENTS 🎌"];
+
+// Per-game humor strings
+const GAME_HUMOR = {
+  finalkick:{miss:["That ball is now in ANOTHER TIMEZONE ⚽✈️","The ball went to get groceries, it'll be back never 🛒","Goal? That wasn't even the right SPORT 🏈","NASA called — they found your ball on Mars 🔴"],save:["The goalkeeper didn't even have to MOVE 🧤😂","That save was so easy the keeper YAWNED 🥱"],goal:["TOP BINS! The net is CRYING 🥅😭","GOLAZO! Even the ball is impressed with itself ⚽✨"]},
+  wildwest:{staredown:["Is that a tumbleweed or your willpower rolling away? 🌵","The sun is setting... and so is your confidence 🌅","A crow just landed on your shoulder. Not a good sign 🐦","Even the CACTUS is nervous 🌵😰"],draw:["SLAP LEATHER! 🤠","The moment of truth... or the moment of 'oh no'"],lose:["You brought a puff to a GUN fight 🔫💨"]},
+  hotpotato:{taunt:["Here, hold this for me 💣😏","YEET! Your problem now 🫡","Special delivery! 📦💥","Catch! ...oh wait, you don't want to catch THIS"]},
+  balloon:{face:["😐","😟","😰","😱","🤯","💀"],escalation:["It's getting nervous...","IT'S SWEATING 💦","The balloon is having an EXISTENTIAL CRISIS 🎈😭","One more puff and this balloon files for DIVORCE","THE BALLOON IS WRITING ITS WILL 📜"]},
+  russian:{chamber_mood:["The chamber is ANGRY today 😤","The chamber vibes are NOT good 💀","The chamber just whispered 'good luck' sarcastically","The chamber is feeling CHAOTIC 🌀","Even the revolver looks nervous 🔫😰"]},
+  puffpong:{rally:["RALLY! Back and forth! 🏓","WHAT A RALLY! Both sides refusing to give up!"],ai_trash:["AI: 'Is that all you got?' 🤖","AI: 'My code has more game than you' 💻","AI: 'Loading trash_talk.exe... LOADED' 🤖"]},
+  rhythm:{crowd_sing:["The crowd is HUMMING ALONG 🎵","Everyone's VIBING! 🎶","The whole arena is SWAYING 🌊"],miss_groan:["The crowd GROANS in unison 😩","That note just died a painful death 🎵💀","Even the MUSIC cringed 🎸😬"]},
+  hooked:{fish_talk:["Fish: 'I was ordering DoorDash! 🐟📱'","Fish: 'Tell my family I love them 😭'","Fish: 'I had PLANS this weekend! 🐠📅'","Fish: 'Do you know who my FATHER is?! 🐟👑'","Fish: 'This is NOT what Tinder meant by catch 🎣💔'"]},
+  beatdrop:{wrong_timing:["DJ PUFF has LEFT the chat 🎧💀","The beat dropped... and so did your dignity 🎵📉","RECORD SCRATCH! ⏹️ That was NOT it","Even the SPEAKERS are disappointed 🔊😤"]},
+  tankwar:{explosion:["That crater is now a swimming pool 🏊","The shell went to therapy instead of the target 🛋️","FRIENDLY FIRE! Oh wait, that's just bad aim 😂","That explosion was so big it got its own ZIP CODE 📮"],ai_chat:["Enemy tank: 'Was that your best shot? 😂'","Ally tank: 'I'm carrying this team 💪'","Enemy tank: 'GG EZ' 🤖"]},
+  fishwar:{last_words:["Fish: 'I had a family... of 10,000 eggs 🥚'","Fish: 'This is what I get for skipping gym 🏋️'","Fish: 'Blub... blub... ble— *eaten*'","Fish: 'At least I'm organic 🌿'"],evolution:["EVOLUTION! You're literally BUILT DIFFERENT now 🧬","New form unlocked! The ocean trembles! 🌊","YOU EVOLVED! Other fish are SHOOK 😱"]},
+  puffslots:{near_miss:["🍒🍒💀 SO CLOSE the machine is LAUGHING at you","Two out of three! The slot machine says 'almost, sweetie' 🎰😘","One symbol away from GLORY... the universe said NO"]},
+  puffblackjack:{dealer:["Dealer raises an eyebrow 🤨","Dealer: 'Are you SURE about that?' 😏","Dealer is trying not to LAUGH 🃏😂","Dealer: 'Bold strategy. Let's see if it pays off.' 🎰"]},
+  mysterybox:{cursed:["You found... YOUR ELECTRICITY BILL 💸","You found... A TEXT FROM YOUR EX 📱💀","You found... MONDAY MORNING 😭☀️","You found... YOUR BROWSER HISTORY 💻😱","You found... NOTHING. Literally nothing. 📦🕳️"]},
+  crystalball:{roast:["The crystal ball says you should've stayed in bed today 🔮😂","The spirits say... 'lol no' 👻","The oracle has spoken and it's NOT looking good for you 🔮💀"]},
+  coinflip:{drama:["THE COIN IS IN THE AIR! ✨","Time slows down... the coin SPINS...","Everyone holds their BREATH... 😶","The coin lands on... WAIT FOR IT..."]},
+  crapsnclouds:{roll:["The dice are ROLLING! 🎲","Come on, SEVEN! 🍀","Snake eyes watching... 🐍","The table is ALIVE with energy! ⚡"]},
+};
+
+// Celebrity guest pool (10% chance on big plays)
+const CELEB_GUESTS = [
+  {name:"Snoop Dogg",emoji:"🐶",msg:"*drops it like it's hot* 🔥"},
+  {name:"Wiz Khalifa",emoji:"🌟",msg:"Black and yellow vibes 🖤💛"},
+  {name:"Seth Rogen",emoji:"😂",msg:"*iconic laugh* huhuhuhuh"},
+  {name:"Willie Nelson",emoji:"🎸",msg:"On the road again... to this arena 🛤️"},
+  {name:"Martha Stewart",emoji:"👩‍🍳",msg:"That was delightful, darling 🍃"},
+];
+
 // ── LIQUID GLASS DESIGN SYSTEM (iOS-inspired) ──
 // "clear" is the ONE style used for jumbotron, nav, side buttons — all match
 // GLASS_CLEAR — for nav, side buttons, small UI (more transparent)
@@ -254,34 +379,34 @@ const LG = {
 
 // ── GAME DATA (identical content) ──
 const PLAY_GAMES = [
-  { id:"finalkick", name:"Final Kick", emoji:"⚽", players:"2", time:"1-2m", type:"Skill", color:C.cyan, desc:"Penalty kick 1v1. Aim your shot, pick your save direction.", hot:true, difficulty:5 },
-  { id:"finalkick2", name:"Final Kick 2", emoji:"⚽🔥", players:"2", time:"2-3m", type:"Precision", color:C.gold, desc:"Double puff! Aim X-axis + Y-axis separately.", hot:true, difficulty:6 },
-  { id:"finalkick3", name:"Final Kick 3D", emoji:"⚽🌐", players:"2", time:"2-3m", type:"3D Precision", color:C.purple, desc:"3D behind-the-ball view! Double puff aim in 3D.", hot:true, difficulty:6 },
-  { id:"hotpotato", name:"Hot Potato", emoji:"💣", players:"3-8", time:"1-3m", type:"Luck", color:C.orange, desc:"Bomb jumps randomly. Puff to pass. Get caught = eliminated.", difficulty:2 },
-  { id:"russian", name:"Russian Roulette", emoji:"🎲", players:"2-6", time:"1-2m", type:"Luck", color:C.red, desc:"Take turns puffing. Random elimination each round. Maximum tension.", difficulty:2 },
-  { id:"wildwest", name:"Wild West Duel", emoji:"🤠", players:"2", time:"1-2m", type:"Reaction", color:C.gold, desc:"Best of 5 showdown! Wait for DRAW, puff fastest. Reaction time in ms.", hot:true, difficulty:5 },
-  { id:"balloon", name:"Balloon Pop", emoji:"🎈", players:"2-8", time:"1-3m", type:"Strategy", color:C.pink, desc:"Puff inflates the balloon. Pop it and you lose.", difficulty:4 },
-  { id:"puffpong", name:"Puff Pong", emoji:"🏓", players:"2", time:"1-2m", type:"Skill", color:C.green, desc:"Virtual ping pong. Puff = hit the ball. Timing is everything.", difficulty:5 },
-  { id:"rhythm", name:"Rhythm Puff", emoji:"🎵", players:"1-4", time:"1-3m", type:"Rhythm", color:C.purple, desc:"Notes fall down, puff on beat. Guitar Hero style.", difficulty:5 },
-  { id:"tugofwar", name:"Tug of War", emoji:"💪", players:"2-8", time:"30s-1m", type:"Team", color:C.blue, desc:"Two teams puff nonstop. Stronger side wins.", hot:true, difficulty:4 },
-  { id:"hooked", name:"Hooked", emoji:"🎣", players:"1", time:"2-5m", type:"Skill", color:C.blue, desc:"Stack fishing! Puff to reel in fish. Control your suction!", difficulty:4 },
-  { id:"rps", name:"Puff RPS", emoji:"✊", players:"2", time:"1-2m", type:"Strategy", color:C.purple, desc:"Rock Paper Scissors with Puff Power!", hot:true, difficulty:2 },
-  { id:"beatdrop", name:"Beat Drop", emoji:"🎧", players:"1", time:"3-5m", type:"Music", color:C.pink, desc:"Hold your puff until the beat drops. Release on time!", difficulty:4 },
-  { id:"puffclock", name:"Puff Clock", emoji:"⏱️", players:"1-100+", time:"3-5m", type:"Precision", color:C.orange, desc:"Puff for EXACTLY the target time. Closest wins!", difficulty:5 },
-  { id:"pufflimbo", name:"Puff Limbo", emoji:"🎪", players:"1-50", time:"3-5m", type:"Endurance", color:C.orange, desc:"Target puff gets longer each round. Survive the blinker!", difficulty:5 },
-  { id:"puffderby", name:"Puff Derby", emoji:"🏇", players:"6", time:"2-3m", type:"Racing", color:C.green, desc:"Pick a horse. Spam puff to make it run!", difficulty:2 },
-  { id:"tankwar", name:"Tank War", emoji:"🔫", players:"1-4", time:"2-3m", type:"Artillery", color:"#4CAF50", desc:"Aim, fire, destroy! Tap to shoot, puff for super shots!", difficulty:3, hot:true },
-  { id:"fishwar", name:"Fish War", emoji:"🐟", players:"1-4", time:"2-3m", type:"Survival", color:"#3B82F6", desc:"Eat smaller fish, evolve, survive! Puff to boost!", difficulty:3, hot:true },
+  { id:"finalkick", name:"Final Kick", emoji:"⚽", players:"2-100", time:"1-2m", type:"Skill", color:C.cyan, desc:"Penalty kick 1v1. Aim your shot, pick your save direction.", hot:true, difficulty:5, mp:{mode:"100 Keepers",count:"1v100",badge:"🥅"} },
+  { id:"finalkick2", name:"Final Kick 2", emoji:"⚽🔥", players:"8", time:"2-3m", type:"Precision", color:C.gold, desc:"Double puff! Aim X-axis + Y-axis separately.", hot:true, difficulty:6, mp:{mode:"Pressure Cooker",count:"8 players",badge:"🔥"} },
+  { id:"finalkick3", name:"Final Kick 3D", emoji:"⚽🌐", players:"32", time:"2-3m", type:"3D Precision", color:C.purple, desc:"3D behind-the-ball view! Double puff aim in 3D.", hot:true, difficulty:6, mp:{mode:"World Stage",count:"32 bracket",badge:"🏆"} },
+  { id:"hotpotato", name:"Hot Potato", emoji:"💣", players:"16", time:"1-3m", type:"Luck", color:C.orange, desc:"Bomb jumps randomly. Puff to pass. Get caught = eliminated.", difficulty:2, mp:{mode:"Pass the Nuke",count:"16 players",badge:"☢️"} },
+  { id:"russian", name:"Russian Roulette", emoji:"🎲", players:"1,000", time:"1-2m", type:"Luck", color:C.red, desc:"Take turns puffing. Random elimination each round. Maximum tension.", difficulty:2, mp:{mode:"The Gauntlet",count:"1,000→1",badge:"💀"} },
+  { id:"wildwest", name:"Wild West Duel", emoji:"🤠", players:"8", time:"1-2m", type:"Reaction", color:C.gold, desc:"Best of 5 showdown! Wait for DRAW, puff fastest. Reaction time in ms.", hot:true, difficulty:5, mp:{mode:"High Noon Town",count:"8 bracket",badge:"🌵"} },
+  { id:"balloon", name:"Balloon Pop", emoji:"🎈", players:"8", time:"1-3m", type:"Strategy", color:C.pink, desc:"Puff inflates the balloon. Pop it and you lose.", difficulty:4, mp:{mode:"Relay Race",count:"2 teams×4",badge:"🏁"} },
+  { id:"puffpong", name:"Puff Pong", emoji:"🏓", players:"4", time:"1-2m", type:"Skill", color:C.green, desc:"Virtual ping pong. Puff = hit the ball. Timing is everything.", difficulty:5, mp:{mode:"Doubles Chaos",count:"2v2",badge:"🎾"} },
+  { id:"rhythm", name:"Rhythm Puff", emoji:"🎵", players:"4", time:"1-3m", type:"Rhythm", color:C.purple, desc:"Notes fall down, puff on beat. Guitar Hero style.", difficulty:5, mp:{mode:"Band Battle",count:"4-piece band",badge:"🎸"} },
+  { id:"tugofwar", name:"Tug of War", emoji:"💪", players:"100", time:"30s-1m", type:"Team", color:C.blue, desc:"Two teams puff nonstop. Stronger side wins.", hot:true, difficulty:4, mp:{mode:"50v50 War",count:"50v50",badge:"⚔️"} },
+  { id:"hooked", name:"Hooked", emoji:"🎣", players:"8", time:"2-5m", type:"Skill", color:C.blue, desc:"Stack fishing! Puff to reel in fish. Control your suction!", difficulty:4, mp:{mode:"Fishing Tournament",count:"8 anglers",badge:"🐟"} },
+  { id:"rps", name:"Puff RPS", emoji:"✊", players:"16", time:"1-2m", type:"Strategy", color:C.purple, desc:"Rock Paper Scissors with Puff Power!", hot:true, difficulty:2, mp:{mode:"Thunderdome",count:"16 bracket",badge:"⚡"} },
+  { id:"beatdrop", name:"Beat Drop", emoji:"🎧", players:"4", time:"3-5m", type:"Music", color:C.pink, desc:"Hold your puff until the beat drops. Release on time!", difficulty:4, mp:{mode:"DJ Battle",count:"4 DJs",badge:"🎤"} },
+  { id:"puffclock", name:"Puff Clock", emoji:"⏱️", players:"500+", time:"3-5m", type:"Precision", color:C.orange, desc:"Puff for EXACTLY the target time. Closest wins!", difficulty:5, mp:{mode:"World Sync",count:"500+ players",badge:"🌍"} },
+  { id:"pufflimbo", name:"Puff Limbo", emoji:"🎪", players:"50", time:"3-5m", type:"Endurance", color:C.orange, desc:"Target puff gets longer each round. Survive the blinker!", difficulty:5, mp:{mode:"The Eliminator",count:"50→1",badge:"💀"} },
+  { id:"puffderby", name:"Puff Derby", emoji:"🏇", players:"12", time:"2-3m", type:"Racing", color:C.green, desc:"Pick a horse. Spam puff to make it run!", difficulty:2, mp:{mode:"Grand National",count:"6 horses×2",badge:"🐴"} },
+  { id:"tankwar", name:"Tank War", emoji:"🔫", players:"8", time:"2-3m", type:"Artillery", color:"#4CAF50", desc:"Aim, fire, destroy! Tap to shoot, puff for super shots!", difficulty:3, hot:true, mp:{mode:"Clan Wars",count:"4v4",badge:"💥"} },
+  { id:"fishwar", name:"Fish War", emoji:"🐟", players:"50", time:"2-3m", type:"Survival", color:"#3B82F6", desc:"Eat smaller fish, evolve, survive! Puff to boost!", difficulty:3, hot:true, mp:{mode:"Ocean Royale",count:"50 fish BR",badge:"🌊"} },
 ];
 
 const SHOW_GAMES = [
-  { id:"vibecheck", name:"Vibe Check", emoji:"🧠", players:"1-100+", time:"5-15m", type:"Trivia", color:C.gold, desc:"Trivia Game Show. Host asks, contestants answer, audience votes.", live:true, difficulty:3 },
+  { id:"vibecheck", name:"Vibe Check", emoji:"🧠", players:"100+", time:"5-15m", type:"Trivia", color:C.gold, desc:"Trivia Game Show. Host asks, contestants answer, audience votes.", live:true, difficulty:3, mp:{mode:"Crowd vs Contestant",count:"1+99",badge:"🧠"} },
   // Spin & Win moved to Fortune zone
-  { id:"higherlower", name:"Higher or Lower", emoji:"📊", players:"1-100+", time:"5-10m", type:"Knowledge", color:C.cyan, desc:"Guess if the next number is higher or lower. Streak = big rewards.", live:true, difficulty:3 },
-  { id:"pricepuff", name:"The Price is Puff", emoji:"💰", players:"2-50+", time:"5-10m", type:"Knowledge", color:C.green, desc:"Guess the product price. Closest wins.", live:true, difficulty:4 },
-  { id:"survivaltrivia", name:"Survival Trivia", emoji:"🏆", players:"2-100+", time:"5-15m", type:"Trivia", color:C.purple, desc:"Answer correctly or get eliminated. Last one standing wins!", live:true, difficulty:3 },
-  { id:"simonpuffs", name:"Simon Puffs", emoji:"🔴", players:"1-50+", time:"3-8m", type:"Memory", color:C.red, desc:"Remember the pattern, repeat with puffs. Memory master!", live:true, difficulty:3 },
-  { id:"puffauction", name:"Puff Auction", emoji:"🔨", players:"2-50+", time:"3-8m", type:"Strategy", color:C.lime, desc:"Bid with your lungs! Biggest puff wins the auction.", live:true, difficulty:4 },
+  { id:"higherlower", name:"Higher or Lower", emoji:"📊", players:"10", time:"5-10m", type:"Knowledge", color:C.cyan, desc:"Guess if the next number is higher or lower. Streak = big rewards.", live:true, difficulty:3, mp:{mode:"Chain Gang",count:"10 relay",badge:"🔗"} },
+  { id:"pricepuff", name:"The Price is Puff", emoji:"💰", players:"6", time:"5-10m", type:"Knowledge", color:C.green, desc:"Guess the product price. Closest wins.", live:true, difficulty:4, mp:{mode:"Bidding Frenzy",count:"6 players",badge:"💸"} },
+  { id:"survivaltrivia", name:"Survival Trivia", emoji:"🏆", players:"100", time:"5-15m", type:"Trivia", color:C.purple, desc:"Answer correctly or get eliminated. Last one standing wins!", live:true, difficulty:3, mp:{mode:"Last Brain Standing",count:"100→1",badge:"🧠"} },
+  { id:"simonpuffs", name:"Simon Puffs", emoji:"🔴", players:"4 co-op", time:"3-8m", type:"Memory", color:C.red, desc:"Remember the pattern, repeat with puffs. Memory master!", live:true, difficulty:3, mp:{mode:"Mind Meld",count:"4 co-op",badge:"🧩"} },
+  { id:"puffauction", name:"Puff Auction", emoji:"🔨", players:"16", time:"3-8m", type:"Strategy", color:C.lime, desc:"Bid with your lungs! Biggest puff wins the auction.", live:true, difficulty:4, mp:{mode:"Auction House Madness",count:"16 bidders",badge:"🏛️"} },
 ];
 
 const MC_LINES = {
@@ -1691,6 +1816,9 @@ export default function MoodLabArena() {
   const [crowdEnergy, setCrowdEnergy] = useState(0);
   const [spectatorTicker, setSpectatorTicker] = useState([]);
   const [crowdEruption, setCrowdEruption] = useState(false);
+  const [shameCamActive, setShameCamActive] = useState(false);
+  const [hypeCamActive, setHypeCamActive] = useState(false);
+  const [emojiRain, setEmojiRain] = useState(null);
   const spectatorIntervalRef = useRef(null);
 
   // ── Arena View (Virtual Tour) ──
@@ -3946,6 +4074,87 @@ export default function MoodLabArena() {
   };
   const triggerPuffWave = () => { setPuffWaveActive(true); spawnSmoke(15); setTimeout(()=>setPuffWaveActive(false),3000); };
   const setCommentary = (text) => { setCommentatorText(text); };
+
+  // ═══════════════════════════════════════════════════════════════
+  // COMEDY ENGINE — Humor system functions
+  // ═══════════════════════════════════════════════════════════════
+  // pick() already defined later — use pickBot for bot selection
+  const pickBot = () => BOT_POOL[Math.floor(Math.random()*BOT_POOL.length)];
+  const pickArr = (arr) => arr[Math.floor(Math.random()*arr.length)];
+
+  const triggerCrowdRoast = (category) => {
+    const pool = CROWD_ROASTS[category] || CROWD_ROASTS.general_fail;
+    const roast = pickArr(pool);
+    const bot = pickBot();
+    setSideChat(p=>({...p,ai:[...p.ai.slice(-15),{u:bot.name,m:roast,c:C.red,t:Date.now()}]}));
+    setCrowdEnergy(e=>Math.min(100,e+15));
+    playFx("laugh");
+    // Spawn skull/laugh emojis
+    const emojis = ["💀","😂","💀","😭","🤣"];
+    emojis.forEach((em,i)=>setTimeout(()=>setFloatingReactions(r=>[...r.slice(-20),{id:Date.now()+i,emoji:em,x:20+Math.random()*60,y:80}]),i*200));
+  };
+
+  const triggerHype = () => {
+    const msg = pickArr(HYPE_MESSAGES);
+    notify(msg, C.gold);
+    setCrowdEnergy(e=>Math.min(100,e+20));
+    playFx("crowd");
+    setHypeCamActive(true);setTimeout(()=>setHypeCamActive(false),2500);
+    const emojis = ["🔥","👑","⚡","🏆","🐐"];
+    emojis.forEach((em,i)=>setTimeout(()=>setFloatingReactions(r=>[...r.slice(-20),{id:Date.now()+i,emoji:em,x:20+Math.random()*60,y:80}]),i*150));
+  };
+
+  const triggerReactionCam = () => {
+    const tmpl = pickArr(AUDIENCE_REACTIONS);
+    const bot = pickBot();
+    const msg = tmpl.replace("{name}",bot.name);
+    setSideChat(p=>({...p,you:[...p.you.slice(-15),{u:"📸",m:msg,c:C.cyan,t:Date.now()}]}));
+  };
+
+  const triggerShameCam = () => {
+    const msg = pickArr(SHAME_MESSAGES);
+    notify(msg, C.red);
+    setShameCamActive(true);setTimeout(()=>setShameCamActive(false),2500);
+    triggerCrowdRoast("general_fail");
+    setTimeout(()=>triggerReactionCam(),800);
+    playFx("error");
+  };
+
+  const triggerStonerCommentary = (event, gameId) => {
+    const gamePool = GAME_HUMOR[gameId]?.[event];
+    if(gamePool && gamePool.length > 0) { setCommentary(pickArr(gamePool)); return; }
+    const universalPool = STONER_COMMENTARY[event];
+    if(universalPool && universalPool.length > 0) { setCommentary(pickArr(universalPool)); }
+  };
+
+  const triggerVictoryParade = () => {
+    spawnConfetti(40);
+    triggerHype();
+    playFx("crowd");
+    const chants = ["👏👏👏 THE CROWD IS ON THEIR FEET!","🎉🎉🎉 ABSOLUTE SCENES!","🏆 LEGENDARY PERFORMANCE!","🐐 G.O.A.T. ENERGY RIGHT HERE!"];
+    setCommentary(pickArr(chants));
+    // 10% celeb guest
+    if(Math.random()<0.1){
+      const celeb=pickArr(CELEB_GUESTS);
+      setTimeout(()=>{
+        notify("⭐ "+celeb.name+" is watching! "+celeb.emoji,C.gold);
+        setSideChat(p=>({...p,you:[...p.you.slice(-15),{u:"⭐ "+celeb.name,m:celeb.msg,c:C.gold,t:Date.now()}]}));
+      },1500);
+    }
+  };
+
+  const triggerEmojiRain = (emoji, count) => {
+    setEmojiRain({emoji,count,ts:Date.now()});
+    setTimeout(()=>setEmojiRain(null),3000);
+  };
+
+  const triggerCrowdBet = (optA, optB) => {
+    const pctA = 30+Math.floor(Math.random()*40);
+    const pctB = 100-pctA;
+    const bot = pickBot();
+    setSideChat(p=>({...p,ai:[...p.ai.slice(-15),{u:"🎰 CROWD BET",m:`${optA}: ${pctA}% vs ${optB}: ${pctB}%`,c:C.gold,t:Date.now()}]}));
+    setCommentary(`The crowd is split! ${pctA}% betting on ${optA}!`);
+  };
 
   // ═══════════════════════════════════════════════════════════════
   // PUFF REACTIONS SYSTEM
@@ -7897,6 +8106,7 @@ export default function MoodLabArena() {
                       <span style={{display:"inline-block",width:4,height:4,borderRadius:"50%",background:C.green,marginRight:3,verticalAlign:"middle"}}/>
                       {count}
                     </span>
+                    {g.mp && <span style={{fontSize:6,fontWeight:700,color:C.gold,padding:"2px 5px",borderRadius:4,background:`${C.gold}08`,border:`1px solid ${C.gold}15`}}>{g.mp.badge} {g.mp.count}</span>}
                   </div>
                 </div>
               );
@@ -12450,36 +12660,67 @@ const startSimonPuffs = () => {
             <div style={{fontSize:20,fontWeight:900,color:C.text,textShadow:`0 0 15px ${gc}30`,marginBottom:6}}>{matchmaking.game.name}</div>
 
             {matchmaking.stage==="searching" && (
-              <div style={{animation:"fadeIn 0.3s ease"}}>
+              <div style={{animation:"fadeIn 0.3s ease",width:"100%",maxWidth:340}}>
                 {/* Device badges */}
-                <div style={{display:"flex",gap:5,justifyContent:"center",marginBottom:14}}>
+                <div style={{display:"flex",gap:5,justifyContent:"center",marginBottom:10}}>
                   <span style={{fontSize:8,fontWeight:700,color:pool.color,padding:"3px 10px",borderRadius:20,...LG.tinted(pool.color)}}>⚖️ {pool.label}</span>
                   <span style={{fontSize:8,fontWeight:700,color:C.text2,padding:"3px 10px",borderRadius:20,...LG.tinted(C.text3)}}>{getDeviceShort()}</span>
                 </div>
-                {/* Searching animation */}
-                <div style={{fontSize:14,color:C.text2,marginBottom:16,fontWeight:600}}>
-                  {matchmaking.mode==="random"?"Finding same-device opponent...":"Finding opponent..."}
+                {/* LIVE LOBBY — bots joining */}
+                <div style={{padding:"10px 12px",borderRadius:14,background:"rgba(255,255,255,0.02)",border:`1px solid ${gc}15`,marginBottom:12}}>
+                  <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:8}}>
+                    <div style={{width:6,height:6,borderRadius:3,background:C.green,animation:"pulse 1s infinite"}}/>
+                    <span style={{fontSize:9,fontWeight:700,color:C.green}}>LOBBY FILLING</span>
+                    <span style={{fontSize:8,color:C.text3,marginLeft:"auto"}}>{matchmaking.mode==="ai"?"2/2":"3/4"} players</span>
+                  </div>
+                  {/* Player + joining bots */}
+                  <div style={{display:"flex",flexDirection:"column",gap:4}}>
+                    <div style={{display:"flex",alignItems:"center",gap:8,padding:"4px 8px",borderRadius:8,background:`${C.cyan}08`,border:`1px solid ${C.cyan}15`}}>
+                      <span style={{fontSize:14}}>😎</span>
+                      <span style={{fontSize:10,fontWeight:800,color:C.cyan}}>You</span>
+                      <span style={{fontSize:7,color:C.text3,marginLeft:"auto"}}>READY ✓</span>
+                    </div>
+                    {[BOT_POOL[Math.floor(tick)%BOT_POOL.length],BOT_POOL[(Math.floor(tick)+7)%BOT_POOL.length],BOT_POOL[(Math.floor(tick)+13)%BOT_POOL.length]].slice(0,matchmaking.mode==="ai"?1:3).map((bot,i)=>(
+                      <div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"4px 8px",borderRadius:8,background:"rgba(255,255,255,0.02)",border:`1px solid ${C.border}`,animation:`fadeIn 0.3s ease ${0.3+i*0.4}s both`}}>
+                        <span style={{fontSize:14}}>{bot.emoji}</span>
+                        <span style={{fontSize:10,fontWeight:700,color:C.text2}}>{bot.name}</span>
+                        <span style={{fontSize:7,color:C.text3,marginLeft:"auto",fontStyle:"italic"}}>"{bot.catchphrase}"</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <div style={{position:"relative",width:50,height:50,margin:"0 auto"}}>
-                  <div style={{width:50,height:50,border:`3px solid ${gc}15`,borderTopColor:gc,borderRadius:"50%",animation:"spin 0.8s linear infinite"}}/>
-                  <div style={{position:"absolute",inset:6,border:`2px solid ${gc}10`,borderBottomColor:`${gc}60`,borderRadius:"50%",animation:"spin 1.2s linear infinite reverse"}}/>
+                {/* Spinner */}
+                <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+                  <div style={{width:24,height:24,border:`2px solid ${gc}15`,borderTopColor:gc,borderRadius:"50%",animation:"spin 0.8s linear infinite"}}/>
+                  <span style={{fontSize:11,color:C.text2,fontWeight:600}}>Matching players...</span>
                 </div>
-                <div style={{fontSize:10,color:C.text3,marginTop:12,fontStyle:"italic"}}>"Scanning the arena for worthy opponents... 👀"</div>
+                <div style={{fontSize:9,color:C.text3,marginTop:8,fontStyle:"italic",textAlign:"center"}}>{pickArr(STONER_COMMENTARY.charging)}</div>
               </div>
             )}
 
             {matchmaking.stage==="found" && (
-              <div style={{animation:"fadeIn 0.4s ease"}}>
-                <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,marginBottom:4}}>
-                  <span style={{fontSize:20,animation:"countPulse 0.5s ease"}}>⚡</span>
-                  <span style={{fontSize:16,fontWeight:800,color:C.green}}>OPPONENT FOUND!</span>
+              <div style={{animation:"fadeIn 0.4s ease",width:"100%",maxWidth:340}}>
+                <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,marginBottom:8}}>
+                  <span style={{fontSize:24,animation:"countPulse 0.5s ease"}}>⚡</span>
+                  <span style={{fontSize:18,fontWeight:900,color:C.green,letterSpacing:2}}>MATCH FOUND!</span>
                 </div>
-                <div style={{fontSize:14,fontWeight:700,color:C.text}}>{matchmaking.opp}</div>
-                <div style={{display:"flex",gap:5,justifyContent:"center",marginTop:8}}>
+                {/* VS Card */}
+                <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:16,padding:"14px",borderRadius:16,background:"rgba(255,255,255,0.03)",border:`1px solid ${gc}20`,marginBottom:10}}>
+                  <div style={{textAlign:"center"}}>
+                    <div style={{fontSize:32,marginBottom:4}}>😎</div>
+                    <div style={{fontSize:11,fontWeight:800,color:C.cyan}}>You</div>
+                  </div>
+                  <div style={{fontSize:20,fontWeight:900,color:C.gold,textShadow:`0 0 15px ${C.gold}40`,animation:"pulse 1s infinite"}}>VS</div>
+                  <div style={{textAlign:"center"}}>
+                    <div style={{fontSize:32,marginBottom:4}}>{(BOT_POOL[Math.floor(tick)%BOT_POOL.length]).emoji}</div>
+                    <div style={{fontSize:11,fontWeight:800,color:C.red}}>{matchmaking.opp}</div>
+                  </div>
+                </div>
+                <div style={{display:"flex",gap:5,justifyContent:"center",marginBottom:6}}>
                   <span style={{fontSize:8,fontWeight:700,color:pool.color,padding:"3px 10px",borderRadius:20,...LG.tinted(pool.color)}}>⚖️ Fair Match</span>
-                  <span style={{fontSize:8,fontWeight:700,color:C.green,padding:"3px 10px",borderRadius:20,...LG.tinted(C.green)}}>✓ Same Device Pool</span>
+                  <span style={{fontSize:8,fontWeight:700,color:C.green,padding:"3px 10px",borderRadius:20,...LG.tinted(C.green)}}>✓ Same Pool</span>
                 </div>
-                <div style={{fontSize:10,color:C.text3,marginTop:10}}>Starting match... 🔥</div>
+                <div style={{fontSize:11,fontWeight:700,color:C.gold,textAlign:"center",animation:"pulse 1s infinite"}}>🔥 Match starting... GET READY!</div>
               </div>
             )}
           </div>
@@ -12512,6 +12753,7 @@ const startSimonPuffs = () => {
             onTouchStart={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;if(["staredown","countdown","draw"].includes(wwPhase)) duelShoot();}}
             onTouchEnd={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;if(wwPhase==="puffing") duelReleasePuff();}}>
 
+            {renderGameChatPanel("WILD WEST DUEL")}
 
             {/* ═══ SCREEN FLASH OVERLAY ═══ */}
             {screenFlash && <div style={{position:"absolute",inset:0,zIndex:200,pointerEvents:"none",opacity:0,
@@ -13057,6 +13299,7 @@ const startSimonPuffs = () => {
             animation:screenShake?"shake 0.4s ease":"none",
             filter:dimLights?"brightness(0.6)":"brightness(1)",transition:"filter 0.3s",
           }}>
+            {renderGameChatPanel("FINAL KICK")}
             {/* ═══ SCREEN FLASH OVERLAY ═══ */}
             {screenFlash && <div style={{position:"absolute",inset:0,zIndex:200,pointerEvents:"none",opacity:0,
               background:screenFlash==="goal"?"rgba(0,255,100,0.25)":screenFlash==="save"?"rgba(255,165,0,0.2)":screenFlash==="miss"?"rgba(255,50,50,0.2)":"rgba(255,0,0,0.3)",
@@ -15101,6 +15344,7 @@ const startSimonPuffs = () => {
           <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden",display:"flex",flexDirection:"column",alignItems:"center",
             background:"linear-gradient(180deg, #0a0618 0%, #1a0a2e 25%, #0d1a2f 50%, #0a0a14 100%)",
             animation:screenShake?"shake 0.4s ease":"none"}}>
+            {renderGameChatPanel("TUG OF WAR")}
             {screenFlash && <div style={{position:"absolute",inset:0,zIndex:200,pointerEvents:"none",opacity:0,background:screenFlash==="goal"?"rgba(0,255,100,0.25)":"rgba(255,50,50,0.2)",animation:"flashOverlay 0.4s ease forwards"}}/>}
             {confettiParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size*0.6,background:p.color,borderRadius:1,transform:`rotate(${p.rot}deg)`,zIndex:210,pointerEvents:"none",animation:`confettiFall ${1.5+Math.random()}s ease-out forwards`}}/>))}
             <div style={{display:"flex",flexDirection:"column",alignItems:"center",maxWidth:380,width:"100%",padding:"50px 16px 20px",gap:12,zIndex:10,flex:1}}>
@@ -15577,6 +15821,7 @@ const startSimonPuffs = () => {
             onMouseUp={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;rpsStopPuff();}}
             onTouchStart={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;e.preventDefault();if(isPuff)rpsStartPuff();}}
             onTouchEnd={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;e.preventDefault();rpsStopPuff();}}>
+            {renderGameChatPanel("PUFF RPS")}
             {/* Dojo background — dark purple/blue with neon */}
             <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg, #0a0520 0%, #12083a 20%, #1a0e4a 40%, #0f0830 65%, #080418 100%)",zIndex:0}}/>
             {/* Neon glow accents */}
@@ -15945,6 +16190,7 @@ const startSimonPuffs = () => {
         return (
           <div style={{...overlayStyle,background:"rgba(0,5,20,0.97)"}}>
             {overlayBack(pcEndGame)}
+            {renderGameChatPanel("PUFF CLOCK")}
             <div style={{flex:1,display:"flex",flexDirection:"column",padding:16,paddingTop:56}}>
               {/* Header */}
               <div style={{textAlign:"center",marginBottom:12}}>
@@ -16106,6 +16352,7 @@ const startSimonPuffs = () => {
             {/* Vignette */}
             <div style={{position:"absolute",inset:0,background:"radial-gradient(circle at 50% 50%, transparent 40%, rgba(0,0,0,0.6) 100%)",zIndex:3,pointerEvents:"none"}}/>
             {overlayBack(bdCleanup)}
+            {renderGameChatPanel("BEAT DROP")}
             <div style={{position:"relative",zIndex:10,display:"flex",flexDirection:"column",alignItems:"center",width:"100%",maxWidth:380,padding:"60px 20px 30px",flex:1}}>
               {/* Header */}
               <div style={{fontSize:14,fontWeight:900,color:C.pink,letterSpacing:3,marginBottom:4}}>BEAT DROP</div>
@@ -16254,6 +16501,7 @@ const startSimonPuffs = () => {
             {/* Screen flash */}
             {screenFlash && <div style={{position:"absolute",inset:0,background:screenFlash==="goal"?`${C.gold}25`:`${C.red}20`,zIndex:99,pointerEvents:"none"}}/>}
             {overlayBack(plCleanup)}
+            {renderGameChatPanel("PUFF LIMBO")}
             <div style={{position:"relative",zIndex:10,display:"flex",flexDirection:"column",alignItems:"center",width:"100%",maxWidth:380,padding:"60px 20px 30px",flex:1}}>
               {/* Header */}
               <div style={{fontSize:14,fontWeight:900,color:C.orange,letterSpacing:3,marginBottom:4}}>PUFF LIMBO</div>
@@ -18012,6 +18260,18 @@ const startSimonPuffs = () => {
               <span style={{fontSize:8,fontWeight:700,color:C.text2,padding:"2px 8px",borderRadius:20,...LG.tinted(C.text3)}}>⏱ {selectedGame.time}</span>
               {selectedGame.hot && <span style={{fontSize:8,fontWeight:800,color:C.red,padding:"2px 8px",borderRadius:20,background:`${C.red}15`,border:`1px solid ${C.red}25`,animation:"pulse 2s infinite"}}>🔥 HOT</span>}
             </div>
+            {/* Multiplayer Mode Badge */}
+            {selectedGame.mp && (
+              <div style={{display:"flex",alignItems:"center",gap:6,padding:"6px 12px",borderRadius:12,marginBottom:8,
+                background:`linear-gradient(135deg, ${gc}12, ${gc}04)`,border:`1px solid ${gc}25`,
+                boxShadow:`0 0 15px ${gc}10`}}>
+                <span style={{fontSize:16}}>{selectedGame.mp.badge}</span>
+                <div>
+                  <div style={{fontSize:10,fontWeight:900,color:gc,letterSpacing:1}}>{selectedGame.mp.mode}</div>
+                  <div style={{fontSize:7,color:C.text3}}>👥 {selectedGame.mp.count} · Multiplayer</div>
+                </div>
+              </div>
+            )}
             <div style={{display:"flex",gap:4,marginBottom:8}}>
               <span style={{fontSize:7,fontWeight:700,color:pool.color,padding:"2px 7px",borderRadius:20,...LG.tinted(pool.color)}}>⚖️ {pool.label}</span>
               <span style={{fontSize:7,fontWeight:700,color:C.orange,padding:"2px 7px",borderRadius:20,...LG.tinted(C.orange)}}>💨 Puff</span>
@@ -22972,6 +23232,17 @@ const startSimonPuffs = () => {
       setCurrentWinStreak(0);
     }
 
+    // ── Comedy Engine triggers on game result ──
+    const _gid = gameActive?.id || "";
+    if(won) {
+      setTimeout(()=>triggerVictoryParade(), 500);
+      setTimeout(()=>triggerStonerCommentary("big_play", _gid), 800);
+      setTimeout(()=>triggerReactionCam(), 1200);
+    } else {
+      setTimeout(()=>triggerShameCam(), 500);
+      setTimeout(()=>triggerStonerCommentary("ai_wins", _gid), 1000);
+    }
+
     // Track unique games for variety bonus
     const gId = gameActive?.id;
     if(gId && !sessionGamesPlayed.includes(gId)) {
@@ -23945,6 +24216,34 @@ const startSimonPuffs = () => {
       {/* Overlays */}
       {renderSpectatorOverlay()}
       {renderGameOverlay()}
+
+      {/* ═══ COMEDY OVERLAYS — Shame Cam / Hype Cam / Emoji Rain ═══ */}
+      {shameCamActive && (
+        <div style={{position:"fixed",top:"30%",left:"50%",transform:"translate(-50%,-50%)",zIndex:300,pointerEvents:"none",animation:"fadeIn 0.3s ease"}}>
+          <div style={{padding:"16px 28px",borderRadius:16,background:"rgba(239,68,68,0.15)",border:"2px solid rgba(239,68,68,0.5)",backdropFilter:"blur(12px)",boxShadow:"0 0 40px rgba(239,68,68,0.3)",textAlign:"center"}}>
+            <div style={{fontSize:28,marginBottom:4}}>📸</div>
+            <div style={{fontSize:18,fontWeight:900,color:"#EF4444",letterSpacing:3}}>{pickArr(SHAME_MESSAGES)}</div>
+            <div style={{fontSize:9,color:"rgba(255,255,255,0.5)",marginTop:4}}>The whole arena saw that</div>
+          </div>
+        </div>
+      )}
+      {hypeCamActive && (
+        <div style={{position:"fixed",top:"25%",left:"50%",transform:"translate(-50%,-50%)",zIndex:300,pointerEvents:"none",animation:"fadeIn 0.3s ease"}}>
+          <div style={{padding:"16px 28px",borderRadius:16,background:"rgba(255,215,0,0.12)",border:"2px solid rgba(255,215,0,0.5)",backdropFilter:"blur(12px)",boxShadow:"0 0 40px rgba(255,215,0,0.3)",textAlign:"center"}}>
+            <div style={{fontSize:28,marginBottom:4}}>🏆</div>
+            <div style={{fontSize:18,fontWeight:900,color:C.gold,letterSpacing:3}}>{pickArr(HYPE_MESSAGES)}</div>
+            <div style={{fontSize:9,color:"rgba(255,255,255,0.5)",marginTop:4}}>Everyone is watching</div>
+          </div>
+        </div>
+      )}
+      {emojiRain && (
+        <div style={{position:"fixed",inset:0,zIndex:290,pointerEvents:"none",overflow:"hidden"}}>
+          {[...Array(emojiRain.count)].map((_,i)=>(
+            <div key={"er"+i} style={{position:"absolute",left:(5+Math.random()*90)+"%",top:-20,fontSize:20+Math.random()*16,animation:`confettiFall ${1.5+Math.random()*1.5}s ease-out ${Math.random()*0.8}s forwards`,pointerEvents:"none"}}>{emojiRain.emoji}</div>
+          ))}
+        </div>
+      )}
+
       {/* Stage MC Bar + Role Badge — floats on top of Stage game screens */}
       {(gameActive || showVibeCheck || swPhase) && stageRole && (
         <>
