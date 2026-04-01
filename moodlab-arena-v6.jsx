@@ -12932,11 +12932,11 @@ const startSimonPuffs = () => {
                 {/* Reaction bar */}
                 <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:2,padding:"3px 6px",...GLASS_CLEAR,borderRadius:"10px 10px 0 0"}}>
                   {[{e:"😰"},{e:"🤠"},{e:"👀"},{e:"🔥"},{e:"💀"},{e:"💨"},{e:"😂"},{e:"🤫"}].map((r,i)=>(
-                    <div key={i} data-btn="true" onClick={(ev)=>{ev.stopPropagation();playFx("tap");const msg={u:"You",m:r.e,c:audienceSide==="you"?C.cyan:C.orange,t:Date.now()};setSideChat(p=>({...p,[audienceSide]:[...p[audienceSide],msg].slice(-20)}));setFloatingReactions(p=>[...p,{id:Date.now()+i,emoji:r.e,x:15+Math.random()*70,dur:1.5+Math.random()}]);if(r.e==="😂")playFx("laugh");if(r.e==="💨"&&Math.random()<0.15&&!puffWaveActive){triggerPuffWave();playFx("crowd");setCommentary("🌪️ DUST STORM!");}}} style={{width:28,height:28,borderRadius:7,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:13,background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.06)"}}>
+                    <div key={i} data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(ev)=>{ev.stopPropagation();playFx("tap");const msg={u:"You",m:r.e,c:audienceSide==="you"?C.cyan:C.orange,t:Date.now()};setSideChat(p=>({...p,[audienceSide]:[...p[audienceSide],msg].slice(-20)}));setFloatingReactions(p=>[...p,{id:Date.now()+i,emoji:r.e,x:15+Math.random()*70,dur:1.5+Math.random()}]);if(r.e==="😂")playFx("laugh");if(r.e==="💨"&&Math.random()<0.15&&!puffWaveActive){triggerPuffWave();playFx("crowd");setCommentary("🌪️ DUST STORM!");}}} style={{width:28,height:28,borderRadius:7,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:13,background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.06)"}}>
                       {r.e}
                     </div>
                   ))}
-                  <div data-btn="true" onClick={(ev)=>{ev.stopPropagation();playFx("tap");setAudioOn(!audioOn);}} style={{width:28,height:28,borderRadius:7,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:11,marginLeft:1,background:audioOn?`${C.green}10`:`${C.red}10`,border:`1px solid ${audioOn?C.green+"20":C.red+"20"}`}}>{audioOn?"🔊":"🔇"}</div>
+                  <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(ev)=>{ev.stopPropagation();playFx("tap");setAudioOn(!audioOn);}} style={{width:28,height:28,borderRadius:7,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:11,marginLeft:1,background:audioOn?`${C.green}10`:`${C.red}10`,border:`1px solid ${audioOn?C.green+"20":C.red+"20"}`}}>{audioOn?"🔊":"🔇"}</div>
                 </div>
 
                 {/* Side picker + Chat/Stats panel */}
@@ -12959,7 +12959,7 @@ const startSimonPuffs = () => {
                     </div>
                   </div>
                   <div style={{display:"flex",borderBottom:`1px solid ${C.border}`}}>
-                    {[{id:"chat",label:"💬 Chat"},{id:"stats",label:"📊 Stats"}].map(t=>(<div key={t.id} data-btn="true" onClick={(ev)=>{ev.stopPropagation();playFx("nav");setGameBottomTab(t.id);}} style={{flex:1,padding:"3px 0",textAlign:"center",cursor:"pointer",borderBottom:gameBottomTab===t.id?`2px solid ${C.gold}`:`2px solid transparent`}}><span style={{fontSize:8,fontWeight:gameBottomTab===t.id?800:600,color:gameBottomTab===t.id?C.gold:C.text3}}>{t.label}</span></div>))}
+                    {[{id:"chat",label:"💬 Chat"},{id:"stats",label:"📊 Stats"}].map(t=>(<div key={t.id} data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(ev)=>{ev.stopPropagation();playFx("nav");setGameBottomTab(t.id);}} style={{flex:1,padding:"3px 0",textAlign:"center",cursor:"pointer",borderBottom:gameBottomTab===t.id?`2px solid ${C.gold}`:`2px solid transparent`}}><span style={{fontSize:8,fontWeight:gameBottomTab===t.id?800:600,color:gameBottomTab===t.id?C.gold:C.text3}}>{t.label}</span></div>))}
                   </div>
                   <div style={{flex:1,overflowY:"auto",padding:"4px 10px 6px"}}>
                     {gameBottomTab==="chat" ? (
@@ -13012,10 +13012,10 @@ const startSimonPuffs = () => {
   {!bleConnected && <div style={{display:"flex",justifyContent:"space-between",fontSize:10,color:C.orange,marginTop:4}}><span>Without device</span><span>70%</span></div>}
 </div>);})()}
                       <div style={{display:"flex",gap:8,justifyContent:"center"}}>
-                        <div data-btn="true" onClick={(e)=>{e.stopPropagation();startDuel();}} style={{padding:"12px 24px",borderRadius:12,cursor:"pointer",background:`linear-gradient(135deg, ${C.gold}20, ${C.gold}08)`,border:`1px solid ${C.gold}40`,fontSize:14,fontWeight:800,color:C.gold,letterSpacing:1,minWidth:44,textAlign:"center"}}>🔫 REMATCH</div>
-                        <div data-btn="true" onClick={(e)=>{e.stopPropagation();resetDuel();setGameActive(null);}} style={{padding:"12px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:`1px solid rgba(139,69,19,0.3)`,fontSize:14,fontWeight:700,color:C.text2,minWidth:44,textAlign:"center"}}>Exit</div>
+                        <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();startDuel();}} style={{padding:"12px 24px",borderRadius:12,cursor:"pointer",background:`linear-gradient(135deg, ${C.gold}20, ${C.gold}08)`,border:`1px solid ${C.gold}40`,fontSize:14,fontWeight:800,color:C.gold,letterSpacing:1,minWidth:44,textAlign:"center"}}>🔫 REMATCH</div>
+                        <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();resetDuel();setGameActive(null);}} style={{padding:"12px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:`1px solid rgba(139,69,19,0.3)`,fontSize:14,fontWeight:700,color:C.text2,minWidth:44,textAlign:"center"}}>Exit</div>
                       </div>
-                      <div data-btn="true" onClick={()=>{resetDuel();setGameActive(null);setTab("me");setZone(null);setSelectedGame(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
+                      <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={()=>{resetDuel();setGameActive(null);setTab("me");setZone(null);setSelectedGame(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
                     </div>
                   </div>
                 )}
@@ -13679,8 +13679,8 @@ const startSimonPuffs = () => {
                   <div style={{fontSize:11,color:C.text2,marginBottom:4}}>Tighter sweet spot · Double score if you nail it!</div>
                   <div style={{fontSize:9,color:C.text3,marginBottom:12,fontStyle:"italic"}}>"{kickOpponent.current.name}: 'No way you hit this one' 😏"</div>
                   <div style={{display:"flex",gap:10,justifyContent:"center"}}>
-                    <div data-btn="true" onClick={kickAcceptBonus} style={{padding:"12px 24px",borderRadius:12,cursor:"pointer",background:`linear-gradient(135deg, ${C.gold}25, ${C.gold}08)`,border:`1px solid ${C.gold}40`,fontSize:14,fontWeight:900,color:C.gold,boxShadow:`0 0 20px ${C.gold}15`,animation:"countPulse 1s infinite"}}>🔥 BRING IT</div>
-                    <div data-btn="true" onClick={kickSkipBonus} style={{padding:"12px 24px",borderRadius:12,cursor:"pointer",background:`${C.text3}08`,border:`1px solid ${C.text3}20`,fontSize:14,fontWeight:700,color:C.text3}}>Skip →</div>
+                    <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={kickAcceptBonus} style={{padding:"12px 24px",borderRadius:12,cursor:"pointer",background:`linear-gradient(135deg, ${C.gold}25, ${C.gold}08)`,border:`1px solid ${C.gold}40`,fontSize:14,fontWeight:900,color:C.gold,boxShadow:`0 0 20px ${C.gold}15`,animation:"countPulse 1s infinite"}}>🔥 BRING IT</div>
+                    <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={kickSkipBonus} style={{padding:"12px 24px",borderRadius:12,cursor:"pointer",background:`${C.text3}08`,border:`1px solid ${C.text3}20`,fontSize:14,fontWeight:700,color:C.text3}}>Skip →</div>
                   </div>
                 </div>
               )}
@@ -13837,20 +13837,20 @@ const startSimonPuffs = () => {
                     {(()=>{const fkWc=gameActive?.wcMode;const fkBase=fkWc?(won?20:draw?10:5):(won?80:draw?30:10);return(<div style={{padding:10,borderRadius:10,background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.06)",marginBottom:10,width:"100%",maxWidth:260}}><div style={{fontSize:9,color:C.text3,letterSpacing:1,marginBottom:6}}>GAME REWARD</div><div style={{display:"flex",justifyContent:"space-between",fontSize:13,fontWeight:800}}><span style={{color:C.text}}>Earned</span><span style={{color:C.gold}}>+{fkBase} 🪙</span></div>{!bleConnected && <div style={{display:"flex",justifyContent:"space-between",fontSize:10,color:C.orange,marginTop:4}}><span>Without device</span><span>70%</span></div>}</div>);})()}
                     <div style={{display:"flex",gap:10,justifyContent:"center"}}>
                       {/* No rematch in tournament mode */}
-                      {!gameActive?.wcMode && <div data-btn="true" onClick={()=>{startKick(gameActive?.id);playFx("whistle");}} style={{
+                      {!gameActive?.wcMode && <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={()=>{startKick(gameActive?.id);playFx("whistle");}} style={{
                         padding:"12px 28px",borderRadius:12,cursor:"pointer",
                         background:`linear-gradient(135deg, ${C.cyan}18, ${C.cyan}06)`,
                         border:`1px solid ${C.cyan}30`,fontSize:14,fontWeight:800,color:C.cyan,
                         boxShadow:`0 0 15px ${C.cyan}10`,
                       }}>🔄 Rematch</div>}
-                      <div data-btn="true" onClick={()=>{kickEndGame();playFx("crowd");}} style={{
+                      <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={()=>{kickEndGame();playFx("crowd");}} style={{
                         padding:"12px 28px",borderRadius:12,cursor:"pointer",
                         background:`linear-gradient(135deg, ${C.green}18, ${C.green}06)`,
                         border:`1px solid ${C.green}30`,fontSize:14,fontWeight:800,color:C.green,
                         boxShadow:`0 0 15px ${C.green}10`,
                       }}>💰 Collect</div>
                     </div>
-                    {!gameActive?.wcMode && <div data-btn="true" onClick={()=>{cleanupAllGames();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>}
+                    {!gameActive?.wcMode && <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={()=>{cleanupAllGames();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>}
                   </div>
                 );
               })()}
@@ -13873,7 +13873,7 @@ const startSimonPuffs = () => {
                     {r.e}
                   </div>
                 ))}
-                <div data-btn="true" onClick={()=>{playFx("tap");setAudioOn(!audioOn);}} style={{width:26,height:26,borderRadius:6,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:10,marginLeft:1,background:audioOn?`${C.green}10`:`${C.red}10`,border:`1px solid ${audioOn?C.green+"20":C.red+"20"}`}}>
+                <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={()=>{playFx("tap");setAudioOn(!audioOn);}} style={{width:26,height:26,borderRadius:6,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:10,marginLeft:1,background:audioOn?`${C.green}10`:`${C.red}10`,border:`1px solid ${audioOn?C.green+"20":C.red+"20"}`}}>
                   {audioOn?"🔊":"🔇"}
                 </div>
               </div>
@@ -13989,7 +13989,7 @@ const startSimonPuffs = () => {
                         return <div style={{display:"flex",gap:3,marginTop:2}}>
                           <input value={chatInput} onChange={e=>setChatInput(e.target.value)} onKeyDown={e=>{if(e.key==="Enter")sendMsg(chatInput);}}
                             placeholder={isBreak?"Chat with everyone...":"Cheer..."} style={{flex:1,background:`${C.text3}06`,border:`1px solid ${C.border}`,borderRadius:6,padding:"3px 6px",fontSize:7,color:C.text,outline:"none"}}/>
-                          <div data-btn="true" onClick={()=>sendMsg(chatInput)} style={{padding:"3px 7px",borderRadius:6,cursor:"pointer",fontSize:7,fontWeight:700,color:isBreak?C.gold:audienceSide==="you"?C.cyan:C.red,...LG.tinted(isBreak?C.gold:audienceSide==="you"?C.cyan:C.red)}}>Send</div>
+                          <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={()=>sendMsg(chatInput)} style={{padding:"3px 7px",borderRadius:6,cursor:"pointer",fontSize:7,fontWeight:700,color:isBreak?C.gold:audienceSide==="you"?C.cyan:C.red,...LG.tinted(isBreak?C.gold:audienceSide==="you"?C.cyan:C.red)}}>Send</div>
                         </div>;
                       })()}
                     </div>
@@ -14589,8 +14589,8 @@ const startSimonPuffs = () => {
                   <div style={{fontSize:11,color:C.text2,marginBottom:4}}>Double puff bonus — tighter sweet spots!</div>
                   <div style={{fontSize:9,color:C.text3,marginBottom:12,fontStyle:"italic"}}>"Both axes need precision 🎯🎯"</div>
                   <div style={{display:"flex",gap:10,justifyContent:"center"}}>
-                    <div data-btn="true" onClick={kickAcceptBonus} style={{padding:"12px 24px",borderRadius:12,cursor:"pointer",background:`linear-gradient(135deg, ${C.gold}25, ${C.gold}08)`,border:`1px solid ${C.gold}40`,fontSize:14,fontWeight:900,color:C.gold,boxShadow:`0 0 20px ${C.gold}15`,animation:"countPulse 1s infinite"}}>🔥 BRING IT</div>
-                    <div data-btn="true" onClick={kickSkipBonus} style={{padding:"12px 24px",borderRadius:12,cursor:"pointer",background:`${C.text3}08`,border:`1px solid ${C.text3}20`,fontSize:14,fontWeight:700,color:C.text3}}>Skip →</div>
+                    <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={kickAcceptBonus} style={{padding:"12px 24px",borderRadius:12,cursor:"pointer",background:`linear-gradient(135deg, ${C.gold}25, ${C.gold}08)`,border:`1px solid ${C.gold}40`,fontSize:14,fontWeight:900,color:C.gold,boxShadow:`0 0 20px ${C.gold}15`,animation:"countPulse 1s infinite"}}>🔥 BRING IT</div>
+                    <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={kickSkipBonus} style={{padding:"12px 24px",borderRadius:12,cursor:"pointer",background:`${C.text3}08`,border:`1px solid ${C.text3}20`,fontSize:14,fontWeight:700,color:C.text3}}>Skip →</div>
                   </div>
                 </div>
               )}
@@ -14669,20 +14669,20 @@ const startSimonPuffs = () => {
                     </div>
                     {(()=>{const fkWc=gameActive?.wcMode;const fkBase=fkWc?(won?20:draw?10:5):(won?80:draw?30:10);return(<div style={{padding:10,borderRadius:10,background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.06)",marginBottom:10,width:"100%",maxWidth:260}}><div style={{fontSize:9,color:C.text3,letterSpacing:1,marginBottom:6}}>GAME REWARD</div><div style={{display:"flex",justifyContent:"space-between",fontSize:13,fontWeight:800}}><span style={{color:C.text}}>Earned</span><span style={{color:C.gold}}>+{fkBase} 🪙</span></div>{!bleConnected && <div style={{display:"flex",justifyContent:"space-between",fontSize:10,color:C.orange,marginTop:4}}><span>Without device</span><span>70%</span></div>}</div>);})()}
                     <div style={{display:"flex",gap:10,justifyContent:"center"}}>
-                      {!gameActive?.wcMode && <div data-btn="true" onClick={()=>{startKick(gameActive?.id);playFx("whistle");}} style={{
+                      {!gameActive?.wcMode && <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={()=>{startKick(gameActive?.id);playFx("whistle");}} style={{
                         padding:"12px 28px",borderRadius:12,cursor:"pointer",
                         background:`linear-gradient(135deg, ${C.cyan}18, ${C.cyan}06)`,
                         border:`1px solid ${C.cyan}30`,fontSize:14,fontWeight:800,color:C.cyan,
                         boxShadow:`0 0 15px ${C.cyan}10`,
                       }}>🔄 Rematch</div>}
-                      <div data-btn="true" onClick={()=>{kickEndGame();playFx("crowd");}} style={{
+                      <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={()=>{kickEndGame();playFx("crowd");}} style={{
                         padding:"12px 28px",borderRadius:12,cursor:"pointer",
                         background:`linear-gradient(135deg, ${C.green}18, ${C.green}06)`,
                         border:`1px solid ${C.green}30`,fontSize:14,fontWeight:800,color:C.green,
                         boxShadow:`0 0 15px ${C.green}10`,
                       }}>💰 Collect</div>
                     </div>
-                    {!gameActive?.wcMode && <div data-btn="true" onClick={()=>{cleanupAllGames();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>}
+                    {!gameActive?.wcMode && <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={()=>{cleanupAllGames();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>}
                   </div>
                 );
               })()}
@@ -14703,7 +14703,7 @@ const startSimonPuffs = () => {
                     {r.e}
                   </div>
                 ))}
-                <div data-btn="true" onClick={()=>{playFx("tap");setAudioOn(!audioOn);}} style={{width:26,height:26,borderRadius:6,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:10,marginLeft:1,background:audioOn?`${C.green}10`:`${C.red}10`,border:`1px solid ${audioOn?C.green+"20":C.red+"20"}`}}>
+                <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={()=>{playFx("tap");setAudioOn(!audioOn);}} style={{width:26,height:26,borderRadius:6,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontSize:10,marginLeft:1,background:audioOn?`${C.green}10`:`${C.red}10`,border:`1px solid ${audioOn?C.green+"20":C.red+"20"}`}}>
                   {audioOn?"🔊":"🔇"}
                 </div>
               </div>
@@ -14797,7 +14797,7 @@ const startSimonPuffs = () => {
                         return <div style={{display:"flex",gap:3,marginTop:2}}>
                           <input value={chatInput} onChange={e=>setChatInput(e.target.value)} onKeyDown={e=>{if(e.key==="Enter")sendMsg(chatInput);}}
                             placeholder={isBreak?"Chat with everyone...":"Cheer..."} style={{flex:1,background:`${C.text3}06`,border:`1px solid ${C.border}`,borderRadius:6,padding:"3px 6px",fontSize:7,color:C.text,outline:"none"}}/>
-                          <div data-btn="true" onClick={()=>sendMsg(chatInput)} style={{padding:"3px 7px",borderRadius:6,cursor:"pointer",fontSize:7,fontWeight:700,color:isBreak?C.gold:audienceSide==="you"?C.cyan:C.red,...LG.tinted(isBreak?C.gold:audienceSide==="you"?C.cyan:C.red)}}>Send</div>
+                          <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={()=>sendMsg(chatInput)} style={{padding:"3px 7px",borderRadius:6,cursor:"pointer",fontSize:7,fontWeight:700,color:isBreak?C.gold:audienceSide==="you"?C.cyan:C.red,...LG.tinted(isBreak?C.gold:audienceSide==="you"?C.cyan:C.red)}}>Send</div>
                         </div>;
                       })()}
                     </div>
@@ -14942,9 +14942,9 @@ const startSimonPuffs = () => {
   </div>
   {!bleConnected && <div style={{display:"flex",justifyContent:"space-between",fontSize:10,color:C.orange,marginTop:4}}><span>Without device</span><span>70%</span></div>}
 </div><div style={{display:"flex",gap:10,animation:"fadeIn 0.5s ease"}}>
-                <div data-btn="true" onClick={()=>{setBpPhase(null);startBalloonPop();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.pink}15`,border:`1px solid ${C.pink}30`,fontSize:13,fontWeight:800,color:C.pink}}>🔄 Play Again</div>
-                <div data-btn="true" onClick={bpEndGame} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.text3}10`,border:`1px solid ${C.text3}20`,fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
-              </div><div style={{display:"flex",gap:8,marginTop:8}}><div data-btn="true" onClick={()=>{bpEndGame();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{flex:1,padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple}}>👤 My Progress</div></div></>);})()}
+                <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={()=>{setBpPhase(null);startBalloonPop();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.pink}15`,border:`1px solid ${C.pink}30`,fontSize:13,fontWeight:800,color:C.pink}}>🔄 Play Again</div>
+                <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={bpEndGame} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.text3}10`,border:`1px solid ${C.text3}20`,fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
+              </div><div style={{display:"flex",gap:8,marginTop:8}}><div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={()=>{bpEndGame();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{flex:1,padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple}}>👤 My Progress</div></div></>);})()}
             </div>
           </div>
         );
@@ -15001,8 +15001,8 @@ const startSimonPuffs = () => {
               {rrPhase==="click"&&(<div style={{textAlign:"center",animation:"fadeIn 0.3s ease"}}><div style={{fontSize:50,animation:"goalBurst 0.5s ease"}}>😮‍💨</div><div style={{fontSize:14,fontWeight:800,color:C.green}}>SAFE!</div></div>)}
               {rrPhase==="bang"&&(<div style={{textAlign:"center",animation:"shake 0.5s ease"}}><div style={{fontSize:60,animation:"goalBurst 0.5s ease"}}>💥</div><div style={{fontSize:18,fontWeight:900,color:C.red,textShadow:`0 0 30px ${C.red}`}}>BANG!</div></div>)}
               {rrPhase==="result"&&(<div style={{display:"flex",gap:10,marginTop:12,animation:"fadeIn 0.5s ease"}}>
-                <div data-btn="true" onClick={()=>{setRrPhase(null);startRussianRoulette();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.red}15`,border:`1px solid ${C.red}30`,fontSize:13,fontWeight:800,color:C.red}}>🔄 Again</div>
-                <div data-btn="true" onClick={rrEndGame} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.text3}10`,border:`1px solid ${C.text3}20`,fontSize:13,fontWeight:800,color:C.text3}}>Done ✓</div>
+                <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={()=>{setRrPhase(null);startRussianRoulette();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.red}15`,border:`1px solid ${C.red}30`,fontSize:13,fontWeight:800,color:C.red}}>🔄 Again</div>
+                <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={rrEndGame} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.text3}10`,border:`1px solid ${C.text3}20`,fontSize:13,fontWeight:800,color:C.text3}}>Done ✓</div>
               </div>)}
             </div>
           </div>
@@ -15068,8 +15068,8 @@ const startSimonPuffs = () => {
   {!bleConnected && <div style={{display:"flex",justifyContent:"space-between",fontSize:10,color:C.orange,marginTop:4}}><span>Without device</span><span>70%</span></div>}
 </div>);})()}
                 <div style={{display:"flex",gap:10}}>
-                  <div data-btn="true" onClick={()=>{setPpPhase(null);startPuffPong();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.cyan}12`,border:`1px solid ${C.cyan}30`,fontSize:13,fontWeight:800,color:C.cyan}}>🔄 Rematch</div>
-                  <div data-btn="true" onClick={ppEndGame} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.text3}08`,border:`1px solid ${C.text3}15`,fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
+                  <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={()=>{setPpPhase(null);startPuffPong();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.cyan}12`,border:`1px solid ${C.cyan}30`,fontSize:13,fontWeight:800,color:C.cyan}}>🔄 Rematch</div>
+                  <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={ppEndGame} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.text3}08`,border:`1px solid ${C.text3}15`,fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
                 </div></div>}
             </div>
           </div>
@@ -15147,10 +15147,10 @@ const startSimonPuffs = () => {
                 <div style={{fontSize:22,fontWeight:900,color:towPosition>50?C.green:C.red}}>{towPosition>50?"YOU WIN!":"AI WINS!"}</div>
                 {(()=>{const won=towPosition>50;const base=won?60:10;return(<div style={{padding:10,borderRadius:12,background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.06)",marginTop:10,marginBottom:8}}><div style={{fontSize:9,color:C.text3,letterSpacing:1,marginBottom:6}}>GAME REWARD</div><div style={{display:"flex",justifyContent:"space-between",fontSize:13,fontWeight:800}}><span style={{color:C.text}}>Earned</span><span style={{color:C.gold}}>+{base} 🪙</span></div>{!bleConnected && <div style={{display:"flex",justifyContent:"space-between",fontSize:10,color:C.orange,marginTop:4}}><span>Without device</span><span>70%</span></div>}</div>);})()}
                 <div style={{display:"flex",gap:10,marginTop:12,justifyContent:"center"}}>
-                  <div data-btn="true" onClick={()=>{setTowPhase(null);startTugOfWar();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.blue}15`,border:`1px solid ${C.blue}30`,fontSize:13,fontWeight:800,color:C.blue}}>🔄 Again</div>
-                  <div data-btn="true" onClick={towEndGame} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.text3}10`,border:`1px solid ${C.text3}20`,fontSize:13,fontWeight:800,color:C.text3}}>Done ✓</div>
+                  <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={()=>{setTowPhase(null);startTugOfWar();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.blue}15`,border:`1px solid ${C.blue}30`,fontSize:13,fontWeight:800,color:C.blue}}>🔄 Again</div>
+                  <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={towEndGame} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.text3}10`,border:`1px solid ${C.text3}20`,fontSize:13,fontWeight:800,color:C.text3}}>Done ✓</div>
                 </div>
-                <div data-btn="true" onClick={()=>{towEndGame();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
+                <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={()=>{towEndGame();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
               </div>)}
             </div>
           </div>
@@ -15344,10 +15344,10 @@ const startSimonPuffs = () => {
                   </div>
                   {/* Actions */}
                   <div style={{display:"flex",gap:10,marginTop:16}}>
-                    <div data-btn="true" onClick={()=>{setHpPhase(null);startHotPotato();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.orange}15`,border:`1px solid ${C.orange}30`,fontSize:13,fontWeight:800,color:C.orange}}>🔄 Play Again</div>
-                    <div data-btn="true" onClick={hpEndGame} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.text3}10`,border:`1px solid ${C.text3}20`,fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
+                    <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={()=>{setHpPhase(null);startHotPotato();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.orange}15`,border:`1px solid ${C.orange}30`,fontSize:13,fontWeight:800,color:C.orange}}>🔄 Play Again</div>
+                    <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={hpEndGame} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.text3}10`,border:`1px solid ${C.text3}20`,fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
                   </div>
-                  <div style={{display:"flex",gap:8,marginTop:8}}><div data-btn="true" onClick={()=>{hpEndGame();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{flex:1,padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple}}>👤 My Progress</div></div>
+                  <div style={{display:"flex",gap:8,marginTop:8}}><div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={()=>{hpEndGame();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{flex:1,padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple}}>👤 My Progress</div></div>
                 </div>
               );})()}
             </div>
@@ -15406,7 +15406,7 @@ const startSimonPuffs = () => {
               {/* Fish display area */}
               <div style={{position:"relative",width:"100%",maxWidth:300,height:120,display:"flex",alignItems:"center",justifyContent:"center",marginBottom:8}}>
                 {hookPhase==="idle" && (
-                  <div data-btn="true" onClick={(e)=>{e.stopPropagation();hookCastLine();}} style={{padding:"18px 40px",borderRadius:16,cursor:"pointer",textAlign:"center",
+                  <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();hookCastLine();}} style={{padding:"18px 40px",borderRadius:16,cursor:"pointer",textAlign:"center",
                     background:`linear-gradient(135deg,${C.cyan}20,${C.blue}10)`,border:`2px solid ${C.cyan}30`,
                     animation:"pulse 2s infinite",userSelect:"none"}}>
                     <div style={{fontSize:24,fontWeight:900,color:C.cyan,letterSpacing:2}}>🎣 CAST LINE</div>
@@ -15541,12 +15541,12 @@ const startSimonPuffs = () => {
               {/* Cast again / Done buttons after catch/escape/break */}
               {(hookPhase==="caught"||hookPhase==="escaped"||hookPhase==="line_break") && (
                 <div style={{display:"flex",gap:10,marginTop:12}}>
-                  <div data-btn="true" onClick={(e)=>{e.stopPropagation();hookCastLine();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.cyan}15`,border:`1px solid ${C.cyan}30`,fontSize:13,fontWeight:800,color:C.cyan}}>🎣 Cast Again</div>
-                  <div data-btn="true" onClick={(e)=>{e.stopPropagation();hookEndGame();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.text3}10`,border:`1px solid ${C.text3}20`,fontSize:13,fontWeight:800,color:C.text3}}>Done ✓</div>
+                  <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();hookCastLine();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.cyan}15`,border:`1px solid ${C.cyan}30`,fontSize:13,fontWeight:800,color:C.cyan}}>🎣 Cast Again</div>
+                  <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();hookEndGame();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.text3}10`,border:`1px solid ${C.text3}20`,fontSize:13,fontWeight:800,color:C.text3}}>Done ✓</div>
                 </div>
               )}
               {(hookPhase==="caught"||hookPhase==="escaped"||hookPhase==="line_break") && (
-                <div data-btn="true" onClick={(e)=>{e.stopPropagation();hookEndGame();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
+                <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();hookEndGame();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
               )}
             </div>
           </div>
@@ -15654,7 +15654,7 @@ const startSimonPuffs = () => {
                   <div style={{fontSize:13,fontWeight:800,color:C.text2,marginBottom:12}}>Choose your throw!</div>
                   <div style={{display:"flex",justifyContent:"center",gap:12,marginBottom:16}}>
                     {RPS_CHOICES.map(ch=>(
-                      <div key={ch} data-btn="true" onClick={(e)=>{e.stopPropagation();rpsPickChoice(ch);}}
+                      <div key={ch} data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();rpsPickChoice(ch);}}
                         style={{width:90,height:100,borderRadius:16,cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:6,
                           background:`linear-gradient(135deg, ${ch==="rock"?C.orange:ch==="paper"?C.cyan:C.red}12, ${ch==="rock"?C.orange:ch==="paper"?C.cyan:C.red}06)`,
                           border:`2px solid ${ch==="rock"?C.orange:ch==="paper"?C.cyan:C.red}30`,
@@ -15795,10 +15795,10 @@ const startSimonPuffs = () => {
                   {(()=>{const won=youWinFinal;const draw=!youWinFinal&&!youLoseFinal;const base=won?80:draw?40:20;return(<div style={{padding:10,borderRadius:12,background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.06)",marginTop:10,marginBottom:8}}><div style={{fontSize:9,color:C.text3,letterSpacing:1,marginBottom:6}}>GAME REWARD</div><div style={{display:"flex",justifyContent:"space-between",fontSize:13,fontWeight:800}}><span style={{color:C.text}}>Earned</span><span style={{color:C.gold}}>+{base} 🪙</span></div>{!bleConnected && <div style={{display:"flex",justifyContent:"space-between",fontSize:10,color:C.orange,marginTop:4}}><span>Without device</span><span>70%</span></div>}</div>);})()}
                   {/* Action buttons */}
                   <div style={{display:"flex",gap:10,justifyContent:"center"}}>
-                    <div data-btn="true" onClick={(e)=>{e.stopPropagation();rpsEndGame();startRps();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.purple}15`,border:`1px solid ${C.purple}30`,fontSize:13,fontWeight:800,color:C.purple}}>🥋 Rematch</div>
-                    <div data-btn="true" onClick={(e)=>{e.stopPropagation();rpsEndGame();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.text3}10`,border:`1px solid ${C.text3}20`,fontSize:13,fontWeight:800,color:C.text3}}>Done ✓</div>
+                    <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();rpsEndGame();startRps();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.purple}15`,border:`1px solid ${C.purple}30`,fontSize:13,fontWeight:800,color:C.purple}}>🥋 Rematch</div>
+                    <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();rpsEndGame();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.text3}10`,border:`1px solid ${C.text3}20`,fontSize:13,fontWeight:800,color:C.text3}}>Done ✓</div>
                   </div>
-                  <div data-btn="true" onClick={(e)=>{e.stopPropagation();rpsEndGame();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
+                  <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();rpsEndGame();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
                 </div>
               )}
             </div>
@@ -15900,8 +15900,8 @@ const startSimonPuffs = () => {
                   <div style={{fontSize:22,fontWeight:900,color:C.red}}>YOU ARE DEAD</div>
                   <div style={{fontSize:13,color:C.text3,marginTop:8}}>Survived {stRound} rounds | Streak: {stStreak}</div>
                   <div style={{display:"flex",gap:10,marginTop:20}}>
-                    <div data-btn="true" onClick={()=>{stEndGame();startSurvivalTrivia();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:C.red+"15",border:"1px solid "+C.red+"30",fontSize:13,fontWeight:800,color:C.red}}>Try Again</div>
-                    <div data-btn="true" onClick={stEndGame} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:C.text3+"10",border:"1px solid "+C.text3+"20",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
+                    <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={()=>{stEndGame();startSurvivalTrivia();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:C.red+"15",border:"1px solid "+C.red+"30",fontSize:13,fontWeight:800,color:C.red}}>Try Again</div>
+                    <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={stEndGame} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:C.text3+"10",border:"1px solid "+C.text3+"20",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
                   </div>
                 </div>
               )}
@@ -15913,10 +15913,10 @@ const startSimonPuffs = () => {
                   <div style={{fontSize:22,fontWeight:900,color:C.gold}}>SOLE SURVIVOR!</div>
                   <div style={{fontSize:13,color:C.text3,marginTop:8}}>You outlasted {100-stPlayers} players | {stStreak} streak</div>
                   <div style={{display:"flex",gap:10,marginTop:20}}>
-                    <div data-btn="true" onClick={()=>{stEndGame();startSurvivalTrivia();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:C.gold+"15",border:"1px solid "+C.gold+"30",fontSize:13,fontWeight:800,color:C.gold}}>Play Again</div>
-                    <div data-btn="true" onClick={stEndGame} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:C.text3+"10",border:"1px solid "+C.text3+"20",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
+                    <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={()=>{stEndGame();startSurvivalTrivia();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:C.gold+"15",border:"1px solid "+C.gold+"30",fontSize:13,fontWeight:800,color:C.gold}}>Play Again</div>
+                    <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={stEndGame} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:C.text3+"10",border:"1px solid "+C.text3+"20",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
                   </div>
-                  <div data-btn="true" onClick={()=>{stEndGame();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
+                  <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={()=>{stEndGame();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
                 </div>
               )}
             </div>
@@ -16058,10 +16058,10 @@ const startSimonPuffs = () => {
                   <div style={{fontSize:13,fontWeight:700,color:C.cyan,marginBottom:8,textAlign:"center"}}>{pcComment}</div>
                   {pcPerfect420 && <div style={{fontSize:13,fontWeight:800,color:C.gold,marginBottom:8}}>{"\uD83C\uDF1F"} 4.20 ACHIEVEMENT UNLOCKED! {"\uD83C\uDF1F"}</div>}
                   <div style={{display:"flex",gap:10,marginTop:8}}>
-                    <div data-btn="true" onClick={()=>{pcEndGame();startPuffClock();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:C.cyan+"15",border:"1px solid "+C.cyan+"30",fontSize:13,fontWeight:800,color:C.cyan}}>Play Again</div>
-                    <div data-btn="true" onClick={pcEndGame} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:C.text3+"10",border:"1px solid "+C.text3+"20",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
+                    <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={()=>{pcEndGame();startPuffClock();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:C.cyan+"15",border:"1px solid "+C.cyan+"30",fontSize:13,fontWeight:800,color:C.cyan}}>Play Again</div>
+                    <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={pcEndGame} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:C.text3+"10",border:"1px solid "+C.text3+"20",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
                   </div>
-                  <div data-btn="true" onClick={()=>{pcEndGame();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
+                  <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={()=>{pcEndGame();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
                 </div>
               )}
 
@@ -16206,8 +16206,8 @@ const startSimonPuffs = () => {
                     </div>
                   ))}
                   <div style={{display:"flex",gap:10,justifyContent:"center",marginTop:20}}>
-                    <div data-btn="true" onClick={(e)=>{e.stopPropagation();bdCleanup();startBeatDrop();setGameActive({id:"beatdrop",name:"Beat Drop",emoji:"\uD83C\uDFA7",color:C.pink});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.pink}15`,border:`1px solid ${C.pink}30`,fontSize:13,fontWeight:800,color:C.pink}}>&#127911; Again</div>
-                    <div data-btn="true" onClick={(e)=>{e.stopPropagation();bdCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.text3}10`,border:`1px solid ${C.text3}20`,fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
+                    <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();bdCleanup();startBeatDrop();setGameActive({id:"beatdrop",name:"Beat Drop",emoji:"\uD83C\uDFA7",color:C.pink});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.pink}15`,border:`1px solid ${C.pink}30`,fontSize:13,fontWeight:800,color:C.pink}}>&#127911; Again</div>
+                    <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();bdCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.text3}10`,border:`1px solid ${C.text3}20`,fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
                   </div>
                 </div>
               )}
@@ -16382,8 +16382,8 @@ const startSimonPuffs = () => {
                     </div>
                   ))}
                   <div style={{display:"flex",gap:10,justifyContent:"center",marginTop:20}}>
-                    <div data-btn="true" onClick={(e)=>{e.stopPropagation();plCleanup();startPuffLimbo();setGameActive({id:"pufflimbo",name:"Puff Limbo",emoji:"\uD83C\uDFAA",color:C.orange});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.orange}15`,border:`1px solid ${C.orange}30`,fontSize:13,fontWeight:800,color:C.orange}}>&#127914; Again</div>
-                    <div data-btn="true" onClick={(e)=>{e.stopPropagation();plCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.text3}10`,border:`1px solid ${C.text3}20`,fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
+                    <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();plCleanup();startPuffLimbo();setGameActive({id:"pufflimbo",name:"Puff Limbo",emoji:"\uD83C\uDFAA",color:C.orange});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.orange}15`,border:`1px solid ${C.orange}30`,fontSize:13,fontWeight:800,color:C.orange}}>&#127914; Again</div>
+                    <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();plCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.text3}10`,border:`1px solid ${C.text3}20`,fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
                   </div>
                 </div>
               )}
@@ -16536,8 +16536,8 @@ const startSimonPuffs = () => {
                   <div style={{fontSize:13,color:C.text2,marginTop:8}}>You survived {spRound} round{spRound!==1?"s":""}</div>
                   <div style={{fontSize:18,fontWeight:900,color:C.gold,marginTop:8}}>{spScore} points</div>
                   <div style={{display:"flex",gap:10,marginTop:16}}>
-                    <div data-btn="true" onClick={()=>{spEndGame();startSimonPuffs();}} style={{padding:"12px 24px",borderRadius:12,cursor:"pointer",background:C.purple+"15",border:"1px solid "+C.purple+"30",fontSize:13,fontWeight:800,color:C.purple}}>Try Again</div>
-                    <div data-btn="true" onClick={spEndGame} style={{padding:"12px 24px",borderRadius:12,cursor:"pointer",background:C.text3+"10",border:"1px solid "+C.text3+"20",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
+                    <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={()=>{spEndGame();startSimonPuffs();}} style={{padding:"12px 24px",borderRadius:12,cursor:"pointer",background:C.purple+"15",border:"1px solid "+C.purple+"30",fontSize:13,fontWeight:800,color:C.purple}}>Try Again</div>
+                    <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={spEndGame} style={{padding:"12px 24px",borderRadius:12,cursor:"pointer",background:C.text3+"10",border:"1px solid "+C.text3+"20",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
                   </div>
                 </div>
               )}
@@ -16548,10 +16548,10 @@ const startSimonPuffs = () => {
                   <div style={{fontSize:13,color:C.text2,marginTop:8}}>All 10 rounds completed!</div>
                   <div style={{fontSize:24,fontWeight:900,color:C.gold,marginTop:8}}>{spScore} points</div>
                   <div style={{display:"flex",gap:10,marginTop:16}}>
-                    <div data-btn="true" onClick={()=>{spEndGame();startSimonPuffs();}} style={{padding:"12px 24px",borderRadius:12,cursor:"pointer",background:C.purple+"15",border:"1px solid "+C.purple+"30",fontSize:13,fontWeight:800,color:C.purple}}>Play Again</div>
-                    <div data-btn="true" onClick={spEndGame} style={{padding:"12px 24px",borderRadius:12,cursor:"pointer",background:C.text3+"10",border:"1px solid "+C.text3+"20",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
+                    <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={()=>{spEndGame();startSimonPuffs();}} style={{padding:"12px 24px",borderRadius:12,cursor:"pointer",background:C.purple+"15",border:"1px solid "+C.purple+"30",fontSize:13,fontWeight:800,color:C.purple}}>Play Again</div>
+                    <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={spEndGame} style={{padding:"12px 24px",borderRadius:12,cursor:"pointer",background:C.text3+"10",border:"1px solid "+C.text3+"20",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
                   </div>
-                  <div data-btn="true" onClick={()=>{spEndGame();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
+                  <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={()=>{spEndGame();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
                 </div>
               )}
               {spComment && (
@@ -16689,10 +16689,10 @@ const startSimonPuffs = () => {
                   <div style={{fontSize:22,fontWeight:900,color:C.gold,letterSpacing:4,textShadow:"0 0 20px rgba(255,215,0,.5)"}}>AUCTION COMPLETE!</div>
                   <div style={{fontSize:16,fontWeight:900,color:C.cyan,marginTop:12}}>Total Won: {paTotalWon} coins</div>
                   <div style={{display:"flex",gap:10,marginTop:16}}>
-                    <div data-btn="true" onClick={()=>{paEndGame();startPuffAuction();}} style={{padding:"12px 24px",borderRadius:12,cursor:"pointer",background:C.gold+"15",border:"1px solid "+C.gold+"30",fontSize:13,fontWeight:800,color:C.gold}}>Play Again</div>
-                    <div data-btn="true" onClick={paEndGame} style={{padding:"12px 24px",borderRadius:12,cursor:"pointer",background:C.text3+"10",border:"1px solid "+C.text3+"20",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
+                    <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={()=>{paEndGame();startPuffAuction();}} style={{padding:"12px 24px",borderRadius:12,cursor:"pointer",background:C.gold+"15",border:"1px solid "+C.gold+"30",fontSize:13,fontWeight:800,color:C.gold}}>Play Again</div>
+                    <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={paEndGame} style={{padding:"12px 24px",borderRadius:12,cursor:"pointer",background:C.text3+"10",border:"1px solid "+C.text3+"20",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
                   </div>
-                  <div data-btn="true" onClick={()=>{paEndGame();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
+                  <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={()=>{paEndGame();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
                 </div>
               )}
               {paComment && (
@@ -16718,10 +16718,10 @@ const startSimonPuffs = () => {
             {renderGameChatPanel("PUFF DERBY")}
             <div style={{display:"flex",flexDirection:"column",alignItems:"center",maxWidth:400,width:"100%",padding:"50px 12px 20px",gap:6,zIndex:10,flex:1,overflowY:"auto",margin:"0 auto"}}>
               <div style={{textAlign:"center",marginBottom:4}}><div style={{fontSize:18,fontWeight:900,letterSpacing:4,background:"linear-gradient(135deg, "+C.green+", "+C.gold+")",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>{isResult?"RACE RESULTS":"PUFF DERBY"}</div>{isRacing&&<div style={{fontSize:9,color:C.text3}}>Time: {pdRaceTime}s | Puffs: {pdPuffCount}</div>}</div>
-              {isPick&&(<div style={{width:"100%",animation:"fadeIn 0.4s ease"}}><div style={{fontSize:13,fontWeight:800,color:C.text2,textAlign:"center",marginBottom:12}}>Pick your horse!</div><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>{pdHorses.map((h,i)=>(<div key={i} data-btn="true" onClick={(e)=>{e.stopPropagation();pdPickHorse(i);}} style={{padding:"12px 8px",borderRadius:12,cursor:"pointer",textAlign:"center",background:"linear-gradient(135deg, "+C.green+"10, "+C.green+"05)",border:"1px solid "+C.green+"25"}}><div style={{fontSize:32}}>{PD_HORSE_EMOJIS[i]}</div><div style={{fontSize:11,fontWeight:800,color:C.text,marginTop:4}}>{PD_HORSE_NAMES[i]}</div><div style={{display:"flex",gap:4,justifyContent:"center",marginTop:4}}><span style={{fontSize:8,color:C.cyan,padding:"1px 5px",borderRadius:4,background:C.cyan+"10"}}>SPD:{h.speed.toFixed(1)}</span><span style={{fontSize:8,color:C.gold,padding:"1px 5px",borderRadius:4,background:C.gold+"10"}}>STA:{h.stamina.toFixed(1)}</span></div></div>))}</div></div>)}
+              {isPick&&(<div style={{width:"100%",animation:"fadeIn 0.4s ease"}}><div style={{fontSize:13,fontWeight:800,color:C.text2,textAlign:"center",marginBottom:12}}>Pick your horse!</div><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>{pdHorses.map((h,i)=>(<div key={i} data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();pdPickHorse(i);}} style={{padding:"12px 8px",borderRadius:12,cursor:"pointer",textAlign:"center",background:"linear-gradient(135deg, "+C.green+"10, "+C.green+"05)",border:"1px solid "+C.green+"25"}}><div style={{fontSize:32}}>{PD_HORSE_EMOJIS[i]}</div><div style={{fontSize:11,fontWeight:800,color:C.text,marginTop:4}}>{PD_HORSE_NAMES[i]}</div><div style={{display:"flex",gap:4,justifyContent:"center",marginTop:4}}><span style={{fontSize:8,color:C.cyan,padding:"1px 5px",borderRadius:4,background:C.cyan+"10"}}>SPD:{h.speed.toFixed(1)}</span><span style={{fontSize:8,color:C.gold,padding:"1px 5px",borderRadius:4,background:C.gold+"10"}}>STA:{h.stamina.toFixed(1)}</span></div></div>))}</div></div>)}
               {isCD&&(<div style={{textAlign:"center",padding:"40px 0"}}><div style={{fontSize:48,marginBottom:12}}>{PD_HORSE_EMOJIS[pi]}</div><div style={{fontSize:14,fontWeight:800,color:C.green,marginBottom:8}}>{PD_HORSE_NAMES[pi]}</div><div style={{fontSize:36,fontWeight:900,color:C.gold,animation:"countPulse 0.8s infinite"}}>GET READY!</div></div>)}
               {isRacing&&(<div style={{width:"100%"}}><div style={{width:"100%",height:4,borderRadius:2,background:"rgba(255,255,255,0.08)",marginBottom:8,overflow:"hidden"}}><div style={{height:"100%",width:(pdRaceTime/30*100)+"%",background:pdRaceTime>10?"linear-gradient(90deg,"+C.green+","+C.cyan+")":"linear-gradient(90deg,"+C.red+","+C.orange+")",borderRadius:2,transition:"width 1s linear"}}/></div><div style={{width:"100%",borderRadius:12,overflow:"hidden",background:"rgba(0,0,0,0.3)",border:"1px solid "+C.green+"20",padding:"4px 0"}}>{[0,1,2,3,4,5].map(i=>{const pos=pdPositions[i];const isP=i===pi;const fin=pdFinishOrder.includes(i);const pl=pdFinishOrder.indexOf(i)+1;return(<div key={"ln"+i} style={{display:"flex",alignItems:"center",padding:"3px 6px",background:isP?"rgba(0,229,255,0.06)":"transparent",borderBottom:i<5?"1px solid rgba(255,255,255,0.04)":"none"}}><div style={{fontSize:7,fontWeight:700,color:isP?C.cyan:C.text3,width:14,textAlign:"center"}}>{i+1}</div><div style={{flex:1,height:20,position:"relative",marginLeft:4,marginRight:4}}><div style={{position:"absolute",top:"50%",left:0,right:0,height:1,background:"rgba(255,255,255,0.06)"}}/><div style={{position:"absolute",right:0,top:0,bottom:0,width:2,background:C.gold+"40"}}/><div style={{position:"absolute",left:(pos*0.92)+"%",top:"50%",transform:"translateY(-50%)",fontSize:isP?18:14,transition:"left 0.08s linear",filter:isP?"drop-shadow(0 0 6px "+C.cyan+"60)":"none",zIndex:isP?2:1}}>{PD_HORSE_EMOJIS[i]}</div></div>{fin?<div style={{fontSize:8,fontWeight:900,color:pl===1?C.gold:pl<=3?C.green:C.text3,width:16,textAlign:"center"}}>{"#"+pl}</div>:<div style={{fontSize:7,color:C.text3,width:16,textAlign:"center"}}>{Math.round(pos)+"%"}</div>}</div>);})}</div><div style={{marginTop:10}}><div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}><span style={{fontSize:9,fontWeight:700,color:stC}}>Stamina: {Math.round(pdStamina)}%</span><span style={{fontSize:9,color:C.text3}}>Puffs: {pdPuffCount}</span></div><div style={{width:"100%",height:8,borderRadius:4,background:"rgba(255,255,255,0.08)",overflow:"hidden"}}><div style={{height:"100%",width:pdStamina+"%",background:"linear-gradient(90deg,"+stC+","+stC+"80)",borderRadius:4,transition:"width 0.15s"}}/></div>{pdStamina<=0&&<div style={{fontSize:8,color:C.red,fontWeight:700,marginTop:2,animation:"pulse 0.5s infinite"}}>EXHAUSTED!</div>}</div><div style={{textAlign:"center",marginTop:12}}><div style={{fontSize:11,color:C.text2,fontWeight:600,marginBottom:6}}>TAP TO GALLOP! 🏇</div></div></div>)}
-              {isResult&&(<div style={{textAlign:"center",width:"100%"}}>{pPlace===1&&<div><div style={{fontSize:56,marginBottom:8,animation:"countPulse 1s infinite"}}>{PD_HORSE_EMOJIS[pi]}</div><div style={{fontSize:26,fontWeight:900,color:C.gold,marginBottom:4}}>WINNER!</div><div style={{fontSize:14,fontWeight:700,color:C.gold}}>+500 coins</div></div>}{pPlace>1&&pPlace<=3&&<div><div style={{fontSize:48,marginBottom:8}}>{PD_HORSE_EMOJIS[pi]}</div><div style={{fontSize:22,fontWeight:900,color:C.green,marginBottom:4}}>#{pPlace} PLACE!</div></div>}{pPlace>3&&<div><div style={{fontSize:48,marginBottom:8}}>{PD_HORSE_EMOJIS[pi]}</div><div style={{fontSize:22,fontWeight:900,color:C.text3,marginBottom:4}}>#{pPlace} PLACE</div></div>}<div style={{marginTop:16,maxWidth:300,margin:"16px auto"}}><div style={{fontSize:10,fontWeight:700,color:C.text3,marginBottom:6}}>FINAL STANDINGS</div>{pdFinishOrder.slice(0,6).map((hI,pl)=>(<div key={"r"+pl} style={{display:"flex",alignItems:"center",gap:8,padding:"4px 8px",borderRadius:6,marginBottom:2,background:hI===pi?C.cyan+"10":"transparent"}}><span style={{fontSize:10,fontWeight:900,color:pl===0?C.gold:pl<3?C.green:C.text3,width:20}}>#{pl+1}</span><span style={{fontSize:14}}>{PD_HORSE_EMOJIS[hI]}</span><span style={{fontSize:10,fontWeight:700,color:hI===pi?C.cyan:C.text2,flex:1}}>{PD_HORSE_NAMES[hI]}</span>{hI===pi&&<span style={{fontSize:8,color:C.cyan,fontWeight:700}}>YOU</span>}</div>))}</div><div style={{fontSize:11,color:C.text2,fontStyle:"italic",marginTop:8}}>{commentatorText}</div><div style={{display:"flex",gap:10,justifyContent:"center",marginTop:12}}><div data-btn="true" onClick={(e)=>{e.stopPropagation();pdCleanup();startPuffDerby();setGameActive({id:"puffderby",name:"Puff Derby",emoji:"\uD83C\uDFC7",color:C.green});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:C.green+"15",border:"1px solid "+C.green+"30",fontSize:13,fontWeight:800,color:C.green}}>Race Again</div><div data-btn="true" onClick={(e)=>{e.stopPropagation();pdCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:C.text3+"10",border:"1px solid "+C.text3+"20",fontSize:13,fontWeight:800,color:C.text3}}>Done</div></div></div>)}
+              {isResult&&(<div style={{textAlign:"center",width:"100%"}}>{pPlace===1&&<div><div style={{fontSize:56,marginBottom:8,animation:"countPulse 1s infinite"}}>{PD_HORSE_EMOJIS[pi]}</div><div style={{fontSize:26,fontWeight:900,color:C.gold,marginBottom:4}}>WINNER!</div><div style={{fontSize:14,fontWeight:700,color:C.gold}}>+500 coins</div></div>}{pPlace>1&&pPlace<=3&&<div><div style={{fontSize:48,marginBottom:8}}>{PD_HORSE_EMOJIS[pi]}</div><div style={{fontSize:22,fontWeight:900,color:C.green,marginBottom:4}}>#{pPlace} PLACE!</div></div>}{pPlace>3&&<div><div style={{fontSize:48,marginBottom:8}}>{PD_HORSE_EMOJIS[pi]}</div><div style={{fontSize:22,fontWeight:900,color:C.text3,marginBottom:4}}>#{pPlace} PLACE</div></div>}<div style={{marginTop:16,maxWidth:300,margin:"16px auto"}}><div style={{fontSize:10,fontWeight:700,color:C.text3,marginBottom:6}}>FINAL STANDINGS</div>{pdFinishOrder.slice(0,6).map((hI,pl)=>(<div key={"r"+pl} style={{display:"flex",alignItems:"center",gap:8,padding:"4px 8px",borderRadius:6,marginBottom:2,background:hI===pi?C.cyan+"10":"transparent"}}><span style={{fontSize:10,fontWeight:900,color:pl===0?C.gold:pl<3?C.green:C.text3,width:20}}>#{pl+1}</span><span style={{fontSize:14}}>{PD_HORSE_EMOJIS[hI]}</span><span style={{fontSize:10,fontWeight:700,color:hI===pi?C.cyan:C.text2,flex:1}}>{PD_HORSE_NAMES[hI]}</span>{hI===pi&&<span style={{fontSize:8,color:C.cyan,fontWeight:700}}>YOU</span>}</div>))}</div><div style={{fontSize:11,color:C.text2,fontStyle:"italic",marginTop:8}}>{commentatorText}</div><div style={{display:"flex",gap:10,justifyContent:"center",marginTop:12}}><div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();pdCleanup();startPuffDerby();setGameActive({id:"puffderby",name:"Puff Derby",emoji:"\uD83C\uDFC7",color:C.green});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:C.green+"15",border:"1px solid "+C.green+"30",fontSize:13,fontWeight:800,color:C.green}}>Race Again</div><div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();pdCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:C.text3+"10",border:"1px solid "+C.text3+"20",fontSize:13,fontWeight:800,color:C.text3}}>Done</div></div></div>)}
             </div>
           </div>
         );
@@ -16760,7 +16760,7 @@ const startSimonPuffs = () => {
               {isC&&<div style={{textAlign:"center",marginTop:8}}><div style={{fontSize:24,fontWeight:900,color:C.green}}>CORRECT!</div><div style={{fontSize:12,fontWeight:700,color:C.green}}>+{10*hlStreak} pts</div></div>}
               {isW&&<div style={{textAlign:"center",marginTop:8}}><div style={{fontSize:24,fontWeight:900,color:C.red}}>WRONG!</div><div style={{fontSize:11,color:C.red}}>Streak broken!</div></div>}
               {isP&&!hlRevealing&&(<div data-btn="true" style={{textAlign:"center",marginTop:8,width:"100%"}}><div style={{fontSize:10,color:C.text3,marginBottom:8}}>{hlPuffStart?<span style={{color:C.gold,fontWeight:700,animation:"pulse 0.5s infinite"}}>Hold for HIGHER...</span>:<span>Tap HIGHER or LOWER · or Puff (short=lower, long=higher)</span>}</div><div style={{display:"flex",gap:10,justifyContent:"center"}}><div data-hl-btn="1" onClick={(e)=>{e.stopPropagation();if(!hlRevealing)hlGuess("lower");}} style={{flex:1,maxWidth:130,padding:"12px 8px",borderRadius:12,cursor:"pointer",textAlign:"center",background:C.red+"12",border:"1px solid "+C.red+"30"}}><div style={{fontSize:20,marginBottom:2}}>{"\u2B07\uFE0F"}</div><div style={{fontSize:12,fontWeight:800,color:C.red}}>LOWER</div><div style={{fontSize:8,color:C.text3}}>Short puff</div></div><div data-hl-btn="1" onClick={(e)=>{e.stopPropagation();if(!hlRevealing)hlGuess("higher");}} style={{flex:1,maxWidth:130,padding:"12px 8px",borderRadius:12,cursor:"pointer",textAlign:"center",background:C.green+"12",border:"1px solid "+C.green+"30"}}><div style={{fontSize:20,marginBottom:2}}>{"\u2B06\uFE0F"}</div><div style={{fontSize:12,fontWeight:800,color:C.green}}>HIGHER</div><div style={{fontSize:8,color:C.text3}}>Long puff</div></div></div></div>)}
-              {isR&&(<div style={{textAlign:"center"}}><div style={{fontSize:48,marginBottom:8}}>{hlBestStreak>=7?"\uD83C\uDFC6":hlBestStreak>=5?"\uD83D\uDD25":hlBestStreak>=3?"\u2B50":"\uD83D\uDCCA"}</div><div style={{fontSize:26,fontWeight:900,color:hlScore>=100?C.gold:C.cyan,marginBottom:4}}>GAME OVER</div><div style={{fontSize:18,fontWeight:800,color:C.text,marginBottom:4}}>Score: {hlScore}</div><div style={{fontSize:13,color:C.text2,marginBottom:4}}>Best Streak: {hlBestStreak} {hlBestStreak>=5?"\uD83D\uDD25":""}</div><div style={{fontSize:14,fontWeight:700,color:C.gold,marginBottom:12}}>+{Math.max(10,Math.floor(hlScore/2))} coins</div><div style={{fontSize:11,color:C.text2,fontStyle:"italic",marginBottom:12}}>{commentatorText}</div>{(()=>{const won=hlBestStreak>=3;const base=Math.max(10,Math.floor(hlScore/2));return(<div style={{padding:10,borderRadius:12,background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.06)",marginTop:10,marginBottom:8}}><div style={{fontSize:9,color:C.text3,letterSpacing:1,marginBottom:6}}>GAME REWARD</div><div style={{display:"flex",justifyContent:"space-between",fontSize:13,fontWeight:800}}><span style={{color:C.text}}>Earned</span><span style={{color:C.gold}}>+{base} 🪙</span></div>{!bleConnected && <div style={{display:"flex",justifyContent:"space-between",fontSize:10,color:C.orange,marginTop:4}}><span>Without device</span><span>70%</span></div>}</div>);})()}<div style={{display:"flex",gap:10,justifyContent:"center"}}><div data-btn="true" onClick={(e)=>{e.stopPropagation();hlCleanup();startHigherLower();setGameActive({id:"higherlower",name:"Higher or Lower",emoji:"\uD83D\uDCCA",color:C.cyan});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:C.cyan+"15",border:"1px solid "+C.cyan+"30",fontSize:13,fontWeight:800,color:C.cyan}}>Play Again</div><div data-btn="true" onClick={(e)=>{e.stopPropagation();hlCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:C.text3+"10",border:"1px solid "+C.text3+"20",fontSize:13,fontWeight:800,color:C.text3}}>Done</div></div><div onClick={()=>{hlCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div></div>)}
+              {isR&&(<div style={{textAlign:"center"}}><div style={{fontSize:48,marginBottom:8}}>{hlBestStreak>=7?"\uD83C\uDFC6":hlBestStreak>=5?"\uD83D\uDD25":hlBestStreak>=3?"\u2B50":"\uD83D\uDCCA"}</div><div style={{fontSize:26,fontWeight:900,color:hlScore>=100?C.gold:C.cyan,marginBottom:4}}>GAME OVER</div><div style={{fontSize:18,fontWeight:800,color:C.text,marginBottom:4}}>Score: {hlScore}</div><div style={{fontSize:13,color:C.text2,marginBottom:4}}>Best Streak: {hlBestStreak} {hlBestStreak>=5?"\uD83D\uDD25":""}</div><div style={{fontSize:14,fontWeight:700,color:C.gold,marginBottom:12}}>+{Math.max(10,Math.floor(hlScore/2))} coins</div><div style={{fontSize:11,color:C.text2,fontStyle:"italic",marginBottom:12}}>{commentatorText}</div>{(()=>{const won=hlBestStreak>=3;const base=Math.max(10,Math.floor(hlScore/2));return(<div style={{padding:10,borderRadius:12,background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.06)",marginTop:10,marginBottom:8}}><div style={{fontSize:9,color:C.text3,letterSpacing:1,marginBottom:6}}>GAME REWARD</div><div style={{display:"flex",justifyContent:"space-between",fontSize:13,fontWeight:800}}><span style={{color:C.text}}>Earned</span><span style={{color:C.gold}}>+{base} 🪙</span></div>{!bleConnected && <div style={{display:"flex",justifyContent:"space-between",fontSize:10,color:C.orange,marginTop:4}}><span>Without device</span><span>70%</span></div>}</div>);})()}<div style={{display:"flex",gap:10,justifyContent:"center"}}><div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();hlCleanup();startHigherLower();setGameActive({id:"higherlower",name:"Higher or Lower",emoji:"\uD83D\uDCCA",color:C.cyan});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:C.cyan+"15",border:"1px solid "+C.cyan+"30",fontSize:13,fontWeight:800,color:C.cyan}}>Play Again</div><div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();hlCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:C.text3+"10",border:"1px solid "+C.text3+"20",fontSize:13,fontWeight:800,color:C.text3}}>Done</div></div><div onClick={()=>{hlCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div></div>)}
             </div>
           </div>
         );
@@ -16813,7 +16813,7 @@ const startSimonPuffs = () => {
                 {cbResult==="correct"&&cbAnswer!=="certain"&&<div style={{fontSize:14,fontWeight:800,color:C.green,marginBottom:4}}>+50 coins!</div>}
                 {cbResult==="wrong"&&cbAnswer==="certain"&&<div style={{fontSize:14,fontWeight:800,color:C.red,marginBottom:4}}>Blinker penalty! -100 coins</div>}
                 <div style={{fontSize:11,color:C.text2,fontStyle:"italic",marginBottom:12}}>{commentatorText}</div>
-                <div data-btn="true" onClick={(e)=>{e.stopPropagation();cbNextRound();}} style={{padding:"10px 28px",borderRadius:12,cursor:"pointer",background:"rgba(147,51,234,0.15)",border:"1px solid rgba(147,51,234,0.30)",fontSize:13,fontWeight:800,color:"#9333EA",display:"inline-block"}}>Next Prediction</div>
+                <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();cbNextRound();}} style={{padding:"10px 28px",borderRadius:12,cursor:"pointer",background:"rgba(147,51,234,0.15)",border:"1px solid rgba(147,51,234,0.30)",fontSize:13,fontWeight:800,color:"#9333EA",display:"inline-block"}}>Next Prediction</div>
               </div>)}
 
               {isComp&&(<div style={{textAlign:"center",animation:"fadeIn 0.4s ease"}}>
@@ -16823,10 +16823,10 @@ const startSimonPuffs = () => {
                 <div style={{fontSize:13,color:"#F97316"}}>Best Streak: {cbStreak} 🔥</div>
                 <div style={{fontSize:14,fontWeight:700,color:C.lime,marginTop:8}}>+{cbScore} coins earned</div>
                 <div style={{display:"flex",gap:10,justifyContent:"center",marginTop:16}}>
-                  <div data-btn="true" onClick={(e)=>{e.stopPropagation();cbCleanup();startCrystalBall();setGameActive({id:"crystalball",name:"Crystal Ball",emoji:"🔮",color:"#9333EA"});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(147,51,234,0.15)",border:"1px solid rgba(147,51,234,0.30)",fontSize:13,fontWeight:800,color:"#9333EA"}}>Play Again</div>
-                  <div data-btn="true" onClick={(e)=>{e.stopPropagation();cbCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
+                  <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();cbCleanup();startCrystalBall();setGameActive({id:"crystalball",name:"Crystal Ball",emoji:"🔮",color:"#9333EA"});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(147,51,234,0.15)",border:"1px solid rgba(147,51,234,0.30)",fontSize:13,fontWeight:800,color:"#9333EA"}}>Play Again</div>
+                  <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();cbCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
                 </div>
-                <div data-btn="true" onClick={(e)=>{e.stopPropagation();cbCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
+                <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();cbCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
               </div>)}
             </div>
           </div>
@@ -16887,7 +16887,7 @@ const startSimonPuffs = () => {
                   <div style={{flex:1,textAlign:"center"}}><div style={{fontSize:24,fontWeight:900,color:C.gold}}>{sbResults.right}%</div><div style={{fontSize:10,color:C.text3}}>{sbMatchup[1].name}</div></div>
                 </div>
                 <div style={{fontSize:11,color:C.text2,fontStyle:"italic",marginBottom:12}}>{commentatorText}</div>
-                <div data-btn="true" onClick={(e)=>{e.stopPropagation();sbNextRound();}} style={{padding:"10px 28px",borderRadius:12,cursor:"pointer",background:"rgba(34,197,94,0.15)",border:"1px solid rgba(34,197,94,0.30)",fontSize:13,fontWeight:800,color:"#22C55E",display:"inline-block"}}>Next Matchup</div>
+                <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();sbNextRound();}} style={{padding:"10px 28px",borderRadius:12,cursor:"pointer",background:"rgba(34,197,94,0.15)",border:"1px solid rgba(34,197,94,0.30)",fontSize:13,fontWeight:800,color:"#22C55E",display:"inline-block"}}>Next Matchup</div>
               </div>)}
 
               {isComp&&(<div style={{textAlign:"center",animation:"fadeIn 0.4s ease"}}>
@@ -16896,10 +16896,10 @@ const startSimonPuffs = () => {
                 <div style={{fontSize:18,fontWeight:800,color:C.text,marginBottom:4}}>Score: {sbScore}</div>
                 <div style={{fontSize:14,fontWeight:700,color:C.lime,marginTop:4}}>+{sbScore} coins earned</div>
                 <div style={{display:"flex",gap:10,justifyContent:"center",marginTop:16}}>
-                  <div data-btn="true" onClick={(e)=>{e.stopPropagation();sbCleanup();startStrainBattle();setGameActive({id:"strainbattle",name:"Strain Battle",emoji:"🌿",color:"#22C55E"});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(34,197,94,0.15)",border:"1px solid rgba(34,197,94,0.30)",fontSize:13,fontWeight:800,color:"#22C55E"}}>Play Again</div>
-                  <div data-btn="true" onClick={(e)=>{e.stopPropagation();sbCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
+                  <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();sbCleanup();startStrainBattle();setGameActive({id:"strainbattle",name:"Strain Battle",emoji:"🌿",color:"#22C55E"});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(34,197,94,0.15)",border:"1px solid rgba(34,197,94,0.30)",fontSize:13,fontWeight:800,color:"#22C55E"}}>Play Again</div>
+                  <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();sbCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
                 </div>
-                <div data-btn="true" onClick={(e)=>{e.stopPropagation();sbCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
+                <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();sbCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
               </div>)}
             </div>
           </div>
@@ -16958,7 +16958,7 @@ const startSimonPuffs = () => {
                 <div style={{fontSize:24,fontWeight:900,color:mpResults[mpResults.length-1]?.correct?C.green:C.red}}>{mpResults[mpResults.length-1]?.correct?"CORRECT!":"WRONG!"}</div>
                 {mpResults[mpResults.length-1]?.correct&&<div style={{fontSize:14,fontWeight:700,color:C.green,marginBottom:4}}>+100 coins!</div>}
                 <div style={{fontSize:11,color:C.text2,fontStyle:"italic",marginBottom:12}}>{commentatorText}</div>
-                <div data-btn="true" onClick={(e)=>{e.stopPropagation();mpNextRound();}} style={{padding:"10px 28px",borderRadius:12,cursor:"pointer",background:"rgba(59,130,246,0.15)",border:"1px solid rgba(59,130,246,0.30)",fontSize:13,fontWeight:800,color:"#3B82F6",display:"inline-block"}}>Next Match</div>
+                <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();mpNextRound();}} style={{padding:"10px 28px",borderRadius:12,cursor:"pointer",background:"rgba(59,130,246,0.15)",border:"1px solid rgba(59,130,246,0.30)",fontSize:13,fontWeight:800,color:"#3B82F6",display:"inline-block"}}>Next Match</div>
               </div>)}
 
               {isComp&&(<div style={{textAlign:"center",animation:"fadeIn 0.4s ease"}}>
@@ -16968,10 +16968,10 @@ const startSimonPuffs = () => {
                 <div style={{fontSize:13,color:C.green}}>Correct: {mpResults.filter(r=>r.correct).length}/5</div>
                 <div style={{fontSize:14,fontWeight:700,color:C.lime,marginTop:4}}>+{mpScore} coins earned</div>
                 <div style={{display:"flex",gap:10,justifyContent:"center",marginTop:16}}>
-                  <div data-btn="true" onClick={(e)=>{e.stopPropagation();mpCleanup();startMatchPredictor();setGameActive({id:"matchpredictor",name:"Match Predictor",emoji:"📊",color:"#3B82F6"});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(59,130,246,0.15)",border:"1px solid rgba(59,130,246,0.30)",fontSize:13,fontWeight:800,color:"#3B82F6"}}>Play Again</div>
-                  <div data-btn="true" onClick={(e)=>{e.stopPropagation();mpCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
+                  <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();mpCleanup();startMatchPredictor();setGameActive({id:"matchpredictor",name:"Match Predictor",emoji:"📊",color:"#3B82F6"});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(59,130,246,0.15)",border:"1px solid rgba(59,130,246,0.30)",fontSize:13,fontWeight:800,color:"#3B82F6"}}>Play Again</div>
+                  <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();mpCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
                 </div>
-                <div data-btn="true" onClick={(e)=>{e.stopPropagation();mpCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
+                <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();mpCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
               </div>)}
             </div>
           </div>
@@ -17049,10 +17049,10 @@ const startSimonPuffs = () => {
                 <div style={{fontSize:14,fontWeight:700,color:"#F97316",marginTop:8}}>Current Streak: {dpStreak} 🔥</div>
                 <div style={{fontSize:12,color:C.gold,marginTop:4}}>Total earned: +{dpResults.reduce((a,r)=>a+r.pts,0)} coins</div>
                 <div style={{display:"flex",gap:10,justifyContent:"center",marginTop:16}}>
-                  <div data-btn="true" onClick={(e)=>{e.stopPropagation();dpCleanup();startDailyPicks();setGameActive({id:"dailypicks",name:"Daily Picks",emoji:"📅",color:"#F97316"});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(249,115,22,0.15)",border:"1px solid rgba(249,115,22,0.30)",fontSize:13,fontWeight:800,color:"#F97316"}}>Play Again</div>
-                  <div data-btn="true" onClick={(e)=>{e.stopPropagation();dpCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
+                  <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();dpCleanup();startDailyPicks();setGameActive({id:"dailypicks",name:"Daily Picks",emoji:"📅",color:"#F97316"});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(249,115,22,0.15)",border:"1px solid rgba(249,115,22,0.30)",fontSize:13,fontWeight:800,color:"#F97316"}}>Play Again</div>
+                  <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();dpCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
                 </div>
-                <div data-btn="true" onClick={(e)=>{e.stopPropagation();dpCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
+                <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();dpCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
               </div>)}
             </div>
           </div>
@@ -17110,10 +17110,10 @@ const startSimonPuffs = () => {
                 <div style={{fontSize:24,fontWeight:900,color:C.gold,marginBottom:8}}>ALL SPINS COMPLETE</div>
                 <div style={{fontSize:18,fontWeight:800,color:C.text}}>Total Won: {slotsScore} coins</div>
                 <div style={{display:"flex",gap:10,justifyContent:"center",marginTop:16}}>
-                  <div data-btn="true" onClick={(e)=>{e.stopPropagation();slotsCleanup();startPuffSlots();setGameActive({id:"puffslots",name:"Puff Slots",emoji:"🎰",color:"#FFD700"});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,215,0,0.15)",border:"1px solid rgba(255,215,0,0.30)",fontSize:13,fontWeight:800,color:"#FFD700"}}>Play Again</div>
-                  <div data-btn="true" onClick={(e)=>{e.stopPropagation();slotsCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
+                  <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();slotsCleanup();startPuffSlots();setGameActive({id:"puffslots",name:"Puff Slots",emoji:"🎰",color:"#FFD700"});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,215,0,0.15)",border:"1px solid rgba(255,215,0,0.30)",fontSize:13,fontWeight:800,color:"#FFD700"}}>Play Again</div>
+                  <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();slotsCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
                 </div>
-                <div data-btn="true" onClick={(e)=>{e.stopPropagation();slotsCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
+                <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();slotsCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
               </div>)}
               <div style={{fontSize:11,color:C.text3,fontStyle:"italic",marginTop:8}}>{commentatorText}</div>
             </div>
@@ -17186,10 +17186,10 @@ const startSimonPuffs = () => {
                 <div style={{fontSize:24,fontWeight:900,color:C.gold,marginBottom:8}}>SESSION COMPLETE</div>
                 <div style={{fontSize:18,fontWeight:800,color:C.text}}>Total Won: {bjScore} coins</div>
                 <div style={{display:"flex",gap:10,justifyContent:"center",marginTop:16}}>
-                  <div data-btn="true" onClick={(e)=>{e.stopPropagation();bjCleanup();startPuffBlackjack();setGameActive({id:"puffblackjack",name:"Puff Blackjack",emoji:"🃏",color:"#22C55E"});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(34,197,94,0.15)",border:"1px solid rgba(34,197,94,0.30)",fontSize:13,fontWeight:800,color:"#22C55E"}}>Play Again</div>
-                  <div data-btn="true" onClick={(e)=>{e.stopPropagation();bjCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
+                  <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();bjCleanup();startPuffBlackjack();setGameActive({id:"puffblackjack",name:"Puff Blackjack",emoji:"🃏",color:"#22C55E"});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(34,197,94,0.15)",border:"1px solid rgba(34,197,94,0.30)",fontSize:13,fontWeight:800,color:"#22C55E"}}>Play Again</div>
+                  <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();bjCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
                 </div>
-                <div data-btn="true" onClick={(e)=>{e.stopPropagation();bjCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
+                <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();bjCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
               </div>)}
               <div style={{fontSize:11,color:C.text3,fontStyle:"italic",marginTop:8}}>{commentatorText}</div>
             </div>
@@ -17222,11 +17222,11 @@ const startSimonPuffs = () => {
                 <div style={{fontSize:60,marginBottom:12}}>🪙</div>
                 <div style={{fontSize:16,fontWeight:800,color:C.text,marginBottom:16}}>Pick your side!</div>
                 <div style={{display:"flex",gap:16,justifyContent:"center"}}>
-                  <div data-btn="true" onClick={(e)=>{e.stopPropagation();cfPickSide("heads");}} style={{padding:"16px 28px",borderRadius:16,cursor:"pointer",background:"rgba(245,158,11,0.10)",border:"2px solid rgba(245,158,11,0.30)",textAlign:"center"}}>
+                  <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();cfPickSide("heads");}} style={{padding:"16px 28px",borderRadius:16,cursor:"pointer",background:"rgba(245,158,11,0.10)",border:"2px solid rgba(245,158,11,0.30)",textAlign:"center"}}>
                     <div style={{fontSize:28,marginBottom:4}}>👑</div>
                     <div style={{fontSize:14,fontWeight:800,color:"#F59E0B"}}>HEADS</div>
                   </div>
-                  <div data-btn="true" onClick={(e)=>{e.stopPropagation();cfPickSide("tails");}} style={{padding:"16px 28px",borderRadius:16,cursor:"pointer",background:"rgba(168,85,247,0.10)",border:"2px solid rgba(168,85,247,0.30)",textAlign:"center"}}>
+                  <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();cfPickSide("tails");}} style={{padding:"16px 28px",borderRadius:16,cursor:"pointer",background:"rgba(168,85,247,0.10)",border:"2px solid rgba(168,85,247,0.30)",textAlign:"center"}}>
                     <div style={{fontSize:28,marginBottom:4}}>🌿</div>
                     <div style={{fontSize:14,fontWeight:800,color:"#A855F7"}}>TAILS</div>
                   </div>
@@ -17262,10 +17262,10 @@ const startSimonPuffs = () => {
                 <div style={{fontSize:18,fontWeight:800,color:C.text}}>Total Won: {cfScore} coins</div>
                 <div style={{fontSize:13,color:C.orange,marginTop:4}}>Best Streak: {cfStreak}</div>
                 <div style={{display:"flex",gap:10,justifyContent:"center",marginTop:16}}>
-                  <div data-btn="true" onClick={(e)=>{e.stopPropagation();cfCleanup();startCoinFlip();setGameActive({id:"coinflip",name:"Coin Flip",emoji:"🪙",color:"#F59E0B"});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(245,158,11,0.15)",border:"1px solid rgba(245,158,11,0.30)",fontSize:13,fontWeight:800,color:"#F59E0B"}}>Play Again</div>
-                  <div data-btn="true" onClick={(e)=>{e.stopPropagation();cfCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
+                  <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();cfCleanup();startCoinFlip();setGameActive({id:"coinflip",name:"Coin Flip",emoji:"🪙",color:"#F59E0B"});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(245,158,11,0.15)",border:"1px solid rgba(245,158,11,0.30)",fontSize:13,fontWeight:800,color:"#F59E0B"}}>Play Again</div>
+                  <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();cfCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
                 </div>
-                <div data-btn="true" onClick={(e)=>{e.stopPropagation();cfCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
+                <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();cfCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
               </div>)}
               <div style={{fontSize:11,color:C.text3,fontStyle:"italic",marginTop:8}}>{commentatorText}</div>
             </div>
@@ -17333,10 +17333,10 @@ const startSimonPuffs = () => {
                 <div style={{fontSize:24,fontWeight:900,color:C.gold,marginBottom:8}}>ALL ROLLS COMPLETE</div>
                 <div style={{fontSize:18,fontWeight:800,color:C.text}}>Total Won: {crapsScore} coins</div>
                 <div style={{display:"flex",gap:10,justifyContent:"center",marginTop:16}}>
-                  <div data-btn="true" onClick={(e)=>{e.stopPropagation();crapsCleanup();startCrapsNClouds();setGameActive({id:"crapsnclouds",name:"Craps & Clouds",emoji:"🎲",color:"#EF4444"});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(239,68,68,0.15)",border:"1px solid rgba(239,68,68,0.30)",fontSize:13,fontWeight:800,color:"#EF4444"}}>Play Again</div>
-                  <div data-btn="true" onClick={(e)=>{e.stopPropagation();crapsCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
+                  <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();crapsCleanup();startCrapsNClouds();setGameActive({id:"crapsnclouds",name:"Craps & Clouds",emoji:"🎲",color:"#EF4444"});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(239,68,68,0.15)",border:"1px solid rgba(239,68,68,0.30)",fontSize:13,fontWeight:800,color:"#EF4444"}}>Play Again</div>
+                  <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();crapsCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
                 </div>
-                <div data-btn="true" onClick={(e)=>{e.stopPropagation();crapsCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
+                <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();crapsCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
               </div>)}
               <div style={{fontSize:11,color:C.text3,fontStyle:"italic",marginTop:8}}>{commentatorText}</div>
             </div>
@@ -17368,7 +17368,7 @@ const startSimonPuffs = () => {
               {(isPick||isPuff)&&(
                 <div style={{display:"flex",gap:20,justifyContent:"center",marginTop:16}}>
                   {mbBoxes.map((box,i)=>(
-                    <div key={i} data-btn="true" onClick={(e)=>{e.stopPropagation();mbPickBox(i);}} style={{
+                    <div key={i} data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();mbPickBox(i);}} style={{
                       width:90,height:90,borderRadius:16,display:"flex",alignItems:"center",justifyContent:"center",cursor:isPick?"pointer":"default",
                       fontSize:mbPicked===i?44:40,
                       background:mbPicked===i?`${C.gold}20`:"rgba(255,255,255,0.04)",
@@ -17396,10 +17396,10 @@ const startSimonPuffs = () => {
                 <div style={{fontSize:24,fontWeight:900,color:C.gold,marginBottom:8}}>ALL BOXES OPENED!</div>
                 <div style={{fontSize:18,fontWeight:800,color:C.text}}>Total Won: {mbScore} coins</div>
                 <div style={{display:"flex",gap:10,justifyContent:"center",marginTop:16}}>
-                  <div data-btn="true" onClick={(e)=>{e.stopPropagation();mbCleanup();startMysteryBox();setGameActive({id:"mysterybox",name:"Mystery Box",emoji:"🎁",color:C.gold});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.gold}15`,border:`1px solid ${C.gold}30`,fontSize:13,fontWeight:800,color:C.gold}}>Play Again</div>
-                  <div data-btn="true" onClick={(e)=>{e.stopPropagation();mbCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
+                  <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();mbCleanup();startMysteryBox();setGameActive({id:"mysterybox",name:"Mystery Box",emoji:"🎁",color:C.gold});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.gold}15`,border:`1px solid ${C.gold}30`,fontSize:13,fontWeight:800,color:C.gold}}>Play Again</div>
+                  <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();mbCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
                 </div>
-                <div data-btn="true" onClick={(e)=>{e.stopPropagation();mbCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
+                <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();mbCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
               </div>)}
               <div style={{fontSize:11,color:C.text3,fontStyle:"italic",marginTop:8}}>{commentatorText}</div>
             </div>
@@ -17433,7 +17433,7 @@ const startSimonPuffs = () => {
                 <div style={{padding:16,borderRadius:20,border:`3px solid ${C.gold}30`,background:"linear-gradient(135deg, rgba(255,215,0,0.05), rgba(255,105,180,0.05))",boxShadow:`0 0 30px ${C.gold}10`,margin:"8px auto",maxWidth:300}}>
                   <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10}}>
                     {scCard.map((sym,i)=>(
-                      <div key={i} data-btn="true" onClick={(e)=>{e.stopPropagation();scSelectArea(i);}} style={{
+                      <div key={i} data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();scSelectArea(i);}} style={{
                         width:72,height:72,borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",
                         fontSize:scRevealed[i]?30:20,cursor:(!scRevealed[i]&&isScratch)?"pointer":"default",
                         background:scRevealed[i]?"rgba(255,255,255,0.06)":(scCurrentIdx===i?"rgba(255,215,0,0.15)":"linear-gradient(135deg, rgba(192,192,192,0.25), rgba(169,169,169,0.15))"),
@@ -17461,10 +17461,10 @@ const startSimonPuffs = () => {
                 <div style={{fontSize:24,fontWeight:900,color:C.gold,marginBottom:8}}>ALL CARDS SCRATCHED!</div>
                 <div style={{fontSize:18,fontWeight:800,color:C.text}}>Total Won: {scScore} coins</div>
                 <div style={{display:"flex",gap:10,justifyContent:"center",marginTop:16}}>
-                  <div data-btn="true" onClick={(e)=>{e.stopPropagation();scCleanup();startScratchPuff();setGameActive({id:"scratchpuff",name:"Scratch & Puff",emoji:"🎫",color:C.pink});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.pink}15`,border:`1px solid ${C.pink}30`,fontSize:13,fontWeight:800,color:C.pink}}>Play Again</div>
-                  <div data-btn="true" onClick={(e)=>{e.stopPropagation();scCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
+                  <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();scCleanup();startScratchPuff();setGameActive({id:"scratchpuff",name:"Scratch & Puff",emoji:"🎫",color:C.pink});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.pink}15`,border:`1px solid ${C.pink}30`,fontSize:13,fontWeight:800,color:C.pink}}>Play Again</div>
+                  <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();scCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
                 </div>
-                <div data-btn="true" onClick={(e)=>{e.stopPropagation();scCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
+                <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();scCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
               </div>)}
               <div style={{fontSize:11,color:C.text3,fontStyle:"italic",marginTop:8}}>{commentatorText}</div>
             </div>
@@ -17518,10 +17518,10 @@ const startSimonPuffs = () => {
                 <div style={{fontSize:24,fontWeight:900,color:C.gold,marginBottom:8}}>ALL COOKIES CRACKED!</div>
                 <div style={{fontSize:18,fontWeight:800,color:C.text}}>Total Won: {fcScore} coins</div>
                 <div style={{display:"flex",gap:10,justifyContent:"center",marginTop:16}}>
-                  <div data-btn="true" onClick={(e)=>{e.stopPropagation();fcCleanup();startFortuneCookie();setGameActive({id:"fortunecookie",name:"Fortune Cookie",emoji:"🥠",color:C.orange});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.orange}15`,border:`1px solid ${C.orange}30`,fontSize:13,fontWeight:800,color:C.orange}}>Play Again</div>
-                  <div data-btn="true" onClick={(e)=>{e.stopPropagation();fcCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
+                  <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();fcCleanup();startFortuneCookie();setGameActive({id:"fortunecookie",name:"Fortune Cookie",emoji:"🥠",color:C.orange});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.orange}15`,border:`1px solid ${C.orange}30`,fontSize:13,fontWeight:800,color:C.orange}}>Play Again</div>
+                  <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();fcCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
                 </div>
-                <div data-btn="true" onClick={(e)=>{e.stopPropagation();fcCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
+                <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();fcCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
               </div>)}
               <div style={{fontSize:11,color:C.text3,fontStyle:"italic",marginTop:8}}>{commentatorText}</div>
             </div>
@@ -17558,7 +17558,7 @@ const startSimonPuffs = () => {
                       const revealed = tmRevealed[i];
                       const isXray = tmXray && tmXrayTiles.includes(i);
                       return (
-                        <div key={i} data-btn="true" onClick={(e)=>{e.stopPropagation();tmSelectTile(i);}} style={{
+                        <div key={i} data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();tmSelectTile(i);}} style={{
                           width:"100%",aspectRatio:"1",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",
                           fontSize:revealed?22:(isXray?18:16),cursor:(!revealed&&isPlay&&!tmGameOver)?"pointer":"default",
                           background:revealed?`${info.color}15`:(tmSelected===i?`${C.gold}20`:(isXray?`${C.cyan}15`:"linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))")),
@@ -17575,7 +17575,7 @@ const startSimonPuffs = () => {
                   {isPlay&&!tmGameOver&&tmSelected!==null&&<div style={{fontSize:13,fontWeight:800,color:C.gold,textAlign:"center",animation:"pulse 1.5s infinite"}}>TAP TO DIG 🗺️</div>}
                   {isPlay&&!tmGameOver&&tmSelected===null&&<div style={{fontSize:11,color:C.text3,textAlign:"center"}}>Tap a tile to select it</div>}
                   {isPlay&&!tmGameOver&&tmCoins>0&&(
-                    <div data-btn="true" onClick={(e)=>{e.stopPropagation();tmCashOut();}} style={{
+                    <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();tmCashOut();}} style={{
                       margin:"10px auto",padding:"10px 24px",borderRadius:12,cursor:"pointer",textAlign:"center",
                       background:`${C.green}15`,border:`1px solid ${C.green}30`,fontSize:13,fontWeight:800,color:C.green,
                       transform:`scale(${1+tmCoins/500})`,maxWidth:200,
@@ -17588,10 +17588,10 @@ const startSimonPuffs = () => {
                   <div style={{fontSize:22,fontWeight:900,color:tmTreasures>=3?C.gold:C.red}}>{tmTreasures>=3?"ALL TREASURES FOUND!":"GAME OVER!"}</div>
                   <div style={{fontSize:16,fontWeight:700,color:C.text,marginTop:4}}>Coins earned: {tmScore}</div>
                   <div style={{display:"flex",gap:10,justifyContent:"center",marginTop:16}}>
-                    <div data-btn="true" onClick={(e)=>{e.stopPropagation();tmCleanup();startTreasureMap();setGameActive({id:"treasuremap",name:"Treasure Map",emoji:"🗺️",color:C.gold});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.gold}15`,border:`1px solid ${C.gold}30`,fontSize:13,fontWeight:800,color:C.gold}}>Play Again</div>
-                    <div data-btn="true" onClick={(e)=>{e.stopPropagation();tmCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
+                    <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();tmCleanup();startTreasureMap();setGameActive({id:"treasuremap",name:"Treasure Map",emoji:"🗺️",color:C.gold});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.gold}15`,border:`1px solid ${C.gold}30`,fontSize:13,fontWeight:800,color:C.gold}}>Play Again</div>
+                    <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();tmCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
                   </div>
-                  <div data-btn="true" onClick={(e)=>{e.stopPropagation();tmCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
+                  <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();tmCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
                 </div>
               )}
               <div style={{fontSize:11,color:C.text3,fontStyle:"italic",marginTop:8}}>{commentatorText}</div>
@@ -17775,10 +17775,10 @@ const startSimonPuffs = () => {
                 </div>
                 {/* Play again / Exit */}
                 <div style={{display:"flex",gap:12,marginTop:12}}>
-                  <div data-btn="true" onClick={()=>{pipCleanup();startPriceIsPuff();}} style={{padding:"12px 24px",borderRadius:12,cursor:"pointer",background:C.green+"15",border:"1px solid "+C.green+"30",fontSize:13,fontWeight:800,color:C.green}}>Play Again</div>
-                  <div data-btn="true" onClick={()=>{pipCleanup();setGameActive(null);}} style={{padding:"12px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.05)",border:"1px solid "+C.border,fontSize:13,fontWeight:800,color:C.text3}}>Exit</div>
+                  <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={()=>{pipCleanup();startPriceIsPuff();}} style={{padding:"12px 24px",borderRadius:12,cursor:"pointer",background:C.green+"15",border:"1px solid "+C.green+"30",fontSize:13,fontWeight:800,color:C.green}}>Play Again</div>
+                  <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={()=>{pipCleanup();setGameActive(null);}} style={{padding:"12px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.05)",border:"1px solid "+C.border,fontSize:13,fontWeight:800,color:C.text3}}>Exit</div>
                 </div>
-                <div data-btn="true" onClick={(e)=>{e.stopPropagation();pipCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
+                <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();pipCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
               </div>
             )}
           </div>
@@ -17814,7 +17814,7 @@ const startSimonPuffs = () => {
                   <div style={{fontSize:11,color:C.text3,marginBottom:12}}>Choose your battle mode</div>
                   <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,width:"100%",maxWidth:300}}>
                     {[{m:"1v1",emoji:"🎯",name:"1v1 Duel",sub:"Classic artillery duel",color:twGC},{m:"2v2",emoji:"👥",name:"2v2 Teams",sub:"You + ally vs 2 enemies",color:C.cyan},{m:"ffa",emoji:"💀",name:"Free-for-All",sub:"4 tanks, last standing",color:C.red},{m:"boss",emoji:"🐉",name:"Boss Battle",sub:"Co-op vs mega boss",color:C.gold}].map(b=>(
-                      <div key={b.m} data-btn="true" onClick={(e)=>{e.stopPropagation();startTankWar(b.m);}} style={{padding:"14px 8px",borderRadius:14,cursor:"pointer",textAlign:"center",background:`${b.color}08`,border:`1px solid ${b.color}20`}}>
+                      <div key={b.m} data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();startTankWar(b.m);}} style={{padding:"14px 8px",borderRadius:14,cursor:"pointer",textAlign:"center",background:`${b.color}08`,border:`1px solid ${b.color}20`}}>
                         <div style={{fontSize:28,marginBottom:4}}>{b.emoji}</div>
                         <div style={{fontSize:11,fontWeight:800,color:b.color}}>{b.name}</div>
                         <div style={{fontSize:7,color:C.text3,marginTop:2}}>{b.sub}</div>
@@ -17867,10 +17867,10 @@ const startSimonPuffs = () => {
                 <div style={{fontSize:14,fontWeight:800,color:C.text}}>Score: {twScore}</div>
                 <div style={{fontSize:10,color:C.text2,marginTop:4}}>Mode: {twMode==="1v1"?"1v1 Duel":twMode==="2v2"?"2v2 Teams":twMode==="ffa"?"Free-for-All":"Boss Battle"}</div>
                 <div style={{display:"flex",gap:10,justifyContent:"center",marginTop:16}}>
-                  <div data-btn="true" onClick={(e)=>{e.stopPropagation();twCleanup();setGameActive({id:"tankwar",name:"Tank War",emoji:"🔫",color:"#4CAF50"});setTwPhase("modeselect");}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${twGC}15`,border:`1px solid ${twGC}30`,fontSize:13,fontWeight:800,color:twGC}}>Play Again</div>
-                  <div data-btn="true" onClick={(e)=>{e.stopPropagation();twCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
+                  <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();twCleanup();setGameActive({id:"tankwar",name:"Tank War",emoji:"🔫",color:"#4CAF50"});setTwPhase("modeselect");}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${twGC}15`,border:`1px solid ${twGC}30`,fontSize:13,fontWeight:800,color:twGC}}>Play Again</div>
+                  <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();twCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
                 </div>
-                <div data-btn="true" onClick={(e)=>{e.stopPropagation();twCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
+                <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();twCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
               </div>)}
             </div>
           </div>
@@ -17909,7 +17909,7 @@ const startSimonPuffs = () => {
                   <div style={{fontSize:11,color:C.text3,marginBottom:12}}>Choose your ocean</div>
                   <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,width:"100%",maxWidth:300}}>
                     {[{m:"solo",emoji:"🐟",name:"Solo Survival",sub:"Eat to 500 pts",color:fwGC},{m:"1v1",emoji:"🎯",name:"1v1 Duel",sub:"Eliminate the bot",color:C.cyan},{m:"pvp",emoji:"💀",name:"PvP Free-for-All",sub:"Last fish standing",color:C.red},{m:"boss",emoji:"🐉",name:"Boss Battle",sub:"Defeat the sea boss",color:C.gold}].map(b=>(
-                      <div key={b.m} data-btn="true" onClick={(e)=>{e.stopPropagation();startFishWar(b.m);}} style={{padding:"14px 8px",borderRadius:14,cursor:"pointer",textAlign:"center",background:`${b.color}08`,border:`1px solid ${b.color}20`}}>
+                      <div key={b.m} data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();startFishWar(b.m);}} style={{padding:"14px 8px",borderRadius:14,cursor:"pointer",textAlign:"center",background:`${b.color}08`,border:`1px solid ${b.color}20`}}>
                         <div style={{fontSize:28,marginBottom:4}}>{b.emoji}</div>
                         <div style={{fontSize:11,fontWeight:800,color:b.color}}>{b.name}</div>
                         <div style={{fontSize:7,color:C.text3,marginTop:2}}>{b.sub}</div>
@@ -17956,10 +17956,10 @@ const startSimonPuffs = () => {
                 <div style={{fontSize:14,fontWeight:800,color:C.text}}>Score: {fwScore}</div>
                 <div style={{fontSize:10,color:C.text2,marginTop:4}}>Level {fwLevel} · {fwGetForm(fwLevel).name} · {fwEaten} fish eaten</div>
                 <div style={{display:"flex",gap:10,justifyContent:"center",marginTop:16}}>
-                  <div data-btn="true" onClick={(e)=>{e.stopPropagation();fwCleanup();setGameActive({id:"fishwar",name:"Fish War",emoji:"🐟",color:"#3B82F6"});setFwPhase("modeselect");}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${fwGC}15`,border:`1px solid ${fwGC}30`,fontSize:13,fontWeight:800,color:fwGC}}>Play Again</div>
-                  <div data-btn="true" onClick={(e)=>{e.stopPropagation();fwCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
+                  <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();fwCleanup();setGameActive({id:"fishwar",name:"Fish War",emoji:"🐟",color:"#3B82F6"});setFwPhase("modeselect");}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${fwGC}15`,border:`1px solid ${fwGC}30`,fontSize:13,fontWeight:800,color:fwGC}}>Play Again</div>
+                  <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();fwCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
                 </div>
-                <div data-btn="true" onClick={(e)=>{e.stopPropagation();fwCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
+                <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={(e)=>{e.stopPropagation();fwCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
               </div>)}
             </div>
           </div>
@@ -17973,7 +17973,7 @@ const startSimonPuffs = () => {
             <div style={{fontSize:56,marginBottom:16}}>{gameActive.emoji}</div>
             <div style={{fontSize:20,fontWeight:900,color:C.text,marginBottom:6}}>{gameActive.name}</div>
             <div style={{fontSize:12,color:C.text3,marginBottom:20}}>Game in progress...</div>
-            <div data-btn="true" onClick={()=>puffLockIn(()=>{setCoins(c=>c+30);notify("🎮 +30 coins!",C.green);setGameActive(null);})} style={{padding:"12px 28px",borderRadius:12,cursor:"pointer",background:`${C.cyan}15`,border:`1px solid ${C.cyan}30`,fontSize:14,fontWeight:800,color:C.cyan}}>💨 Puff to Win</div>
+            <div data-btn="true" onTouchStart={(e)=>e.stopPropagation()} onClick={()=>puffLockIn(()=>{setCoins(c=>c+30);notify("🎮 +30 coins!",C.green);setGameActive(null);})} style={{padding:"12px 28px",borderRadius:12,cursor:"pointer",background:`${C.cyan}15`,border:`1px solid ${C.cyan}30`,fontSize:14,fontWeight:800,color:C.cyan}}>💨 Puff to Win</div>
           </div>
         </div>
       );
