@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "moodlab-arena",
+      "runtimeExecutable": "/bin/bash",
+      "runtimeArgs": ["/tmp/moodlab-preview/serve.sh"],
+      "port": 8080
+    }
+  ]
+}

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mood Lab Arena — 34 Multiplayer Modes</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#06101E;color:#E8EBF6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;padding:40px 20px}
+.container{max-width:900px;margin:0 auto}
+h1{font-size:36px;font-weight:900;text-align:center;background:linear-gradient(135deg,#00E5FF,#FFD93D);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px}
+.subtitle{text-align:center;color:#94A3B8;font-size:14px;margin-bottom:40px}
+.stat-row{display:flex;gap:12px;justify-content:center;margin-bottom:32px;flex-wrap:wrap}
+.stat{padding:16px 24px;border-radius:16px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);text-align:center;min-width:120px}
+.stat .num{font-size:28px;font-weight:900;color:#00E5FF}
+.stat .label{font-size:10px;color:#94A3B8;letter-spacing:2px;margin-top:4px}
+.zone{margin-bottom:32px}
+.zone-title{font-size:20px;font-weight:900;letter-spacing:3px;padding:12px 20px;border-radius:12px 12px 0 0;text-align:center}
+.zone-arcade .zone-title{background:linear-gradient(135deg,#00E5FF15,#00E5FF08);color:#00E5FF;border:1px solid #00E5FF25;border-bottom:none}
+.zone-stage .zone-title{background:linear-gradient(135deg,#FFD93D15,#FFD93D08);color:#FFD93D;border:1px solid #FFD93D25;border-bottom:none}
+.zone-fortune .zone-title{background:linear-gradient(135deg,#FB923C15,#FB923C08);color:#FB923C;border:1px solid #FB923C25;border-bottom:none}
+.games{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:0 0 12px 12px;overflow:hidden}
+.game{padding:14px 16px;background:#0a1628;display:flex;align-items:center;gap:12px}
+.game .badge{font-size:24px;width:40px;text-align:center;flex-shrink:0}
+.game .info{flex:1;min-width:0}
+.game .name{font-size:13px;font-weight:800;color:#E8EBF6}
+.game .mode{font-size:11px;color:#00E5FF;font-weight:700;margin-top:2px}
+.game .count{font-size:10px;color:#94A3B8;margin-top:1px}
+.solo-section{margin-top:24px;padding:16px 20px;border-radius:12px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06)}
+.solo-title{font-size:14px;font-weight:800;color:#94A3B8;margin-bottom:8px}
+.solo-game{display:flex;gap:8px;align-items:center;padding:6px 0}
+.solo-game .emoji{font-size:18px}
+.solo-game .text{font-size:12px;color:#94A3B8}
+.solo-game .reason{font-size:10px;color:#64748B;font-style:italic}
+.footer{text-align:center;margin-top:40px;color:#475569;font-size:11px}
+@media(max-width:600px){.games{grid-template-columns:1fr}.stat-row{flex-direction:column;align-items:center}}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>34 MULTIPLAYER MODES</h1>
+<div class="subtitle">Every game has a unique social experience — designed for people laughing together worldwide</div>
+
+<div class="stat-row">
+<div class="stat"><div class="num">37</div><div class="label">TOTAL GAMES</div></div>
+<div class="stat"><div class="num">34</div><div class="label">WITH MULTIPLAYER</div></div>
+<div class="stat"><div class="num">50</div><div class="label">BOT PERSONALITIES</div></div>
+<div class="stat"><div class="num">1,000</div><div class="label">MAX PLAYERS</div></div>
+</div>
+
+<div class="zone zone-arcade">
+<div class="zone-title">ARCADE ZONE — 18 GAMES</div>
+<div class="games">
+<div class="game"><div class="badge">🥅</div><div class="info"><div class="name">Final Kick</div><div class="mode">100 Keepers</div><div class="count">1 vs 100 goalkeepers</div></div></div>
+<div class="game"><div class="badge">🔥</div><div class="info"><div class="name">Final Kick 2</div><div class="mode">Pressure Cooker</div><div class="count">8 players tournament</div></div></div>
+<div class="game"><div class="badge">🏆</div><div class="info"><div class="name">Final Kick 3D</div><div class="mode">World Stage</div><div class="count">32-player bracket</div></div></div>
+<div class="game"><div class="badge">☢️</div><div class="info"><div class="name">Hot Potato</div><div class="mode">Pass the Nuke</div><div class="count">16 in a circle</div></div></div>
+<div class="game"><div class="badge">💀</div><div class="info"><div class="name">Russian Roulette</div><div class="mode">The Gauntlet</div><div class="count">1,000 enter → 1 survives</div></div></div>
+<div class="game"><div class="badge">🌵</div><div class="info"><div class="name">Wild West Duel</div><div class="mode">High Noon Town</div><div class="count">8-player bracket</div></div></div>
+<div class="game"><div class="badge">🏁</div><div class="info"><div class="name">Balloon Pop</div><div class="mode">Relay Race</div><div class="count">2 teams × 4 members</div></div></div>
+<div class="game"><div class="badge">🎾</div><div class="info"><div class="name">Puff Pong</div><div class="mode">Doubles Chaos</div><div class="count">2v2 doubles</div></div></div>
+<div class="game"><div class="badge">🎸</div><div class="info"><div class="name">Rhythm Puff</div><div class="mode">Band Battle</div><div class="count">4-piece band</div></div></div>
+<div class="game"><div class="badge">⚔️</div><div class="info"><div class="name">Tug of War</div><div class="mode">50v50 War</div><div class="count">100-player armies</div></div></div>
+<div class="game"><div class="badge">🐟</div><div class="info"><div class="name">Hooked</div><div class="mode">Fishing Tournament</div><div class="count">8 anglers</div></div></div>
+<div class="game"><div class="badge">⚡</div><div class="info"><div class="name">Puff RPS</div><div class="mode">Thunderdome</div><div class="count">16-player bracket</div></div></div>
+<div class="game"><div class="badge">🎤</div><div class="info"><div class="name">Beat Drop</div><div class="mode">DJ Battle</div><div class="count">4 DJs competing</div></div></div>
+<div class="game"><div class="badge">🌍</div><div class="info"><div class="name">Puff Clock</div><div class="mode">World Sync</div><div class="count">500+ simultaneous</div></div></div>
+<div class="game"><div class="badge">💀</div><div class="info"><div class="name">Puff Limbo</div><div class="mode">The Eliminator</div><div class="count">50 → 1 survival</div></div></div>
+<div class="game"><div class="badge">🐴</div><div class="info"><div class="name">Puff Derby</div><div class="mode">Grand National</div><div class="count">6 horses × 2 jockeys</div></div></div>
+<div class="game"><div class="badge">💥</div><div class="info"><div class="name">Tank War</div><div class="mode">Clan Wars</div><div class="count">4v4 team battle</div></div></div>
+<div class="game"><div class="badge">🌊</div><div class="info"><div class="name">Fish War</div><div class="mode">Ocean Royale</div><div class="count">50-fish battle royale</div></div></div>
+</div>
+</div>
+
+<div class="zone zone-stage">
+<div class="zone-title">STAGE ZONE — 6 GAMES</div>
+<div class="games">
+<div class="game"><div class="badge">🧠</div><div class="info"><div class="name">Vibe Check</div><div class="mode">Crowd vs Contestant</div><div class="count">1 + 99 audience</div></div></div>
+<div class="game"><div class="badge">🔗</div><div class="info"><div class="name">Higher or Lower</div><div class="mode">Chain Gang</div><div class="count">10-player relay</div></div></div>
+<div class="game"><div class="badge">💸</div><div class="info"><div class="name">Price is Puff</div><div class="mode">Bidding Frenzy</div><div class="count">6 contestants</div></div></div>
+<div class="game"><div class="badge">🧠</div><div class="info"><div class="name">Survival Trivia</div><div class="mode">Last Brain Standing</div><div class="count">100 → 1 elimination</div></div></div>
+<div class="game"><div class="badge">🧩</div><div class="info"><div class="name">Simon Puffs</div><div class="mode">Mind Meld</div><div class="count">4-player co-op</div></div></div>
+<div class="game"><div class="badge">🏛️</div><div class="info"><div class="name">Puff Auction</div><div class="mode">Auction House Madness</div><div class="count">16 bidders</div></div></div>
+</div>
+</div>
+
+<div class="zone zone-fortune">
+<div class="zone-title">FORTUNE ZONE — 10 GAMES</div>
+<div class="games">
+<div class="game"><div class="badge">🔮</div><div class="info"><div class="name">Crystal Ball</div><div class="mode">Prophecy Circle</div><div class="count">8 prophets</div></div></div>
+<div class="game"><div class="badge">🌿</div><div class="info"><div class="name">Strain Battle</div><div class="mode">Strain World Cup</div><div class="count">50+ voters</div></div></div>
+<div class="game"><div class="badge">📺</div><div class="info"><div class="name">Match Predictor</div><div class="mode">Pundit Panel</div><div class="count">6 pundits</div></div></div>
+<div class="game"><div class="badge">🏁</div><div class="info"><div class="name">Puff Slots</div><div class="mode">Slot Tournament</div><div class="count">16 racers</div></div></div>
+<div class="game"><div class="badge">🎰</div><div class="info"><div class="name">Puff Blackjack</div><div class="mode">High Rollers Table</div><div class="count">6 at one table</div></div></div>
+<div class="game"><div class="badge">🎲</div><div class="info"><div class="name">Craps & Clouds</div><div class="mode">Casino Floor</div><div class="count">8 at table</div></div></div>
+<div class="game"><div class="badge">🔐</div><div class="info"><div class="name">Mystery Box</div><div class="mode">Heist Crew</div><div class="count">4-player co-op</div></div></div>
+<div class="game"><div class="badge">🥠</div><div class="info"><div class="name">Fortune Cookie</div><div class="mode">Fortune Circle</div><div class="count">8 traders</div></div></div>
+<div class="game"><div class="badge">🗺️</div><div class="info"><div class="name">Treasure Map</div><div class="mode">Treasure Race</div><div class="count">4 explorers</div></div></div>
+<div class="game"><div class="badge">🎡</div><div class="info"><div class="name">Spin & Win</div><div class="mode">Wheel of Misfortune</div><div class="count">6 players</div></div></div>
+</div>
+</div>
+
+<div class="solo-section">
+<div class="solo-title">INTENTIONALLY SOLO — 3 GAMES</div>
+<div class="solo-game"><span class="emoji">📅</span><span class="text">Daily Picks</span><span class="reason">— Personal daily ritual, streak = retention</span></div>
+<div class="solo-game"><span class="emoji">🪙</span><span class="text">Coin Flip</span><span class="reason">— Pure 50/50 luck, no meaningful social layer</span></div>
+<div class="solo-game"><span class="emoji">🎫</span><span class="text">Scratch & Puff</span><span class="reason">— Solo tactile reveal experience</span></div>
+</div>
+
+<div class="footer">Mood Lab Arena © 2026 — Powered by Mood Lab Tech × Cali Clear</div>
+</div>
+</body>
+</html>

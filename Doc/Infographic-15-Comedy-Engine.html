@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mood Lab Arena — Comedy Engine</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#06101E;color:#E8EBF6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;padding:40px 20px}
+.container{max-width:900px;margin:0 auto}
+h1{font-size:36px;font-weight:900;text-align:center;background:linear-gradient(135deg,#FF6B8A,#FFD93D);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px}
+.subtitle{text-align:center;color:#94A3B8;font-size:14px;margin-bottom:40px}
+.section{margin-bottom:32px}
+.section-title{font-size:18px;font-weight:900;letter-spacing:2px;padding:10px 16px;border-radius:10px;margin-bottom:12px;display:flex;align-items:center;gap:10px}
+.card{padding:16px;border-radius:12px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);margin-bottom:8px}
+.card-title{font-size:14px;font-weight:800;margin-bottom:6px}
+.card-desc{font-size:12px;color:#94A3B8;line-height:1.5}
+.roast{padding:10px 14px;border-radius:8px;background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.15);margin-bottom:6px;font-size:12px;color:#FCA5A5;font-style:italic}
+.hype{padding:10px 14px;border-radius:8px;background:rgba(255,215,0,0.06);border:1px solid rgba(255,215,0,0.15);margin-bottom:6px;font-size:12px;color:#FFD93D;font-style:italic}
+.commentary{padding:10px 14px;border-radius:8px;background:rgba(0,229,255,0.06);border:1px solid rgba(0,229,255,0.15);margin-bottom:6px;font-size:12px;color:#67E8F9}
+.bot-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:12px}
+.bot{padding:8px;border-radius:8px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);text-align:center}
+.bot .emoji{font-size:24px}
+.bot .name{font-size:9px;font-weight:700;color:#E8EBF6;margin-top:2px}
+.bot .catch{font-size:7px;color:#64748B;font-style:italic;margin-top:1px}
+.flow{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;margin:20px 0}
+.flow-step{padding:12px 16px;border-radius:12px;text-align:center;min-width:100px}
+.flow-arrow{color:#475569;font-size:20px}
+.celeb-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.celeb{padding:12px 8px;border-radius:10px;background:rgba(255,215,0,0.04);border:1px solid rgba(255,215,0,0.12);text-align:center}
+.celeb .emoji{font-size:28px}
+.celeb .name{font-size:10px;font-weight:800;color:#FFD93D;margin-top:4px}
+.celeb .msg{font-size:8px;color:#94A3B8;font-style:italic;margin-top:2px}
+.overlay-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.overlay{padding:16px;border-radius:12px;text-align:center}
+.overlay .icon{font-size:36px;margin-bottom:8px}
+.overlay .title{font-size:14px;font-weight:900;letter-spacing:2px}
+.overlay .desc{font-size:10px;color:#94A3B8;margin-top:4px}
+.footer{text-align:center;margin-top:40px;color:#475569;font-size:11px}
+@media(max-width:600px){.bot-grid{grid-template-columns:repeat(3,1fr)}.celeb-grid{grid-template-columns:repeat(3,1fr)}.overlay-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>COMEDY ENGINE</h1>
+<div class="subtitle">Making stoned people laugh together worldwide — the humor system behind Mood Lab Arena</div>
+
+<!-- AUTO COMEDY FLOW -->
+<div class="section">
+<div class="section-title" style="background:rgba(147,51,234,0.08);border:1px solid rgba(147,51,234,0.2);color:#A78BFA">🎭 Auto Comedy Flow — Every Game Result</div>
+<div class="flow">
+<div class="flow-step" style="background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2)">
+<div style="font-size:24px">🏆</div>
+<div style="font-size:11px;font-weight:800;color:#4ADE80">WIN</div>
+</div>
+<div class="flow-arrow">→</div>
+<div class="flow-step" style="background:rgba(255,215,0,0.08);border:1px solid rgba(255,215,0,0.2)">
+<div style="font-size:16px">🎉</div>
+<div style="font-size:9px;font-weight:700;color:#FFD93D">Victory Parade</div>
+</div>
+<div class="flow-arrow">→</div>
+<div class="flow-step" style="background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.2)">
+<div style="font-size:16px">🎬</div>
+<div style="font-size:9px;font-weight:700;color:#67E8F9">Hype Cam</div>
+</div>
+<div class="flow-arrow">→</div>
+<div class="flow-step" style="background:rgba(255,215,0,0.08);border:1px solid rgba(255,215,0,0.2)">
+<div style="font-size:16px">⭐</div>
+<div style="font-size:9px;font-weight:700;color:#FFD93D">10% Celebrity</div>
+</div>
+</div>
+<div class="flow">
+<div class="flow-step" style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2)">
+<div style="font-size:24px">💀</div>
+<div style="font-size:11px;font-weight:800;color:#F87171">LOSE</div>
+</div>
+<div class="flow-arrow">→</div>
+<div class="flow-step" style="background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.15)">
+<div style="font-size:16px">📸</div>
+<div style="font-size:9px;font-weight:700;color:#F87171">Shame Cam</div>
+</div>
+<div class="flow-arrow">→</div>
+<div class="flow-step" style="background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.15)">
+<div style="font-size:16px">🔥</div>
+<div style="font-size:9px;font-weight:700;color:#F87171">Crowd Roast</div>
+</div>
+<div class="flow-arrow">→</div>
+<div class="flow-step" style="background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.15)">
+<div style="font-size:16px">💀😂</div>
+<div style="font-size:9px;font-weight:700;color:#F87171">Emoji Burst</div>
+</div>
+</div>
+</div>
+
+<!-- CROWD ROASTS -->
+<div class="section">
+<div class="section-title" style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);color:#F87171">🔥 Crowd Roasts — 55+ Messages</div>
+<div class="roast">💀 "Bro forgot which game he was playing"</div>
+<div class="roast">💀 "The AI literally paused to let you catch up and you STILL lost"</div>
+<div class="roast">🫁 "That was a WHISPER not a PUFF"</div>
+<div class="roast">😴 "Did you fall asleep? Genuine question"</div>
+<div class="roast">📅 "Your reaction time is measured in CALENDAR DAYS"</div>
+<div class="roast">🫁 "Blinker attempt: DENIED BY LUNGS"</div>
+</div>
+
+<!-- STONER COMMENTARY -->
+<div class="section">
+<div class="section-title" style="background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.2);color:#67E8F9">🌿 Stoner Commentary — 40+ Lines</div>
+<div class="commentary">🤔 "Is he charging up or just vibing? Hard to tell"</div>
+<div class="commentary">🤖 "A ROBOT outplayed you. While you're on the couch. Think about that."</div>
+<div class="commentary">💀 "BLINKER! Someone check if they're still conscious!"</div>
+<div class="commentary">📹 "Somebody clip that! SOMEBODY CLIP THAT!"</div>
+<div class="commentary">🌍 "That play just went VIRAL in the multiverse"</div>
+</div>
+
+<!-- VISUAL OVERLAYS -->
+<div class="section">
+<div class="section-title" style="background:rgba(147,51,234,0.08);border:1px solid rgba(147,51,234,0.2);color:#A78BFA">📸 Visual Overlays</div>
+<div class="overlay-grid">
+<div class="overlay" style="background:rgba(239,68,68,0.06);border:2px solid rgba(239,68,68,0.3)">
+<div class="icon">📸</div>
+<div class="title" style="color:#EF4444">SHAME CAM</div>
+<div class="desc">Red glass panel on spectacular fails<br>"CAUGHT IN 4K" / "EMOTIONAL DAMAGE"</div>
+</div>
+<div class="overlay" style="background:rgba(255,215,0,0.06);border:2px solid rgba(255,215,0,0.3)">
+<div class="icon">🏆</div>
+<div class="title" style="color:#FFD93D">HYPE CAM</div>
+<div class="desc">Gold glass panel on amazing wins<br>"PLAY OF THE GAME" / "CERTIFIED GOAT"</div>
+</div>
+<div class="overlay" style="background:rgba(0,229,255,0.06);border:2px solid rgba(0,229,255,0.3)">
+<div class="icon">🌧️</div>
+<div class="title" style="color:#00E5FF">EMOJI RAIN</div>
+<div class="desc">Falling emoji particles<br>💀😂 on fails / 🔥👑 on wins</div>
+</div>
+<div class="overlay" style="background:rgba(34,197,94,0.06);border:2px solid rgba(34,197,94,0.3)">
+<div class="icon">🎉</div>
+<div class="title" style="color:#22C55E">VICTORY PARADE</div>
+<div class="desc">Confetti + hype + crowd chanting<br>+ 10% celebrity guest cameo</div>
+</div>
+</div>
+</div>
+
+<!-- CELEBRITY GUESTS -->
+<div class="section">
+<div class="section-title" style="background:rgba(255,215,0,0.08);border:1px solid rgba(255,215,0,0.2);color:#FFD93D">⭐ Celebrity Guest Cameos — 10% Chance</div>
+<div class="celeb-grid">
+<div class="celeb"><div class="emoji">🐶</div><div class="name">Snoop Dogg</div><div class="msg">*drops it like it's hot*</div></div>
+<div class="celeb"><div class="emoji">🌟</div><div class="name">Wiz Khalifa</div><div class="msg">Black and yellow vibes</div></div>
+<div class="celeb"><div class="emoji">😂</div><div class="name">Seth Rogen</div><div class="msg">*iconic laugh* huhuhuhuh</div></div>
+<div class="celeb"><div class="emoji">🎸</div><div class="name">Willie Nelson</div><div class="msg">On the road again...</div></div>
+<div class="celeb"><div class="emoji">👩‍🍳</div><div class="name">Martha Stewart</div><div class="msg">That was delightful, darling</div></div>
+</div>
+</div>
+
+<!-- BOT POOL SAMPLE -->
+<div class="section">
+<div class="section-title" style="background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.2);color:#67E8F9">🤖 50 Bot Personalities (Sample)</div>
+<div class="bot-grid">
+<div class="bot"><div class="emoji">😎</div><div class="name">ChillMaster42</div><div class="catch">no stress vibes only</div></div>
+<div class="bot"><div class="emoji">💀</div><div class="name">BlinkerKing</div><div class="catch">blinker or nothing</div></div>
+<div class="bot"><div class="emoji">👸</div><div class="name">NeonQueen</div><div class="catch">bow down</div></div>
+<div class="bot"><div class="emoji">🐼</div><div class="name">BlazedPanda</div><div class="catch">lmao</div></div>
+<div class="bot"><div class="emoji">💨</div><div class="name">PuffDaddy</div><div class="catch">let's get this W</div></div>
+<div class="bot"><div class="emoji">🥔</div><div class="name">HashBrown</div><div class="catch">baked. literally.</div></div>
+<div class="bot"><div class="emoji">🍪</div><div class="name">EdibleEddie</div><div class="catch">kicked in 2 hours ago</div></div>
+<div class="bot"><div class="emoji">🚀</div><div class="name">SpaceCase</div><div class="catch">TO THE MOON</div></div>
+<div class="bot"><div class="emoji">🛋️</div><div class="name">CouchLock</div><div class="catch">can't move. won't move.</div></div>
+<div class="bot"><div class="emoji">🖐️</div><div class="name">HighFiveGuy</div><div class="catch">high five! ...get it?</div></div>
+</div>
+<div style="text-align:center;margin-top:8px;font-size:11px;color:#64748B">+ 40 more bot personalities with unique styles and catchphrases</div>
+</div>
+
+<div class="footer">Mood Lab Arena Comedy Engine © 2026 — Powered by Mood Lab Tech</div>
+</div>
+</body>
+</html>

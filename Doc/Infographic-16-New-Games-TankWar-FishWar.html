@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mood Lab Arena — New Games: Tank War & Fish War</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#06101E;color:#E8EBF6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;padding:40px 20px}
+.container{max-width:900px;margin:0 auto}
+h1{font-size:36px;font-weight:900;text-align:center;background:linear-gradient(135deg,#4CAF50,#3B82F6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px}
+.subtitle{text-align:center;color:#94A3B8;font-size:14px;margin-bottom:40px}
+.game-section{margin-bottom:40px;padding:24px;border-radius:20px}
+.game-section.tank{background:linear-gradient(135deg,rgba(76,175,80,0.08),rgba(76,175,80,0.02));border:1px solid rgba(76,175,80,0.2)}
+.game-section.fish{background:linear-gradient(135deg,rgba(59,130,246,0.08),rgba(59,130,246,0.02));border:1px solid rgba(59,130,246,0.2)}
+.game-header{display:flex;align-items:center;gap:16px;margin-bottom:20px}
+.game-header .icon{font-size:48px}
+.game-header .title{font-size:28px;font-weight:900;letter-spacing:2px}
+.game-header .type{font-size:12px;padding:4px 10px;border-radius:20px;font-weight:700}
+.modes{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+.mode{padding:14px;border-radius:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);text-align:center}
+.mode .emoji{font-size:28px;margin-bottom:4px}
+.mode .name{font-size:12px;font-weight:800;margin-bottom:2px}
+.mode .desc{font-size:9px;color:#94A3B8}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
+.stat{padding:10px;border-radius:10px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);text-align:center}
+.stat .val{font-size:18px;font-weight:900}
+.stat .label{font-size:8px;color:#94A3B8;letter-spacing:1px;margin-top:2px}
+.boss-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.boss{padding:12px;border-radius:10px;display:flex;align-items:center;gap:10px}
+.boss .emoji{font-size:28px}
+.boss .info .name{font-size:12px;font-weight:800}
+.boss .info .hp{font-size:9px;color:#94A3B8}
+.evolution{display:flex;gap:4px;align-items:center;flex-wrap:wrap;justify-content:center;margin:16px 0}
+.evo-step{padding:8px 10px;border-radius:8px;text-align:center;min-width:60px}
+.evo-step .emoji{font-size:20px}
+.evo-step .name{font-size:7px;font-weight:700;margin-top:2px}
+.evo-step .lvl{font-size:6px;color:#94A3B8}
+.evo-arrow{color:#475569;font-size:14px}
+.mechanic{padding:12px 16px;border-radius:10px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);margin-bottom:8px;display:flex;gap:12px;align-items:center}
+.mechanic .icon{font-size:24px;flex-shrink:0}
+.mechanic .text .title{font-size:12px;font-weight:800}
+.mechanic .text .desc{font-size:10px;color:#94A3B8;margin-top:2px}
+.footer{text-align:center;margin-top:40px;color:#475569;font-size:11px}
+@media(max-width:600px){.modes{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}.boss-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>NEW GAMES</h1>
+<div class="subtitle">Two canvas-based games with multiplayer modes, AI opponents, and puff integration</div>
+
+<!-- TANK WAR -->
+<div class="game-section tank">
+<div class="game-header">
+<div class="icon">🔫</div>
+<div>
+<div class="title" style="color:#4CAF50">TANK WAR</div>
+<div class="type" style="background:rgba(76,175,80,0.15);color:#4CAF50;border:1px solid rgba(76,175,80,0.3)">Artillery</div>
+</div>
+</div>
+
+<div class="stats">
+<div class="stat"><div class="val" style="color:#4CAF50">430×340</div><div class="label">CANVAS SIZE</div></div>
+<div class="stat"><div class="val" style="color:#FFD93D">4</div><div class="label">GAME MODES</div></div>
+<div class="stat"><div class="val" style="color:#00E5FF">8</div><div class="label">MAX PLAYERS</div></div>
+<div class="stat"><div class="val" style="color:#FF6B8A">4</div><div class="label">BOSS TYPES</div></div>
+</div>
+
+<div class="modes">
+<div class="mode"><div class="emoji">🎯</div><div class="name" style="color:#4CAF50">1v1 Duel</div><div class="desc">Classic artillery duel</div></div>
+<div class="mode"><div class="emoji">👥</div><div class="name" style="color:#00E5FF">2v2 Teams</div><div class="desc">You + ally vs 2 enemies</div></div>
+<div class="mode"><div class="emoji">💀</div><div class="name" style="color:#EF4444">Free-for-All</div><div class="desc">4 tanks, last standing</div></div>
+<div class="mode"><div class="emoji">🐉</div><div class="name" style="color:#FFD93D">Boss Battle</div><div class="desc">Co-op vs mega boss</div></div>
+</div>
+
+<div style="font-size:12px;font-weight:800;color:#4CAF50;margin-bottom:8px;letter-spacing:1px">MECHANICS</div>
+<div class="mechanic"><div class="icon">🎯</div><div class="text"><div class="title">Oscillating Aim</div><div class="desc">Pointer sweeps left-right. TAP to lock your angle.</div></div></div>
+<div class="mechanic"><div class="icon">💪</div><div class="text"><div class="title">Power Bar</div><div class="desc">Bar fills 0-100%. TAP to lock power. STRONG zone (50-80%) = most damage.</div></div></div>
+<div class="mechanic"><div class="icon">💨</div><div class="text"><div class="title">Puff Shot (Special)</div><div class="desc">Every 3-4 turns: HOLD puff for 1.5x-3x damage. Golden trail + screen shake.</div></div></div>
+<div class="mechanic"><div class="icon">🌬️</div><div class="text"><div class="title">Wind Physics</div><div class="desc">Random wind each turn affects projectile trajectory.</div></div></div>
+
+<div style="font-size:12px;font-weight:800;color:#EF4444;margin:16px 0 8px;letter-spacing:1px">BOSS TYPES</div>
+<div class="boss-grid">
+<div class="boss" style="background:rgba(255,69,0,0.08);border:1px solid rgba(255,69,0,0.2)"><div class="emoji">🐉</div><div class="info"><div class="name" style="color:#FF4500">Fire Dragon</div><div class="hp">600 HP · Flame + Fireball attacks</div></div></div>
+<div class="boss" style="background:rgba(112,128,144,0.08);border:1px solid rgba(112,128,144,0.2)"><div class="emoji">🤖</div><div class="info"><div class="name" style="color:#708090">Iron Titan</div><div class="hp">500 HP · Laser + Slam attacks</div></div></div>
+<div class="boss" style="background:rgba(139,0,0,0.08);border:1px solid rgba(139,0,0,0.2)"><div class="emoji">💀</div><div class="info"><div class="name" style="color:#DC143C">Death Lord</div><div class="hp">700 HP · Scythe + Curse attacks</div></div></div>
+<div class="boss" style="background:rgba(255,99,71,0.08);border:1px solid rgba(255,99,71,0.2)"><div class="emoji">🌋</div><div class="info"><div class="name" style="color:#FF6347">Volcano</div><div class="hp">800 HP · Meteor + Lava attacks</div></div></div>
+</div>
+</div>
+
+<!-- FISH WAR -->
+<div class="game-section fish">
+<div class="game-header">
+<div class="icon">🐟</div>
+<div>
+<div class="title" style="color:#3B82F6">FISH WAR</div>
+<div class="type" style="background:rgba(59,130,246,0.15);color:#3B82F6;border:1px solid rgba(59,130,246,0.3)">Survival</div>
+</div>
+</div>
+
+<div class="stats">
+<div class="stat"><div class="val" style="color:#3B82F6">430×500</div><div class="label">CANVAS SIZE</div></div>
+<div class="stat"><div class="val" style="color:#FFD93D">4</div><div class="label">GAME MODES</div></div>
+<div class="stat"><div class="val" style="color:#00E5FF">8</div><div class="label">FISH FORMS</div></div>
+<div class="stat"><div class="val" style="color:#FF6B8A">4</div><div class="label">BOSS TYPES</div></div>
+</div>
+
+<div class="modes">
+<div class="mode"><div class="emoji">🐟</div><div class="name" style="color:#3B82F6">Solo Survival</div><div class="desc">Reach 500 points to win</div></div>
+<div class="mode"><div class="emoji">🎯</div><div class="name" style="color:#00E5FF">1v1 Duel</div><div class="desc">Eliminate the bot fish</div></div>
+<div class="mode"><div class="emoji">💀</div><div class="name" style="color:#EF4444">PvP Free-for-All</div><div class="desc">Last fish standing</div></div>
+<div class="mode"><div class="emoji">🐉</div><div class="name" style="color:#FFD93D">Boss Battle</div><div class="desc">Defeat the sea boss</div></div>
+</div>
+
+<div style="font-size:12px;font-weight:800;color:#3B82F6;margin-bottom:8px;letter-spacing:1px">8 EVOLUTION FORMS</div>
+<div class="evolution">
+<div class="evo-step" style="background:rgba(255,158,64,0.1);border:1px solid rgba(255,158,64,0.2)"><div class="emoji">🐟</div><div class="name" style="color:#FF9E40">Ca Chep</div><div class="lvl">Lv 1</div></div>
+<div class="evo-arrow">→</div>
+<div class="evo-step" style="background:rgba(255,217,61,0.1);border:1px solid rgba(255,217,61,0.2)"><div class="emoji">🐡</div><div class="name" style="color:#FFD93D">Ca Noc</div><div class="lvl">Lv 2</div></div>
+<div class="evo-arrow">→</div>
+<div class="evo-step" style="background:rgba(255,107,138,0.1);border:1px solid rgba(255,107,138,0.2)"><div class="emoji">🐠</div><div class="name" style="color:#FF6B8A">Ca He</div><div class="lvl">Lv 3</div></div>
+<div class="evo-arrow">→</div>
+<div class="evo-step" style="background:rgba(91,206,250,0.1);border:1px solid rgba(91,206,250,0.2)"><div class="emoji">🐬</div><div class="name" style="color:#5BCEFA">Ca Heo</div><div class="lvl">Lv 5</div></div>
+<div class="evo-arrow">→</div>
+<div class="evo-step" style="background:rgba(160,210,219,0.1);border:1px solid rgba(160,210,219,0.2)"><div class="emoji">🗡️</div><div class="name" style="color:#A0D2DB">Ca Kiem</div><div class="lvl">Lv 7</div></div>
+<div class="evo-arrow">→</div>
+<div class="evo-step" style="background:rgba(100,116,139,0.1);border:1px solid rgba(100,116,139,0.2)"><div class="emoji">🦈</div><div class="name" style="color:#64748B">Ca Map</div><div class="lvl">Lv 9</div></div>
+<div class="evo-arrow">→</div>
+<div class="evo-step" style="background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.2)"><div class="emoji">🐋</div><div class="name" style="color:#3B82F6">Ca Voi</div><div class="lvl">Lv 12</div></div>
+<div class="evo-arrow">→</div>
+<div class="evo-step" style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2)"><div class="emoji">🐉</div><div class="name" style="color:#F59E0B">Ca Rong</div><div class="lvl">Lv 15</div></div>
+</div>
+
+<div style="font-size:12px;font-weight:800;color:#3B82F6;margin:16px 0 8px;letter-spacing:1px">CONTROLS</div>
+<div class="mechanic"><div class="icon">🏊</div><div class="text"><div class="title">Auto-Swim</div><div class="desc">Fish swims forward automatically at base speed</div></div></div>
+<div class="mechanic"><div class="icon">👆</div><div class="text"><div class="title">Tap to Turn</div><div class="desc">Tap anywhere to change swim direction toward that point</div></div></div>
+<div class="mechanic"><div class="icon">💨</div><div class="text"><div class="title">Puff = Boost (x2.2 Speed)</div><div class="desc">Hold puff to boost. Fuel: 100 max, drains 1.1/frame, regens 0.18/frame</div></div></div>
+<div class="mechanic"><div class="icon">🍽️</div><div class="text"><div class="title">Eat to Grow</div><div class="desc">Eat fish 10%+ smaller. Every 5 eaten = level up. Size grows +6% per eat.</div></div></div>
+
+<div style="font-size:12px;font-weight:800;color:#EF4444;margin:16px 0 8px;letter-spacing:1px">BOSS TYPES</div>
+<div class="boss-grid">
+<div class="boss" style="background:rgba(100,116,139,0.08);border:1px solid rgba(100,116,139,0.2)"><div class="emoji">🦈</div><div class="info"><div class="name" style="color:#64748B">Mega Shark</div><div class="hp">800 HP · Chase + Bite</div></div></div>
+<div class="boss" style="background:rgba(124,58,237,0.08);border:1px solid rgba(124,58,237,0.2)"><div class="emoji">🐙</div><div class="info"><div class="name" style="color:#7C3AED">Kraken</div><div class="hp">1000 HP · Tentacle Sweep</div></div></div>
+<div class="boss" style="background:rgba(30,64,175,0.08);border:1px solid rgba(30,64,175,0.2)"><div class="emoji">🐋</div><div class="info"><div class="name" style="color:#1E40AF">Leviathan</div><div class="hp">1200 HP · Swallow Whole</div></div></div>
+<div class="boss" style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2)"><div class="emoji">🐉</div><div class="info"><div class="name" style="color:#F59E0B">Sea Dragon</div><div class="hp">900 HP · Fire Breath</div></div></div>
+</div>
+</div>
+
+<div class="footer">Mood Lab Arena — Tank War & Fish War © 2026 — Powered by Mood Lab Tech</div>
+</div>
+</body>
+</html>

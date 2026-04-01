@@ -254,32 +254,34 @@ const LG = {
 
 // ── GAME DATA (identical content) ──
 const PLAY_GAMES = [
-  { id:"finalkick", name:"Final Kick", emoji:"⚽", players:"2", time:"1-2m", type:"Skill", color:C.cyan, desc:"Penalty kick 1v1. Aim your shot, pick your save direction.", hot:true, difficulty:5 },
-  { id:"finalkick2", name:"Final Kick 2", emoji:"⚽🔥", players:"2", time:"2-3m", type:"Precision", color:C.gold, desc:"Double puff! Aim X-axis + Y-axis separately.", hot:true, difficulty:6 },
-  { id:"finalkick3", name:"Final Kick 3D", emoji:"⚽🌐", players:"2", time:"2-3m", type:"3D Precision", color:C.purple, desc:"3D behind-the-ball view! Double puff aim in 3D.", hot:true, difficulty:6 },
-  { id:"hotpotato", name:"Hot Potato", emoji:"💣", players:"3-8", time:"1-3m", type:"Luck", color:C.orange, desc:"Bomb jumps randomly. Puff to pass. Get caught = eliminated.", difficulty:2 },
-  { id:"russian", name:"Russian Roulette", emoji:"🎲", players:"2-6", time:"1-2m", type:"Luck", color:C.red, desc:"Take turns puffing. Random elimination each round. Maximum tension.", difficulty:2 },
-  { id:"wildwest", name:"Wild West Duel", emoji:"🤠", players:"2", time:"1-2m", type:"Reaction", color:C.gold, desc:"Best of 5 showdown! Wait for DRAW, puff fastest. Reaction time in ms.", hot:true, difficulty:5 },
-  { id:"balloon", name:"Balloon Pop", emoji:"🎈", players:"2-8", time:"1-3m", type:"Strategy", color:C.pink, desc:"Puff inflates the balloon. Pop it and you lose.", difficulty:4 },
-  { id:"puffpong", name:"Puff Pong", emoji:"🏓", players:"2", time:"1-2m", type:"Skill", color:C.green, desc:"Virtual ping pong. Puff = hit the ball. Timing is everything.", difficulty:5 },
-  { id:"rhythm", name:"Rhythm Puff", emoji:"🎵", players:"1-4", time:"1-3m", type:"Rhythm", color:C.purple, desc:"Notes fall down, puff on beat. Guitar Hero style.", difficulty:5 },
-  { id:"tugofwar", name:"Tug of War", emoji:"💪", players:"2-8", time:"30s-1m", type:"Team", color:C.blue, desc:"Two teams puff nonstop. Stronger side wins.", hot:true, difficulty:4 },
-  { id:"hooked", name:"Hooked", emoji:"🎣", players:"1", time:"2-5m", type:"Skill", color:C.blue, desc:"Stack fishing! Puff to reel in fish. Control your suction!", difficulty:4 },
-  { id:"rps", name:"Puff RPS", emoji:"✊", players:"2", time:"1-2m", type:"Strategy", color:C.purple, desc:"Rock Paper Scissors with Puff Power!", hot:true, difficulty:2 },
-  { id:"beatdrop", name:"Beat Drop", emoji:"🎧", players:"1", time:"3-5m", type:"Music", color:C.pink, desc:"Hold your puff until the beat drops. Release on time!", difficulty:4 },
-  { id:"puffclock", name:"Puff Clock", emoji:"⏱️", players:"1-100+", time:"3-5m", type:"Precision", color:C.orange, desc:"Puff for EXACTLY the target time. Closest wins!", difficulty:5 },
-  { id:"pufflimbo", name:"Puff Limbo", emoji:"🎪", players:"1-50", time:"3-5m", type:"Endurance", color:C.orange, desc:"Target puff gets longer each round. Survive the blinker!", difficulty:5 },
-  { id:"puffderby", name:"Puff Derby", emoji:"🏇", players:"6", time:"2-3m", type:"Racing", color:C.green, desc:"Pick a horse. Spam puff to make it run!", difficulty:2 },
+  { id:"finalkick", name:"Final Kick", emoji:"⚽", players:"2", time:"1-2m", type:"Skill", color:C.cyan, desc:"Penalty kick 1v1. Aim your shot, pick your save direction.", hot:true, difficulty:5, mp:{mode:"100 Keepers",count:"1v100",badge:"🥅"} },
+  { id:"finalkick2", name:"Final Kick 2", emoji:"⚽🔥", players:"2", time:"2-3m", type:"Precision", color:C.gold, desc:"Double puff! Aim X-axis + Y-axis separately.", hot:true, difficulty:6, mp:{mode:"Pressure Cooker",count:"8 players",badge:"🔥"} },
+  { id:"finalkick3", name:"Final Kick 3D", emoji:"⚽🌐", players:"2", time:"2-3m", type:"3D Precision", color:C.purple, desc:"3D behind-the-ball view! Double puff aim in 3D.", hot:true, difficulty:6, mp:{mode:"World Stage",count:"32 bracket",badge:"🏆"} },
+  { id:"hotpotato", name:"Hot Potato", emoji:"💣", players:"3-8", time:"1-3m", type:"Luck", color:C.orange, desc:"Bomb jumps randomly. Puff to pass. Get caught = eliminated.", difficulty:2, mp:{mode:"Pass the Nuke",count:"16 players",badge:"☢️"} },
+  { id:"russian", name:"Russian Roulette", emoji:"🎲", players:"2-6", time:"1-2m", type:"Luck", color:C.red, desc:"Take turns puffing. Random elimination each round. Maximum tension.", difficulty:2, mp:{mode:"The Gauntlet",count:"1,000→1",badge:"💀"} },
+  { id:"wildwest", name:"Wild West Duel", emoji:"🤠", players:"2", time:"1-2m", type:"Reaction", color:C.gold, desc:"Best of 5 showdown! Wait for DRAW, puff fastest. Reaction time in ms.", hot:true, difficulty:5, mp:{mode:"High Noon Town",count:"8 bracket",badge:"🌵"} },
+  { id:"balloon", name:"Balloon Pop", emoji:"🎈", players:"2-8", time:"1-3m", type:"Strategy", color:C.pink, desc:"Puff inflates the balloon. Pop it and you lose.", difficulty:4, mp:{mode:"Relay Race",count:"2 teams×4",badge:"🏁"} },
+  { id:"puffpong", name:"Puff Pong", emoji:"🏓", players:"2", time:"1-2m", type:"Skill", color:C.green, desc:"Virtual ping pong. Puff = hit the ball. Timing is everything.", difficulty:5, mp:{mode:"Doubles Chaos",count:"2v2",badge:"🎾"} },
+  { id:"rhythm", name:"Rhythm Puff", emoji:"🎵", players:"1-4", time:"1-3m", type:"Rhythm", color:C.purple, desc:"Notes fall down, puff on beat. Guitar Hero style.", difficulty:5, mp:{mode:"Band Battle",count:"4-piece band",badge:"🎸"} },
+  { id:"tugofwar", name:"Tug of War", emoji:"💪", players:"2-8", time:"30s-1m", type:"Team", color:C.blue, desc:"Two teams puff nonstop. Stronger side wins.", hot:true, difficulty:4, mp:{mode:"50v50 War",count:"50v50",badge:"⚔️"} },
+  { id:"hooked", name:"Hooked", emoji:"🎣", players:"1", time:"2-5m", type:"Skill", color:C.blue, desc:"Stack fishing! Puff to reel in fish. Control your suction!", difficulty:4, mp:{mode:"Fishing Tournament",count:"8 anglers",badge:"🐟"} },
+  { id:"rps", name:"Puff RPS", emoji:"✊", players:"2", time:"1-2m", type:"Strategy", color:C.purple, desc:"Rock Paper Scissors with Puff Power!", hot:true, difficulty:2, mp:{mode:"Thunderdome",count:"16 bracket",badge:"⚡"} },
+  { id:"beatdrop", name:"Beat Drop", emoji:"🎧", players:"1", time:"3-5m", type:"Music", color:C.pink, desc:"Hold your puff until the beat drops. Release on time!", difficulty:4, mp:{mode:"DJ Battle",count:"4 DJs",badge:"🎤"} },
+  { id:"puffclock", name:"Puff Clock", emoji:"⏱️", players:"1-100+", time:"3-5m", type:"Precision", color:C.orange, desc:"Puff for EXACTLY the target time. Closest wins!", difficulty:5, mp:{mode:"World Sync",count:"500+ players",badge:"🌍"} },
+  { id:"pufflimbo", name:"Puff Limbo", emoji:"🎪", players:"1-50", time:"3-5m", type:"Endurance", color:C.orange, desc:"Target puff gets longer each round. Survive the blinker!", difficulty:5, mp:{mode:"The Eliminator",count:"50→1",badge:"💀"} },
+  { id:"puffderby", name:"Puff Derby", emoji:"🏇", players:"6", time:"2-3m", type:"Racing", color:C.green, desc:"Pick a horse. Spam puff to make it run!", difficulty:2, mp:{mode:"Grand National",count:"6 horses×2",badge:"🐴"} },
+  { id:"tankwar", name:"Tank War", emoji:"🔫", players:"1-4", time:"2-3m", type:"Artillery", color:"#4CAF50", desc:"Aim, fire, destroy! Tap to shoot, puff for super shots!", difficulty:3, hot:true, mp:{mode:"Clan Wars",count:"4v4",badge:"💥"} },
+  { id:"fishwar", name:"Fish War", emoji:"🐟", players:"1-4", time:"2-3m", type:"Survival", color:"#3B82F6", desc:"Eat smaller fish, evolve, survive! Puff to boost!", difficulty:3, hot:true, mp:{mode:"Ocean Royale",count:"50 fish BR",badge:"🌊"} },
 ];
 
 const SHOW_GAMES = [
-  { id:"vibecheck", name:"Vibe Check", emoji:"🧠", players:"1-100+", time:"5-15m", type:"Trivia", color:C.gold, desc:"Trivia Game Show. Host asks, contestants answer, audience votes.", live:true, difficulty:3 },
+  { id:"vibecheck", name:"Vibe Check", emoji:"🧠", players:"1-100+", time:"5-15m", type:"Trivia", color:C.gold, desc:"Trivia Game Show. Host asks, contestants answer, audience votes.", live:true, difficulty:3, mp:{mode:"Crowd vs Contestant",count:"1+99",badge:"🧠"} },
   // Spin & Win moved to Fortune zone
-  { id:"higherlower", name:"Higher or Lower", emoji:"📊", players:"1-100+", time:"5-10m", type:"Knowledge", color:C.cyan, desc:"Guess if the next number is higher or lower. Streak = big rewards.", live:true, difficulty:3 },
-  { id:"pricepuff", name:"The Price is Puff", emoji:"💰", players:"2-50+", time:"5-10m", type:"Knowledge", color:C.green, desc:"Guess the product price. Closest wins.", live:true, difficulty:4 },
-  { id:"survivaltrivia", name:"Survival Trivia", emoji:"🏆", players:"2-100+", time:"5-15m", type:"Trivia", color:C.purple, desc:"Answer correctly or get eliminated. Last one standing wins!", live:true, difficulty:3 },
-  { id:"simonpuffs", name:"Simon Puffs", emoji:"🔴", players:"1-50+", time:"3-8m", type:"Memory", color:C.red, desc:"Remember the pattern, repeat with puffs. Memory master!", live:true, difficulty:3 },
-  { id:"puffauction", name:"Puff Auction", emoji:"🔨", players:"2-50+", time:"3-8m", type:"Strategy", color:C.lime, desc:"Bid with your lungs! Biggest puff wins the auction.", live:true, difficulty:4 },
+  { id:"higherlower", name:"Higher or Lower", emoji:"📊", players:"1-100+", time:"5-10m", type:"Knowledge", color:C.cyan, desc:"Guess if the next number is higher or lower. Streak = big rewards.", live:true, difficulty:3, mp:{mode:"Chain Gang",count:"10 relay",badge:"🔗"} },
+  { id:"pricepuff", name:"The Price is Puff", emoji:"💰", players:"2-50+", time:"5-10m", type:"Knowledge", color:C.green, desc:"Guess the product price. Closest wins.", live:true, difficulty:4, mp:{mode:"Bidding Frenzy",count:"6 players",badge:"💸"} },
+  { id:"survivaltrivia", name:"Survival Trivia", emoji:"🏆", players:"2-100+", time:"5-15m", type:"Trivia", color:C.purple, desc:"Answer correctly or get eliminated. Last one standing wins!", live:true, difficulty:3, mp:{mode:"Last Brain Standing",count:"100→1",badge:"🧠"} },
+  { id:"simonpuffs", name:"Simon Puffs", emoji:"🔴", players:"1-50+", time:"3-8m", type:"Memory", color:C.red, desc:"Remember the pattern, repeat with puffs. Memory master!", live:true, difficulty:3, mp:{mode:"Mind Meld",count:"4 co-op",badge:"🧩"} },
+  { id:"puffauction", name:"Puff Auction", emoji:"🔨", players:"2-50+", time:"3-8m", type:"Strategy", color:C.lime, desc:"Bid with your lungs! Biggest puff wins the auction.", live:true, difficulty:4, mp:{mode:"Auction House Madness",count:"16 bidders",badge:"🏛️"} },
 ];
 
 const MC_LINES = {
@@ -1821,6 +1823,59 @@ export default function MoodLabArena() {
   const pdTimerRef = useRef(null); const pdAiRef = useRef(null);
   const pdPosRef = useRef([0,0,0,0,0,0]); const pdStaminaRef = useRef(100);
   const pdLastPuff = useRef(0); const pdFinishRef = useRef([]);
+  // ═══ TANK WAR STATE ═══
+  const [twPhase, setTwPhase] = useState(null);
+  const [twMode, setTwMode] = useState("1v1");
+  const [twTanks, setTwTanks] = useState([]);
+  const [twBoss, setTwBoss] = useState(null);
+  const [twAngle, setTwAngle] = useState(45);
+  const [twLockedAngle, setTwLockedAngle] = useState(null);
+  const [twPower, setTwPower] = useState(0);
+  const [twLockedPower, setTwLockedPower] = useState(null);
+  const [twWind, setTwWind] = useState(0);
+  const [twTurnIdx, setTwTurnIdx] = useState(0);
+  const [twRound, setTwRound] = useState(0);
+  const [twLastHit, setTwLastHit] = useState(null);
+  const [twScore, setTwScore] = useState(0);
+  const [twPuffShotReady, setTwPuffShotReady] = useState(false);
+  const [twPuffShotCooldown, setTwPuffShotCooldown] = useState(0);
+  const [twAction, setTwAction] = useState("fire");
+  const [twFlying, setTwFlying] = useState(false);
+  const [twExplosion, setTwExplosion] = useState(null);
+  const twCanvasRef = useRef(null);
+  const twTerrainRef = useRef(null);
+  const twBulletRef = useRef(null);
+  const twRafRef = useRef(null);
+  const twAimRef = useRef(null);
+  const twPowerRef = useRef(null);
+  const twPuffStartRef = useRef(0);
+  const twTanksRef = useRef([]);
+  const twBossRef = useRef(null);
+  // ═══ FISH WAR STATE ═══
+  const [fwPhase, setFwPhase] = useState(null);
+  const [fwMode, setFwMode] = useState("solo");
+  const [fwScore, setFwScore] = useState(0);
+  const [fwLevel, setFwLevel] = useState(1);
+  const [fwForm, setFwForm] = useState("fish");
+  const [fwEaten, setFwEaten] = useState(0);
+  const [fwFuel, setFwFuel] = useState(100);
+  const [fwEvolution, setFwEvolution] = useState(null);
+  const [fwBossHp, setFwBossHp] = useState(0);
+  const [fwBossMaxHp, setFwBossMaxHp] = useState(0);
+  const [fwAlive, setFwAlive] = useState(true);
+  const fwCanvasRef = useRef(null);
+  const fwRafRef = useRef(null);
+  const fwPlayerRef = useRef(null);
+  const fwBotsRef = useRef([]);
+  const fwFishesRef = useRef([]);
+  const fwBossRef = useRef(null);
+  const fwBubblesRef = useRef([]);
+  const fwTargetRef = useRef({x:215,y:250});
+  const fwTimeRef = useRef(0);
+  const fwSpawnTimer = useRef(0);
+  const fwBoostRef = useRef(false);
+  const fwPuffStartRef = useRef(0);
+  const fwGameOverRef = useRef(false);
   // ── Higher or Lower ──
   const HL_STATS = useRef([{topic:"Monthly Google searches for 'cannabis'",value:4500000,display:"4.5M"},{topic:"Average price of 1g flower in California",value:12,display:"$12"},{topic:"Number of legal dispensaries in the US",value:14000,display:"14,000"},{topic:"Instagram posts tagged #420",value:28000000,display:"28M"},{topic:"Average blinker duration (seconds)",value:5.2,display:"5.2s"},{topic:"THC % in average dispensary flower",value:22,display:"22%"},{topic:"Snoop Dogg's age",value:54,display:"54"},{topic:"Minutes in a FIFA match",value:90,display:"90"},{topic:"States with legal recreational cannabis",value:24,display:"24"},{topic:"Price of a Storz & Bickel Volcano ($)",value:479,display:"$479"},{topic:"CBD market size in billions ($)",value:7,display:"$7B"},{topic:"Daily active TikTok users (millions)",value:1500,display:"1.5B"},{topic:"Elon Musk Twitter followers (millions)",value:180,display:"180M"},{topic:"Cannabis strains on Leafly",value:5800,display:"5,800"},{topic:"Average dispensary transaction ($)",value:55,display:"$55"},{topic:"Super Bowl LVIII viewers (millions)",value:123,display:"123M"},{topic:"Fortnite peak concurrent players (millions)",value:44,display:"44M"},{topic:"Amsterdam coffee shops",value:166,display:"166"},{topic:"Calories in a bag of Doritos",value:1400,display:"1,400"},{topic:"Songs on Spotify (millions)",value:100,display:"100M"},{topic:"World Cup 2026 host cities",value:16,display:"16"},{topic:"mg of THC in a standard edible",value:10,display:"10mg"},{topic:"Seconds to hold a proper hit",value:3,display:"3s"},{topic:"Drake Instagram followers (millions)",value:146,display:"146M"},{topic:"Price of 1oz in Colorado ($)",value:150,display:"$150"},{topic:"NBA teams total",value:30,display:"30"},{topic:"Average joint contains (grams)",value:0.5,display:"0.5g"},{topic:"YouTube daily video uploads (hours)",value:720000,display:"720K hrs"},{topic:"Countries where cannabis is fully legal",value:4,display:"4"},{topic:"Average Uber Eats delivery time (min)",value:35,display:"35 min"},{topic:"Twitch daily active streamers",value:240000,display:"240K"},{topic:"Rolling papers in a RAW pack",value:32,display:"32"}]).current;
   const [hlPhase, setHlPhase] = useState(null); const [hlCurrent, setHlCurrent] = useState(null);
@@ -3037,7 +3092,7 @@ export default function MoodLabArena() {
       setMatchmaking({game,mode,stage:"searching",input});
       setTimeout(()=>{
         setMatchmaking(p=>p?{...p,stage:"found",opp:mode==="ai"?"🤖 AI Bot":mode==="random"?"🎲 Player_847":"👫 Minh"}:null);
-        setTimeout(()=>{setMatchmaking(null);setGameActive({...game,activeInput:input});if(game.id==="wildwest")startDuel();if(game.id==="finalkick"||game.id==="finalkick2"||game.id==="finalkick3"){startKick(game.id);startMatchIntro(kickOpponent.current);}if(game.id==="balloon")startBalloonPop();if(game.id==="russian")startRussianRoulette();if(game.id==="puffpong")startPuffPong();if(game.id==="rhythm")startRhythmPuff();if(game.id==="tugofwar")startTugOfWar();if(game.id==="hotpotato")startHotPotato();if(game.id==="hooked")startHooked();if(game.id==="rps")startRps();if(game.id==="survivaltrivia")startSurvivalTrivia();if(game.id==="puffclock")startPuffClock();if(game.id==="beatdrop")startBeatDrop();if(game.id==="pufflimbo")startPuffLimbo();if(game.id==="puffderby")startPuffDerby();if(game.id==="higherlower")startHigherLower();if(game.id==="simonpuffs")startSimonPuffs();if(game.id==="puffauction")startPuffAuction();if(game.id==="vibecheck")vcStartGame();if(game.id==="pricepuff")startPriceIsPuff();},800);
+        setTimeout(()=>{setMatchmaking(null);setGameActive({...game,activeInput:input});if(game.id==="wildwest")startDuel();if(game.id==="finalkick"||game.id==="finalkick2"||game.id==="finalkick3"){startKick(game.id);startMatchIntro(kickOpponent.current);}if(game.id==="balloon")startBalloonPop();if(game.id==="russian")startRussianRoulette();if(game.id==="puffpong")startPuffPong();if(game.id==="rhythm")startRhythmPuff();if(game.id==="tugofwar")startTugOfWar();if(game.id==="hotpotato")startHotPotato();if(game.id==="hooked")startHooked();if(game.id==="rps")startRps();if(game.id==="survivaltrivia")startSurvivalTrivia();if(game.id==="puffclock")startPuffClock();if(game.id==="beatdrop")startBeatDrop();if(game.id==="pufflimbo")startPuffLimbo();if(game.id==="puffderby")startPuffDerby();if(game.id==="higherlower")startHigherLower();if(game.id==="simonpuffs")startSimonPuffs();if(game.id==="puffauction")startPuffAuction();if(game.id==="vibecheck")vcStartGame();if(game.id==="pricepuff")startPriceIsPuff();if(game.id==="tankwar")setTwPhase("modeselect");if(game.id==="fishwar")setFwPhase("modeselect");},800);
       },mode==="ai"?400:1200);
     });
   };
@@ -6832,6 +6887,8 @@ export default function MoodLabArena() {
     // tap-based games: start fires the action, stop is unused
     else if (id === "tugofwar")    { down = towPuff;        up = null;           }
     else if (id === "puffderby")   { down = pdPuff;         up = null;           }
+    else if (id === "tankwar")     { down = () => twPuffStart();  up = () => twPuffStop();  }
+    else if (id === "fishwar")     { down = () => fwPuffStart(); up = () => fwPuffStop();  }
     else if (id === "rhythm")      { down = rpPuffHit;      up = null;           }
     // hold-based: puffUp moves paddle down, puffRelease lets it drift
     else if (id === "puffpong")    { down = ppPuffUp;       up = ppPuffRelease;  }
@@ -7671,7 +7728,7 @@ export default function MoodLabArena() {
     const hotGames = PLAY_GAMES.filter(g=>g.hot);
     const hotIdx = Math.floor(Date.now()/4000) % Math.max(hotGames.length,1);
     const featuredGame = hotGames[hotIdx] || PLAY_GAMES[0];
-    const playerCounts = {finalkick:2100,finalkick2:356,finalkick3:198,wildwest:720,russian:167,balloon:145,puffpong:289,rhythm:134,tugofwar:312,hotpotato:890,hooked:410,rps:540,beatdrop:245,puffclock:310,pufflimbo:178,puffderby:420};
+    const playerCounts = {finalkick:2100,finalkick2:356,finalkick3:198,wildwest:720,russian:167,balloon:145,puffpong:289,rhythm:134,tugofwar:312,hotpotato:890,hooked:410,rps:540,beatdrop:245,puffclock:310,pufflimbo:178,puffderby:420,tankwar:680,fishwar:520};
     const totalPlaying = Object.values(playerCounts).reduce((a,b)=>a+b,0);
     const arcadeTournaments = [
       {name:"FK1 World Cup 2026",emoji:"🏆",game:"Final Kick",prize:"50,000 coins",color:C.gold,status:"LIVE",players:312,round:"Round of 16",bracket:[8,4,2,1],currentRound:1},
@@ -8165,8 +8222,9 @@ export default function MoodLabArena() {
     cbPuffStart.current = Date.now();
   };
   const cbHandlePuffEnd = () => {
-    if(!cbPuffing) return;
+    if(!cbPuffStart.current) return;
     const dur = (Date.now() - cbPuffStart.current)/1000;
+    cbPuffStart.current = 0;
     setCbPuffing(false);
     let ans;
     if(dur >= 3.0) { ans = "certain"; setCommentary("BLINKER! ABSOLUTELY CERTAIN! 3x if right, -2x if wrong!"); }
@@ -8441,8 +8499,9 @@ export default function MoodLabArena() {
     setCommentary("Reels are spinning...");
   };
   const slotsHandlePuffEnd = () => {
-    if(slotsPhase!=="spinning"||!slotsSpinning) return;
+    if(!slotsPuffStart.current) return;
     const dur = (Date.now()-slotsPuffStart.current)/1000;
+    slotsPuffStart.current = 0;
     setSlotsSpinning(false);
     const isBlinker = dur >= 4.5;
     const isBonus = isBlinker;
@@ -8564,8 +8623,9 @@ export default function MoodLabArena() {
     bjPuffStart.current = Date.now();
   };
   const bjHandlePuffEnd = () => {
-    if(!bjPuffing||bjPhase!=="player_turn") return;
+    if(!bjPuffStart.current||bjPhase!=="player_turn") return;
     const dur = (Date.now()-bjPuffStart.current)/1000;
+    bjPuffStart.current = 0;
     setBjPuffing(false);
     if(dur >= 4.5) {
       // DOUBLE DOWN
@@ -8686,8 +8746,9 @@ export default function MoodLabArena() {
     cfPuffStart.current = Date.now();
   };
   const cfHandlePuffEnd = () => {
-    if(!cfPuffing||cfPhase!=="puffing") return;
+    if(!cfPuffStart.current||cfPhase!=="puffing") return;
     const dur = (Date.now()-cfPuffStart.current)/1000;
+    cfPuffStart.current = 0;
     setCfPuffing(false);
     let mult=1, label="SAFE";
     if(dur>=4.5){mult=5;label="BLINKER 5x";}
@@ -8759,8 +8820,9 @@ export default function MoodLabArena() {
     setCommentary("Rolling...");
   };
   const crapsHandlePuffEnd = () => {
-    if(!crapsPuffing||crapsPhase!=="rolling") return;
+    if(!crapsPuffStart.current||crapsPhase!=="rolling") return;
     const dur = (Date.now()-crapsPuffStart.current)/1000;
+    crapsPuffStart.current = 0;
     setCrapsPuffing(false);
     setCrapsRolling(false);
     const isBlinker = dur >= 4.5;
@@ -9173,6 +9235,353 @@ export default function MoodLabArena() {
     setTmCoins(0);setTmGameOver(false);setTmSelected(null);setTmXray(false);setTmXrayTiles([]);setTmScore(0);
     setGameActive(null);
   };
+
+  // ═══════════════════════════════════════════════════════════════
+  // TANK WAR — Artillery Game Engine
+  // ═══════════════════════════════════════════════════════════════
+  const TW_BOSSES = [
+    {name:"Fire Dragon",emoji:"🐉",maxHp:600,color:"#FF4500",attacks:[{name:"Flame",dmg:35},{name:"Fireball",dmg:50}]},
+    {name:"Iron Titan",emoji:"🤖",maxHp:500,color:"#708090",attacks:[{name:"Laser",dmg:40},{name:"Slam",dmg:55}]},
+    {name:"Death Lord",emoji:"💀",maxHp:700,color:"#8B0000",attacks:[{name:"Scythe",dmg:45},{name:"Curse",dmg:30}]},
+    {name:"Volcano",emoji:"🌋",maxHp:800,color:"#FF6347",attacks:[{name:"Meteor",dmg:60},{name:"Lava",dmg:35}]},
+  ];
+  const TW_AI_NAMES=["GreenCloud","PuffSniper","BlazeTank","SmokeRider","IronPuff","NeonGunner","CaliKiller","TankMaster"];
+  const TW_W=430,TW_H=340;
+  const twGenTerrain=()=>{const t=new Array(TW_W);let h=TW_H*0.55+(Math.random()-0.5)*40;for(let i=0;i<TW_W;i++){h+=(Math.random()-0.5)*3;h=Math.max(TW_H*0.3,Math.min(TW_H*0.75,h));t[i]=h;}for(let p=0;p<3;p++)for(let i=1;i<TW_W-1;i++)t[i]=(t[i-1]+t[i]+t[i+1])/3;return t;};
+  const twPlaceTanks=(mode,terrain)=>{const w=TW_W,tanks=[];const mk=(id,name,x,color,team,isP)=>{const tx=Math.max(22,Math.min(w-22,x));return{id,name,hp:100,maxHp:100,x:tx,y:terrain[Math.floor(tx)],color,team,isPlayer:isP,isAI:!isP,alive:true};};
+    if(mode==="1v1"){tanks.push(mk(0,"You",60,"#4CAF50",0,true));tanks.push(mk(1,TW_AI_NAMES[0],w-60,"#EF4444",1,false));}
+    else if(mode==="2v2"){tanks.push(mk(0,"You",40,"#4CAF50",0,true));tanks.push(mk(1,TW_AI_NAMES[1],100,"#66BB6A",0,false));tanks.push(mk(2,TW_AI_NAMES[2],w-100,"#EF4444",1,false));tanks.push(mk(3,TW_AI_NAMES[3],w-40,"#E53935",1,false));}
+    else if(mode==="ffa"){tanks.push(mk(0,"You",50,"#4CAF50",0,true));tanks.push(mk(1,TW_AI_NAMES[0],Math.floor(w*0.33),"#EF4444",1,false));tanks.push(mk(2,TW_AI_NAMES[1],Math.floor(w*0.66),"#3B82F6",2,false));tanks.push(mk(3,TW_AI_NAMES[2],w-50,"#F59E0B",3,false));}
+    else if(mode==="boss"){tanks.push(mk(0,"You",40,"#4CAF50",0,true));tanks.push(mk(1,TW_AI_NAMES[4],100,"#66BB6A",0,false));tanks.push(mk(2,TW_AI_NAMES[5],160,"#81C784",0,false));tanks.push(mk(3,TW_AI_NAMES[6],220,"#A5D6A7",0,false));}
+    return tanks;};
+  const startTankWar=(mode)=>{setTwMode(mode);const terrain=twGenTerrain();twTerrainRef.current=terrain;const tanks=twPlaceTanks(mode,terrain);setTwTanks(tanks);twTanksRef.current=tanks;
+    if(mode==="boss"){const b=TW_BOSSES[Math.floor(Math.random()*TW_BOSSES.length)];const boss={...b,hp:b.maxHp,x:TW_W-40,y:terrain[TW_W-40]};setTwBoss(boss);twBossRef.current=boss;}else{setTwBoss(null);twBossRef.current=null;}
+    setTwAngle(45);setTwLockedAngle(null);setTwPower(0);setTwLockedPower(null);setTwWind(Math.round((Math.random()-0.5)*4.5*10)/10);
+    setTwTurnIdx(0);setTwRound(0);setTwScore(0);setTwPuffShotReady(false);setTwPuffShotCooldown(3);setTwLastHit(null);setTwFlying(false);setTwExplosion(null);setTwAction("fire");
+    setTwPhase("intro");playFx("crowd");setCommentary("Tank War! Aim and fire to destroy the enemy!");
+    setTimeout(()=>{setTwPhase("aiming");twStartAim();},1800);};
+  const twStartAim=()=>{if(twAimRef.current)clearInterval(twAimRef.current);let dir=1,ang=30;twAimRef.current=setInterval(()=>{ang+=dir*1.8;if(ang>=150){ang=150;dir=-1;}if(ang<=10){ang=10;dir=1;}setTwAngle(ang);},30);};
+  const twStartPower=()=>{if(twPowerRef.current)clearInterval(twPowerRef.current);let dir=1,pwr=0;twPowerRef.current=setInterval(()=>{pwr+=dir*1.5;if(pwr>=100){pwr=100;dir=-1;}if(pwr<=0){pwr=0;dir=1;}setTwPower(pwr);},25);};
+  const twTap=()=>{if(twPhase==="aiming"){if(twAimRef.current){clearInterval(twAimRef.current);twAimRef.current=null;}setTwLockedAngle(twAngle);setTwPhase("power");twStartPower();playFx("select");}
+    else if(twPhase==="power"){if(twPowerRef.current){clearInterval(twPowerRef.current);twPowerRef.current=null;}setTwLockedPower(twPower);playFx("tap");twFire(twLockedAngle||twAngle,twPower,1.0,false);}};
+  const twPuffStart=()=>{if(!twPuffShotReady||twPhase!=="aiming")return;if(twAimRef.current){clearInterval(twAimRef.current);twAimRef.current=null;}setTwLockedAngle(twAngle);twPuffStartRef.current=Date.now();setTwPhase("puff_charging");playFx("charge");};
+  const twPuffStop=()=>{if(!twPuffStartRef.current||twPhase!=="puff_charging")return;const dur=(Date.now()-twPuffStartRef.current)/1000;twPuffStartRef.current=0;
+    let mult=1.5;if(dur>=4.0)mult=3.0;else if(dur>=2.5)mult=2.5;else if(dur>=1.0)mult=2.0;
+    setTwPuffShotReady(false);setTwPuffShotCooldown(3+Math.floor(Math.random()*2));playFx("whistle");twFire(twLockedAngle||twAngle,65,mult,true);};
+  const twFire=(angle,power,mult,isPuff)=>{setTwPhase("flying");setTwFlying(true);const rad=angle*Math.PI/180;const speed=(power/100)*11+3;
+    const tanks=twTanksRef.current;const shooter=tanks[twTurnIdx];if(!shooter||!shooter.alive){twNext();return;}
+    let baseDmg;if(power<25)baseDmg=15;else if(power<50)baseDmg=30;else if(power<80)baseDmg=50;else baseDmg=35;
+    const dmg=Math.round(baseDmg*mult);const crit=Math.random()<(power>=50&&power<80?0.25:0.08);const finalDmg=crit?Math.round(dmg*1.5):dmg;
+    const bullet={x:shooter.x,y:shooter.y-12,vx:Math.cos(rad)*speed*(shooter.x<TW_W/2?1:-1),vy:-Math.sin(rad)*speed,dmg:finalDmg,crit,isPuff,mult,trail:[]};
+    twBulletRef.current=bullet;const terrain=twTerrainRef.current;const wind=twWind;
+    const anim=()=>{if(!twBulletRef.current)return;const b=twBulletRef.current;b.vx+=wind*0.015;b.vy+=0.22;b.x+=b.vx;b.y+=b.vy;b.trail.push({x:b.x,y:b.y});if(b.trail.length>20)b.trail.shift();
+      const bx=Math.floor(b.x);if(bx>=0&&bx<TW_W&&terrain&&b.y>=terrain[bx]){twExplode(b.x,terrain[bx],b.dmg,b.crit,b.isPuff);return;}
+      const targets=twTanksRef.current.filter((t,i)=>i!==twTurnIdx&&t.alive);for(const t of targets){const dx=b.x-t.x,dy=b.y-(t.y-10);if(Math.sqrt(dx*dx+dy*dy)<18){twExplode(t.x,t.y-10,b.dmg,b.crit,b.isPuff);return;}}
+      if(twBossRef.current&&twBossRef.current.hp>0){const boss=twBossRef.current;const dx=b.x-boss.x,dy=b.y-(boss.y-20);if(Math.sqrt(dx*dx+dy*dy)<30){twHitBoss(b.dmg,b.crit,b.isPuff);return;}}
+      if(b.x<-20||b.x>TW_W+20||b.y>TW_H+50){twBulletRef.current=null;setTwFlying(false);setCommentary("Miss! 💨");playFx("error");setTimeout(()=>twNext(),1200);return;}
+      twDraw();twRafRef.current=requestAnimationFrame(anim);};
+    twRafRef.current=requestAnimationFrame(anim);};
+  const twExplode=(x,y,dmg,crit,isPuff)=>{twBulletRef.current=null;setTwFlying(false);const radius=isPuff?50:35;setTwExplosion({x,y,radius,isPuff,t:Date.now()});
+    playFx(isPuff?"crowd":"error");if(isPuff)triggerFlash("goal");setScreenShake(true);setTimeout(()=>setScreenShake(false),400);
+    const terrain=twTerrainRef.current;if(terrain){for(let i=Math.max(0,Math.floor(x-radius));i<Math.min(TW_W,Math.ceil(x+radius));i++){const d=Math.abs(i-x);const depth=Math.sqrt(Math.max(0,radius*radius-d*d));terrain[i]=Math.min(TW_H,terrain[i]+depth*0.4);}for(let p=0;p<2;p++)for(let i=1;i<TW_W-1;i++)terrain[i]=(terrain[i-1]+terrain[i]+terrain[i+1])/3;}
+    const tanks=[...twTanksRef.current];let hitAny=false;
+    tanks.forEach((t,i)=>{if(!t.alive||i===twTurnIdx)return;const dx=t.x-x,dy=(t.y-10)-y;const dist=Math.sqrt(dx*dx+dy*dy);
+      if(dist<radius*1.2){const falloff=Math.max(0.3,1-dist/(radius*1.5));const ad=Math.round(dmg*falloff);t.hp=Math.max(0,t.hp-ad);if(terrain)t.y=terrain[Math.floor(t.x)];hitAny=true;
+        setTwLastHit({amt:ad,crit,isPuff,x:t.x,y:t.y-20,t:Date.now()});
+        if(t.hp<=0){t.alive=false;playFx("crowd");setCommentary(t.name+" DESTROYED! 💥");if(isPuff)spawnConfetti(30);}
+        else setCommentary((crit?"CRIT! ":"")+ad+" dmg to "+t.name+"!");
+        if(isPuff){setTwScore(s=>s+25);notify("💨 Puff Bonus! +25",C.gold);}}});
+    if(!hitAny)setCommentary("Terrain hit! No direct damage.");
+    if(terrain)tanks.forEach(t=>{if(t.alive)t.y=terrain[Math.floor(t.x)];});twTanksRef.current=tanks;setTwTanks([...tanks]);setTimeout(()=>{setTwExplosion(null);twCheck();},800);};
+  const twHitBoss=(dmg,crit,isPuff)=>{twBulletRef.current=null;setTwFlying(false);const boss={...twBossRef.current};const ad=crit?Math.round(dmg*1.5):dmg;boss.hp=Math.max(0,boss.hp-ad);
+    twBossRef.current=boss;setTwBoss({...boss});setTwLastHit({amt:ad,crit,isPuff,x:boss.x,y:boss.y-30,t:Date.now()});setScreenShake(true);setTimeout(()=>setScreenShake(false),400);
+    playFx(crit?"crowd":"select");setCommentary((crit?"CRIT! ":"")+ad+" dmg to "+boss.name+"!");
+    if(isPuff){setTwScore(s=>s+25);notify("💨 Puff Bonus! +25",C.gold);spawnConfetti(20);}
+    if(boss.hp<=0){setCommentary(boss.name+" DEFEATED! 🏆");playFx("crowd");spawnConfetti(40);triggerFlash("goal");setTimeout(()=>{setTwScore(s=>s+200);recordGameResult(true,80,20);setTwPhase("complete");},1500);return;}
+    setTimeout(()=>twCheck(),800);};
+  const twCheck=()=>{const tanks=twTanksRef.current;const p=tanks.find(t=>t.isPlayer);
+    if(twMode==="1v1"){const e=tanks.find(t=>!t.isPlayer);if(!e.alive){twWinGame();return;}if(!p.alive){twLoseGame();return;}}
+    else if(twMode==="2v2"){if(tanks.filter(t=>t.team===1).every(t=>!t.alive)){twWinGame();return;}if(tanks.filter(t=>t.team===0).every(t=>!t.alive)){twLoseGame();return;}}
+    else if(twMode==="ffa"){const alive=tanks.filter(t=>t.alive);if(alive.length<=1){if(alive.length===1&&alive[0].isPlayer)twWinGame();else twLoseGame();return;}if(!p.alive){twLoseGame();return;}}
+    else if(twMode==="boss"){if(!p.alive&&tanks.filter(t=>t.team===0&&t.alive).length===0){twLoseGame();return;}}
+    twNext();};
+  const twWinGame=()=>{setCommentary("VICTORY! 🏆");playFx("crowd");spawnConfetti(30);triggerFlash("goal");setTimeout(()=>{recordGameResult(true,60+Math.min(twScore,100),20);setTwPhase("complete");},1500);};
+  const twLoseGame=()=>{setCommentary("Defeated! 💀");playFx("error");setTimeout(()=>{recordGameResult(false,0,8);setTwPhase("complete");},1500);};
+  const twNext=()=>{const tanks=twTanksRef.current;const alive=tanks.filter(t=>t.alive);if(alive.length<=1&&twMode!=="boss"){twCheck();return;}
+    let ni=twTurnIdx;for(let i=0;i<tanks.length;i++){ni=(ni+1)%tanks.length;if(tanks[ni].alive)break;}setTwTurnIdx(ni);const nt=tanks[ni];
+    setTwWind(Math.round((Math.random()-0.5)*4.5*10)/10);setTwLockedAngle(null);setTwLockedPower(null);setTwPower(0);setTwLastHit(null);
+    const newCd=twPuffShotCooldown-1;if(newCd<=0&&nt.isPlayer){setTwPuffShotReady(true);setTwPuffShotCooldown(0);notify("💨 PUFF SHOT READY!",C.gold);}else setTwPuffShotCooldown(Math.max(0,newCd));
+    setTwRound(r=>r+1);
+    if(twMode==="boss"&&twBossRef.current&&twBossRef.current.hp>0){const pts=tanks.filter(t=>t.team===0&&t.alive);const lastP=pts[pts.length-1];if(tanks[twTurnIdx]===lastP){setTimeout(()=>twBossAtk(),1000);return;}}
+    if(nt.isAI){setTwPhase("ai");setCommentary(nt.name+"'s turn...");setTimeout(()=>twDoAI(ni),1500);}
+    else{setTwPhase("aiming");setCommentary("Your turn!"+(twPuffShotReady?" 💨 PUFF SHOT READY!":""));twStartAim();}};
+  const twDoAI=(idx)=>{const tanks=twTanksRef.current;const ai=tanks[idx];if(!ai||!ai.alive){twNext();return;}
+    let target;if(twMode==="boss"&&twBossRef.current&&twBossRef.current.hp>0)target={x:twBossRef.current.x,y:twBossRef.current.y-20};
+    else{const enemies=tanks.filter((t,i)=>t.alive&&i!==idx&&(twMode==="ffa"||t.team!==ai.team));if(enemies.length===0){twNext();return;}target=enemies[Math.floor(Math.random()*enemies.length)];}
+    const dx=(target.x||0)-ai.x,dy=((target.y||0)-10)-ai.y;const ideal=Math.atan2(-dy,Math.abs(dx))*180/Math.PI;
+    const scatter=12+Math.random()*10;const angle=Math.max(10,Math.min(150,ideal+(Math.random()-0.5)*scatter));const power=45+Math.random()*30;
+    setTwLockedAngle(angle);setTwAngle(angle);playFx("select");
+    setTimeout(()=>{setTwLockedPower(power);setTwPower(power);playFx("tap");setTimeout(()=>twFire(angle,power,1.0,false),400);},600);};
+  const twBossAtk=()=>{const boss=twBossRef.current;if(!boss||boss.hp<=0){twNext();return;}setTwPhase("boss_attack");setCommentary(boss.name+" attacks! "+boss.emoji);
+    playFx("error");setScreenShake(true);setTimeout(()=>setScreenShake(false),400);const atk=boss.attacks[Math.floor(Math.random()*boss.attacks.length)];
+    const tanks=twTanksRef.current;const ap=tanks.filter(t=>t.team===0&&t.alive);if(ap.length===0){twLoseGame();return;}
+    const target=ap[Math.floor(Math.random()*ap.length)];const bd=atk.dmg+Math.floor(Math.random()*15);
+    setTimeout(()=>{const ut=[...twTanksRef.current];const ti=ut.findIndex(t=>t.id===target.id);
+      if(ti>=0){ut[ti]={...ut[ti],hp:Math.max(0,ut[ti].hp-bd)};if(ut[ti].hp<=0){ut[ti].alive=false;setCommentary(target.name+" destroyed! 💀");}else setCommentary(atk.name+" hits "+target.name+" for "+bd+"!");}
+      setTwLastHit({amt:bd,crit:false,isPuff:false,x:target.x,y:target.y-20,t:Date.now()});twTanksRef.current=ut;setTwTanks([...ut]);
+      setScreenShake(true);setTimeout(()=>setScreenShake(false),400);setTimeout(()=>twCheck(),1000);},800);};
+  const twDraw=()=>{const canvas=twCanvasRef.current;if(!canvas)return;const ctx=canvas.getContext("2d");const w=TW_W,h=TW_H;const terrain=twTerrainRef.current;
+    ctx.clearRect(0,0,w,h);const sky=ctx.createLinearGradient(0,0,0,h);sky.addColorStop(0,"#0a1628");sky.addColorStop(0.4,"#132040");sky.addColorStop(0.7,"#1a3050");sky.addColorStop(1,"#0d1a2a");ctx.fillStyle=sky;ctx.fillRect(0,0,w,h);
+    for(let i=0;i<20;i++){ctx.fillStyle=`rgba(255,255,255,${0.2+Math.random()*0.3})`;ctx.fillRect(Math.random()*w,Math.random()*h*0.4,1,1);}
+    if(terrain){ctx.beginPath();ctx.moveTo(0,h);for(let i=0;i<w;i++)ctx.lineTo(i,terrain[i]);ctx.lineTo(w,h);ctx.closePath();
+      const tG=ctx.createLinearGradient(0,h*0.4,0,h);tG.addColorStop(0,"#2d5016");tG.addColorStop(0.5,"#1a3a0a");tG.addColorStop(1,"#0d1f05");ctx.fillStyle=tG;ctx.fill();
+      ctx.strokeStyle="#4a8030";ctx.lineWidth=1;ctx.beginPath();for(let i=0;i<w;i++){if(i===0)ctx.moveTo(i,terrain[i]);else ctx.lineTo(i,terrain[i]);}ctx.stroke();}
+    const tanks=twTanksRef.current;const ci=twTurnIdx;
+    tanks.forEach((t,idx)=>{if(!t.alive)return;const tx=t.x,ty=terrain?terrain[Math.floor(Math.max(0,Math.min(w-1,tx)))]:h*0.6;
+      ctx.fillStyle=t.color;ctx.fillRect(tx-12,ty-8,24,8);ctx.beginPath();ctx.arc(tx,ty-10,6,0,Math.PI*2);ctx.fill();
+      const fr=t.x<w/2;let ba;if(idx===ci&&(twLockedAngle!==null||twPhase==="aiming")){const a=twLockedAngle!==null?twLockedAngle:twAngle;ba=fr?-a*Math.PI/180:-(180-a)*Math.PI/180;}else ba=fr?-45*Math.PI/180:-135*Math.PI/180;
+      ctx.strokeStyle=t.color;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(tx,ty-10);ctx.lineTo(tx+Math.cos(ba)*16,ty-10+Math.sin(ba)*16);ctx.stroke();
+      const hp=t.hp/t.maxHp;ctx.fillStyle="rgba(0,0,0,0.5)";ctx.fillRect(tx-14,ty-22,28,4);ctx.fillStyle=hp>0.5?"#4CAF50":hp>0.25?"#FF9800":"#EF4444";ctx.fillRect(tx-14,ty-22,28*hp,4);
+      ctx.fillStyle="rgba(255,255,255,0.6)";ctx.font="7px sans-serif";ctx.textAlign="center";ctx.fillText(t.name,tx,ty-26);});
+    if(twBossRef.current&&twBossRef.current.hp>0){const boss=twBossRef.current;const bx=boss.x,by=terrain?terrain[Math.floor(Math.min(w-1,bx))]:h*0.5;
+      ctx.fillStyle=boss.color;ctx.fillRect(bx-20,by-20,40,20);ctx.beginPath();ctx.arc(bx,by-24,10,0,Math.PI*2);ctx.fill();
+      const bhp=boss.hp/boss.maxHp;ctx.fillStyle="rgba(0,0,0,0.6)";ctx.fillRect(bx-25,by-36,50,5);ctx.fillStyle=bhp>0.5?"#FF4500":"#FF0000";ctx.fillRect(bx-25,by-36,50*bhp,5);
+      ctx.fillStyle="rgba(255,255,255,0.7)";ctx.font="8px sans-serif";ctx.textAlign="center";ctx.fillText(boss.emoji+" "+boss.name,bx,by-40);}
+    if(twBulletRef.current){const b=twBulletRef.current;b.trail.forEach((p,i)=>{const a=(i/b.trail.length)*0.5;ctx.fillStyle=b.isPuff?`rgba(255,215,0,${a})`:`rgba(255,100,50,${a})`;ctx.beginPath();ctx.arc(p.x,p.y,b.isPuff?3:2,0,Math.PI*2);ctx.fill();});
+      ctx.fillStyle=b.isPuff?"#FFD700":"#FF6B35";ctx.beginPath();ctx.arc(b.x,b.y,b.isPuff?5:3,0,Math.PI*2);ctx.fill();}
+    if(twExplosion){const e=twExplosion;const age=(Date.now()-e.t)/600;if(age<1){const r=e.radius*age;const a=1-age;ctx.fillStyle=e.isPuff?`rgba(255,215,0,${a*0.6})`:`rgba(255,100,50,${a*0.5})`;ctx.beginPath();ctx.arc(e.x,e.y,r,0,Math.PI*2);ctx.fill();}}
+    ctx.fillStyle="rgba(255,255,255,0.7)";ctx.font="10px sans-serif";ctx.textAlign="center";ctx.fillText("Wind: "+(twWind>0?"→":"←")+" "+Math.abs(twWind).toFixed(1)+"m/s",w/2,16);};
+  useEffect(()=>{if(twPhase&&twPhase!=="intro"&&twPhase!=="modeselect"&&twPhase!=="complete"&&twCanvasRef.current)twDraw();});
+  const twCleanup=()=>{if(twRafRef.current){cancelAnimationFrame(twRafRef.current);twRafRef.current=null;}if(twAimRef.current){clearInterval(twAimRef.current);twAimRef.current=null;}
+    if(twPowerRef.current){clearInterval(twPowerRef.current);twPowerRef.current=null;}twBulletRef.current=null;twTerrainRef.current=null;twPuffStartRef.current=0;twTanksRef.current=[];twBossRef.current=null;
+    setTwPhase(null);setTwTanks([]);setTwBoss(null);setGameActive(null);};
+
+  // ═══════════════════════════════════════════════════════════════
+  // FISH WAR — Underwater Survival Game Engine
+  // ═══════════════════════════════════════════════════════════════
+  const FW_FORMS=[
+    {name:"Ca Chep",lvl:1,col:"#FF9E40",body:"#E07020",form:"fish"},
+    {name:"Ca Noc",lvl:2,col:"#FFD93D",body:"#CCB020",form:"puffer"},
+    {name:"Ca He",lvl:3,col:"#FF6B8A",body:"#E04060",form:"clown"},
+    {name:"Ca Heo",lvl:5,col:"#5BCEFA",body:"#2EA0CC",form:"dolphin"},
+    {name:"Ca Kiem",lvl:7,col:"#A0D2DB",body:"#70A0B0",form:"sword"},
+    {name:"Ca Map",lvl:9,col:"#64748B",body:"#475569",form:"shark"},
+    {name:"Ca Voi",lvl:12,col:"#3B82F6",body:"#1E40AF",form:"whale"},
+    {name:"Ca Rong",lvl:15,col:"#F59E0B",body:"#D97706",form:"dragon"},
+  ];
+  const FW_NPC=[
+    {sz:0.5,spd:2.0,col:"#FF9E40",body:"#E07020",pts:4,form:"fish"},
+    {sz:0.7,spd:1.7,col:"#FFD93D",body:"#CCB020",pts:6,form:"fish"},
+    {sz:0.55,spd:2.3,col:"#FF6B8A",body:"#E04060",pts:5,form:"puffer"},
+    {sz:1.0,spd:1.3,col:"#5BCEFA",body:"#2EA0CC",pts:10,form:"clown"},
+    {sz:1.4,spd:1.0,col:"#A855F7",body:"#7030B0",pts:15,form:"dolphin"},
+    {sz:1.8,spd:0.8,col:"#64748B",body:"#475569",pts:20,form:"shark"},
+    {sz:2.5,spd:0.6,col:"#374151",body:"#1F2937",pts:30,form:"shark"},
+    {sz:3.2,spd:0.4,col:"#1E40AF",body:"#1E3A5F",pts:45,form:"whale"},
+  ];
+  const FW_BOSSES=[
+    {name:"Mega Shark",emoji:"🦈",sz:5.0,hp:800,col:"#64748B",spd:0.7},
+    {name:"Kraken",emoji:"🐙",sz:6.0,hp:1000,col:"#7C3AED",spd:0.5},
+    {name:"Leviathan",emoji:"🐋",sz:7.0,hp:1200,col:"#1E40AF",spd:0.4},
+    {name:"Sea Dragon",emoji:"🐉",sz:5.5,hp:900,col:"#F59E0B",spd:0.6},
+  ];
+  const FW_W=430,FW_H=500;
+  const fwGetForm=(lvl)=>{let f=FW_FORMS[0];for(const fm of FW_FORMS)if(lvl>=fm.lvl)f=fm;return f;};
+  const fwDist=(a,b)=>Math.sqrt((a.x-b.x)**2+(a.y-b.y)**2);
+
+  const startFishWar=(mode)=>{
+    setFwMode(mode);setFwScore(0);setFwLevel(1);setFwForm("fish");setFwEaten(0);setFwFuel(100);setFwEvolution(null);setFwAlive(true);fwGameOverRef.current=false;
+    const p={x:100,y:FW_H/2,sz:1.0,spd:3,facing:1,level:1,eaten:0,score:0,form:"fish",fuel:100,boosting:false,col:"#00E5FF",body:"#0090A0",alive:true};
+    fwPlayerRef.current=p;fwTargetRef.current={x:200,y:FW_H/2};fwBoostRef.current=false;fwTimeRef.current=0;fwSpawnTimer.current=0;fwBubblesRef.current=[];
+    // Bots
+    const bots=[];const botNames=["BlazeFin","NeonFish","PuffGill","CoralKing"];
+    if(mode==="1v1"){bots.push({x:FW_W-100,y:FW_H/2,sz:1.0,spd:3,facing:-1,level:1,eaten:0,score:0,form:"fish",fuel:100,boosting:false,col:"#EF4444",body:"#B91C1C",alive:true,name:botNames[0],aiTimer:0,targetX:FW_W/2,targetY:FW_H/2});}
+    else if(mode==="pvp"){for(let i=0;i<3;i++)bots.push({x:80+i*120,y:100+i*100,sz:1.0,spd:3,facing:1,level:1,eaten:0,score:0,form:"fish",fuel:100,boosting:false,col:["#EF4444","#F59E0B","#A855F7"][i],body:["#B91C1C","#D97706","#7C3AED"][i],alive:true,name:botNames[i],aiTimer:0,targetX:FW_W/2,targetY:FW_H/2});}
+    else if(mode==="boss"){for(let i=0;i<3;i++)bots.push({x:60+i*50,y:FW_H/2-60+i*60,sz:1.0,spd:3,facing:1,level:1,eaten:0,score:0,form:"fish",fuel:100,boosting:false,col:["#4CAF50","#66BB6A","#81C784"][i],body:["#2E7D32","#388E3C","#43A047"][i],alive:true,name:botNames[i+1],aiTimer:0,targetX:FW_W/2,targetY:FW_H/2,team:0});}
+    fwBotsRef.current=bots;
+    // Boss
+    if(mode==="boss"){const b=FW_BOSSES[Math.floor(Math.random()*FW_BOSSES.length)];const boss={...b,x:FW_W-60,y:FW_H/2,alive:true,facing:-1};fwBossRef.current=boss;setFwBossHp(boss.hp);setFwBossMaxHp(boss.hp);}else{fwBossRef.current=null;setFwBossHp(0);}
+    // Initial NPCs
+    const fishes=[];for(let i=0;i<10;i++)fishes.push(fwMakeNPC(1.0));fwFishesRef.current=fishes;
+    setFwPhase("playing");playFx("crowd");setCommentary(mode==="boss"?"Defeat the "+fwBossRef.current?.name+"!":"Eat smaller fish to grow!");
+    // Start game loop
+    const loop=()=>{if(fwGameOverRef.current)return;fwUpdate();fwDraw();fwRafRef.current=requestAnimationFrame(loop);};
+    fwRafRef.current=requestAnimationFrame(loop);
+  };
+
+  const fwMakeNPC=(maxSz)=>{const pool=FW_NPC.filter(n=>n.sz/Math.max(1,maxSz)<2.0);const cfg=pool[Math.floor(Math.random()*pool.length)]||FW_NPC[0];
+    const side=Math.random()<0.5?-1:1;const actualSz=cfg.sz*(0.85+Math.random()*0.3);
+    return{x:side<0?-25:FW_W+25,y:35+Math.random()*(FW_H-90),sz:actualSz,spd:cfg.spd*(0.8+Math.random()*0.4),vx:side*cfg.spd*(0.8+Math.random()*0.4)*-1,vy:(Math.random()-0.5)*0.4,
+      col:cfg.col,body:cfg.body,pts:cfg.pts,form:cfg.form,facing:side<0?1:-1,alive:true};};
+
+  const fwUpdate=()=>{const p=fwPlayerRef.current;if(!p||!p.alive)return;const t=++fwTimeRef.current;
+    // Move player toward target
+    const dx=fwTargetRef.current.x-p.x,dy=fwTargetRef.current.y-p.y;const d=Math.sqrt(dx*dx+dy*dy);
+    const boost=fwBoostRef.current&&p.fuel>0;const spd=p.spd*(boost?2.2:1);
+    if(d>3){p.x+=(dx/d)*spd;p.y+=(dy/d)*spd;if(dx>0.5)p.facing=1;if(dx<-0.5)p.facing=-1;}
+    p.x=Math.max(12,Math.min(FW_W-12,p.x));p.y=Math.max(12,Math.min(FW_H-12,p.y));
+    // Fuel
+    if(boost){p.fuel=Math.max(0,p.fuel-1.1);if(p.fuel<=0)fwBoostRef.current=false;
+      if(t%3===0)fwBubblesRef.current.push({x:p.x-p.facing*10*p.sz,y:p.y,r:2+Math.random()*3,life:40+Math.random()*20,alpha:0.6});}
+    else{p.fuel=Math.min(100,p.fuel+0.18);}
+    setFwFuel(Math.round(p.fuel));
+    // Update bots
+    const bots=fwBotsRef.current;
+    bots.forEach(bot=>{if(!bot.alive)return;
+      if(--bot.aiTimer<=0){bot.aiTimer=30+Math.floor(Math.random()*40);
+        // Find target: edible NPC or flee from bigger
+        const allFish=fwFishesRef.current.filter(f=>f.alive);let bestTarget=null,bestScore=-1;let flee=false;
+        // Check flee from player
+        if(p.alive&&p.sz>bot.sz*1.15&&fwDist(p,bot)<120){bot.targetX=bot.x-(p.x-bot.x);bot.targetY=bot.y-(p.y-bot.y);flee=true;}
+        // Check flee from other bots
+        if(!flee)bots.forEach(ob=>{if(ob===bot||!ob.alive)return;if(ob.sz>bot.sz*1.15&&fwDist(ob,bot)<120){bot.targetX=bot.x-(ob.x-bot.x);bot.targetY=bot.y-(ob.y-bot.y);flee=true;}});
+        if(!flee){
+          allFish.forEach(f=>{if(f.sz<bot.sz*0.95){const sc=f.pts/(fwDist(f,bot)+50);if(sc>bestScore){bestScore=sc;bestTarget=f;}}});
+          if(p.alive&&p.sz<bot.sz*0.9&&fwDist(p,bot)<200){bestTarget=p;bestScore=999;}
+          if(bestTarget){bot.targetX=bestTarget.x;bot.targetY=bestTarget.y;}else{bot.targetX=Math.random()*FW_W;bot.targetY=Math.random()*FW_H;}
+        }
+      }
+      const bdx=bot.targetX-bot.x,bdy=bot.targetY-bot.y;const bd=Math.sqrt(bdx*bdx+bdy*bdy);
+      const bBoost=bot.fuel>30&&bd>80;if(bBoost){bot.fuel=Math.max(0,bot.fuel-0.8);}else{bot.fuel=Math.min(100,bot.fuel+0.12);}
+      const bSpd=bot.spd*(bBoost?2.2:1);
+      if(bd>3){bot.x+=(bdx/bd)*bSpd;bot.y+=(bdy/bd)*bSpd;if(bdx>0.5)bot.facing=1;if(bdx<-0.5)bot.facing=-1;}
+      bot.x=Math.max(12,Math.min(FW_W-12,bot.x));bot.y=Math.max(12,Math.min(FW_H-12,bot.y));
+      if(bBoost&&t%4===0)fwBubblesRef.current.push({x:bot.x-bot.facing*8,y:bot.y,r:2+Math.random()*2,life:30,alpha:0.4});
+    });
+    // Move NPCs
+    const fishes=fwFishesRef.current;
+    fishes.forEach(f=>{if(!f.alive)return;f.x+=f.vx;f.y+=f.vy;
+      // Chase player if bigger
+      if(f.sz>p.sz*1.15&&fwDist(p,f)<130){f.vx+=(p.x-f.x)/fwDist(p,f)*0.018;f.vy+=(p.y-f.y)/fwDist(p,f)*0.008;f.vx=Math.max(-2.5,Math.min(2.5,f.vx));}
+      if(f.x<-40||f.x>FW_W+40||f.y<-40||f.y>FW_H+40)f.alive=false;});
+    // Collision: player eats NPC
+    fishes.forEach(f=>{if(!f.alive||!p.alive)return;const cd=(12*p.sz+12*f.sz)*0.5;
+      if(fwDist(p,f)<cd){if(p.sz>f.sz*1.1){f.alive=false;p.score+=f.pts;p.eaten++;p.sz+=f.sz*0.06;p.spd=3+p.level*0.12;
+        const newLvl=Math.floor(p.eaten/5)+1;if(newLvl>p.level){p.level=newLvl;const nf=fwGetForm(newLvl);if(nf.form!==p.form){p.form=nf.form;p.col=nf.col;p.body=nf.body;setFwEvolution({form:nf.form,name:nf.name});playFx("crowd");setCommentary("EVOLUTION! "+nf.name.toUpperCase()+"!");setTimeout(()=>setFwEvolution(null),2000);}else{playFx("select");setCommentary("Level "+newLvl+"!");}}
+        setFwScore(p.score);setFwLevel(p.level);setFwForm(p.form);setFwEaten(p.eaten);playFx("tap");
+        for(let i=0;i<3;i++)fwBubblesRef.current.push({x:f.x,y:f.y,r:3+Math.random()*3,life:30,alpha:0.5});
+      }else if(f.sz>p.sz*1.1){p.alive=false;setFwAlive(false);fwGameOver(false);}}});
+    // Collision: bot eats NPC / player / other bot
+    bots.forEach(bot=>{if(!bot.alive)return;
+      fishes.forEach(f=>{if(!f.alive)return;const cd=(12*bot.sz+12*f.sz)*0.5;if(fwDist(bot,f)<cd&&bot.sz>f.sz*1.1){f.alive=false;bot.score+=f.pts;bot.eaten++;bot.sz+=f.sz*0.06;const nl=Math.floor(bot.eaten/5)+1;if(nl>bot.level){bot.level=nl;const nf=fwGetForm(nl);bot.form=nf.form;bot.col=nf.col;bot.body=nf.body;bot.spd=3+nl*0.12;}}});
+      // Bot eats player
+      if(p.alive){const cd=(12*bot.sz+12*p.sz)*0.5;if(fwDist(bot,p)<cd&&bot.sz>p.sz*1.1){p.alive=false;setFwAlive(false);fwGameOver(false);}}
+      // Bot eats other bot
+      bots.forEach(ob=>{if(ob===bot||!ob.alive)return;if(fwMode==="boss"&&ob.team===bot.team)return;const cd=(12*bot.sz+12*ob.sz)*0.5;if(fwDist(bot,ob)<cd&&bot.sz>ob.sz*1.1){ob.alive=false;bot.score+=Math.round(ob.sz*10);bot.eaten++;bot.sz+=ob.sz*0.06;}});
+    });
+    // Boss update
+    if(fwBossRef.current&&fwBossRef.current.alive){const boss=fwBossRef.current;
+      // Boss chases nearest player/ally
+      let nearest=p.alive?p:null;let nd=p.alive?fwDist(boss,p):9999;
+      bots.forEach(b=>{if(b.alive&&b.team===0){const d=fwDist(boss,b);if(d<nd){nd=d;nearest=b;}}});
+      if(nearest){const bdx=nearest.x-boss.x,bdy=nearest.y-boss.y;const bd=Math.sqrt(bdx*bdx+bdy*bdy);
+        boss.x+=(bdx/bd)*boss.spd;boss.y+=(bdy/bd)*boss.spd;if(bdx>0)boss.facing=1;if(bdx<0)boss.facing=-1;
+        // Boss eats small players
+        if(bd<(12*boss.sz+12*nearest.sz)*0.4){if(nearest===p){p.alive=false;setFwAlive(false);fwGameOver(false);}else{nearest.alive=false;setCommentary(nearest.name+" eaten by "+boss.name+"!");}}
+      }
+      // Player/bots can damage boss if big enough (>3.0 sz)
+      const attackers=[p,...bots].filter(a=>a&&a.alive&&a.sz>3.0);
+      attackers.forEach(a=>{if(fwDist(a,boss)<(12*a.sz+12*boss.sz)*0.5){const dmg=Math.round(a.sz*8);boss.hp=Math.max(0,boss.hp-dmg);setFwBossHp(boss.hp);
+        if(a===p){setFwScore(s=>s+dmg);playFx("select");setCommentary("Hit "+boss.name+"! -"+dmg+" HP");}
+        if(boss.hp<=0){boss.alive=false;setCommentary(boss.name+" DEFEATED! 🏆");playFx("crowd");spawnConfetti(40);triggerFlash("goal");fwGameOver(true);}}});
+    }
+    // Check win conditions
+    if(fwMode==="solo"&&p.score>=500&&!fwGameOverRef.current){setCommentary("Target score reached!");fwGameOver(true);}
+    if(fwMode==="1v1"&&bots.length>0&&!bots[0].alive&&p.alive&&!fwGameOverRef.current){setCommentary("Enemy eliminated!");fwGameOver(true);}
+    if(fwMode==="pvp"){const aliveCount=bots.filter(b=>b.alive).length;if(aliveCount===0&&p.alive&&!fwGameOverRef.current){setCommentary("Last one standing!");fwGameOver(true);}}
+    // Spawn NPCs
+    const spawnInterval=Math.max(18,55-t*0.002);if(++fwSpawnTimer.current>=spawnInterval&&fishes.filter(f=>f.alive).length<28){fwSpawnTimer.current=0;
+      const maxSz=Math.max(p.sz,...bots.filter(b=>b.alive).map(b=>b.sz));fishes.push(fwMakeNPC(maxSz));}
+    // Update bubbles
+    fwBubblesRef.current=fwBubblesRef.current.filter(b=>{b.y-=0.5;b.r+=0.02;b.life--;b.alpha-=0.015;return b.life>0&&b.alpha>0;});
+    // Clean dead fish
+    fwFishesRef.current=fishes.filter(f=>f.alive);
+  };
+
+  const fwGameOver=(won)=>{if(fwGameOverRef.current)return;fwGameOverRef.current=true;
+    if(fwRafRef.current){cancelAnimationFrame(fwRafRef.current);fwRafRef.current=null;}
+    playFx(won?"crowd":"error");if(won)spawnConfetti(25);
+    const tierCoins=fwMode==="boss"?100:fwMode==="pvp"?80:fwMode==="1v1"?60:50;
+    setTimeout(()=>{recordGameResult(won,won?tierCoins:0,won?20:8);setFwPhase("complete");},1500);};
+
+  const fwPuffStart=()=>{if(fwPhase!=="playing")return;fwBoostRef.current=true;fwPuffStartRef.current=Date.now();};
+  const fwPuffStop=()=>{fwBoostRef.current=false;fwPuffStartRef.current=0;};
+
+  const fwDraw=()=>{const canvas=fwCanvasRef.current;if(!canvas)return;const ctx=canvas.getContext("2d");const w=FW_W,h=FW_H;
+    ctx.clearRect(0,0,w,h);
+    // Ocean background
+    const bg=ctx.createLinearGradient(0,0,0,h);bg.addColorStop(0,"#062040");bg.addColorStop(0.3,"#0a3060");bg.addColorStop(0.7,"#061830");bg.addColorStop(1,"#041828");ctx.fillStyle=bg;ctx.fillRect(0,0,w,h);
+    // Light rays
+    ctx.save();ctx.globalAlpha=0.04;
+    for(let i=0;i<5;i++){const rx=80+i*80+Math.sin(Date.now()*0.001+i)*15;ctx.beginPath();ctx.moveTo(rx,0);ctx.lineTo(rx-30,h);ctx.lineTo(rx+30,h);ctx.closePath();ctx.fillStyle="#4DB8FF";ctx.fill();}
+    ctx.restore();
+    // Seabed
+    const sb=ctx.createLinearGradient(0,h*0.87,0,h);sb.addColorStop(0,"transparent");sb.addColorStop(0.3,"#0a2a10");sb.addColorStop(1,"#061a08");ctx.fillStyle=sb;ctx.fillRect(0,h*0.87,w,h*0.13);
+    // Seaweed
+    ctx.strokeStyle="#1a5a20";ctx.lineWidth=2;
+    for(let i=0;i<6;i++){const sx=40+i*70;ctx.beginPath();ctx.moveTo(sx,h);
+      for(let y=h;y>h-40-i*8;y-=5){const wx=sx+Math.sin(y*0.03+Date.now()*0.002+i)*8;ctx.lineTo(wx,y);}ctx.stroke();}
+    // Bubbles
+    fwBubblesRef.current.forEach(b=>{ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,Math.PI*2);ctx.fillStyle=`rgba(100,200,255,${Math.max(0,b.alpha)})`;ctx.fill();});
+    // Collect all entities and sort by size
+    const p=fwPlayerRef.current;const entities=[];
+    fwFishesRef.current.forEach(f=>{if(f.alive)entities.push({...f,type:"npc"});});
+    fwBotsRef.current.forEach(b=>{if(b.alive)entities.push({...b,type:"bot"});});
+    if(p&&p.alive)entities.push({...p,type:"player"});
+    if(fwBossRef.current&&fwBossRef.current.alive)entities.push({...fwBossRef.current,type:"boss"});
+    entities.sort((a,b)=>a.sz-b.sz);
+    // Draw entities
+    entities.forEach(e=>{
+      const R=12*e.sz;const ex=e.x,ey=e.y;
+      ctx.save();ctx.translate(ex,ey);if(e.facing===-1)ctx.scale(-1,1);
+      // Body
+      ctx.fillStyle=e.col;ctx.beginPath();ctx.ellipse(0,0,R,R*0.6,0,0,Math.PI*2);ctx.fill();
+      // Tail
+      const tw=Math.sin(Date.now()*0.008*(e.boosting?2:1))*R*0.15;
+      ctx.fillStyle=e.body||e.col;ctx.beginPath();ctx.moveTo(-R*0.8,0);ctx.lineTo(-R*1.3+tw,-R*0.4);ctx.lineTo(-R*1.3+tw,R*0.4);ctx.closePath();ctx.fill();
+      // Eye
+      ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(R*0.4,-R*0.15,R*0.18,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle="#111";ctx.beginPath();ctx.arc(R*0.45,-R*0.15,R*0.08,0,Math.PI*2);ctx.fill();
+      // Fin
+      ctx.fillStyle=e.body||e.col;ctx.beginPath();ctx.moveTo(0,-R*0.5);ctx.lineTo(-R*0.3,-R*0.9);ctx.lineTo(R*0.2,-R*0.5);ctx.closePath();ctx.fill();
+      // Special forms
+      if(e.form==="puffer"&&e.boosting){ctx.strokeStyle=e.col;ctx.lineWidth=1;for(let s=0;s<8;s++){const a=s*Math.PI/4;ctx.beginPath();ctx.moveTo(Math.cos(a)*R*0.7,Math.sin(a)*R*0.4);ctx.lineTo(Math.cos(a)*R*1.1,Math.sin(a)*R*0.7);ctx.stroke();}}
+      if(e.form==="clown"){ctx.fillStyle="rgba(255,255,255,0.7)";for(let s=0;s<3;s++)ctx.fillRect(-R*0.3+s*R*0.4,-R*0.5,R*0.12,R*1.0);}
+      if(e.form==="sword"){ctx.fillStyle=e.col;ctx.fillRect(R*0.6,-R*0.05,R*0.8,R*0.1);}
+      if(e.form==="shark"){ctx.fillStyle="rgba(255,255,255,0.4)";ctx.beginPath();ctx.ellipse(0,R*0.15,R*0.7,R*0.25,0,0,Math.PI);ctx.fill();}
+      if(e.form==="whale"&&e.boosting){ctx.fillStyle="rgba(100,200,255,0.4)";ctx.beginPath();ctx.moveTo(0,-R*0.6);ctx.lineTo(-R*0.15,-R*1.5);ctx.lineTo(R*0.15,-R*1.5);ctx.closePath();ctx.fill();}
+      if(e.form==="dragon"){ctx.strokeStyle="#FFD700";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(R*0.5,R*0.1);ctx.quadraticCurveTo(R*1.0,R*0.5,R*0.8,R*0.3);ctx.stroke();ctx.beginPath();ctx.moveTo(R*0.5,-R*0.1);ctx.quadraticCurveTo(R*1.0,-R*0.5,R*0.8,-R*0.3);ctx.stroke();
+        if(e.boosting){ctx.fillStyle="rgba(255,100,0,0.5)";ctx.beginPath();ctx.moveTo(R*0.8,0);ctx.lineTo(R*1.8,-R*0.2);ctx.lineTo(R*1.8,R*0.2);ctx.closePath();ctx.fill();}}
+      ctx.restore();
+      // Indicators for player
+      if(p&&p.alive&&e.type==="npc"){
+        if(e.sz<p.sz*0.95){ctx.fillStyle="rgba(124,255,107,0.3)";ctx.beginPath();ctx.arc(ex,ey-R-4,3,0,Math.PI*2);ctx.fill();}
+        else if(e.sz>p.sz*1.1){const wa=Math.sin(Date.now()*0.005)*0.3+0.5;ctx.fillStyle=`rgba(255,90,90,${wa*0.4})`;ctx.font="8px sans-serif";ctx.textAlign="center";ctx.fillText("⚠",ex,ey-R-6);}
+      }
+      // Name tag for player/bot
+      if(e.type==="player"||e.type==="bot"){ctx.fillStyle="rgba(255,255,255,0.6)";ctx.font="7px sans-serif";ctx.textAlign="center";ctx.fillText(e.type==="player"?"You":e.name,ex,ey-R-8);ctx.fillText(e.sz.toFixed(1),ex,ey-R-1);}
+      // Boss name
+      if(e.type==="boss"){ctx.fillStyle="rgba(255,255,255,0.8)";ctx.font="bold 9px sans-serif";ctx.textAlign="center";ctx.fillText(e.emoji+" "+e.name,ex,ey-R*1.2-8);}
+      // Glow ring for player
+      if(e.type==="player"){ctx.strokeStyle=`rgba(0,229,255,${0.12+Math.sin(Date.now()*0.003)*0.08})`;ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(ex,ey,R+4,R*0.6+4,0,0,Math.PI*2);ctx.stroke();}
+    });
+    // HUD on canvas
+    ctx.fillStyle="rgba(255,255,255,0.8)";ctx.font="bold 11px sans-serif";ctx.textAlign="left";
+    ctx.fillText("🪙 "+fwPlayerRef.current?.score,10,20);
+    ctx.fillText("🐟 "+(fwPlayerRef.current?.sz||1).toFixed(1),10,35);
+    const fm=fwGetForm(fwPlayerRef.current?.level||1);ctx.fillText(fm.name,10,50);
+    // Fuel bar
+    const fuel=fwPlayerRef.current?.fuel||0;
+    ctx.fillStyle="rgba(0,0,0,0.4)";ctx.fillRect(w-70,10,60,8);
+    ctx.fillStyle=fuel>50?"#00E5FF":fuel>20?"#F59E0B":"#EF4444";ctx.fillRect(w-70,10,60*(fuel/100),8);
+    ctx.strokeStyle="rgba(255,255,255,0.3)";ctx.strokeRect(w-70,10,60,8);
+    ctx.fillStyle="rgba(255,255,255,0.5)";ctx.font="6px sans-serif";ctx.textAlign="center";ctx.fillText("BOOST",w-40,25);
+  };
+
+  const fwCleanup=()=>{if(fwRafRef.current){cancelAnimationFrame(fwRafRef.current);fwRafRef.current=null;}
+    fwPlayerRef.current=null;fwBotsRef.current=[];fwFishesRef.current=[];fwBossRef.current=null;fwBubblesRef.current=[];fwPuffStartRef.current=0;fwGameOverRef.current=false;
+    setFwPhase(null);setFwAlive(true);setGameActive(null);};
+
 
   const renderOracle = () => {
     const FORTUNE_GAMES = [
@@ -10299,6 +10708,16 @@ export default function MoodLabArena() {
     if(spShowTimer.current){clearTimeout(spShowTimer.current);spShowTimer.current=null;}
     // Puff Auction
     if(paPuffInterval.current){clearInterval(paPuffInterval.current);paPuffInterval.current=null;}
+    // Tank War
+    if(twAimRef.current){clearInterval(twAimRef.current);twAimRef.current=null;}
+    if(twPowerRef.current){clearInterval(twPowerRef.current);twPowerRef.current=null;}
+    if(twRafRef.current){cancelAnimationFrame(twRafRef.current);twRafRef.current=null;}
+    twBulletRef.current=null;twTerrainRef.current=null;twPuffStartRef.current=0;twTanksRef.current=[];twBossRef.current=null;
+    setTwPhase(null);setTwFlying(false);setTwExplosion(null);
+    // Fish War
+    if(fwRafRef.current){cancelAnimationFrame(fwRafRef.current);fwRafRef.current=null;}
+    fwPlayerRef.current=null;fwBotsRef.current=[];fwFishesRef.current=[];fwBossRef.current=null;fwBubblesRef.current=[];fwPuffStartRef.current=0;fwGameOverRef.current=false;
+    setFwPhase(null);setFwAlive(true);
     // Halftime
     if(htTimerRef.current){clearTimeout(htTimerRef.current);htTimerRef.current=null;}
     if(htTugRef.current){clearInterval(htTugRef.current);htTugRef.current=null;}
@@ -15298,7 +15717,7 @@ const startSimonPuffs = () => {
                     </div>
                   )}
                   {/* Commentary */}
-                  <div style={{fontSize:11,color:C.text2,fontStyle:"italic",marginTop:6,maxWidth:260,margin:"6px auto"}}>{commentary}</div>
+                  <div style={{fontSize:11,color:C.text2,fontStyle:"italic",marginTop:6,maxWidth:260,margin:"6px auto"}}>{commentatorText}</div>
                 </div>
               )}
 
@@ -15343,7 +15762,7 @@ const startSimonPuffs = () => {
                     ))}
                   </div>
                   {/* Commentary */}
-                  <div style={{fontSize:11,color:C.text2,fontStyle:"italic",marginBottom:12,maxWidth:260,margin:"0 auto 12px"}}>{commentary}</div>
+                  <div style={{fontSize:11,color:C.text2,fontStyle:"italic",marginBottom:12,maxWidth:260,margin:"0 auto 12px"}}>{commentatorText}</div>
                   {(()=>{const won=youWinFinal;const draw=!youWinFinal&&!youLoseFinal;const base=won?80:draw?40:20;return(<div style={{padding:10,borderRadius:12,background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.06)",marginTop:10,marginBottom:8}}><div style={{fontSize:9,color:C.text3,letterSpacing:1,marginBottom:6}}>GAME REWARD</div><div style={{display:"flex",justifyContent:"space-between",fontSize:13,fontWeight:800}}><span style={{color:C.text}}>Earned</span><span style={{color:C.gold}}>+{base} 🪙</span></div>{!bleConnected && <div style={{display:"flex",justifyContent:"space-between",fontSize:10,color:C.orange,marginTop:4}}><span>Without device</span><span>70%</span></div>}</div>);})()}
                   {/* Action buttons */}
                   <div style={{display:"flex",gap:10,justifyContent:"center"}}>
@@ -15618,7 +16037,7 @@ const startSimonPuffs = () => {
               )}
 
               {/* Commentary */}
-              <div style={{textAlign:"center",fontSize:11,color:C.text3,fontStyle:"italic",padding:"8px 0"}}>{commentary}</div>
+              <div style={{textAlign:"center",fontSize:11,color:C.text3,fontStyle:"italic",padding:"8px 0"}}>{commentatorText}</div>
             </div>
           </div>
         );
@@ -16273,7 +16692,7 @@ const startSimonPuffs = () => {
               {isPick&&(<div style={{width:"100%",animation:"fadeIn 0.4s ease"}}><div style={{fontSize:13,fontWeight:800,color:C.text2,textAlign:"center",marginBottom:12}}>Pick your horse!</div><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>{pdHorses.map((h,i)=>(<div key={i} onClick={(e)=>{e.stopPropagation();pdPickHorse(i);}} style={{padding:"12px 8px",borderRadius:12,cursor:"pointer",textAlign:"center",background:"linear-gradient(135deg, "+C.green+"10, "+C.green+"05)",border:"1px solid "+C.green+"25"}}><div style={{fontSize:32}}>{PD_HORSE_EMOJIS[i]}</div><div style={{fontSize:11,fontWeight:800,color:C.text,marginTop:4}}>{PD_HORSE_NAMES[i]}</div><div style={{display:"flex",gap:4,justifyContent:"center",marginTop:4}}><span style={{fontSize:8,color:C.cyan,padding:"1px 5px",borderRadius:4,background:C.cyan+"10"}}>SPD:{h.speed.toFixed(1)}</span><span style={{fontSize:8,color:C.gold,padding:"1px 5px",borderRadius:4,background:C.gold+"10"}}>STA:{h.stamina.toFixed(1)}</span></div></div>))}</div></div>)}
               {isCD&&(<div style={{textAlign:"center",padding:"40px 0"}}><div style={{fontSize:48,marginBottom:12}}>{PD_HORSE_EMOJIS[pi]}</div><div style={{fontSize:14,fontWeight:800,color:C.green,marginBottom:8}}>{PD_HORSE_NAMES[pi]}</div><div style={{fontSize:36,fontWeight:900,color:C.gold,animation:"countPulse 0.8s infinite"}}>GET READY!</div></div>)}
               {isRacing&&(<div style={{width:"100%"}}><div style={{width:"100%",height:4,borderRadius:2,background:"rgba(255,255,255,0.08)",marginBottom:8,overflow:"hidden"}}><div style={{height:"100%",width:(pdRaceTime/30*100)+"%",background:pdRaceTime>10?"linear-gradient(90deg,"+C.green+","+C.cyan+")":"linear-gradient(90deg,"+C.red+","+C.orange+")",borderRadius:2,transition:"width 1s linear"}}/></div><div style={{width:"100%",borderRadius:12,overflow:"hidden",background:"rgba(0,0,0,0.3)",border:"1px solid "+C.green+"20",padding:"4px 0"}}>{[0,1,2,3,4,5].map(i=>{const pos=pdPositions[i];const isP=i===pi;const fin=pdFinishOrder.includes(i);const pl=pdFinishOrder.indexOf(i)+1;return(<div key={"ln"+i} style={{display:"flex",alignItems:"center",padding:"3px 6px",background:isP?"rgba(0,229,255,0.06)":"transparent",borderBottom:i<5?"1px solid rgba(255,255,255,0.04)":"none"}}><div style={{fontSize:7,fontWeight:700,color:isP?C.cyan:C.text3,width:14,textAlign:"center"}}>{i+1}</div><div style={{flex:1,height:20,position:"relative",marginLeft:4,marginRight:4}}><div style={{position:"absolute",top:"50%",left:0,right:0,height:1,background:"rgba(255,255,255,0.06)"}}/><div style={{position:"absolute",right:0,top:0,bottom:0,width:2,background:C.gold+"40"}}/><div style={{position:"absolute",left:(pos*0.92)+"%",top:"50%",transform:"translateY(-50%)",fontSize:isP?18:14,transition:"left 0.08s linear",filter:isP?"drop-shadow(0 0 6px "+C.cyan+"60)":"none",zIndex:isP?2:1}}>{PD_HORSE_EMOJIS[i]}</div></div>{fin?<div style={{fontSize:8,fontWeight:900,color:pl===1?C.gold:pl<=3?C.green:C.text3,width:16,textAlign:"center"}}>{"#"+pl}</div>:<div style={{fontSize:7,color:C.text3,width:16,textAlign:"center"}}>{Math.round(pos)+"%"}</div>}</div>);})}</div><div style={{marginTop:10}}><div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}><span style={{fontSize:9,fontWeight:700,color:stC}}>Stamina: {Math.round(pdStamina)}%</span><span style={{fontSize:9,color:C.text3}}>Puffs: {pdPuffCount}</span></div><div style={{width:"100%",height:8,borderRadius:4,background:"rgba(255,255,255,0.08)",overflow:"hidden"}}><div style={{height:"100%",width:pdStamina+"%",background:"linear-gradient(90deg,"+stC+","+stC+"80)",borderRadius:4,transition:"width 0.15s"}}/></div>{pdStamina<=0&&<div style={{fontSize:8,color:C.red,fontWeight:700,marginTop:2,animation:"pulse 0.5s infinite"}}>EXHAUSTED!</div>}</div><div style={{textAlign:"center",marginTop:12}}><div style={{fontSize:11,color:C.text2,fontWeight:600,marginBottom:6}}>TAP TO GALLOP! 🏇</div></div></div>)}
-              {isResult&&(<div style={{textAlign:"center",width:"100%"}}>{pPlace===1&&<div><div style={{fontSize:56,marginBottom:8,animation:"countPulse 1s infinite"}}>{PD_HORSE_EMOJIS[pi]}</div><div style={{fontSize:26,fontWeight:900,color:C.gold,marginBottom:4}}>WINNER!</div><div style={{fontSize:14,fontWeight:700,color:C.gold}}>+500 coins</div></div>}{pPlace>1&&pPlace<=3&&<div><div style={{fontSize:48,marginBottom:8}}>{PD_HORSE_EMOJIS[pi]}</div><div style={{fontSize:22,fontWeight:900,color:C.green,marginBottom:4}}>#{pPlace} PLACE!</div></div>}{pPlace>3&&<div><div style={{fontSize:48,marginBottom:8}}>{PD_HORSE_EMOJIS[pi]}</div><div style={{fontSize:22,fontWeight:900,color:C.text3,marginBottom:4}}>#{pPlace} PLACE</div></div>}<div style={{marginTop:16,maxWidth:300,margin:"16px auto"}}><div style={{fontSize:10,fontWeight:700,color:C.text3,marginBottom:6}}>FINAL STANDINGS</div>{pdFinishOrder.slice(0,6).map((hI,pl)=>(<div key={"r"+pl} style={{display:"flex",alignItems:"center",gap:8,padding:"4px 8px",borderRadius:6,marginBottom:2,background:hI===pi?C.cyan+"10":"transparent"}}><span style={{fontSize:10,fontWeight:900,color:pl===0?C.gold:pl<3?C.green:C.text3,width:20}}>#{pl+1}</span><span style={{fontSize:14}}>{PD_HORSE_EMOJIS[hI]}</span><span style={{fontSize:10,fontWeight:700,color:hI===pi?C.cyan:C.text2,flex:1}}>{PD_HORSE_NAMES[hI]}</span>{hI===pi&&<span style={{fontSize:8,color:C.cyan,fontWeight:700}}>YOU</span>}</div>))}</div><div style={{fontSize:11,color:C.text2,fontStyle:"italic",marginTop:8}}>{commentary}</div><div style={{display:"flex",gap:10,justifyContent:"center",marginTop:12}}><div onClick={(e)=>{e.stopPropagation();pdCleanup();startPuffDerby();setGameActive({id:"puffderby",name:"Puff Derby",emoji:"\uD83C\uDFC7",color:C.green});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:C.green+"15",border:"1px solid "+C.green+"30",fontSize:13,fontWeight:800,color:C.green}}>Race Again</div><div onClick={(e)=>{e.stopPropagation();pdCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:C.text3+"10",border:"1px solid "+C.text3+"20",fontSize:13,fontWeight:800,color:C.text3}}>Done</div></div></div>)}
+              {isResult&&(<div style={{textAlign:"center",width:"100%"}}>{pPlace===1&&<div><div style={{fontSize:56,marginBottom:8,animation:"countPulse 1s infinite"}}>{PD_HORSE_EMOJIS[pi]}</div><div style={{fontSize:26,fontWeight:900,color:C.gold,marginBottom:4}}>WINNER!</div><div style={{fontSize:14,fontWeight:700,color:C.gold}}>+500 coins</div></div>}{pPlace>1&&pPlace<=3&&<div><div style={{fontSize:48,marginBottom:8}}>{PD_HORSE_EMOJIS[pi]}</div><div style={{fontSize:22,fontWeight:900,color:C.green,marginBottom:4}}>#{pPlace} PLACE!</div></div>}{pPlace>3&&<div><div style={{fontSize:48,marginBottom:8}}>{PD_HORSE_EMOJIS[pi]}</div><div style={{fontSize:22,fontWeight:900,color:C.text3,marginBottom:4}}>#{pPlace} PLACE</div></div>}<div style={{marginTop:16,maxWidth:300,margin:"16px auto"}}><div style={{fontSize:10,fontWeight:700,color:C.text3,marginBottom:6}}>FINAL STANDINGS</div>{pdFinishOrder.slice(0,6).map((hI,pl)=>(<div key={"r"+pl} style={{display:"flex",alignItems:"center",gap:8,padding:"4px 8px",borderRadius:6,marginBottom:2,background:hI===pi?C.cyan+"10":"transparent"}}><span style={{fontSize:10,fontWeight:900,color:pl===0?C.gold:pl<3?C.green:C.text3,width:20}}>#{pl+1}</span><span style={{fontSize:14}}>{PD_HORSE_EMOJIS[hI]}</span><span style={{fontSize:10,fontWeight:700,color:hI===pi?C.cyan:C.text2,flex:1}}>{PD_HORSE_NAMES[hI]}</span>{hI===pi&&<span style={{fontSize:8,color:C.cyan,fontWeight:700}}>YOU</span>}</div>))}</div><div style={{fontSize:11,color:C.text2,fontStyle:"italic",marginTop:8}}>{commentatorText}</div><div style={{display:"flex",gap:10,justifyContent:"center",marginTop:12}}><div onClick={(e)=>{e.stopPropagation();pdCleanup();startPuffDerby();setGameActive({id:"puffderby",name:"Puff Derby",emoji:"\uD83C\uDFC7",color:C.green});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:C.green+"15",border:"1px solid "+C.green+"30",fontSize:13,fontWeight:800,color:C.green}}>Race Again</div><div onClick={(e)=>{e.stopPropagation();pdCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:C.text3+"10",border:"1px solid "+C.text3+"20",fontSize:13,fontWeight:800,color:C.text3}}>Done</div></div></div>)}
             </div>
           </div>
         );
@@ -16312,7 +16731,7 @@ const startSimonPuffs = () => {
               {isC&&<div style={{textAlign:"center",marginTop:8}}><div style={{fontSize:24,fontWeight:900,color:C.green}}>CORRECT!</div><div style={{fontSize:12,fontWeight:700,color:C.green}}>+{10*hlStreak} pts</div></div>}
               {isW&&<div style={{textAlign:"center",marginTop:8}}><div style={{fontSize:24,fontWeight:900,color:C.red}}>WRONG!</div><div style={{fontSize:11,color:C.red}}>Streak broken!</div></div>}
               {isP&&!hlRevealing&&(<div style={{textAlign:"center",marginTop:8,width:"100%"}}><div style={{fontSize:10,color:C.text3,marginBottom:8}}>{hlPuffStart?<span style={{color:C.gold,fontWeight:700,animation:"pulse 0.5s infinite"}}>Hold for HIGHER...</span>:<span>Tap HIGHER or LOWER · or Puff (short=lower, long=higher)</span>}</div><div style={{display:"flex",gap:10,justifyContent:"center"}}><div data-hl-btn="1" onClick={(e)=>{e.stopPropagation();if(!hlRevealing)hlGuess("lower");}} style={{flex:1,maxWidth:130,padding:"12px 8px",borderRadius:12,cursor:"pointer",textAlign:"center",background:C.red+"12",border:"1px solid "+C.red+"30"}}><div style={{fontSize:20,marginBottom:2}}>{"\u2B07\uFE0F"}</div><div style={{fontSize:12,fontWeight:800,color:C.red}}>LOWER</div><div style={{fontSize:8,color:C.text3}}>Short puff</div></div><div data-hl-btn="1" onClick={(e)=>{e.stopPropagation();if(!hlRevealing)hlGuess("higher");}} style={{flex:1,maxWidth:130,padding:"12px 8px",borderRadius:12,cursor:"pointer",textAlign:"center",background:C.green+"12",border:"1px solid "+C.green+"30"}}><div style={{fontSize:20,marginBottom:2}}>{"\u2B06\uFE0F"}</div><div style={{fontSize:12,fontWeight:800,color:C.green}}>HIGHER</div><div style={{fontSize:8,color:C.text3}}>Long puff</div></div></div></div>)}
-              {isR&&(<div style={{textAlign:"center"}}><div style={{fontSize:48,marginBottom:8}}>{hlBestStreak>=7?"\uD83C\uDFC6":hlBestStreak>=5?"\uD83D\uDD25":hlBestStreak>=3?"\u2B50":"\uD83D\uDCCA"}</div><div style={{fontSize:26,fontWeight:900,color:hlScore>=100?C.gold:C.cyan,marginBottom:4}}>GAME OVER</div><div style={{fontSize:18,fontWeight:800,color:C.text,marginBottom:4}}>Score: {hlScore}</div><div style={{fontSize:13,color:C.text2,marginBottom:4}}>Best Streak: {hlBestStreak} {hlBestStreak>=5?"\uD83D\uDD25":""}</div><div style={{fontSize:14,fontWeight:700,color:C.gold,marginBottom:12}}>+{Math.max(10,Math.floor(hlScore/2))} coins</div><div style={{fontSize:11,color:C.text2,fontStyle:"italic",marginBottom:12}}>{commentary}</div>{(()=>{const won=hlBestStreak>=3;const base=Math.max(10,Math.floor(hlScore/2));return(<div style={{padding:10,borderRadius:12,background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.06)",marginTop:10,marginBottom:8}}><div style={{fontSize:9,color:C.text3,letterSpacing:1,marginBottom:6}}>GAME REWARD</div><div style={{display:"flex",justifyContent:"space-between",fontSize:13,fontWeight:800}}><span style={{color:C.text}}>Earned</span><span style={{color:C.gold}}>+{base} 🪙</span></div>{!bleConnected && <div style={{display:"flex",justifyContent:"space-between",fontSize:10,color:C.orange,marginTop:4}}><span>Without device</span><span>70%</span></div>}</div>);})()}<div style={{display:"flex",gap:10,justifyContent:"center"}}><div onClick={(e)=>{e.stopPropagation();hlCleanup();startHigherLower();setGameActive({id:"higherlower",name:"Higher or Lower",emoji:"\uD83D\uDCCA",color:C.cyan});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:C.cyan+"15",border:"1px solid "+C.cyan+"30",fontSize:13,fontWeight:800,color:C.cyan}}>Play Again</div><div onClick={(e)=>{e.stopPropagation();hlCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:C.text3+"10",border:"1px solid "+C.text3+"20",fontSize:13,fontWeight:800,color:C.text3}}>Done</div></div><div onClick={()=>{hlCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div></div>)}
+              {isR&&(<div style={{textAlign:"center"}}><div style={{fontSize:48,marginBottom:8}}>{hlBestStreak>=7?"\uD83C\uDFC6":hlBestStreak>=5?"\uD83D\uDD25":hlBestStreak>=3?"\u2B50":"\uD83D\uDCCA"}</div><div style={{fontSize:26,fontWeight:900,color:hlScore>=100?C.gold:C.cyan,marginBottom:4}}>GAME OVER</div><div style={{fontSize:18,fontWeight:800,color:C.text,marginBottom:4}}>Score: {hlScore}</div><div style={{fontSize:13,color:C.text2,marginBottom:4}}>Best Streak: {hlBestStreak} {hlBestStreak>=5?"\uD83D\uDD25":""}</div><div style={{fontSize:14,fontWeight:700,color:C.gold,marginBottom:12}}>+{Math.max(10,Math.floor(hlScore/2))} coins</div><div style={{fontSize:11,color:C.text2,fontStyle:"italic",marginBottom:12}}>{commentatorText}</div>{(()=>{const won=hlBestStreak>=3;const base=Math.max(10,Math.floor(hlScore/2));return(<div style={{padding:10,borderRadius:12,background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.06)",marginTop:10,marginBottom:8}}><div style={{fontSize:9,color:C.text3,letterSpacing:1,marginBottom:6}}>GAME REWARD</div><div style={{display:"flex",justifyContent:"space-between",fontSize:13,fontWeight:800}}><span style={{color:C.text}}>Earned</span><span style={{color:C.gold}}>+{base} 🪙</span></div>{!bleConnected && <div style={{display:"flex",justifyContent:"space-between",fontSize:10,color:C.orange,marginTop:4}}><span>Without device</span><span>70%</span></div>}</div>);})()}<div style={{display:"flex",gap:10,justifyContent:"center"}}><div onClick={(e)=>{e.stopPropagation();hlCleanup();startHigherLower();setGameActive({id:"higherlower",name:"Higher or Lower",emoji:"\uD83D\uDCCA",color:C.cyan});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:C.cyan+"15",border:"1px solid "+C.cyan+"30",fontSize:13,fontWeight:800,color:C.cyan}}>Play Again</div><div onClick={(e)=>{e.stopPropagation();hlCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:C.text3+"10",border:"1px solid "+C.text3+"20",fontSize:13,fontWeight:800,color:C.text3}}>Done</div></div><div onClick={()=>{hlCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div></div>)}
             </div>
           </div>
         );
@@ -16364,7 +16783,7 @@ const startSimonPuffs = () => {
                 {cbResult==="correct"&&cbAnswer==="certain"&&<div style={{fontSize:14,fontWeight:800,color:C.gold,marginBottom:4}}>BLINKER BONUS! 3x coins! +150</div>}
                 {cbResult==="correct"&&cbAnswer!=="certain"&&<div style={{fontSize:14,fontWeight:800,color:C.green,marginBottom:4}}>+50 coins!</div>}
                 {cbResult==="wrong"&&cbAnswer==="certain"&&<div style={{fontSize:14,fontWeight:800,color:C.red,marginBottom:4}}>Blinker penalty! -100 coins</div>}
-                <div style={{fontSize:11,color:C.text2,fontStyle:"italic",marginBottom:12}}>{commentary}</div>
+                <div style={{fontSize:11,color:C.text2,fontStyle:"italic",marginBottom:12}}>{commentatorText}</div>
                 <div data-btn="true" onClick={(e)=>{e.stopPropagation();cbNextRound();}} style={{padding:"10px 28px",borderRadius:12,cursor:"pointer",background:"rgba(147,51,234,0.15)",border:"1px solid rgba(147,51,234,0.30)",fontSize:13,fontWeight:800,color:"#9333EA",display:"inline-block"}}>Next Prediction</div>
               </div>)}
 
@@ -16438,7 +16857,7 @@ const startSimonPuffs = () => {
                   </div>
                   <div style={{flex:1,textAlign:"center"}}><div style={{fontSize:24,fontWeight:900,color:C.gold}}>{sbResults.right}%</div><div style={{fontSize:10,color:C.text3}}>{sbMatchup[1].name}</div></div>
                 </div>
-                <div style={{fontSize:11,color:C.text2,fontStyle:"italic",marginBottom:12}}>{commentary}</div>
+                <div style={{fontSize:11,color:C.text2,fontStyle:"italic",marginBottom:12}}>{commentatorText}</div>
                 <div data-btn="true" onClick={(e)=>{e.stopPropagation();sbNextRound();}} style={{padding:"10px 28px",borderRadius:12,cursor:"pointer",background:"rgba(34,197,94,0.15)",border:"1px solid rgba(34,197,94,0.30)",fontSize:13,fontWeight:800,color:"#22C55E",display:"inline-block"}}>Next Matchup</div>
               </div>)}
 
@@ -16509,7 +16928,7 @@ const startSimonPuffs = () => {
                 <div style={{fontSize:48,marginBottom:8}}>{mpResults[mpResults.length-1]?.correct?"✅":"❌"}</div>
                 <div style={{fontSize:24,fontWeight:900,color:mpResults[mpResults.length-1]?.correct?C.green:C.red}}>{mpResults[mpResults.length-1]?.correct?"CORRECT!":"WRONG!"}</div>
                 {mpResults[mpResults.length-1]?.correct&&<div style={{fontSize:14,fontWeight:700,color:C.green,marginBottom:4}}>+100 coins!</div>}
-                <div style={{fontSize:11,color:C.text2,fontStyle:"italic",marginBottom:12}}>{commentary}</div>
+                <div style={{fontSize:11,color:C.text2,fontStyle:"italic",marginBottom:12}}>{commentatorText}</div>
                 <div data-btn="true" onClick={(e)=>{e.stopPropagation();mpNextRound();}} style={{padding:"10px 28px",borderRadius:12,cursor:"pointer",background:"rgba(59,130,246,0.15)",border:"1px solid rgba(59,130,246,0.30)",fontSize:13,fontWeight:800,color:"#3B82F6",display:"inline-block"}}>Next Match</div>
               </div>)}
 
@@ -16584,7 +17003,7 @@ const startSimonPuffs = () => {
                 <div style={{fontSize:20,fontWeight:900,color:dpResults.length>0&&dpResults[dpResults.length-1].correct?C.green:C.red}}>{dpResults.length>0&&dpResults[dpResults.length-1].correct?"CORRECT!":"WRONG!"}</div>
                 <div style={{fontSize:13,color:C.text2,marginTop:4}}>You picked: <span style={{fontWeight:700,color:C.text}}>{dpAnswer}</span></div>
                 {dpResults.length>0&&dpResults[dpResults.length-1].correct&&<div style={{fontSize:14,fontWeight:700,color:C.gold,marginTop:4}}>+{dpResults[dpResults.length-1].pts} coins{mult>1?" ("+mult+"x multiplier!)":""}</div>}
-                <div style={{fontSize:11,color:C.text2,fontStyle:"italic",marginTop:8}}>{commentary}</div>
+                <div style={{fontSize:11,color:C.text2,fontStyle:"italic",marginTop:8}}>{commentatorText}</div>
               </div>)}
 
               {isSum&&(<div style={{textAlign:"center",animation:"fadeIn 0.4s ease"}}>
@@ -16667,7 +17086,7 @@ const startSimonPuffs = () => {
                 </div>
                 <div data-btn="true" onClick={(e)=>{e.stopPropagation();slotsCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
               </div>)}
-              <div style={{fontSize:11,color:C.text3,fontStyle:"italic",marginTop:8}}>{commentary}</div>
+              <div style={{fontSize:11,color:C.text3,fontStyle:"italic",marginTop:8}}>{commentatorText}</div>
             </div>
           </div>
         );
@@ -16743,7 +17162,7 @@ const startSimonPuffs = () => {
                 </div>
                 <div data-btn="true" onClick={(e)=>{e.stopPropagation();bjCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
               </div>)}
-              <div style={{fontSize:11,color:C.text3,fontStyle:"italic",marginTop:8}}>{commentary}</div>
+              <div style={{fontSize:11,color:C.text3,fontStyle:"italic",marginTop:8}}>{commentatorText}</div>
             </div>
           </div>
         );
@@ -16819,7 +17238,7 @@ const startSimonPuffs = () => {
                 </div>
                 <div data-btn="true" onClick={(e)=>{e.stopPropagation();cfCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
               </div>)}
-              <div style={{fontSize:11,color:C.text3,fontStyle:"italic",marginTop:8}}>{commentary}</div>
+              <div style={{fontSize:11,color:C.text3,fontStyle:"italic",marginTop:8}}>{commentatorText}</div>
             </div>
           </div>
         );
@@ -16890,7 +17309,7 @@ const startSimonPuffs = () => {
                 </div>
                 <div data-btn="true" onClick={(e)=>{e.stopPropagation();crapsCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
               </div>)}
-              <div style={{fontSize:11,color:C.text3,fontStyle:"italic",marginTop:8}}>{commentary}</div>
+              <div style={{fontSize:11,color:C.text3,fontStyle:"italic",marginTop:8}}>{commentatorText}</div>
             </div>
           </div>
         );
@@ -16953,7 +17372,7 @@ const startSimonPuffs = () => {
                 </div>
                 <div data-btn="true" onClick={(e)=>{e.stopPropagation();mbCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
               </div>)}
-              <div style={{fontSize:11,color:C.text3,fontStyle:"italic",marginTop:8}}>{commentary}</div>
+              <div style={{fontSize:11,color:C.text3,fontStyle:"italic",marginTop:8}}>{commentatorText}</div>
             </div>
           </div>
         );
@@ -17018,7 +17437,7 @@ const startSimonPuffs = () => {
                 </div>
                 <div data-btn="true" onClick={(e)=>{e.stopPropagation();scCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
               </div>)}
-              <div style={{fontSize:11,color:C.text3,fontStyle:"italic",marginTop:8}}>{commentary}</div>
+              <div style={{fontSize:11,color:C.text3,fontStyle:"italic",marginTop:8}}>{commentatorText}</div>
             </div>
           </div>
         );
@@ -17075,7 +17494,7 @@ const startSimonPuffs = () => {
                 </div>
                 <div data-btn="true" onClick={(e)=>{e.stopPropagation();fcCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
               </div>)}
-              <div style={{fontSize:11,color:C.text3,fontStyle:"italic",marginTop:8}}>{commentary}</div>
+              <div style={{fontSize:11,color:C.text3,fontStyle:"italic",marginTop:8}}>{commentatorText}</div>
             </div>
           </div>
         );
@@ -17146,7 +17565,7 @@ const startSimonPuffs = () => {
                   <div data-btn="true" onClick={(e)=>{e.stopPropagation();tmCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
                 </div>
               )}
-              <div style={{fontSize:11,color:C.text3,fontStyle:"italic",marginTop:8}}>{commentary}</div>
+              <div style={{fontSize:11,color:C.text3,fontStyle:"italic",marginTop:8}}>{commentatorText}</div>
             </div>
           </div>
         );
@@ -17337,6 +17756,188 @@ const startSimonPuffs = () => {
         </div>
       );
     }
+
+
+      // ═══════════════════════════════════════════════════════════════
+      // TANK WAR -- Render
+      // ═══════════════════════════════════════════════════════════════
+      if(gameActive.id==="tankwar" && twPhase) {
+        const isPlayerTurn = twTanks[twTurnIdx]?.isPlayer && !twFlying;
+        const twGC = "#4CAF50";
+        return (
+          <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden",display:"flex",flexDirection:"column",animation:screenShake?"shake 0.4s ease":"none"}}
+            onClick={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;if(isPlayerTurn&&twPhase!=="puff_charging")twTap();}}
+            onMouseDown={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;if(twPuffShotReady&&twPhase==="aiming")twPuffStart();}}
+            onMouseUp={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;twPuffStop();}}
+            onTouchStart={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;e.preventDefault();if(twPuffShotReady&&twPhase==="aiming"){twPuffStart();}else if(isPlayerTurn&&twPhase!=="puff_charging"){twTap();}}}
+            onTouchEnd={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;e.preventDefault();twPuffStop();}}>
+            <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg, #0a1a0a 0%, #132a10 40%, #0a1a0a 100%)"}}/>
+            {screenFlash&&<div style={{position:"absolute",inset:0,zIndex:200,pointerEvents:"none",opacity:0,background:screenFlash==="goal"?"rgba(255,215,0,0.3)":"rgba(255,50,50,0.2)",animation:"flashOverlay 0.4s ease forwards"}}/>}
+            {confettiParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size*0.6,background:p.color,borderRadius:1,transform:`rotate(${p.rot}deg)`,zIndex:210,pointerEvents:"none",animation:"confettiFall 1.5s ease-out forwards"}}/>))}
+            {overlayBack(twCleanup)}
+            {renderGameChatPanel("TANK WAR")}
+            <div style={{display:"flex",flexDirection:"column",alignItems:"center",width:"100%",padding:"44px 8px 8px",gap:4,zIndex:10,flex:1}}>
+              <div style={{fontSize:16,fontWeight:900,letterSpacing:3,background:"linear-gradient(135deg, #4CAF50, #81C784)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>TANK WAR</div>
+
+              {/* MODE PICKER */}
+              {(twPhase==="intro"||twPhase==="modeselect")&&(
+                <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:8,marginTop:16,animation:"fadeIn 0.5s ease"}}>
+                  <div style={{fontSize:48,marginBottom:4,animation:"gentleFloat 2s infinite"}}>🔫</div>
+                  <div style={{fontSize:11,color:C.text3,marginBottom:12}}>Choose your battle mode</div>
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,width:"100%",maxWidth:300}}>
+                    {[{m:"1v1",emoji:"🎯",name:"1v1 Duel",sub:"Classic artillery duel",color:twGC},{m:"2v2",emoji:"👥",name:"2v2 Teams",sub:"You + ally vs 2 enemies",color:C.cyan},{m:"ffa",emoji:"💀",name:"Free-for-All",sub:"4 tanks, last standing",color:C.red},{m:"boss",emoji:"🐉",name:"Boss Battle",sub:"Co-op vs mega boss",color:C.gold}].map(b=>(
+                      <div key={b.m} data-btn="true" onClick={(e)=>{e.stopPropagation();startTankWar(b.m);}} style={{padding:"14px 8px",borderRadius:14,cursor:"pointer",textAlign:"center",background:`${b.color}08`,border:`1px solid ${b.color}20`}}>
+                        <div style={{fontSize:28,marginBottom:4}}>{b.emoji}</div>
+                        <div style={{fontSize:11,fontWeight:800,color:b.color}}>{b.name}</div>
+                        <div style={{fontSize:7,color:C.text3,marginTop:2}}>{b.sub}</div>
+                      </div>))}
+                  </div>
+                </div>)}
+
+              {/* CANVAS */}
+              {twPhase!=="intro"&&twPhase!=="modeselect"&&twPhase!=="complete"&&(
+                <div style={{position:"relative",width:430,maxWidth:"100%"}}>
+                  <canvas ref={twCanvasRef} width={430} height={340} style={{width:"100%",height:"auto",borderRadius:12,border:`1px solid ${twGC}20`}}/>
+                  {twPhase==="aiming"&&isPlayerTurn&&(<div style={{position:"absolute",bottom:8,left:"50%",transform:"translateX(-50%)",display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
+                    <div style={{fontSize:18,fontWeight:900,color:twGC,textShadow:`0 0 10px ${twGC}`}}>{Math.round(twAngle)}°</div>
+                    <div style={{fontSize:9,fontWeight:700,color:twPuffShotReady?C.gold:C.text3,animation:twPuffShotReady?"pulse 1s infinite":"none"}}>{twPuffShotReady?"💨 HOLD FOR PUFF SHOT!":"TAP TO LOCK AIM"}</div>
+                  </div>)}
+                  {twPhase==="power"&&isPlayerTurn&&(<div style={{position:"absolute",bottom:8,left:16,right:16}}>
+                    <div style={{height:20,borderRadius:10,overflow:"hidden",border:`2px solid ${C.border}`,background:"rgba(0,0,0,0.6)"}}>
+                      <div style={{height:"100%",width:twPower+"%",transition:"width 0.02s",borderRadius:8,background:twPower<25?"#FF9800":twPower<50?"#4CAF50":twPower<80?"#66BB6A":"#EF4444"}}/>
+                    </div>
+                    <div style={{display:"flex",justifyContent:"space-between",marginTop:2}}><span style={{fontSize:7,color:"#FF9800"}}>WEAK</span><span style={{fontSize:7,color:"#4CAF50"}}>MED</span><span style={{fontSize:7,fontWeight:800,color:"#66BB6A"}}>STRONG ✓</span><span style={{fontSize:7,color:"#EF4444"}}>OVER</span></div>
+                    <div style={{textAlign:"center",fontSize:9,fontWeight:700,color:C.gold,marginTop:2}}>TAP TO FIRE! {Math.round(twPower)}%</div>
+                  </div>)}
+                  {twPhase==="puff_charging"&&(<div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(0,0,0,0.3)",borderRadius:12}}>
+                    <div style={{textAlign:"center",animation:"pulse 0.5s infinite"}}><div style={{fontSize:36,marginBottom:4}}>💨</div><div style={{fontSize:16,fontWeight:900,color:C.gold}}>CHARGING...</div><div style={{fontSize:10,color:C.text2}}>Hold longer = more power!</div></div>
+                  </div>)}
+                  {twLastHit&&Date.now()-twLastHit.t<1500&&(<div style={{position:"absolute",left:Math.min(95,Math.max(5,twLastHit.x/430*100))+"%",top:Math.min(90,Math.max(5,twLastHit.y/340*100))+"%",transform:"translate(-50%,-100%)",zIndex:20,pointerEvents:"none"}}>
+                    <div style={{fontSize:twLastHit.crit?20:twLastHit.isPuff?18:14,fontWeight:900,color:twLastHit.isPuff?C.gold:twLastHit.crit?"#FF6B35":"#EF4444",textShadow:"0 0 8px rgba(0,0,0,0.8)"}}>-{twLastHit.amt}{twLastHit.crit?" CRIT!":""}{twLastHit.isPuff?" 💨":""}</div>
+                  </div>)}
+                  {twPuffShotReady&&isPlayerTurn&&twPhase==="aiming"&&(<div style={{position:"absolute",top:8,left:"50%",transform:"translateX(-50%)",padding:"4px 12px",borderRadius:20,background:`${C.gold}25`,border:`2px solid ${C.gold}50`,animation:"pulse 1s infinite",boxShadow:`0 0 20px ${C.gold}30`}}>
+                    <span style={{fontSize:10,fontWeight:900,color:C.gold}}>💨 PUFF SHOT READY!</span></div>)}
+                </div>)}
+
+              {/* TURN INFO */}
+              {twPhase!=="intro"&&twPhase!=="modeselect"&&twPhase!=="complete"&&(<div style={{display:"flex",gap:6,flexWrap:"wrap",justifyContent:"center",marginTop:4}}>
+                {twTanks.filter(t=>t.alive).map(t=>(<div key={t.id} style={{padding:"3px 8px",borderRadius:8,background:twTanks[twTurnIdx]===t?`${t.color}20`:"rgba(255,255,255,0.03)",border:`1px solid ${twTanks[twTurnIdx]===t?t.color+"50":C.border}`,display:"flex",alignItems:"center",gap:4}}>
+                  <div style={{width:6,height:6,borderRadius:3,background:t.color}}/><span style={{fontSize:8,fontWeight:700,color:twTanks[twTurnIdx]===t?t.color:C.text3}}>{t.name}</span><span style={{fontSize:7,color:C.text3}}>{t.hp}HP</span>
+                </div>))}
+              </div>)}
+              {twBoss&&twBoss.hp>0&&twPhase!=="intro"&&twPhase!=="modeselect"&&twPhase!=="complete"&&(<div style={{width:"100%",maxWidth:300,marginTop:4}}>
+                <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:2}}><span style={{fontSize:14}}>{twBoss.emoji}</span><span style={{fontSize:10,fontWeight:800,color:twBoss.color}}>{twBoss.name}</span><span style={{fontSize:8,color:C.text3,marginLeft:"auto"}}>{twBoss.hp}/{twBoss.maxHp}</span></div>
+                <div style={{height:8,borderRadius:4,background:"rgba(255,255,255,0.06)",overflow:"hidden"}}><div style={{height:"100%",width:(twBoss.hp/twBoss.maxHp*100)+"%",borderRadius:4,background:`linear-gradient(90deg, ${twBoss.color}, #FF0000)`,transition:"width 0.3s"}}/></div>
+              </div>)}
+              {(twPhase==="ai"||twPhase==="boss_attack")&&(<div style={{textAlign:"center",marginTop:8,animation:"pulse 1s infinite"}}><div style={{fontSize:12,fontWeight:800,color:C.text2}}>{twPhase==="boss_attack"?(twBoss?.name+" attacks!"):(twTanks[twTurnIdx]?.name+" aiming...")}</div></div>)}
+              <div style={{fontSize:11,color:C.text3,fontStyle:"italic",marginTop:4,textAlign:"center"}}>{commentatorText}</div>
+
+              {/* COMPLETE */}
+              {twPhase==="complete"&&(<div style={{textAlign:"center",animation:"fadeIn 0.4s ease",marginTop:16}}>
+                <div style={{fontSize:48,marginBottom:8}}>{twTanks.find(t=>t.isPlayer)?.alive?"🏆":"💀"}</div>
+                <div style={{fontSize:24,fontWeight:900,color:twTanks.find(t=>t.isPlayer)?.alive?C.gold:C.red,marginBottom:8}}>{twTanks.find(t=>t.isPlayer)?.alive?"VICTORY!":"DEFEATED"}</div>
+                <div style={{fontSize:14,fontWeight:800,color:C.text}}>Score: {twScore}</div>
+                <div style={{fontSize:10,color:C.text2,marginTop:4}}>Mode: {twMode==="1v1"?"1v1 Duel":twMode==="2v2"?"2v2 Teams":twMode==="ffa"?"Free-for-All":"Boss Battle"}</div>
+                <div style={{display:"flex",gap:10,justifyContent:"center",marginTop:16}}>
+                  <div data-btn="true" onClick={(e)=>{e.stopPropagation();twCleanup();setGameActive({id:"tankwar",name:"Tank War",emoji:"🔫",color:"#4CAF50"});setTwPhase("modeselect");}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${twGC}15`,border:`1px solid ${twGC}30`,fontSize:13,fontWeight:800,color:twGC}}>Play Again</div>
+                  <div data-btn="true" onClick={(e)=>{e.stopPropagation();twCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
+                </div>
+                <div data-btn="true" onClick={(e)=>{e.stopPropagation();twCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
+              </div>)}
+            </div>
+          </div>
+        );
+      }
+
+      // Spin & Win — delegates to renderSpin()
+      if(gameActive.id==="spinwin" && swPhase) {
+        const sw = renderSpin();
+        if(sw) return sw;
+      }
+
+      // ═══════════════════════════════════════════════════════════════
+      // FISH WAR -- Render
+      // ═══════════════════════════════════════════════════════════════
+      if(gameActive.id==="fishwar" && fwPhase) {
+        const fwGC = "#3B82F6";
+        return (
+          <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden",display:"flex",flexDirection:"column"}}
+            onClick={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;if(fwPhase==="playing"&&fwCanvasRef.current){const rect=fwCanvasRef.current.getBoundingClientRect();const sx=(e.clientX-rect.left)*(FW_W/rect.width);const sy=(e.clientY-rect.top)*(FW_H/rect.height);fwTargetRef.current={x:sx,y:sy};}}}
+            onMouseDown={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;fwPuffStart();}}
+            onMouseUp={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;fwPuffStop();}}
+            onTouchStart={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;e.preventDefault();fwPuffStart();if(fwPhase==="playing"&&fwCanvasRef.current&&e.touches[0]){const rect=fwCanvasRef.current.getBoundingClientRect();const sx=(e.touches[0].clientX-rect.left)*(FW_W/rect.width);const sy=(e.touches[0].clientY-rect.top)*(FW_H/rect.height);fwTargetRef.current={x:sx,y:sy};}}}
+            onTouchEnd={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;e.preventDefault();fwPuffStop();}}>
+            <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg, #041828 0%, #0a3060 40%, #062040 100%)"}}/>
+            {confettiParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size*0.6,background:p.color,borderRadius:1,transform:`rotate(${p.rot}deg)`,zIndex:210,pointerEvents:"none",animation:"confettiFall 1.5s ease-out forwards"}}/>))}
+            {overlayBack(fwCleanup)}
+            {renderGameChatPanel("FISH WAR")}
+            <div style={{display:"flex",flexDirection:"column",alignItems:"center",width:"100%",padding:"44px 8px 8px",gap:4,zIndex:10,flex:1}}>
+              <div style={{fontSize:16,fontWeight:900,letterSpacing:3,background:"linear-gradient(135deg, #3B82F6, #60A5FA)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>FISH WAR</div>
+
+              {/* MODE PICKER */}
+              {fwPhase==="modeselect"&&(
+                <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:8,marginTop:16,animation:"fadeIn 0.5s ease"}}>
+                  <div style={{fontSize:48,marginBottom:4,animation:"gentleFloat 2s infinite"}}>🐟</div>
+                  <div style={{fontSize:11,color:C.text3,marginBottom:12}}>Choose your ocean</div>
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,width:"100%",maxWidth:300}}>
+                    {[{m:"solo",emoji:"🐟",name:"Solo Survival",sub:"Eat to 500 pts",color:fwGC},{m:"1v1",emoji:"🎯",name:"1v1 Duel",sub:"Eliminate the bot",color:C.cyan},{m:"pvp",emoji:"💀",name:"PvP Free-for-All",sub:"Last fish standing",color:C.red},{m:"boss",emoji:"🐉",name:"Boss Battle",sub:"Defeat the sea boss",color:C.gold}].map(b=>(
+                      <div key={b.m} data-btn="true" onClick={(e)=>{e.stopPropagation();startFishWar(b.m);}} style={{padding:"14px 8px",borderRadius:14,cursor:"pointer",textAlign:"center",background:`${b.color}08`,border:`1px solid ${b.color}20`}}>
+                        <div style={{fontSize:28,marginBottom:4}}>{b.emoji}</div>
+                        <div style={{fontSize:11,fontWeight:800,color:b.color}}>{b.name}</div>
+                        <div style={{fontSize:7,color:C.text3,marginTop:2}}>{b.sub}</div>
+                      </div>))}
+                  </div>
+                </div>)}
+
+              {/* CANVAS */}
+              {fwPhase==="playing"&&(
+                <div style={{position:"relative",width:430,maxWidth:"100%"}}>
+                  <canvas ref={fwCanvasRef} width={FW_W} height={FW_H} style={{width:"100%",height:"auto",borderRadius:12,border:`1px solid ${fwGC}20`}}/>
+                  {/* Evolution toast */}
+                  {fwEvolution&&(<div style={{position:"absolute",top:"40%",left:"50%",transform:"translate(-50%,-50%)",padding:"12px 24px",borderRadius:16,background:"rgba(0,0,0,0.8)",border:`2px solid ${C.gold}`,boxShadow:`0 0 30px ${C.gold}40`,zIndex:20,textAlign:"center",animation:"pulse 0.5s infinite"}}>
+                    <div style={{fontSize:24,marginBottom:4}}>✨</div>
+                    <div style={{fontSize:14,fontWeight:900,color:C.gold}}>EVOLUTION!</div>
+                    <div style={{fontSize:12,fontWeight:800,color:C.text}}>{fwEvolution.name}</div>
+                  </div>)}
+                  {/* Boost indicator */}
+                  {fwBoostRef.current&&fwFuel>0&&(<div style={{position:"absolute",bottom:8,left:"50%",transform:"translateX(-50%)",padding:"3px 10px",borderRadius:10,background:"rgba(0,229,255,0.2)",border:"1px solid rgba(0,229,255,0.4)"}}>
+                    <span style={{fontSize:9,fontWeight:800,color:C.cyan}}>💨 BOOSTING</span>
+                  </div>)}
+                </div>)}
+
+              {/* GAME INFO */}
+              {fwPhase==="playing"&&(<div style={{display:"flex",gap:8,marginTop:4}}>
+                <div style={{padding:"3px 8px",borderRadius:8,background:`${fwGC}10`,border:`1px solid ${fwGC}20`}}><span style={{fontSize:8,fontWeight:700,color:fwGC}}>🪙 {fwScore}</span></div>
+                <div style={{padding:"3px 8px",borderRadius:8,background:`${C.cyan}10`,border:`1px solid ${C.cyan}20`}}><span style={{fontSize:8,fontWeight:700,color:C.cyan}}>Lv {fwLevel}</span></div>
+                <div style={{padding:"3px 8px",borderRadius:8,background:`${C.gold}10`,border:`1px solid ${C.gold}20`}}><span style={{fontSize:8,fontWeight:700,color:C.gold}}>{fwGetForm(fwLevel).name}</span></div>
+                <div style={{padding:"3px 8px",borderRadius:8,background:`${fwFuel>50?C.cyan:fwFuel>20?C.orange:C.red}10`,border:`1px solid ${fwFuel>50?C.cyan:fwFuel>20?C.orange:C.red}20`}}><span style={{fontSize:8,fontWeight:700,color:fwFuel>50?C.cyan:fwFuel>20?C.orange:C.red}}>⛽ {fwFuel}%</span></div>
+              </div>)}
+
+              {/* BOSS HP */}
+              {fwBossHp>0&&fwPhase==="playing"&&(<div style={{width:"100%",maxWidth:300,marginTop:4}}>
+                <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:2}}><span style={{fontSize:12}}>{fwBossRef.current?.emoji}</span><span style={{fontSize:9,fontWeight:800,color:fwBossRef.current?.col}}>{fwBossRef.current?.name}</span><span style={{fontSize:7,color:C.text3,marginLeft:"auto"}}>{fwBossHp}/{fwBossMaxHp}</span></div>
+                <div style={{height:6,borderRadius:3,background:"rgba(255,255,255,0.06)",overflow:"hidden"}}><div style={{height:"100%",width:(fwBossHp/fwBossMaxHp*100)+"%",borderRadius:3,background:`linear-gradient(90deg, ${fwBossRef.current?.col||C.red}, #FF0000)`,transition:"width 0.3s"}}/></div>
+              </div>)}
+
+              <div style={{fontSize:11,color:C.text3,fontStyle:"italic",marginTop:4,textAlign:"center"}}>{commentatorText}</div>
+
+              {/* GAME OVER */}
+              {fwPhase==="complete"&&(<div style={{textAlign:"center",animation:"fadeIn 0.4s ease",marginTop:16}}>
+                <div style={{fontSize:48,marginBottom:8}}>{fwAlive?"🏆":"💀"}</div>
+                <div style={{fontSize:24,fontWeight:900,color:fwAlive?C.gold:C.red,marginBottom:8}}>{fwAlive?"VICTORY!":"EATEN!"}</div>
+                <div style={{fontSize:14,fontWeight:800,color:C.text}}>Score: {fwScore}</div>
+                <div style={{fontSize:10,color:C.text2,marginTop:4}}>Level {fwLevel} · {fwGetForm(fwLevel).name} · {fwEaten} fish eaten</div>
+                <div style={{display:"flex",gap:10,justifyContent:"center",marginTop:16}}>
+                  <div data-btn="true" onClick={(e)=>{e.stopPropagation();fwCleanup();setGameActive({id:"fishwar",name:"Fish War",emoji:"🐟",color:"#3B82F6"});setFwPhase("modeselect");}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${fwGC}15`,border:`1px solid ${fwGC}30`,fontSize:13,fontWeight:800,color:fwGC}}>Play Again</div>
+                  <div data-btn="true" onClick={(e)=>{e.stopPropagation();fwCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
+                </div>
+                <div data-btn="true" onClick={(e)=>{e.stopPropagation();fwCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
+              </div>)}
+            </div>
+          </div>
+        );
+      }
+
 
       // Generic game
       return (
@@ -17606,6 +18207,8 @@ const startSimonPuffs = () => {
                     selectedGame.id==="puffclock"?"⏱️💨":
                     selectedGame.id==="pufflimbo"?"🎪🫁":
                     selectedGame.id==="puffderby"?"🏇💨":
+                    selectedGame.id==="tankwar"?"🔫💥":
+                    selectedGame.id==="fishwar"?"🐟🌊":
                     selectedGame.emoji
                   }</div>
                   <div style={{fontSize:18,fontWeight:900,color:C.text}}>{
@@ -17630,6 +18233,8 @@ const startSimonPuffs = () => {
                     selectedGame.id==="puffclock"?"Puff Clock":
                     selectedGame.id==="pufflimbo"?"Puff Limbo":
                     selectedGame.id==="puffderby"?"Puff Derby":
+                    selectedGame.id==="tankwar"?"Tank War":
+                    selectedGame.id==="fishwar"?"Fish War":
                     selectedGame.name
                   }</div>
                   <div style={{fontSize:10,color:C.text2}}>{
@@ -17654,6 +18259,8 @@ const startSimonPuffs = () => {
                     selectedGame.id==="puffclock"?"Hold Your Puff — Hit the Target Time!":
                     selectedGame.id==="pufflimbo"?"How Low Can You Go? Survive the Blinker!":
                     selectedGame.id==="puffderby"?"Pick a Horse, Spam Puff, Win the Race!":
+                    selectedGame.id==="tankwar"?"Aim, Fire, Destroy! Tap to Shoot, Puff for Super Shots!":
+                    selectedGame.id==="fishwar"?"Eat Smaller Fish, Evolve Through 8 Forms, Survive!":
                     selectedGame.desc
                   }</div>
                 </div>
