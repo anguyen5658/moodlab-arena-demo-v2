@@ -18333,20 +18333,20 @@ const startSimonPuffs = () => {
                 <div style={{fontSize:9,fontWeight:800,color:C.gold,letterSpacing:2,marginBottom:8,textAlign:"center"}}>📖 HOW TO PLAY</div>
                 {(()=>{
                   const htpData = {
-                    crystalball:[{icon:"🔮",label:"See a prediction",sub:"Will it happen?"},{icon:"💨",label:"Puff your answer",sub:"Short(<1.5s)=NO · Long(1.5-3s)=YES"},{icon:"⚡",label:"Blinker (3s+) = CERTAIN",sub:"3x coins if right, -2x if wrong!"},{icon:"🏆",label:"5 rounds total",sub:"Build your streak for bonus!"}],
-                    strainbattle:[{icon:"🌿",label:"Two strains face off",sub:"Which one wins?"},{icon:"💨",label:"Puff to vote",sub:"Short(<1.5s)=Left · Long(1.5s+)=Right"},{icon:"📊",label:"Community results shown",sub:"Vote with the majority for bonus!"},{icon:"🏆",label:"5 matchups",sub:"Score points each round!"}],
-                    matchpredictor:[{icon:"⚽",label:"See a match",sub:"Who will win?"},{icon:"💨",label:"Puff to predict",sub:"Short=Home · Med=Draw · Long=Away"},{icon:"📊",label:"Result revealed",sub:"Correct predictions = big coins!"},{icon:"🏆",label:"5 matches",sub:"Predict them all!"}],
-                    dailypicks:[{icon:"📅",label:"3 daily predictions",sub:"Morning, afternoon, night"},{icon:"💨",label:"Puff your pick",sub:"Short or Long = different answers"},{icon:"🔥",label:"Build your streak",sub:"Consecutive wins = multiplier!"},{icon:"🏆",label:"Up to 10x bonus",sub:"30-day streak = legend!"}],
-                    puffslots:[{icon:"🎰",label:"3 reels spinning",sub:"Match symbols to win!"},{icon:"💨",label:"Hold to spin",sub:"Release to stop the reels"},{icon:"⚡",label:"Blinker = bonus round",sub:"Hold 4.5s+ for guaranteed matches!"},{icon:"💎",label:"Match 3 = jackpot",sub:"🌿=1000 · 7️⃣=500 · 💎=200"}],
-                    coinflip:[{icon:"🪙",label:"Pick heads or tails",sub:"50/50 chance each flip"},{icon:"💨",label:"Puff your confidence",sub:"Longer puff = higher multiplier"},{icon:"⚡",label:"Blinker = 5x risk",sub:"Win big or lose big!"},{icon:"🏆",label:"8 flips per session",sub:"Build your streak!"}],
-                    puffblackjack:[{icon:"🃏",label:"Classic 21",sub:"Beat the dealer's hand!"},{icon:"💨",label:"Puff your action",sub:"Short=HIT · Long=STAND"},{icon:"⚡",label:"Blinker = DOUBLE DOWN",sub:"Hold 4.5s+ to double bet!"},{icon:"🏆",label:"7 hands per session",sub:"Natural 21 = 2.5x payout!"}],
-                    crapsnclouds:[{icon:"🎲",label:"Roll the dice",sub:"Puff duration controls the roll!"},{icon:"💨",label:"Hold to charge",sub:"Different durations = different totals"},{icon:"⚡",label:"Blinker = HOT DICE",sub:"+50% payout on wins!"},{icon:"🎯",label:"7 or 11 = instant win",sub:"Set a point, then hit it again!"}],
-                    mysterybox:[{icon:"🎁",label:"3 mystery boxes",sub:"Tap to pick one"},{icon:"💨",label:"Puff to reveal",sub:"Hold to open your chosen box"},{icon:"⚡",label:"Blinker = rarity upgrade",sub:"Common → Rare guaranteed!"},{icon:"💎",label:"5 rounds",sub:"Find legendary prizes!"}],
-                    scratchpuff:[{icon:"🎫",label:"6 scratch zones",sub:"Tap a zone to select"},{icon:"💨",label:"Puff to scratch",sub:"Hold to reveal what's underneath"},{icon:"⚡",label:"Blinker = double prize",sub:"Extra reward on matches!"},{icon:"🏆",label:"Match 3 = jackpot",sub:"Find 3 of the same symbol!"}],
-                    fortunecookie:[{icon:"🥠",label:"A cookie appears",sub:"What's inside?"},{icon:"💨",label:"Puff to crack it",sub:"Hold to build suspense!"},{icon:"📜",label:"Wisdom + coins",sub:"Get a fortune and a reward"},{icon:"⚡",label:"Blinker = golden cookie",sub:"Premium fortune + bonus coins!"}],
-                    treasuremap:[{icon:"🗺️",label:"16 tiles on the map",sub:"3 treasures hidden, 3 bombs!"},{icon:"👆",label:"Tap to select a tile",sub:"Choose wisely!"},{icon:"💨",label:"Puff to dig",sub:"Reveal what's underneath"},{icon:"💎",label:"Find all 3 treasures",sub:"Avoid bombs or game over!"}],
-                    puffderby:[{icon:"🏇",label:"6 horses racing",sub:"Pick your champion!"},{icon:"💨",label:"Spam puff = speed",sub:"Each puff boosts your horse"},{icon:"⚡",label:"Stamina management",sub:"Puffs drain stamina, rest to recover"},{icon:"🏆",label:"30 second race",sub:"First to finish wins!"}],
-                    spinwin:[{icon:"🎡",label:"Big prize wheel",sub:"Spin for coins & prizes!"},{icon:"💨",label:"Puff to spin",sub:"Spin force = puff power"},{icon:"⚡",label:"Gold wedge = jackpot",sub:"Land on gold for 500+ coins!"},{icon:"🏆",label:"Multiple spins",sub:"Try your luck each round!"}],
+                    crystalball:[{icon:"🔮",label:"Prophecy Circle — 8 Prophets",sub:"All 8 see the same Yes/No question"},{icon:"💨",label:"Puff your prediction secretly",sub:"Short(<1.5s)=NO · Long(1.5-3s)=YES"},{icon:"👥",label:"Majority wins coins!",sub:"But CONTRARIAN bonus = 3x if you're right AND in minority!"},{icon:"⚡",label:"Blinker = CERTAIN (double stake)",sub:"High risk, high reward prediction"},{icon:"😂",label:"Watch the reveal",sub:"All 8 crystal balls light up at once!"}],
+                    strainbattle:[{icon:"🌿",label:"Strain World Cup — 50+ Voters",sub:"64-strain elimination bracket!"},{icon:"💨",label:"Puff to vote for your strain",sub:"Short=Left strain · Long=Right strain"},{icon:"📊",label:"Community votes decide the winner",sub:"Upset victories get WILD commentary 🤯"},{icon:"🏆",label:"Predict the bracket",sub:"Score points for correct predictions!"},{icon:"😂",label:"Fan sections argue in chat",sub:"'How could you vote against OG Kush?!'"}],
+                    matchpredictor:[{icon:"📺",label:"Pundit Panel — 6 Pundits",sub:"Sit on the panel with 5 other experts"},{icon:"💨",label:"Puff your prediction",sub:"Short=Home · Med=Draw · Long=Away"},{icon:"🎤",label:"Auto-generated hot takes",sub:"'I think Brazil wins 7-0 because vibes'"},{icon:"🪑",label:"Worst predictor = DUNCE CHAIR",sub:"Sit in shame while everyone roasts you 😂"},{icon:"🏆",label:"Best pundit wins",sub:"Accuracy leaderboard across 5 matches"}],
+                    dailypicks:[{icon:"📅",label:"3 daily predictions",sub:"Morning, afternoon, night"},{icon:"💨",label:"Puff your pick",sub:"Short or Long = different answers"},{icon:"🔥",label:"Build YOUR personal streak",sub:"Consecutive correct = multiplier!"},{icon:"🏆",label:"Up to 10x bonus at 30 days",sub:"Daily ritual — come back tomorrow!"}],
+                    puffslots:[{icon:"🏁",label:"Slot Tournament — 16 Racers",sub:"Speed-spin against 15 others for 2 minutes!"},{icon:"💨",label:"Puff to spin reels",sub:"Blinker = Power Spin with bonus multiplier"},{icon:"📺",label:"Others' JACKPOTS interrupt your screen",sub:"Maddening but hilarious 😂"},{icon:"🏆",label:"Top 4 → MEGA SPIN finale",sub:"One final spin for the championship!"}],
+                    coinflip:[{icon:"🪙",label:"Pick heads or tails",sub:"Classic 50/50 — pure luck"},{icon:"💨",label:"Puff your confidence",sub:"Longer puff = higher bet multiplier"},{icon:"⚡",label:"Blinker = 5x risk",sub:"Win 5x or lose 2x — bold move!"},{icon:"🏆",label:"8 flips per session",sub:"How lucky are you today?"}],
+                    puffblackjack:[{icon:"🎰",label:"High Rollers Table — 6 Players",sub:"Join 5 others at the same dealer!"},{icon:"🃏",label:"See everyone's hands",sub:"Watch someone hit on 19... 🤦"},{icon:"💨",label:"Puff: Short=HIT · Long=STAND",sub:"Blinker = DOUBLE DOWN (4.5s+)"},{icon:"🤝",label:"INSURE other players",sub:"Blinker puff = split their winnings if they win!"},{icon:"😂",label:"Dealer has personality",sub:"'Are you SURE about that?' 🤨"}],
+                    crapsnclouds:[{icon:"🎲",label:"Casino Floor — 8 at the Table",sub:"One SHOOTER, seven BETTORS!"},{icon:"💨",label:"Shooter puffs to roll dice",sub:"Duration influences the roll (with randomness)"},{icon:"🎰",label:"Place your bets!",sub:"Pass or Don't Pass — bet WITH or AGAINST the shooter"},{icon:"🔥",label:"Natural 7 or 11 = table erupts!",sub:"Communal craps energy is UNMATCHED"},{icon:"😂",label:"Blinker = HOT DICE bonus",sub:"+50% payout when shooter goes blinker!"}],
+                    mysterybox:[{icon:"🔐",label:"Heist Crew — 4 Co-op Players",sub:"12 mystery boxes in a VAULT"},{icon:"⚠️",label:"Some boxes have ALARMS!",sub:"Trigger an alarm = ENTIRE heist fails for ALL"},{icon:"💨",label:"Puff to open your chosen box",sub:"Short=peek (hint) · Long=full open"},{icon:"🤝",label:"Coordinate with your crew",sub:"'DON'T OPEN THAT ONE!' 😱"},{icon:"😂",label:"Heist Rating",sub:"From 'Ocean's 11' to 'Home Alone Burglars'"}],
+                    scratchpuff:[{icon:"🎫",label:"6 scratch zones",sub:"Personal scratch card experience"},{icon:"💨",label:"Puff to scratch",sub:"Hold to reveal what's underneath"},{icon:"⚡",label:"Blinker = double prize",sub:"Extra reward on matches!"},{icon:"🏆",label:"Match 3 = jackpot",sub:"Find 3 of the same symbol!"}],
+                    fortunecookie:[{icon:"🥠",label:"Fortune Circle — 8 Players",sub:"Everyone gets a fortune cookie!"},{icon:"🤝",label:"TRADE fortunes before reveal!",sub:"'Take mine, it's DEFINITELY not golden' 😏"},{icon:"💨",label:"Puff to crack it open",sub:"Blinker = golden cookie (premium fortune)"},{icon:"✨",label:"One GOLDEN FORTUNE = 10x reward",sub:"Did you trade away the golden one?!"},{icon:"😂",label:"Dramatic one-by-one reveal",sub:"Fireworks when golden fortune is found!"}],
+                    treasuremap:[{icon:"🗺️",label:"Treasure Race — 4 Explorers",sub:"Same 16-tile map, shared reveals!"},{icon:"👆",label:"Tap tiles to explore",sub:"YOUR bombs only hurt YOU (3 lives)"},{icon:"💨",label:"Puff to dig",sub:"Blinker = Compass Scan (costs 1 life)"},{icon:"🏆",label:"First to find 3 treasures wins!",sub:"Race against 3 other explorers"},{icon:"😂",label:"Schadenfreude guaranteed",sub:"Watch someone hit a bomb next to treasure 💀"}],
+                    puffderby:[{icon:"🐴",label:"Grand National — 12 Jockeys",sub:"6 horses, 2 jockeys each!"},{icon:"💨",label:"Jockey 1: spam puff = speed",sub:"Jockey 2: timed puff = steer"},{icon:"🤝",label:"Out of sync = horse STUMBLES",sub:"Coordinate with your partner!"},{icon:"🏇",label:"3 laps with obstacles",sub:"Puddles, hurdles, other horses!"},{icon:"😂",label:"Horses have funny names",sub:"'Blaze It', 'Sir Puffs-a-Lot', 'Cough Cough'"}],
+                    spinwin:[{icon:"🎡",label:"Wheel of Misfortune — 6 Players",sub:"Take turns spinning a SHARED wheel!"},{icon:"💨",label:"Puff to spin",sub:"Puff duration = spin force"},{icon:"⚠️",label:"Wheel has PUNISHMENTS too!",sub:"BANKRUPT, Steal from Leader, Lose Half!"},{icon:"🎰",label:"Bet on sections before spin",sub:"Correct bet = 5x the wheel reward"},{icon:"😂",label:"Lead changes CONSTANTLY",sub:"First place → Bankrupt → Last place 💀"}],
                   };
                   const steps = htpData[selectedGame.id] || [{icon:"💨",label:"Puff to play",sub:"Hold and release!"},{icon:"⚡",label:"Blinker = bonus",sub:"Hold 4.5s+ for special!"},{icon:"🏆",label:"Win coins",sub:"Score big!"}];
                   return steps.map((s,i)=>(
@@ -18550,6 +18550,33 @@ const startSimonPuffs = () => {
 
                 {/* Close button */}
                 <div onClick={()=>setShowHowToPlay(false)} style={{position:"sticky",top:8,float:"right",zIndex:5,width:32,height:32,borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",background:`rgba(6,16,30,0.9)`,border:`1px solid ${C.border}`,fontSize:14,color:C.text3,backdropFilter:"blur(8px)"}}>✕</div>
+
+                {/* MULTIPLAYER MODE INFO */}
+                {selectedGame.mp && (
+                  <div style={{padding:"14px",borderRadius:16,...GLASS_CARD,marginBottom:12,marginTop:8,background:`linear-gradient(135deg, ${gc}10, ${gc}04)`,border:`1px solid ${gc}25`}}>
+                    <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:8}}>
+                      <span style={{fontSize:28}}>{selectedGame.mp.badge}</span>
+                      <div>
+                        <div style={{fontSize:14,fontWeight:900,color:gc,letterSpacing:1}}>{selectedGame.mp.mode}</div>
+                        <div style={{fontSize:9,color:C.text3}}>👥 {selectedGame.mp.count} · Multiplayer Mode</div>
+                      </div>
+                    </div>
+                    <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+                      <div style={{flex:1,padding:"6px 8px",borderRadius:8,background:"rgba(255,255,255,0.03)",border:`1px solid ${C.border}`,textAlign:"center",minWidth:80}}>
+                        <div style={{fontSize:12,fontWeight:900,color:C.text}}>{selectedGame.players}</div>
+                        <div style={{fontSize:7,color:C.text3}}>PLAYERS</div>
+                      </div>
+                      <div style={{flex:1,padding:"6px 8px",borderRadius:8,background:"rgba(255,255,255,0.03)",border:`1px solid ${C.border}`,textAlign:"center",minWidth:80}}>
+                        <div style={{fontSize:12,fontWeight:900,color:C.gold}}>🏆</div>
+                        <div style={{fontSize:7,color:C.text3}}>COMPETE</div>
+                      </div>
+                      <div style={{flex:1,padding:"6px 8px",borderRadius:8,background:"rgba(255,255,255,0.03)",border:`1px solid ${C.border}`,textAlign:"center",minWidth:80}}>
+                        <div style={{fontSize:12,fontWeight:900,color:C.cyan}}>💬</div>
+                        <div style={{fontSize:7,color:C.text3}}>LIVE CHAT</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Hero */}
                 <div style={{textAlign:"center",marginBottom:16,paddingTop:8}}>
