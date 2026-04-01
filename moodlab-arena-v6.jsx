@@ -12753,7 +12753,6 @@ const startSimonPuffs = () => {
             onTouchStart={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;if(["staredown","countdown","draw"].includes(wwPhase)) duelShoot();}}
             onTouchEnd={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;if(wwPhase==="puffing") duelReleasePuff();}}>
 
-            {renderGameChatPanel("WILD WEST DUEL")}
 
             {/* ═══ SCREEN FLASH OVERLAY ═══ */}
             {screenFlash && <div style={{position:"absolute",inset:0,zIndex:200,pointerEvents:"none",opacity:0,
@@ -13299,7 +13298,6 @@ const startSimonPuffs = () => {
             animation:screenShake?"shake 0.4s ease":"none",
             filter:dimLights?"brightness(0.6)":"brightness(1)",transition:"filter 0.3s",
           }}>
-            {renderGameChatPanel("FINAL KICK")}
             {/* ═══ SCREEN FLASH OVERLAY ═══ */}
             {screenFlash && <div style={{position:"absolute",inset:0,zIndex:200,pointerEvents:"none",opacity:0,
               background:screenFlash==="goal"?"rgba(0,255,100,0.25)":screenFlash==="save"?"rgba(255,165,0,0.2)":screenFlash==="miss"?"rgba(255,50,50,0.2)":"rgba(255,0,0,0.3)",
@@ -15344,7 +15342,6 @@ const startSimonPuffs = () => {
           <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden",display:"flex",flexDirection:"column",alignItems:"center",
             background:"linear-gradient(180deg, #0a0618 0%, #1a0a2e 25%, #0d1a2f 50%, #0a0a14 100%)",
             animation:screenShake?"shake 0.4s ease":"none"}}>
-            {renderGameChatPanel("TUG OF WAR")}
             {screenFlash && <div style={{position:"absolute",inset:0,zIndex:200,pointerEvents:"none",opacity:0,background:screenFlash==="goal"?"rgba(0,255,100,0.25)":"rgba(255,50,50,0.2)",animation:"flashOverlay 0.4s ease forwards"}}/>}
             {confettiParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size*0.6,background:p.color,borderRadius:1,transform:`rotate(${p.rot}deg)`,zIndex:210,pointerEvents:"none",animation:`confettiFall ${1.5+Math.random()}s ease-out forwards`}}/>))}
             <div style={{display:"flex",flexDirection:"column",alignItems:"center",maxWidth:380,width:"100%",padding:"50px 16px 20px",gap:12,zIndex:10,flex:1}}>
@@ -16189,7 +16186,6 @@ const startSimonPuffs = () => {
         return (
           <div style={{...overlayStyle,background:"rgba(0,5,20,0.97)"}}>
             {overlayBack(pcEndGame)}
-            {renderGameChatPanel("PUFF CLOCK")}
             <div style={{flex:1,display:"flex",flexDirection:"column",padding:16,paddingTop:56}}>
               {/* Header */}
               <div style={{textAlign:"center",marginBottom:12}}>
@@ -16351,7 +16347,6 @@ const startSimonPuffs = () => {
             {/* Vignette */}
             <div style={{position:"absolute",inset:0,background:"radial-gradient(circle at 50% 50%, transparent 40%, rgba(0,0,0,0.6) 100%)",zIndex:3,pointerEvents:"none"}}/>
             {overlayBack(bdCleanup)}
-            {renderGameChatPanel("BEAT DROP")}
             <div style={{position:"relative",zIndex:10,display:"flex",flexDirection:"column",alignItems:"center",width:"100%",maxWidth:380,padding:"60px 20px 30px",flex:1}}>
               {/* Header */}
               <div style={{fontSize:14,fontWeight:900,color:C.pink,letterSpacing:3,marginBottom:4}}>BEAT DROP</div>
@@ -16500,7 +16495,6 @@ const startSimonPuffs = () => {
             {/* Screen flash */}
             {screenFlash && <div style={{position:"absolute",inset:0,background:screenFlash==="goal"?`${C.gold}25`:`${C.red}20`,zIndex:99,pointerEvents:"none"}}/>}
             {overlayBack(plCleanup)}
-            {renderGameChatPanel("PUFF LIMBO")}
             <div style={{position:"relative",zIndex:10,display:"flex",flexDirection:"column",alignItems:"center",width:"100%",maxWidth:380,padding:"60px 20px 30px",flex:1}}>
               {/* Header */}
               <div style={{fontSize:14,fontWeight:900,color:C.orange,letterSpacing:3,marginBottom:4}}>PUFF LIMBO</div>
