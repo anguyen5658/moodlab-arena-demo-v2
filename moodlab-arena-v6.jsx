@@ -12487,6 +12487,9 @@ const startSimonPuffs = () => {
       );
     }
     if(gameActive) {
+      // DEBUG BANNER — visible on screen to diagnose black screen issue
+      const _dbg = {rps:rpsPhase,puffclock:pcPhase,beatdrop:bdPhase,pufflimbo:plPhase,puffderby:pdPhase,survivaltrivia:stPhase,simonpuffs:spPhase,puffauction:paPhase,pricepuff:pipPhase};
+      window.__lastGameDebug = gameActive.id + ":" + (_dbg[gameActive.id]||"?");
       // ═══════════════════════════════════════════════════════════
       // ── WILD WEST DUEL — CINEMATIC IMMERSIVE v3 (FK Quality) ──
       // ═══════════════════════════════════════════════════════════
@@ -23945,6 +23948,8 @@ const startSimonPuffs = () => {
       {/* Overlays */}
       {renderSpectatorOverlay()}
       {renderGameOverlay()}
+      {/* DEBUG: Visible game state indicator — remove after fixing */}
+      {gameActive && <div style={{position:"fixed",bottom:50,left:10,zIndex:99999,padding:"4px 8px",borderRadius:6,background:"rgba(255,0,0,0.9)",color:"#fff",fontSize:10,fontWeight:900,pointerEvents:"none"}}>🔴 {gameActive.id}: {window.__lastGameDebug||"no phase"}</div>}
       {/* Stage MC Bar + Role Badge — floats on top of Stage game screens */}
       {(gameActive || showVibeCheck || swPhase) && stageRole && (
         <>
