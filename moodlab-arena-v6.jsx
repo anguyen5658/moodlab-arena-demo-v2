@@ -9825,23 +9825,23 @@ export default function MoodLabArena() {
   const renderOracle = () => {
     const FORTUNE_GAMES = [
       // Sportsbook
-      {id:"crystalball",name:"Fortune Teller",emoji:"🔮",type:"Predict",color:C.purple,desc:"Yes or No? Puff your prediction!",cat:"sportsbook"},
-      {id:"strainbattle",name:"Strain Battle",emoji:"🌿",type:"Predict",color:C.green,desc:"Which strain wins? Vote by puff!",cat:"sportsbook"},
-      {id:"matchpredictor",name:"Match Predictor",emoji:"📊",type:"Predict",color:C.blue,desc:"Predict WC match results!",cat:"sportsbook"},
+      {id:"crystalball",name:"Fortune Teller",emoji:"🔮",type:"Predict",color:C.purple,desc:"Yes or No? Puff your prediction!",cat:"sportsbook",mp:{mode:"Prophecy Circle",count:"8 prophets",badge:"🔮"}},
+      {id:"strainbattle",name:"Strain Battle",emoji:"🌿",type:"Predict",color:C.green,desc:"Which strain wins? Vote by puff!",cat:"sportsbook",mp:{mode:"Strain World Cup",count:"50+ voters",badge:"🌿"}},
+      {id:"matchpredictor",name:"Match Predictor",emoji:"📊",type:"Predict",color:C.blue,desc:"Predict WC match results!",cat:"sportsbook",mp:{mode:"Pundit Panel",count:"6 pundits",badge:"📺"}},
       {id:"dailypicks",name:"Daily Bets",emoji:"📅",type:"Streak",color:C.orange,desc:"3 bets per day. Build your streak!",cat:"sportsbook"},
       // Luck
-      {id:"spinwin",name:"Spin & Win",emoji:"🎡",type:"Luck",color:C.pink,desc:"Spin the wheel! Puff = spin force!",cat:"luck"},
-      {id:"puffslots",name:"Puff Slots",emoji:"🎰",type:"Luck",color:C.gold,desc:"3 reels. Puff to spin. Blinker = bonus!",cat:"luck"},
+      {id:"spinwin",name:"Spin & Win",emoji:"🎡",type:"Luck",color:C.pink,desc:"Spin the wheel! Puff = spin force!",cat:"luck",mp:{mode:"Wheel of Misfortune",count:"6 players",badge:"🎡"}},
+      {id:"puffslots",name:"Puff Slots",emoji:"🎰",type:"Luck",color:C.gold,desc:"3 reels. Puff to spin. Blinker = bonus!",cat:"luck",mp:{mode:"Slot Tournament",count:"16 racers",badge:"🏁"}},
       {id:"coinflip",name:"Coin Flip",emoji:"🪙",type:"50/50",color:C.gold,desc:"Puff confidence = bet multiplier!",cat:"luck"},
       // Table
-      {id:"puffblackjack",name:"Puff Blackjack",emoji:"🃏",type:"Cards",color:C.green,desc:"Short = Hit. Long = Stand. Beat 21!",cat:"table"},
+      {id:"puffblackjack",name:"Puff Blackjack",emoji:"🃏",type:"Cards",color:C.green,desc:"Short = Hit. Long = Stand. Beat 21!",cat:"table",mp:{mode:"High Rollers Table",count:"6 players",badge:"🎰"}},
       {id:"highcard",name:"High Card Puff",emoji:"🎴",type:"Cards",color:C.red,desc:"Is yours higher? Puff to bet!",cat:"table"},
-      {id:"crapsnclouds",name:"Craps & Clouds",emoji:"🎲",type:"Dice",color:C.cyan,desc:"Puff duration = dice roll!",cat:"table"},
+      {id:"crapsnclouds",name:"Craps & Clouds",emoji:"🎲",type:"Dice",color:C.cyan,desc:"Puff duration = dice roll!",cat:"table",mp:{mode:"Casino Floor",count:"8 at table",badge:"🎲"}},
       // Mystery
-      {id:"mysterybox",name:"Mystery Box",emoji:"🎁",type:"Discovery",color:C.gold,desc:"3 boxes. Pick one. Puff to reveal!",cat:"mystery"},
+      {id:"mysterybox",name:"Mystery Box",emoji:"🎁",type:"Discovery",color:C.gold,desc:"3 boxes. Pick one. Puff to reveal!",cat:"mystery",mp:{mode:"Heist Crew",count:"4 co-op",badge:"🔐"}},
       {id:"scratchpuff",name:"Scratch & Puff",emoji:"🎫",type:"Discovery",color:C.pink,desc:"6 areas. Puff to scratch. Match 3 wins!",cat:"mystery"},
-      {id:"fortunecookie",name:"Fortune Cookie",emoji:"🥠",type:"Fortune",color:C.orange,desc:"Crack it open! Wisdom + coins inside!",cat:"mystery"},
-      {id:"treasuremap",name:"Treasure Map",emoji:"🗺️",type:"Adventure",color:C.gold,desc:"16 tiles. Find 3 treasures. Avoid bombs!",cat:"mystery"},
+      {id:"fortunecookie",name:"Fortune Cookie",emoji:"🥠",type:"Fortune",color:C.orange,desc:"Crack it open! Wisdom + coins inside!",cat:"mystery",mp:{mode:"Fortune Circle",count:"8 traders",badge:"🥠"}},
+      {id:"treasuremap",name:"Treasure Map",emoji:"🗺️",type:"Adventure",color:C.gold,desc:"16 tiles. Find 3 treasures. Avoid bombs!",cat:"mystery",mp:{mode:"Treasure Race",count:"4 explorers",badge:"🗺️"}},
       // Arena Bets
       {id:"puffderby",name:"Puff Derby",emoji:"🏇",type:"Racing",color:C.green,desc:"Pick a horse. Spam puff = speed!",cat:"bets"},
     ];
@@ -10060,7 +10060,7 @@ export default function MoodLabArena() {
                 <div style={{fontSize:28,marginBottom:4,filter:`drop-shadow(0 0 8px ${g.color}50)`}}>{g.emoji}</div>
                 <div style={{fontSize:11,fontWeight:800,color:g.color}}>{g.name}</div>
                 <div style={{fontSize:7,color:C.text3,marginTop:1}}>{g.desc}</div>
-                <div style={{fontSize:7,fontWeight:700,color:C.lime,marginTop:3}}>PLAY NOW</div>
+                {g.mp ? <div style={{fontSize:6,fontWeight:700,color:C.gold,marginTop:3}}>{g.mp.badge} {g.mp.count}</div> : <div style={{fontSize:7,fontWeight:700,color:C.lime,marginTop:3}}>PLAY NOW</div>}
               </div>
             ))}
           </div>
@@ -10083,7 +10083,7 @@ export default function MoodLabArena() {
                 <div style={{fontSize:28,marginBottom:4,filter:`drop-shadow(0 0 8px ${g.color}50)`}}>{g.emoji}</div>
                 <div style={{fontSize:11,fontWeight:800,color:g.color}}>{g.name}</div>
                 <div style={{fontSize:7,color:C.text3,marginTop:1}}>{g.desc}</div>
-                <div style={{fontSize:7,fontWeight:700,color:C.lime,marginTop:3}}>PLAY NOW</div>
+                {g.mp ? <div style={{fontSize:6,fontWeight:700,color:C.gold,marginTop:3}}>{g.mp.badge} {g.mp.count}</div> : <div style={{fontSize:7,fontWeight:700,color:C.lime,marginTop:3}}>PLAY NOW</div>}
               </div>
             ))}
             {/* Lucky Puff */}
@@ -10114,7 +10114,7 @@ export default function MoodLabArena() {
                 <div style={{fontSize:28,marginBottom:4,filter:`drop-shadow(0 0 8px ${g.color}50)`}}>{g.emoji}</div>
                 <div style={{fontSize:11,fontWeight:800,color:g.color}}>{g.name}</div>
                 <div style={{fontSize:7,color:C.text3,marginTop:1}}>{g.desc}</div>
-                <div style={{fontSize:7,fontWeight:700,color:C.lime,marginTop:3}}>PLAY NOW</div>
+                {g.mp ? <div style={{fontSize:6,fontWeight:700,color:C.gold,marginTop:3}}>{g.mp.badge} {g.mp.count}</div> : <div style={{fontSize:7,fontWeight:700,color:C.lime,marginTop:3}}>PLAY NOW</div>}
               </div>
             ))}
           </div>
@@ -10136,7 +10136,7 @@ export default function MoodLabArena() {
                 <div style={{fontSize:28,marginBottom:4,filter:`drop-shadow(0 0 8px ${g.color}50)`}}>{g.emoji}</div>
                 <div style={{fontSize:11,fontWeight:800,color:g.color}}>{g.name}</div>
                 <div style={{fontSize:7,color:C.text3,marginTop:1}}>{g.desc}</div>
-                <div style={{fontSize:7,fontWeight:700,color:C.lime,marginTop:3}}>PLAY NOW</div>
+                {g.mp ? <div style={{fontSize:6,fontWeight:700,color:C.gold,marginTop:3}}>{g.mp.badge} {g.mp.count}</div> : <div style={{fontSize:7,fontWeight:700,color:C.lime,marginTop:3}}>PLAY NOW</div>}
               </div>
             ))}
           </div>
@@ -18316,6 +18316,18 @@ const startSimonPuffs = () => {
             <>
             {/* ═══ FORTUNE GAME — START SCREEN ═══ */}
             <div style={{width:"100%",maxWidth:340,marginBottom:12}}>
+              {/* Multiplayer Mode Badge */}
+              {selectedGame.mp && (
+                <div style={{display:"flex",alignItems:"center",gap:8,padding:"8px 14px",borderRadius:14,marginBottom:10,
+                  background:`linear-gradient(135deg, ${selectedGame.color}15, ${selectedGame.color}05)`,
+                  border:`1px solid ${selectedGame.color}30`,boxShadow:`0 0 20px ${selectedGame.color}10`}}>
+                  <span style={{fontSize:20}}>{selectedGame.mp.badge}</span>
+                  <div>
+                    <div style={{fontSize:12,fontWeight:900,color:selectedGame.color,letterSpacing:1}}>{selectedGame.mp.mode}</div>
+                    <div style={{fontSize:8,color:C.text3}}>👥 {selectedGame.mp.count} · Multiplayer</div>
+                  </div>
+                </div>
+              )}
               {/* How to Play */}
               <div style={{padding:"12px",borderRadius:16,...GLASS_CARD,marginBottom:12}}>
                 <div style={{fontSize:9,fontWeight:800,color:C.gold,letterSpacing:2,marginBottom:8,textAlign:"center"}}>📖 HOW TO PLAY</div>
