@@ -66,7 +66,31 @@
         }).code;
         const fn = new Function('React', 'ReactDOM', transformed + '\nreturn MoodLabArena;');
         const App = fn(React, ReactDOM);
-        ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
+        // Error Boundary to catch and DISPLAY render errors on screen
+        class ErrorBoundary extends React.Component {
+          constructor(props) { super(props); this.state = { error: null, info: null }; }
+          static getDerivedStateFromError(error) { return { error }; }
+          componentDidCatch(error, info) { this.setState({ info }); console.error('GAME RENDER ERROR:', error, info); }
+          render() {
+            if (this.state.error) {
+              return React.createElement('div', {
+                style: { position:'fixed', inset:0, zIndex:999999, background:'#1a0000', color:'#ff4444', padding:20, fontFamily:'monospace', fontSize:12, overflow:'auto' }
+              },
+                React.createElement('h2', {style:{color:'#ff6666',marginBottom:10}}, 'GAME RENDER ERROR'),
+                React.createElement('pre', {style:{color:'#ffaaaa',whiteSpace:'pre-wrap',wordBreak:'break-all'}}, String(this.state.error)),
+                React.createElement('pre', {style:{color:'#ff8888',marginTop:10,fontSize:10,whiteSpace:'pre-wrap'}}, this.state.info?.componentStack || ''),
+                React.createElement('button', {
+                  onClick: () => { this.setState({error:null,info:null}); },
+                  style: { marginTop:20, padding:'10px 20px', background:'#ff4444', color:'white', border:'none', borderRadius:8, cursor:'pointer', fontSize:14 }
+                }, 'DISMISS & RETRY')
+              );
+            }
+            return this.props.children;
+          }
+        }
+        ReactDOM.createRoot(document.getElementById('root')).render(
+          React.createElement(ErrorBoundary, null, React.createElement(App))
+        );
       })
       .catch(err => {
         document.getElementById('root').innerHTML =
