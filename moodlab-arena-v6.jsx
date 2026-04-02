@@ -9257,7 +9257,7 @@ export default function MoodLabArena() {
   const startTankWar=(mode)=>{setTwMode(mode);const terrain=twGenTerrain();twTerrainRef.current=terrain;const tanks=twPlaceTanks(mode,terrain);setTwTanks(tanks);twTanksRef.current=tanks;
     if(mode==="boss"){const b=TW_BOSSES[Math.floor(Math.random()*TW_BOSSES.length)];const boss={...b,hp:b.maxHp,x:TW_W-40,y:terrain[TW_W-40]};setTwBoss(boss);twBossRef.current=boss;}else{setTwBoss(null);twBossRef.current=null;}
     setTwAngle(45);setTwLockedAngle(null);setTwPower(0);setTwLockedPower(null);setTwWind(Math.round((Math.random()-0.5)*4.5*10)/10);
-    setTwTurnIdx(0);setTwRound(0);setTwScore(0);setTwPuffShotReady(false);setTwPuffShotCooldown(3);setTwLastHit(null);setTwFlying(false);setTwExplosion(null);setTwAction("fire");
+    twTurnIdxRef.current=0;setTwTurnIdx(0);setTwRound(0);setTwScore(0);setTwPuffShotReady(false);setTwPuffShotCooldown(3);setTwLastHit(null);setTwFlying(false);setTwExplosion(null);setTwAction("fire");
     setTwPhase("intro");playFx("crowd");setCommentary("Tank War! Aim and fire to destroy the enemy!");
     setTimeout(()=>{setTwPhase("aiming");twStartAim();},1800);};
   const twStartAim=()=>{if(twAimRef.current)clearInterval(twAimRef.current);let dir=1,ang=30;twAimRef.current=setInterval(()=>{ang+=dir*1.8;if(ang>=150){ang=150;dir=-1;}if(ang<=10){ang=10;dir=1;}setTwAngle(ang);},30);};
@@ -9268,15 +9268,16 @@ export default function MoodLabArena() {
   const twPuffStop=()=>{if(!twPuffStartRef.current||twPhase!=="puff_charging")return;const dur=(Date.now()-twPuffStartRef.current)/1000;twPuffStartRef.current=0;
     let mult=1.5;if(dur>=4.0)mult=3.0;else if(dur>=2.5)mult=2.5;else if(dur>=1.0)mult=2.0;
     setTwPuffShotReady(false);setTwPuffShotCooldown(3+Math.floor(Math.random()*2));playFx("whistle");twFire(twLockedAngle||twAngle,65,mult,true);};
+  const twTurnIdxRef = useRef(0);
   const twFire=(angle,power,mult,isPuff)=>{setTwPhase("flying");setTwFlying(true);const rad=angle*Math.PI/180;const speed=(power/100)*11+3;
-    const tanks=twTanksRef.current;const shooter=tanks[twTurnIdx];if(!shooter||!shooter.alive){twNext();return;}
+    const tanks=twTanksRef.current;const currentIdx=twTurnIdxRef.current;const shooter=tanks[currentIdx];if(!shooter||!shooter.alive){twNext();return;}
     let baseDmg;if(power<25)baseDmg=15;else if(power<50)baseDmg=30;else if(power<80)baseDmg=50;else baseDmg=35;
     const dmg=Math.round(baseDmg*mult);const crit=Math.random()<(power>=50&&power<80?0.25:0.08);const finalDmg=crit?Math.round(dmg*1.5):dmg;
     const bullet={x:shooter.x,y:shooter.y-12,vx:Math.cos(rad)*speed*(shooter.x<TW_W/2?1:-1),vy:-Math.sin(rad)*speed,dmg:finalDmg,crit,isPuff,mult,trail:[]};
     twBulletRef.current=bullet;const terrain=twTerrainRef.current;const wind=twWind;
     const anim=()=>{if(!twBulletRef.current)return;const b=twBulletRef.current;b.vx+=wind*0.015;b.vy+=0.22;b.x+=b.vx;b.y+=b.vy;b.trail.push({x:b.x,y:b.y});if(b.trail.length>20)b.trail.shift();
       const bx=Math.floor(b.x);if(bx>=0&&bx<TW_W&&terrain&&b.y>=terrain[bx]){twExplode(b.x,terrain[bx],b.dmg,b.crit,b.isPuff);return;}
-      const targets=twTanksRef.current.filter((t,i)=>i!==twTurnIdx&&t.alive);for(const t of targets){const dx=b.x-t.x,dy=b.y-(t.y-10);if(Math.sqrt(dx*dx+dy*dy)<18){twExplode(t.x,t.y-10,b.dmg,b.crit,b.isPuff);return;}}
+      const targets=twTanksRef.current.filter((t,i)=>i!==currentIdx&&t.alive);for(const t of targets){const dx=b.x-t.x,dy=b.y-(t.y-10);if(Math.sqrt(dx*dx+dy*dy)<18){twExplode(t.x,t.y-10,b.dmg,b.crit,b.isPuff);return;}}
       if(twBossRef.current&&twBossRef.current.hp>0){const boss=twBossRef.current;const dx=b.x-boss.x,dy=b.y-(boss.y-20);if(Math.sqrt(dx*dx+dy*dy)<30){twHitBoss(b.dmg,b.crit,b.isPuff);return;}}
       if(b.x<-20||b.x>TW_W+20||b.y>TW_H+50){twBulletRef.current=null;setTwFlying(false);setCommentary("Miss! 💨");playFx("error");setTimeout(()=>twNext(),1200);return;}
       twDraw();twRafRef.current=requestAnimationFrame(anim);};
@@ -9308,7 +9309,7 @@ export default function MoodLabArena() {
   const twWinGame=()=>{setCommentary("VICTORY! 🏆");playFx("crowd");spawnConfetti(30);triggerFlash("goal");setTimeout(()=>{recordGameResult(true,60+Math.min(twScore,100),20);setTwPhase("complete");},1500);};
   const twLoseGame=()=>{setCommentary("Defeated! 💀");playFx("error");setTimeout(()=>{recordGameResult(false,0,8);setTwPhase("complete");},1500);};
   const twNext=()=>{const tanks=twTanksRef.current;const alive=tanks.filter(t=>t.alive);if(alive.length<=1&&twMode!=="boss"){twCheck();return;}
-    let ni=twTurnIdx;for(let i=0;i<tanks.length;i++){ni=(ni+1)%tanks.length;if(tanks[ni].alive)break;}setTwTurnIdx(ni);const nt=tanks[ni];
+    let ni=twTurnIdxRef.current;for(let i=0;i<tanks.length;i++){ni=(ni+1)%tanks.length;if(tanks[ni].alive)break;}twTurnIdxRef.current=ni;setTwTurnIdx(ni);const nt=tanks[ni];
     setTwWind(Math.round((Math.random()-0.5)*4.5*10)/10);setTwLockedAngle(null);setTwLockedPower(null);setTwPower(0);setTwLastHit(null);
     const newCd=twPuffShotCooldown-1;if(newCd<=0&&nt.isPlayer){setTwPuffShotReady(true);setTwPuffShotCooldown(0);notify("💨 PUFF SHOT READY!",C.gold);}else setTwPuffShotCooldown(Math.max(0,newCd));
     setTwRound(r=>r+1);
@@ -10584,6 +10585,7 @@ export default function MoodLabArena() {
         setSpPhase(null);setPaPhase(null);setBdPhase(null);setPlPhase(null);setPdPhase(null);setHlPhase(null);
         setSlotsPhase(null);setBjPhase(null);setCfPhase(null);setCrapsPhase(null);
         setMbPhase(null);setScPhase(null);setFcPhase(null);setTmPhase(null);
+        setTwPhase(null);setFwPhase(null);setCbPhase(null);setSbPhase(null);setMpPhase(null);setDpPhase(null);
         setDimLights(false);setScreenShake(false);setScreenFlash(null);setStageRole(null);setMcVisible(false);setStageElim(null);
         setMatchIntro(null);setCommentatorText("");setPuffBubbles([]);setAudienceBubbles([]);
         setConfettiParticles([]);setSmokeParticles([]);setLiveSpectators([]);setCrowdEruption(false);
