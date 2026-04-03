@@ -6822,24 +6822,25 @@ export default function MoodLabArena() {
     else if (id === "wildwest")    { down = duelShoot;      up = duelReleasePuff;}
     else if (id === "hotpotato")   { down = hpStartPuff;    up = hpStopPuff;     }
     else if (id === "hooked")      { down = hookStartPuff;  up = hookStopPuff;   }
-    else if (id === "rps")         { down = rpsStartPuff;   up = rpsStopPuff;    }
-    else if (id === "puffclock")   { down = pcStartPuff;    up = pcStopPuff;     }
-    else if (id === "beatdrop")    { down = bdStartHold;    up = bdReleaseHold;  }
-    else if (id === "pufflimbo")   { down = plStartPuff;    up = plReleasePuff;  }
-    else if (id === "simonpuffs")  { down = spStartPuff;    up = spEndPuff;      }
-    else if (id === "puffauction") { down = paStartBid;     up = paEndBid;       }
-    else if (id === "pricepuff")   { down = pipStartPuff;   up = pipStopPuff;    }
+    // --- Arcade games defined after this IIFE — use lazy wrappers to avoid TDZ ---
+    else if (id === "rps")         { down = () => rpsStartPuff();   up = () => rpsStopPuff();    }
+    else if (id === "puffclock")   { down = () => pcStartPuff();    up = () => pcStopPuff();     }
+    else if (id === "beatdrop")    { down = () => bdStartHold();    up = () => bdReleaseHold();  }
+    else if (id === "pufflimbo")   { down = () => plStartPuff();    up = () => plReleasePuff();  }
+    else if (id === "simonpuffs")  { down = () => spStartPuff();    up = () => spEndPuff();      }
+    else if (id === "puffauction") { down = () => paStartBid();     up = () => paEndBid();       }
+    else if (id === "pricepuff")   { down = () => pipStartPuff();   up = () => pipStopPuff();    }
     // tap-based games: start fires the action, stop is unused
     else if (id === "tugofwar")    { down = towPuff;        up = null;           }
-    else if (id === "puffderby")   { down = pdPuff;         up = null;           }
+    else if (id === "puffderby")   { down = () => pdPuff();         up = null;                   }
     else if (id === "rhythm")      { down = rpPuffHit;      up = null;           }
     // hold-based: puffUp moves paddle down, puffRelease lets it drift
     else if (id === "puffpong")    { down = ppPuffUp;       up = ppPuffRelease;  }
     // --- Stage: Higher or Lower (hold-based: short=lower, long=higher) ---
     else if (id === "higherlower")    { down = () => setHlPuffStart(Date.now()); up = () => { if(hlPuffStart){ hlHandlePuff(Date.now()-hlPuffStart>1500); setHlPuffStart(null); } }; }
     // --- Stage: Trivia games (duration-based: TAP=A, SHORT=B, MED=C, LONG=D) ---
-    else if (id === "vibecheck")       { down = vcPuffStart;  up = vcPuffStop;  }
-    else if (id === "survivaltrivia")  { down = stPuffStart;  up = stPuffStop;  }
+    else if (id === "vibecheck")       { down = () => vcPuffStart();  up = () => vcPuffStop();  }
+    else if (id === "survivaltrivia")  { down = () => stPuffStart();  up = () => stPuffStop();  }
     // --- Fortune / Oracle games (hold-based) --- use lazy wrappers to avoid TDZ
     else if (id === "crystalball")    { down = () => cbHandlePuff();     up = () => cbHandlePuffEnd();     }
     else if (id === "strainbattle")   { down = () => sbHandlePuff();     up = () => sbHandlePuffEnd();     }
