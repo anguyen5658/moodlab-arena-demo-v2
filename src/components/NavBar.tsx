@@ -19,10 +19,12 @@ export function NavBar() {
     return location.pathname.startsWith(path)
   }
 
+  const isHub = location.pathname === '/'
+
   return (
     <div style={{
       position: 'fixed', bottom: 16, left: '50%', transform: 'translateX(-50%)',
-      zIndex: 50, display: 'flex', justifyContent: 'center',
+      zIndex: 50, display: isHub ? 'none' : 'flex', justifyContent: 'center',
     }}>
       <div style={{
         display: 'inline-flex', alignItems: 'center', gap: 3,

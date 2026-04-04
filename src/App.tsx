@@ -26,7 +26,7 @@ export default function App() {
         overflow: 'hidden', display: 'flex', flexDirection: 'column',
       }}>
         <CoinHeader />
-        <div style={{ flex: 1, overflow: 'hidden', marginTop: 48 }}>
+        <div style={{ flex: 1, overflow: 'hidden', marginTop: 70 }}>
           <Suspense fallback={<LoadingSpinner />}>
             <Outlet />
           </Suspense>
