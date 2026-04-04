@@ -36,7 +36,7 @@ export default function Hub() {
 
   const walkTo = useCallback((key: string) => {
     setWalking(true)
-    setTimeout(() => navigate('/' + key), 450)
+    setTimeout(() => navigate('/zone/' + key), 450)
   }, [navigate])
 
   const stageData = [

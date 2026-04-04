@@ -4,6 +4,7 @@ import App from '@/App'
 
 // Zone index pages
 import Hub from '@/zones/Hub'
+import ZoneFocus from '@/zones/Hub/ZoneFocus'
 import ArcadeZone from '@/zones/Arcade'
 import StageZone from '@/zones/Stage'
 import FortuneZone from '@/zones/Fortune'
@@ -62,6 +63,9 @@ export const router = createBrowserRouter([
     element: <App />,
     children: [
       { index: true, element: <Hub /> },
+
+      // ── Zone Focus (intermediate kiosk view from Hub) ──
+      { path: 'zone/:zoneId', element: <ZoneFocus /> },
 
       // ── Arcade ──
       {

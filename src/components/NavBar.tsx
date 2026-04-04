@@ -19,7 +19,7 @@ export function NavBar() {
     return location.pathname.startsWith(path)
   }
 
-  const isHub = location.pathname === '/'
+  const isHub = location.pathname === '/' || location.pathname.startsWith('/zone/')
 
   return (
     <div style={{
