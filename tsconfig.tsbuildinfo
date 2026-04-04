@@ -1,0 +1,1 @@
+{"root":["./src/app.tsx","./src/main.tsx","./src/router.tsx","./src/vite-env.d.ts","./src/components/appshell.tsx","./src/components/gamegrid.tsx","./src/components/gameshell.tsx","./src/data/arena.ts","./src/pages/gameroute.tsx","./src/pages/livepage.tsx","./src/pages/mepage.tsx","./src/pages/tabpage.tsx","./src/state/appstate.tsx"],"version":"5.9.3"}
