@@ -71,7 +71,7 @@ export default function Hub() {
         <div style={{ position: 'absolute', top: 'calc(35% + 2vh)', left: '50%', transform: 'translate(-50%,-50%)', pointerEvents: 'none', zIndex: 1 }}>
           <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: '28vw', maxWidth: 120, height: '18vw', maxHeight: 80, borderRadius: '50%', background: `radial-gradient(ellipse, ${C.gold}15, transparent 65%)`, animation: 'breathe 3s ease-in-out infinite' }} />
           <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: '18vw', maxWidth: 80, height: '12vw', maxHeight: 55, borderRadius: '50%', background: `radial-gradient(ellipse, ${C.gold}25, transparent 70%)`, animation: 'breathe 4s ease-in-out 1s infinite' }} />
-          <img src="assets/arena/cali-clear-logo.png" alt="" style={{ position: 'relative', width: '15vw', maxWidth: 65, height: 'auto', display: 'block', filter: `drop-shadow(0 0 8px ${C.gold}80) drop-shadow(0 0 16px ${C.gold}50) drop-shadow(0 0 32px ${C.gold}25)` }} />
+          <img src="/assets/arena/cali-clear-logo.png" alt="" style={{ position: 'relative', width: '15vw', maxWidth: 65, height: 'auto', display: 'block', filter: `drop-shadow(0 0 8px ${C.gold}80) drop-shadow(0 0 16px ${C.gold}50) drop-shadow(0 0 32px ${C.gold}25)` }} />
         </div>
       </div>
 

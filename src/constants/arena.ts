@@ -1,21 +1,21 @@
 import type { ZoneTheme } from '@/types'
 
 export const ARENA_IMAGES: Record<string, string> = {
-  hub:      'assets/arena/hub.png',
-  arcade:   'assets/arena/arcade.png',
-  stage:    'assets/arena/stage.png',
-  oracle:   'assets/arena/oracle.png',
-  wall:     'assets/arena/wall.png',
-  worldcup: 'assets/arena/worldcup.png',
+  hub:      '/assets/arena/hub.png',
+  arcade:   '/assets/arena/arcade.png',
+  stage:    '/assets/arena/stage.png',
+  oracle:   '/assets/arena/oracle.png',
+  wall:     '/assets/arena/wall.png',
+  worldcup: '/assets/arena/worldcup.png',
 }
 
 export const ARENA_VIDEOS: Record<string, string> = {
-  hub:      'assets/arena/hub.mp4',
-  arcade:   'assets/arena/arcade.mp4',
-  stage:    'assets/arena/stage.mp4',
-  oracle:   'assets/arena/oracle.mp4',
-  wall:     'assets/arena/wall.mp4',
-  worldcup: 'assets/arena/worldcup.mp4',
+  hub:      '/assets/arena/hub.mp4',
+  arcade:   '/assets/arena/arcade.mp4',
+  stage:    '/assets/arena/stage.mp4',
+  oracle:   '/assets/arena/oracle.mp4',
+  wall:     '/assets/arena/wall.mp4',
+  worldcup: '/assets/arena/worldcup.mp4',
 }
 
 export const Z: Record<string, ZoneTheme> = {
