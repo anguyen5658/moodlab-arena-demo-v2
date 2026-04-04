@@ -4,6 +4,8 @@ import { SHOW_GAMES } from '@/constants/games'
 import { C } from '@/constants/theme'
 import { ZoneHeader } from '@/components/ZoneHeader'
 import { useArena } from '@/context/ArenaContext'
+import GameDetailSheet from '@/components/GameDetailSheet'
+import type { GameDefinition } from '@/types'
 
 const INFO_ITEMS = [
   { text: 'Tonight: 12,500 coins up for grabs!', color: C.gold },
@@ -16,6 +18,7 @@ export default function StageZone() {
   const navigate = useNavigate()
   const { playFx } = useArena()
   const [tick, setTick] = useState(0)
+  const [selectedGame, setSelectedGame] = useState<GameDefinition | null>(null)
 
   useEffect(() => {
     const t = setInterval(() => setTick(v => v + 1), 1000)
@@ -41,6 +44,7 @@ export default function StageZone() {
   const info = INFO_ITEMS[infoIdx]
 
   return (
+    <>
     <div style={{ height: '100%', background: C.bg, overflowY: 'auto', paddingBottom: 80, position: 'relative' }}>
       {/* Theater lighting */}
       <div style={{ position: 'absolute', top: -60, left: '50%', transform: 'translateX(-50%)', width: 500, height: 350, pointerEvents: 'none', background: `radial-gradient(ellipse at 50% 0%, ${C.gold}14, transparent 50%), radial-gradient(ellipse at 30% 10%, ${C.orange}08, transparent 40%), radial-gradient(ellipse at 70% 10%, ${C.orange}08, transparent 40%)` }} />
@@ -104,7 +108,7 @@ export default function StageZone() {
               return (
                 <div
                   key={g.id}
-                  onClick={() => { playFx('select'); navigate(`/stage/${g.id}`) }}
+                  onClick={() => { playFx('select'); setSelectedGame(g) }}
                   style={{ padding: '10px 8px', borderRadius: 12, cursor: 'pointer', textAlign: 'center', position: 'relative', background: isLive ? 'rgba(255,50,50,0.06)' : 'rgba(255,255,255,0.02)', border: `1px solid ${isLive ? 'rgba(255,50,50,0.2)' : C.border}` }}
                 >
                   {isLive && (
@@ -127,5 +131,14 @@ export default function StageZone() {
         </div>
       </div>
     </div>
+
+    {selectedGame && (
+      <GameDetailSheet
+        game={selectedGame}
+        onClose={() => setSelectedGame(null)}
+        zoneRoute="/stage"
+      />
+    )}
+    </>
   )
 }

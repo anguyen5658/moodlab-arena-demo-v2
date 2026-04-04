@@ -4,6 +4,8 @@ import { PLAY_GAMES } from '@/constants/games'
 import { C } from '@/constants/theme'
 import { ZoneHeader } from '@/components/ZoneHeader'
 import { useArena } from '@/context/ArenaContext'
+import GameDetailSheet from '@/components/GameDetailSheet'
+import type { GameDefinition } from '@/types'
 
 const PLAYER_COUNTS: Record<string, number> = {
   finalkick: 2100, finalkick2: 356, finalkick3: 198, wildwest: 720,
@@ -36,6 +38,7 @@ export default function ArcadeZone() {
   const { playFx } = useArena()
   const [tab, setTab] = useState<'games' | 'tournaments' | 'activity' | 'stats'>('games')
   const [tick, setTick] = useState(0)
+  const [selectedGame, setSelectedGame] = useState<GameDefinition | null>(null)
 
   useEffect(() => {
     const t = setInterval(() => setTick(v => v + 1), 1000)
@@ -49,10 +52,10 @@ export default function ArcadeZone() {
   const totalPlaying = Object.values(PLAYER_COUNTS).reduce((a, b) => a + b, 0)
 
   const heroSlides = [
-    { emoji: featuredGame.emoji, title: featuredGame.name, sub: `${featuredGame.type} · ${PLAYER_COUNTS[featuredGame.id] || 0} playing`, color: featuredGame.color, badge: featuredGame.hot ? '🔥 HOT' : '', action: () => { playFx('select'); navigate(`/arcade/${featuredGame.id}`) } },
+    { emoji: featuredGame.emoji, title: featuredGame.name, sub: `${featuredGame.type} · ${PLAYER_COUNTS[featuredGame.id] || 0} playing`, color: featuredGame.color, badge: featuredGame.hot ? '🔥 HOT' : '', action: () => { playFx('select'); setSelectedGame(featuredGame) } },
     { emoji: '🏆', title: activeTourney.name, sub: `${activeTourney.players} entered · ${activeTourney.round}`, color: C.gold, badge: activeTourney.status, action: () => { playFx('select') } },
     { emoji: '🎮', title: 'ARCADE', sub: `${PLAY_GAMES.length} Games · ${totalPlaying.toLocaleString()} Playing Now`, color: C.cyan, badge: 'LIVE', action: null },
-    { emoji: '⚡', title: 'Quick Play', sub: 'Jump into a random game instantly!', color: C.lime, badge: 'INSTANT', action: () => { playFx('select'); const rg = PLAY_GAMES[Math.floor(Math.random() * PLAY_GAMES.length)]; navigate(`/arcade/${rg.id}`) } },
+    { emoji: '⚡', title: 'Quick Play', sub: 'Jump into a random game instantly!', color: C.lime, badge: 'INSTANT', action: () => { playFx('select'); const rg = PLAY_GAMES[Math.floor(Math.random() * PLAY_GAMES.length)]; setSelectedGame(rg) } },
   ]
   const slideIdx = Math.floor(tick / 4) % heroSlides.length
   const slide = heroSlides[slideIdx]
@@ -72,6 +75,7 @@ export default function ArcadeZone() {
   ]
 
   return (
+    <>
     <div style={{ height: '100%', background: C.bg, overflowY: 'auto', paddingBottom: 80, position: 'relative' }}>
       {/* Background glow */}
       <div style={{ position: 'absolute', top: -40, left: 0, right: 0, height: 400, pointerEvents: 'none', overflow: 'hidden', background: `radial-gradient(ellipse at 50% 0%, ${C.cyan}15, transparent 60%)` }}>
@@ -156,7 +160,7 @@ export default function ArcadeZone() {
                 const isNew = !TRIED_GAMES.includes(g.id)
                 const count = PLAYER_COUNTS[g.id] || 30
                 return (
-                  <div key={g.id} onClick={() => { playFx('select'); navigate(`/arcade/${g.id}`) }} style={{ padding: '12px 10px', borderRadius: 14, cursor: 'pointer', position: 'relative', overflow: 'hidden', background: `radial-gradient(ellipse at 50% 0%, ${g.color}10, ${C.bg2} 70%)`, border: `1px solid ${g.color}15`, transition: 'all 0.3s', animation: `fadeIn 0.3s ease ${i * 0.04}s both` }}>
+                  <div key={g.id} onClick={() => { playFx('select'); setSelectedGame(g) }} style={{ padding: '12px 10px', borderRadius: 14, cursor: 'pointer', position: 'relative', overflow: 'hidden', background: `radial-gradient(ellipse at 50% 0%, ${g.color}10, ${C.bg2} 70%)`, border: `1px solid ${g.color}15`, transition: 'all 0.3s', animation: `fadeIn 0.3s ease ${i * 0.04}s both` }}>
                     <div style={{ position: 'absolute', top: 6, right: 6, display: 'flex', flexDirection: 'column', gap: 3, alignItems: 'flex-end' }}>
                       {g.hot && <span style={{ fontSize: 7, fontWeight: 800, color: C.red, padding: '1px 6px', borderRadius: 4, background: `${C.red}18`, border: `1px solid ${C.red}25` }}>🔥 HOT</span>}
                       {isNew && <span style={{ fontSize: 6, fontWeight: 800, color: C.cyan, padding: '1px 5px', borderRadius: 4, background: `${C.cyan}15`, border: `1px solid ${C.cyan}25` }}>NEW FOR YOU</span>}
@@ -266,5 +270,14 @@ export default function ArcadeZone() {
         )}
       </div>
     </div>
+
+    {selectedGame && (
+      <GameDetailSheet
+        game={selectedGame}
+        onClose={() => setSelectedGame(null)}
+        zoneRoute="/arcade"
+      />
+    )}
+    </>
   )
 }

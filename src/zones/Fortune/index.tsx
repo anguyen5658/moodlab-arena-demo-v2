@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router'
 import { C } from '@/constants/theme'
 import { ZoneHeader } from '@/components/ZoneHeader'
 import { useArena } from '@/context/ArenaContext'
+import GameDetailSheet from '@/components/GameDetailSheet'
+import type { GameDefinition } from '@/types'
 
 const FORTUNE_GAMES = [
   { id: 'crystalball',   name: 'Fortune Teller',  emoji: '🔮', type: 'Predict',   color: C.purple, desc: 'Yes or No? Puff your prediction!',        cat: 'sportsbook', route: '/fortune/crystalball' },
@@ -52,6 +54,7 @@ export default function FortuneZone() {
   const { playFx } = useArena()
   const [tab, setTab] = useState('sportsbook')
   const [tick, setTick] = useState(0)
+  const [selectedGame, setSelectedGame] = useState<GameDefinition | null>(null)
 
   useEffect(() => {
     const t = setInterval(() => setTick(v => v + 1), 1000)
@@ -72,6 +75,7 @@ export default function FortuneZone() {
   const isHot = (badge: string) => badge === 'LIVE' || badge === 'HOT'
 
   return (
+    <>
     <div style={{ height: '100%', background: C.bg, overflowY: 'auto', paddingBottom: 80, position: 'relative' }}>
       {/* Gold particles */}
       {[...Array(8)].map((_, i) => (
@@ -165,7 +169,7 @@ export default function FortuneZone() {
         {tab !== 'recent' && (
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 14 }}>
             {(tab === 'bets' ? FORTUNE_GAMES.filter(g => g.cat === 'bets') : gamesForTab).map((g, i) => (
-              <div key={g.id} onClick={() => { playFx('select'); navigate(g.route) }} style={{ padding: '14px 12px', borderRadius: 14, cursor: 'pointer', textAlign: 'center', position: 'relative', overflow: 'hidden', background: `radial-gradient(ellipse at 50% 0%, ${g.color}10, rgba(255,255,255,0.01) 70%)`, border: `1px solid ${g.color}18`, transition: 'all 0.3s', animation: `fadeIn 0.3s ease ${i * 0.06}s both` }}>
+              <div key={g.id} onClick={() => { playFx('select'); setSelectedGame(g as unknown as GameDefinition) }} style={{ padding: '14px 12px', borderRadius: 14, cursor: 'pointer', textAlign: 'center', position: 'relative', overflow: 'hidden', background: `radial-gradient(ellipse at 50% 0%, ${g.color}10, rgba(255,255,255,0.01) 70%)`, border: `1px solid ${g.color}18`, transition: 'all 0.3s', animation: `fadeIn 0.3s ease ${i * 0.06}s both` }}>
                 <div style={{ fontSize: 28, marginBottom: 4, filter: `drop-shadow(0 0 8px ${g.color}50)` }}>{g.emoji}</div>
                 <div style={{ fontSize: 11, fontWeight: 800, color: g.color }}>{g.name}</div>
                 <div style={{ fontSize: 7, color: C.text3, marginTop: 1 }}>{g.desc}</div>
@@ -195,5 +199,14 @@ export default function FortuneZone() {
         )}
       </div>
     </div>
+
+    {selectedGame && (
+      <GameDetailSheet
+        game={selectedGame as any}
+        onClose={() => setSelectedGame(null)}
+        zoneRoute="/fortune"
+      />
+    )}
+    </>
   )
 }
