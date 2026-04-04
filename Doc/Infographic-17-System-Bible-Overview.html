@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mood Lab Arena — System Bible Overview</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#06101E;color:#E8EBF6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;padding:40px 20px}
+.container{max-width:900px;margin:0 auto}
+h1{font-size:32px;font-weight:900;text-align:center;background:linear-gradient(135deg,#00E5FF,#FFD93D,#FF6B8A);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px}
+.subtitle{text-align:center;color:#94A3B8;font-size:13px;margin-bottom:40px}
+.section{margin-bottom:32px}
+.section-title{font-size:18px;font-weight:900;letter-spacing:2px;padding:10px 16px;border-radius:10px;margin-bottom:12px;display:flex;align-items:center;gap:10px}
+.mission{text-align:center;padding:24px;border-radius:16px;background:linear-gradient(135deg,rgba(0,229,255,0.06),rgba(255,215,0,0.04));border:1px solid rgba(0,229,255,0.15);margin-bottom:32px}
+.mission .quote{font-size:16px;font-weight:800;color:#E8EBF6;font-style:italic;line-height:1.5}
+.mission .sub{font-size:11px;color:#94A3B8;margin-top:8px}
+.three-inputs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px}
+.input-card{padding:16px;border-radius:14px;text-align:center}
+.input-card .icon{font-size:32px;margin-bottom:6px}
+.input-card .name{font-size:14px;font-weight:900;letter-spacing:1px}
+.input-card .desc{font-size:9px;color:#94A3B8;margin-top:4px;line-height:1.4}
+.input-card .bonus{font-size:18px;font-weight:900;margin-top:8px}
+.input-card .bonus-label{font-size:8px;color:#94A3B8;letter-spacing:1px}
+.streak-bar{display:flex;gap:4px;margin:12px 0}
+.streak-step{flex:1;padding:8px 4px;border-radius:8px;text-align:center}
+.streak-step .num{font-size:14px;font-weight:900}
+.streak-step .label{font-size:7px;margin-top:2px}
+.streak-step .bonus{font-size:9px;font-weight:700;margin-top:2px}
+.session-flow{display:flex;gap:4px;margin:12px 0}
+.phase{flex:1;padding:10px 6px;border-radius:10px;text-align:center}
+.phase .name{font-size:10px;font-weight:900;letter-spacing:1px}
+.phase .time{font-size:8px;margin-top:2px}
+.phase .input{font-size:14px;margin-top:4px}
+.phase .state{font-size:7px;margin-top:2px}
+.arrow{display:flex;align-items:center;color:#475569;font-size:10px}
+.zones{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:12px 0}
+.zone{padding:12px 6px;border-radius:10px;text-align:center}
+.zone .icon{font-size:24px}
+.zone .name{font-size:9px;font-weight:800;margin-top:4px;letter-spacing:1px}
+.zone .count{font-size:7px;margin-top:2px}
+.moral-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.moral{padding:12px;border-radius:10px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06)}
+.moral .title{font-size:11px;font-weight:800;margin-bottom:4px}
+.moral .desc{font-size:9px;color:#94A3B8;line-height:1.4}
+.stat-row{display:flex;gap:8px;justify-content:center;margin:16px 0;flex-wrap:wrap}
+.stat{padding:10px 16px;border-radius:10px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);text-align:center}
+.stat .num{font-size:22px;font-weight:900;color:#00E5FF}
+.stat .label{font-size:8px;color:#94A3B8;letter-spacing:1px;margin-top:2px}
+.range-bar{display:flex;align-items:center;gap:0;margin:16px 0;border-radius:10px;overflow:hidden;height:36px}
+.range-segment{height:100%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#fff}
+.footer{text-align:center;margin-top:40px;color:#475569;font-size:11px}
+@media(max-width:600px){.three-inputs{grid-template-columns:1fr}.session-flow{flex-direction:column}.zones{grid-template-columns:repeat(3,1fr)}.moral-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>MOOD LAB ARENA</h1>
+<div class="subtitle">System Bible v3.0 — The Complete Game System Design</div>
+
+<div class="mission">
+<div class="quote">"Mood Lab is not a gaming app that supports puff devices.<br>Mood Lab is a PUFF EXPERIENCE that uses games as the medium."</div>
+<div class="sub">The puff sparks the session. Games carry the fun. Comedy keeps everyone laughing.</div>
+</div>
+
+<div class="stat-row">
+<div class="stat"><div class="num">37</div><div class="label">GAMES</div></div>
+<div class="stat"><div class="num">3</div><div class="label">INPUT TYPES</div></div>
+<div class="stat"><div class="num">5</div><div class="label">ZONES</div></div>
+<div class="stat"><div class="num">34</div><div class="label">MP MODES</div></div>
+<div class="stat"><div class="num">50</div><div class="label">BOT PERSONALITIES</div></div>
+<div class="stat"><div class="num">0-30%</div><div class="label">BONUS RANGE</div></div>
+</div>
+
+<!-- THREE INPUTS -->
+<div class="section">
+<div class="section-title" style="background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.2);color:#00E5FF">🎮 Three-Input System</div>
+<div class="three-inputs">
+<div class="input-card" style="background:rgba(148,163,184,0.06);border:1px solid rgba(148,163,184,0.15)">
+<div class="icon">📱</div>
+<div class="name" style="color:#94A3B8">ON-SCREEN</div>
+<div class="desc">Tap/hold on phone<br>Always available<br>No device needed<br><strong>BREAKS</strong> puff streak</div>
+<div class="bonus" style="color:#94A3B8">+0%</div>
+<div class="bonus-label">BASE (FULL REWARD)</div>
+</div>
+<div class="input-card" style="background:rgba(0,229,255,0.06);border:1px solid rgba(0,229,255,0.15)">
+<div class="icon">💨</div>
+<div class="name" style="color:#00E5FF">DRY PUFF</div>
+<div class="desc">Blow air, no heat<br>Device connected<br>MIC detects<br><strong>HOLDS</strong> puff streak</div>
+<div class="bonus" style="color:#00E5FF">+5%</div>
+<div class="bonus-label">DEVICE BONUS</div>
+</div>
+<div class="input-card" style="background:rgba(255,180,0,0.06);border:1px solid rgba(255,180,0,0.15)">
+<div class="icon">🔥</div>
+<div class="name" style="color:#FFB800">REAL PUFF</div>
+<div class="desc">Heat ON, vapor<br>Device connected<br>MIC detects<br><strong>BUILDS</strong> puff streak</div>
+<div class="bonus" style="color:#FFB800">+15%</div>
+<div class="bonus-label">PUFF BONUS</div>
+</div>
+</div>
+<div style="text-align:center;font-size:10px;color:#94A3B8">🔥 Blinker (5-second puff): <strong style="color:#FF6B8A">+20%</strong> — The LEGENDARY move</div>
+</div>
+
+<!-- PUFF STREAK -->
+<div class="section">
+<div class="section-title" style="background:rgba(255,180,0,0.08);border:1px solid rgba(255,180,0,0.2);color:#FFB800">🔥 Puff Streak (Real Puff Only)</div>
+<div style="font-size:10px;color:#94A3B8;margin-bottom:8px;text-align:center">Consecutive real puffs in one game. Dry Puff holds. Screen tap breaks. Cap at ×5.</div>
+<div class="streak-bar">
+<div class="streak-step" style="background:rgba(148,163,184,0.06);border:1px solid rgba(148,163,184,0.1)"><div class="num" style="color:#94A3B8">×0</div><div class="label" style="color:#64748B">—</div><div class="bonus" style="color:#64748B">+0%</div></div>
+<div class="streak-step" style="background:rgba(255,180,0,0.04);border:1px solid rgba(255,180,0,0.1)"><div class="num" style="color:#FFB800">×1</div><div class="label" style="color:#94A3B8">start</div><div class="bonus" style="color:#FFB800">+2%</div></div>
+<div class="streak-step" style="background:rgba(255,180,0,0.06);border:1px solid rgba(255,180,0,0.15)"><div class="num" style="color:#FFB800">×2</div><div class="label" style="color:#94A3B8">🔥</div><div class="bonus" style="color:#FFB800">+4%</div></div>
+<div class="streak-step" style="background:rgba(255,180,0,0.08);border:1px solid rgba(255,180,0,0.2)"><div class="num" style="color:#FFB800">×3</div><div class="label" style="color:#FFB800">HEATED</div><div class="bonus" style="color:#FFB800">+6%</div></div>
+<div class="streak-step" style="background:rgba(255,100,0,0.08);border:1px solid rgba(255,100,0,0.2)"><div class="num" style="color:#FF6400">×4</div><div class="label" style="color:#FF6400">BLAZING</div><div class="bonus" style="color:#FF6400">+8%</div></div>
+<div class="streak-step" style="background:rgba(255,60,60,0.08);border:1px solid rgba(255,60,60,0.2)"><div class="num" style="color:#FF4444">×5</div><div class="label" style="color:#FF4444">👑 MAX</div><div class="bonus" style="color:#FF4444">+10%</div></div>
+</div>
+
+<!-- FULL RANGE BAR -->
+<div style="font-size:9px;color:#94A3B8;text-align:center;margin:12px 0 4px">Total Bonus Range: 0% → 30%</div>
+<div class="range-bar">
+<div class="range-segment" style="width:35%;background:#475569">📱 Tap: 0%</div>
+<div class="range-segment" style="width:8%;background:#0891B2">💨 5%</div>
+<div class="range-segment" style="width:22%;background:#D97706">🔥 15-25%</div>
+<div class="range-segment" style="width:15%;background:#DC2626">👑 Blinker+Streak: 30%</div>
+</div>
+<div style="display:flex;justify-content:space-between;font-size:8px;color:#64748B;margin-top:2px"><span>60 coins (tap)</span><span>63 (dry)</span><span>69-75 (puff)</span><span>78 coins (max)</span></div>
+</div>
+
+<!-- SESSION FLOW -->
+<div class="section">
+<div class="section-title" style="background:rgba(147,51,234,0.08);border:1px solid rgba(147,51,234,0.2);color:#A78BFA">⏱️ Session Flow</div>
+<div class="session-flow">
+<div class="phase" style="background:rgba(255,60,60,0.08);border:1px solid rgba(255,60,60,0.2)">
+<div class="name" style="color:#FF4444">IGNITE</div>
+<div class="time" style="color:#94A3B8">0-5 min</div>
+<div class="input">🔥🔥🔥</div>
+<div class="state" style="color:#FF4444">Getting high</div>
+</div>
+<div class="arrow">→</div>
+<div class="phase" style="background:rgba(255,180,0,0.08);border:1px solid rgba(255,180,0,0.2)">
+<div class="name" style="color:#FFB800">ELEVATE</div>
+<div class="time" style="color:#94A3B8">5-15 min</div>
+<div class="input">🔥💨💨</div>
+<div class="state" style="color:#FFB800">Peak level</div>
+</div>
+<div class="arrow">→</div>
+<div class="phase" style="background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.2)">
+<div class="name" style="color:#00E5FF">CRUISE</div>
+<div class="time" style="color:#94A3B8">15-45 min</div>
+<div class="input">💨📱📱</div>
+<div class="state" style="color:#00E5FF">Done consuming</div>
+</div>
+<div class="arrow">→</div>
+<div class="phase" style="background:rgba(148,163,184,0.06);border:1px solid rgba(148,163,184,0.15)">
+<div class="name" style="color:#94A3B8">RIDE</div>
+<div class="time" style="color:#94A3B8">45-90+ min</div>
+<div class="input">📱📱📱</div>
+<div class="state" style="color:#94A3B8">Still vibing</div>
+</div>
+</div>
+<div style="text-align:center;font-size:9px;color:#64748B;margin-top:4px">The app adapts to each phase silently. Never shames. Never pressures.</div>
+</div>
+
+<!-- ZONES -->
+<div class="section">
+<div class="section-title" style="background:rgba(255,215,0,0.08);border:1px solid rgba(255,215,0,0.2);color:#FFD93D">🏟️ Arena Zones</div>
+<div class="zones">
+<div class="zone" style="background:rgba(0,229,255,0.06);border:1px solid rgba(0,229,255,0.15)"><div class="icon">🎮</div><div class="name" style="color:#00E5FF">ARCADE</div><div class="count" style="color:#94A3B8">18 games</div></div>
+<div class="zone" style="background:rgba(255,215,0,0.06);border:1px solid rgba(255,215,0,0.15)"><div class="icon">🎪</div><div class="name" style="color:#FFD93D">STAGE</div><div class="count" style="color:#94A3B8">6 shows</div></div>
+<div class="zone" style="background:rgba(255,180,0,0.06);border:1px solid rgba(255,180,0,0.15)"><div class="icon">🔮</div><div class="name" style="color:#FFB800">FORTUNE</div><div class="count" style="color:#94A3B8">13 games</div></div>
+<div class="zone" style="background:rgba(251,146,60,0.06);border:1px solid rgba(251,146,60,0.15)"><div class="icon">🏆</div><div class="name" style="color:#FB923C">HALL OF FAME</div><div class="count" style="color:#94A3B8">Legends</div></div>
+<div class="zone" style="background:rgba(255,215,0,0.06);border:1px solid rgba(255,215,0,0.15)"><div class="icon">⚽</div><div class="name" style="color:#FFD93D">WORLD CUP</div><div class="count" style="color:#94A3B8">2026</div></div>
+</div>
+</div>
+
+<!-- MORAL FRAMEWORK -->
+<div class="section">
+<div class="section-title" style="background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2);color:#22C55E">⚖️ Moral Framework</div>
+<div class="moral-grid">
+<div class="moral"><div class="title" style="color:#FFB800">DESIRE</div><div class="desc">"I WANT to puff for the bonus"<br>+15% real puff bonus creates motivation</div></div>
+<div class="moral"><div class="title" style="color:#00E5FF">CHOICE</div><div class="desc">"But I don't HAVE to"<br>Tap gives full 100% base experience</div></div>
+<div class="moral"><div class="title" style="color:#22C55E">EXIT</div><div class="desc">"Dry puff holds my streak"<br>Graceful step-down, no loss</div></div>
+<div class="moral"><div class="title" style="color:#A78BFA">CAP</div><div class="desc">"Max +30%, stops at ×5"<br>No unlimited escalation ever</div></div>
+</div>
+<div style="text-align:center;margin-top:12px;padding:10px;border-radius:8px;background:rgba(34,197,94,0.04);border:1px solid rgba(34,197,94,0.1)">
+<div style="font-size:11px;font-weight:800;color:#22C55E">THE PRINCIPLE</div>
+<div style="font-size:10px;color:#94A3B8;margin-top:4px">We reward MOMENTS, not BEHAVIOR. 5 puffs in a game is a moment. 50 puffs in a session is a behavior.</div>
+</div>
+</div>
+
+<div class="footer">Mood Lab Arena System Bible v3.0 © 2026 — Mood Lab Tech × Cali Clear</div>
+</div>
+</body>
+</html>

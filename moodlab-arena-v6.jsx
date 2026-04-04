@@ -3085,16 +3085,10 @@ export default function MoodLabArena() {
   const walkBack = useCallback(() => { walkTo("hub"); }, [walkTo]);
 
   const startMatch = (game, mode) => {
-    if(!deviceActivated) { notify("Activate Arena by connecting a device first! \u{1F4A8}", C.orange); setShowBlePopup(true); return; }
-    if(!bleConnected) { notify("Playing at 70% rewards \u2014 connect device for 100%! \u{1F4A8}", C.cyan); }
-    setSelectedGame(null); // Clear game detail overlay
-    resolveInputForGame(game, (input) => {
-      setMatchmaking({game,mode,stage:"searching",input});
-      setTimeout(()=>{
-        setMatchmaking(p=>p?{...p,stage:"found",opp:mode==="ai"?"🤖 AI Bot":mode==="random"?"🎲 Player_847":"👫 Minh"}:null);
-        setTimeout(()=>{setMatchmaking(null);setGameActive({...game,activeInput:input});if(game.id==="wildwest")startDuel();if(game.id==="finalkick"||game.id==="finalkick2"||game.id==="finalkick3"){startKick(game.id);startMatchIntro(kickOpponent.current);}if(game.id==="balloon")startBalloonPop();if(game.id==="russian")startRussianRoulette();if(game.id==="puffpong")startPuffPong();if(game.id==="rhythm")startRhythmPuff();if(game.id==="tugofwar")startTugOfWar();if(game.id==="hotpotato")startHotPotato();if(game.id==="hooked")startHooked();if(game.id==="rps")startRps();if(game.id==="survivaltrivia")startSurvivalTrivia();if(game.id==="puffclock")startPuffClock();if(game.id==="beatdrop")startBeatDrop();if(game.id==="pufflimbo")startPuffLimbo();if(game.id==="puffderby")startPuffDerby();if(game.id==="higherlower")startHigherLower();if(game.id==="simonpuffs")startSimonPuffs();if(game.id==="puffauction")startPuffAuction();if(game.id==="vibecheck")vcStartGame();if(game.id==="pricepuff")startPriceIsPuff();if(game.id==="tankwar")setTwPhase("modeselect");if(game.id==="fishwar")setFwPhase("modeselect");},800);
-      },mode==="ai"?400:1200);
-    });
+    // V3 SHELL: Games disabled — show coming soon
+    notify("🚀 " + game.name + " — Coming in V3! Stay tuned 🎮", game.color || C.cyan);
+    playFx("select");
+    setSelectedGame(null);
   };
 
   // ── Wild West Duel — Full Game Engine ──
@@ -9632,6 +9626,11 @@ export default function MoodLabArena() {
       {q:"Puff Derby",ans:"Horse #3",result:"correct",coins:"+75",time:"5d ago"},
     ];
     const launchGame = (g) => {
+      // V3 SHELL: Fortune games disabled — show coming soon
+      notify("\uD83D\uDE80 " + g.name + " \u2014 Coming in V3! Stay tuned \uD83C\uDFB0", g.color || C.gold);
+      playFx("select");
+      return;
+      // --- Original code below (disabled for V3 shell) ---
       if(!deviceActivated) { notify("Activate Arena by connecting a device first! \u{1F4A8}", C.orange); setShowBlePopup(true); return; }
     if(!bleConnected) { notify("Playing at 70% rewards \u2014 connect device for 100%! \u{1F4A8}", C.cyan); }
       // Fortune cooldown: 30 seconds between same game
@@ -18032,7 +18031,7 @@ const startSimonPuffs = () => {
             {/* ═══ STAGE SHOW — ROLE SELECTION ═══ */}
             <div style={{width:"100%",maxWidth:320,display:"flex",flexDirection:"column",gap:8,marginBottom:16}}>
               <div style={{fontSize:10,fontWeight:800,color:C.gold,letterSpacing:2,textAlign:"center",marginBottom:4}}>CHOOSE YOUR ROLE</div>
-              <div onClick={()=>{playFx("select");setStageRole("contestant");setSelectedGame(null);const g=selectedGame;showMC("intro",{show:g.name});if(g.id==="vibecheck")vcStartGame();else if(g.id==="higherlower"){setGameActive({id:"higherlower",name:"Higher or Lower",emoji:"📊",color:C.cyan});startHigherLower();}else if(g.id==="survivaltrivia"){setGameActive({id:"survivaltrivia",name:"Survival Trivia",emoji:"🏆",color:C.purple});startSurvivalTrivia();}else if(g.id==="simonpuffs"){setGameActive({id:"simonpuffs",name:"Simon Puffs",emoji:"🔴",color:C.red});startSimonPuffs();}else if(g.id==="puffauction"){setGameActive({id:"puffauction",name:"Puff Auction",emoji:"🔨",color:C.lime});startPuffAuction();}else if(g.id==="pricepuff"){setGameActive({id:"pricepuff",name:"The Price is Puff",emoji:"💰",color:C.green});startPriceIsPuff();}}} style={{
+              <div onClick={()=>{playFx("select");notify("\uD83D\uDE80 " + (selectedGame?.name||"Show") + " \u2014 Coming in V3! \uD83C\uDFAA", C.gold);setSelectedGame(null);}} style={{
                 display:"flex",alignItems:"center",gap:12,padding:"14px 16px",borderRadius:14,cursor:"pointer",
                 background:`linear-gradient(135deg, ${C.gold}12, ${C.gold}05)`,border:`1px solid ${C.gold}25`,
               }}>
@@ -18043,7 +18042,7 @@ const startSimonPuffs = () => {
                 </div>
                 <div style={{fontSize:14,color:`${C.gold}60`}}>›</div>
               </div>
-              <div onClick={()=>{playFx("select");setStageRole("audience");setSelectedGame(null);const g=selectedGame;showMC("intro",{show:g.name});if(g.id==="vibecheck")vcStartGame();else if(g.id==="higherlower"){setGameActive({id:"higherlower",name:"Higher or Lower",emoji:"📊",color:C.cyan});startHigherLower();}else if(g.id==="survivaltrivia"){setGameActive({id:"survivaltrivia",name:"Survival Trivia",emoji:"🏆",color:C.purple});startSurvivalTrivia();}else if(g.id==="simonpuffs"){setGameActive({id:"simonpuffs",name:"Simon Puffs",emoji:"🔴",color:C.red});startSimonPuffs();}else if(g.id==="puffauction"){setGameActive({id:"puffauction",name:"Puff Auction",emoji:"🔨",color:C.lime});startPuffAuction();}else if(g.id==="pricepuff"){setGameActive({id:"pricepuff",name:"The Price is Puff",emoji:"💰",color:C.green});startPriceIsPuff();}}} style={{
+              <div onClick={()=>{playFx("select");notify("\uD83D\uDE80 Audience Mode \u2014 Coming in V3! \uD83C\uDFAA", C.cyan);setSelectedGame(null);}} style={{
                 display:"flex",alignItems:"center",gap:12,padding:"14px 16px",borderRadius:14,cursor:"pointer",
                 background:`${C.text3}06`,border:`1px solid ${C.text3}15`,
               }}>
