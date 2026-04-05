@@ -19,7 +19,7 @@ function LoadingSpinner() {
 }
 
 function AppShell() {
-  const { btPuffActive } = useArena()
+  const { btPuffActive, bleConnected, deviceActivated, connectBle, playFx } = useArena()
   return (
     <div style={{
       width: '100%', height: '100%',
@@ -27,7 +27,31 @@ function AppShell() {
       overflow: 'hidden', display: 'flex', flexDirection: 'column',
     }}>
       <CoinHeader />
-      <div style={{ flex: 1, overflow: 'hidden', marginTop: 70 }}>
+
+      {/* Connect warning bar — fixed just below CoinHeader */}
+      {!bleConnected && (
+        <div
+          onClick={() => { playFx('tap'); connectBle() }}
+          style={{
+            position: 'fixed', top: 70, left: '50%', transform: 'translateX(-50%)',
+            width: '100%', maxWidth: 430, zIndex: 99,
+            padding: '6px 14px', cursor: 'pointer',
+            background: deviceActivated
+              ? `linear-gradient(90deg, ${C.orange}15, ${C.gold}10)`
+              : `linear-gradient(90deg, ${C.red}12, ${C.orange}08)`,
+            borderBottom: `1px solid ${deviceActivated ? C.orange : C.red}20`,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+          }}
+        >
+          <div style={{ width: 5, height: 5, borderRadius: '50%', background: deviceActivated ? C.orange : C.red, animation: 'pulse 1.5s infinite' }} />
+          <span style={{ fontSize: 10, fontWeight: 700, color: deviceActivated ? C.orange : C.red }}>
+            {deviceActivated ? 'Connect for Full Experience & Rewards' : 'Connect Device to Activate Arena'}
+          </span>
+          <span style={{ fontSize: 9, color: C.text3 }}>Tap to pair 💨</span>
+        </div>
+      )}
+
+      <div style={{ flex: 1, overflow: 'hidden', marginTop: bleConnected ? 70 : 100 }}>
         <Suspense fallback={<LoadingSpinner />}>
           <Outlet />
         </Suspense>

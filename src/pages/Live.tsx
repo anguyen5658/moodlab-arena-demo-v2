@@ -149,7 +149,7 @@ export default function Live() {
   }
 
   return (
-    <div style={{ position: 'relative', minHeight: '100%', overflowY: 'auto', paddingBottom: 80 }}>
+    <div style={{ position: 'relative', height: '100%', overflowY: 'auto', paddingBottom: 80 }}>
       {/* Atmospheric background */}
       <div style={{ position: 'absolute', inset: 0, zIndex: 0, overflow: 'hidden', pointerEvents: 'none' }}>
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, #0a0515 0%, #050510 30%, #0c0820 60%, #050510 100%)' }} />

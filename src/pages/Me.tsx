@@ -95,7 +95,7 @@ export default function Me() {
   })
 
   return (
-    <div style={{ padding: '0 14px', position: 'relative', overflowY: 'auto', paddingBottom: 80 }}>
+    <div style={{ padding: '0 14px', position: 'relative', height: '100%', overflowY: 'auto', paddingBottom: 80 }}>
       {/* Atmospheric background */}
       <div style={{ position: 'absolute', inset: 0, zIndex: 0, overflow: 'hidden', pointerEvents: 'none' }}>
         <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(180deg, ${tier.color}08 0%, #050510 25%, #080818 50%, ${C.purple}05 80%, #050510 100%)` }} />
