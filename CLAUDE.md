@@ -4,115 +4,130 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**Mood Lab Arena** — an interactive gaming arena web app with 30+ mini-games, live spectator features, and a coin/XP progression system. It is a single-page application delivered without any build tooling.
+**Mood Lab Arena** — an interactive gaming arena web app built with Vite + React 18 + TypeScript + React Router 7. It has 30+ mini-games, BLE device integration, live spectator features, and a coin/XP progression system. The viewport is fixed at 430 px on desktop and 100% on mobile.
 
-## Running the App
+The legacy single-file monolith (`moodlab-arena-v6.jsx`) still exists in the root as a reference — do not edit it.
 
-No build step required. Open `index.html` directly in a browser, or serve it with any static file server:
+## Commands
 
 ```bash
-# Python
-python3 -m http.server 8080
-
-# Node
-npx serve .
+npm run dev          # start dev server (exposed on all interfaces via --host)
+npm run build        # tsc -b && vite build
+npm run typecheck    # tsc --noEmit — run this before committing
+npm run preview      # preview production build
 ```
 
-The browser loads React 18, ReactDOM, Three.js, and Babel Standalone from CDN, then transpiles `moodlab-arena-v6.jsx` on the fly.
+No test runner is configured.
 
 ## Architecture
 
-### Single-file monolith
+### App shell (`src/App.tsx`)
 
-The entire application lives in `moodlab-arena-v6.jsx` (~21 000 lines). There is no component splitting across files, no routing library, and no state management library.
+`App` renders `<ArenaProvider><AppShell /></ArenaProvider>`. `AppShell` (inner component) owns the shared UI: `CoinHeader`, the BLE connect warning bar, the `<Outlet />` for routes, `NavBar`, and the BLE puff top-glow overlay. The connect bar is scoped to zone list paths only via `useLocation()`.
 
-### Navigation state machine
+### Routing (`src/router/index.tsx`)
 
-Navigation is driven by a handful of `useState` values at the top of `MoodLabArena`:
+React Router 7 `createBrowserRouter`. Zone index pages are eagerly imported; all game components are `React.lazy()`. Route structure:
 
-| State | Values | Meaning |
-|---|---|---|
-| `tab` | `"arena"` / `"live"` / `"me"` | Top-level tab |
-| `zone` | `null` / `"arcade"` / `"stage"` / `"oracle"` / `"wall"` / `"worldcup"` | Current zone (null = Hub) |
-| `selectedGame` | game ID string | Which game card was tapped |
-| `gameActive` | boolean | Whether the game is running |
-
-The render function is a large conditional tree: `tab → zone → selectedGame/gameActive`.
-
-### Zones
-
-- **Arcade** (cyan `#00E5FF`) — 16 skill-based games (Final Kick, Puff Pong, Balloon Pop, etc.)
-- **Stage** (gold `#FFD93D`) — 6 live show formats (Vibe Check, Price is Puff, Simon Puffs, etc.)
-- **Oracle** (gold) — Prediction / fortune games (Slots, Blackjack, Crystal Ball, etc.)
-- **Wall** (orange `#FB923C`) — Leaderboards and Champions Podium
-- **World Cup 2026** (gold) — Sports prediction hub
-
-### Core input pattern: "Puff"
-
-Most games share a universal puff action bar. The player holds a button; duration maps to a sweet spot zone (TAP → SHORT → GOOD → PERFECT → BLINKER). Each round randomises the sweet spot position and multiplier.
-
-### Sound
-
-All audio is synthesised via Web Audio API at runtime — no external audio files are required for game sounds (though `assets/arena/laugh.m4a`, `win.m4a`, `lose.m4a` exist for ambient effects).
-
-### 3D rendering
-
-Final Kick 3D uses Three.js (loaded from CDN). The canvas is mounted/unmounted with `useEffect` tied to `gameActive`.
-
-### Styling
-
-Inline React styles throughout. No CSS files, no CSS modules. Glass-morphism design language with a dark base and cyan/gold/orange/purple accent palette. The viewport is fixed at 430 px width on desktop and 100% on mobile.
-
-## Key patterns to follow when editing
-
-- **All code stays in `moodlab-arena-v6.jsx`** — do not split into separate files.
-- Each game is self-contained: it owns its `useState` hooks, phase logic (`intro → playing → result`), scoring, and render subtree.
-- Adding a new game means: add a card to the zone's game list, add state hooks near the top of `MoodLabArena`, and add a render block inside the `zone === "<zone>"` conditional.
-- `coins` and `xp` are global currency; award them at the end of a game's result phase.
-- The live spectator ticker (`liveSpectators`, `floatingReactions`, `crowdEnergy`) is zone-agnostic and can be referenced from any zone.
-
-## Bluetooth Low Energy (BLE) integration
-
-The app connects to a Cali Clear vaporizer via Web Bluetooth API. Physical puffs replace the on-screen "HOLD TO PUFF" button.
-
-### Device protocol
-
-| Property | UUID |
-|---|---|
-| Service | `0000ffe0-0000-1000-8000-00805f9b34fb` |
-| Notify characteristic | `0000ffe6-0000-1000-8000-00805f9b34fb` |
-| Write characteristic | `0000ffe5-0000-1000-8000-00805f9b34fb` (reserved, unused) |
-
-Packets: `b4 b4 02 00 04 4b` = puff start, `b4 b5 02 00 05 4b` = puff stop.
-
-### Key state and refs (top of `MoodLabArena`)
-
-| Name | Type | Purpose |
-|---|---|---|
-| `btPuffActive` | state | drives the top glow overlay |
-| `btDeviceRef` | ref | `BluetoothDevice` handle for disconnect |
-| `btCharNotify` | ref | notify characteristic handle |
-| `btPuffDown` / `btPuffUp` | refs | active game's puff start/stop handlers |
-| `btPuffEventDown` / `btPuffEventUp` | refs | Puff Events system handlers (always wired) |
-| `btPuffTimeout` | ref | 15 s safety timer — stops puff if `PUFF_STOP` is never received |
-
-### Stale closure solution
-
-The `characteristicvaluechanged` listener is registered once at connect time. To avoid stale closures, a **per-render IIFE** (search for `Keep BT puff refs in sync`) writes the current game's handler closures into `btPuffDown`/`btPuffUp` refs on every render. The listener always reads from these refs, never from closed-over values.
-
-### Adding BLE support to a new game
-
-Find the IIFE block (search `Keep BT puff refs in sync`) and add a branch:
-
-```js
-else if (id === "mygame") { down = myGamePuffStart; up = myGamePuffStop; }
+```
+/                  → Hub
+/zone/:zoneId      → ZoneFocus (kiosk card from Hub)
+/arcade            → ArcadeZone
+/arcade/:game      → individual game (finalkick, finalkick2, finalkick3, wildwest, balloon, puffpong, hotpotato, rhythm, tugofwar, hooked, rps, beatdrop, puffclock, pufflimbo, puffderby, simonpuffs, spectator, pinball, russian)
+/stage             → StageZone
+/stage/:game       → vibecheck, higherlower, pricepuff, survivaltrivia, simonpuffs, puffauction, spinwin
+/fortune           → FortuneZone
+/fortune/:game     → crystalball, strainbattle, matchpredictor, dailypicks, puffslots, puffblackjack, coinflip, crapsnclouds, mysterybox, scratchpuff, fortunecookie, treasuremap
+/wall              → Wall
+/worldcup          → WorldCup
+/live              → Live
+/me                → Me
 ```
 
-- Hold-based game: provide both `down` and `up`.
-- Tap-based game: provide only `down`, set `up = null`.
+### Global state (`src/context/ArenaContext.tsx`)
 
-See `Doc/BLE-Implementation.md` for the full list of wired games and remaining TODO items. The reusable hook lives in `ble/` (`bleUtils.js`, `useBleDevice.js`, `useBleArena.js`).
+Single `ArenaProvider` wraps the entire app. Exposes `useArena()`. Key fields:
+
+| Category | Key exports |
+|---|---|
+| Currency | `coins`, `xp`, `awardGame({ won, baseCoins, baseXP })`, `getCoinMultiplier()` |
+| Loyalty | `dailyStreak`, `claimDaily()`, `completeChallenge(id)`, `earnBadge(id)`, `buyShopItem(item)` |
+| BLE | `bleConnected`, `btPuffActive`, `connectBle()`, `registerPuffHandlers(down, up)` |
+| Audio | `playFx(type)`, `playAudio(src, vol)`, `audioOn` |
+| Overlays | `showFloatingReward(coins, xp)`, `notify(msg, color)` |
+
+`FloatingReward` and `AchievementPopup` are rendered once inside the provider, above all routes.
+
+### BLE integration (`src/hooks/useBle.ts`)
+
+Connects to a Cali Clear vaporizer via Web Bluetooth. The `characteristicvaluechanged` listener is registered once at connect time and reads from `btPuffDown` / `btPuffUp` refs. To avoid stale closures, each game registers its handlers via `registerPuffHandlers` in a `useEffect`.
+
+**Adding BLE to a game:**
+```tsx
+useEffect(() => {
+  registerPuffHandlers(handlePuffDown, handlePuffUp)
+  return () => registerPuffHandlers(null, null)
+}, [registerPuffHandlers, handlePuffDown, handlePuffUp])
+```
+
+BLE device protocol:
+- Service: `0000ffe0-0000-1000-8000-00805f9b34fb`
+- Notify char: `0000ffe6-0000-1000-8000-00805f9b34fb`
+- Puff start packet: `b4 b4 02 00 04 4b` / stop: `b4 b5 02 00 05 4b`
+
+### Audio (`src/hooks/useAudio.ts`)
+
+`playFx(type)` dispatches to either:
+- **Audio files** (`win`, `lose`, `laugh`) — played via `new Audio()` from `assets/arena/`
+- **Synthesized tones** — all other fx types generated via Web Audio API oscillators
+
+Use file-backed fx only at game-over (once, guarded by a `useRef` flag). Use synthesized fx for per-round events.
+
+### Design tokens (`src/constants/theme.ts`)
+
+All colors are on `C` (e.g. `C.cyan`, `C.gold`, `C.text`, `C.border`). Glass-morphism presets: `GLASS_CLEAR`, `GLASS_CARD`, `LG.base`, `LG.thick`, `LG.pill`, `LG.tinted(color)`. All styling is inline React styles — no CSS modules.
+
+Zone themes (name, primary color, sub-text) are on `Z[zoneId]` from `src/constants/arena.ts`.
+
+### Game component pattern
+
+Each game lives in `src/zones/<Zone>/games/<GameName>.tsx` and follows this structure:
+
+```tsx
+export default function SomeGame() {
+  const navigate = useNavigate()
+  const { playFx, registerPuffHandlers, awardGame } = useArena()
+
+  const [phase, setPhase] = useState<'intro' | 'playing' | 'result'>('intro')
+  // Mirror mutable state in refs to avoid stale closures in BLE/timer callbacks
+  const phaseRef = useRef(phase)
+  useEffect(() => { phaseRef.current = phase }, [phase])
+
+  const handlePuffDown = useCallback(() => { /* ... */ }, [...deps])
+  const handlePuffUp   = useCallback(() => { /* ... */ }, [...deps])
+
+  useEffect(() => {
+    registerPuffHandlers(handlePuffDown, handlePuffUp)
+    return () => registerPuffHandlers(null, null)
+  }, [registerPuffHandlers, handlePuffDown, handlePuffUp])
+
+  // At game end:
+  awardGame({ won, baseCoins, baseXP })
+  // Then navigate back: navigate('/arcade')
+}
+```
+
+Games take over the full screen (`position: fixed, inset: 0, zIndex: 100`) and provide their own back button navigating to their zone.
+
+### Shared components
+
+- `ZoneHeader` — back button + zone tagline + zone name title (reads `Z[zoneId]`)
+- `PuffActionBar` — universal hold-to-puff meter UI with sweet spot zones
+- `CoinHeader` — top bar showing coins + XP (always visible)
+- `NavBar` — bottom tab nav (Hub / Arcade / Stage / Fortune / Wall)
+- `GameCard` — card used in zone game grids
+- `GameDetailSheet` — bottom sheet shown before launching a game
 
 ## Assets
 
-Static media lives in `assets/arena/`. Each zone has a matching `.png` (thumbnail) and `.mp4` (background video).
+Static media in `public/assets/arena/`. Each zone has a `.png` thumbnail and `.mp4` background video. URL paths are relative: `assets/arena/<file>`.
