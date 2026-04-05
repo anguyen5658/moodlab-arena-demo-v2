@@ -1,4 +1,4 @@
-import { Outlet } from 'react-router'
+import { Outlet, useLocation } from 'react-router'
 import { Suspense } from 'react'
 import { ArenaProvider } from '@/context/ArenaContext'
 import { NavBar } from '@/components/NavBar'
@@ -18,8 +18,12 @@ function LoadingSpinner() {
   )
 }
 
+const ZONE_LIST_PATHS = ['/arcade', '/stage', '/fortune', '/wall', '/worldcup', '/live', '/me']
+
 function AppShell() {
   const { btPuffActive, bleConnected, deviceActivated, connectBle, playFx } = useArena()
+  const { pathname } = useLocation()
+  const showConnectBar = !bleConnected && ZONE_LIST_PATHS.includes(pathname)
   return (
     <div style={{
       width: '100%', height: '100%',
@@ -28,8 +32,8 @@ function AppShell() {
     }}>
       <CoinHeader />
 
-      {/* Connect warning bar — fixed just below CoinHeader */}
-      {!bleConnected && (
+      {/* Connect warning bar — fixed just below CoinHeader, only on zone list pages */}
+      {showConnectBar && (
         <div
           onClick={() => { playFx('tap'); connectBle() }}
           style={{
@@ -51,7 +55,7 @@ function AppShell() {
         </div>
       )}
 
-      <div style={{ flex: 1, overflow: 'hidden', marginTop: bleConnected ? 70 : 100 }}>
+      <div style={{ flex: 1, overflow: 'hidden', marginTop: showConnectBar ? 100 : 70 }}>
         <Suspense fallback={<LoadingSpinner />}>
           <Outlet />
         </Suspense>

@@ -5,11 +5,11 @@ import { C, GLASS_CARD, GLASS_CLEAR } from '@/constants'
 import { ARENA_IMAGES, ARENA_VIDEOS } from '@/constants/arena'
 
 const HUB_TAP_ZONES = [
-  { key: 'arcade',   top: '38%', left: '0%',    right: undefined, width: '18%', height: '24%' },
-  { key: 'stage',    top: '38%', left: undefined, right: '0%',    width: '19%', height: '24%' },
-  { key: 'wall',     top: '42%', left: '18%',   right: undefined, width: '16%', height: '18%' },
-  { key: 'oracle',   top: '40%', left: undefined, right: '16%',  width: '16%', height: '18%' },
-  { key: 'worldcup', top: '42%', left: '28%',   right: undefined, width: '28%', height: '22%' },
+  { key: 'arcade',   top: '44%', left: '0%',    right: undefined, width: '21%', height: '24%' },
+  { key: 'stage',    top: '44%', left: undefined, right: '0%',    width: '22%', height: '24%' },
+  { key: 'wall',     top: '48%', left: '23%',   right: undefined, width: '14%', height: '18%' },
+  { key: 'oracle',   top: '48%', left: undefined, right: '22%',  width: '16%', height: '18%' },
+  { key: 'worldcup', top: '44%', left: '39%',   right: undefined, width: '22%', height: '22%' },
 ]
 
 export default function Hub() {

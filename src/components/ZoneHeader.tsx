@@ -31,7 +31,7 @@ export function ZoneHeader({ zoneId, onBack }: ZoneHeaderProps) {
 
   return (
     <div style={{ padding: '0 14px', marginBottom: 8 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 6 }}>
         <div
           onClick={handleBack}
           style={{ display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'pointer', padding: '6px 12px', borderRadius: 8, background: `${C.text3}06`, border: `1px solid ${C.border}`, flexShrink: 0 }}
@@ -43,6 +43,11 @@ export function ZoneHeader({ zoneId, onBack }: ZoneHeaderProps) {
           {TAGLINES[zoneId] ?? theme?.sub ?? zoneId.toUpperCase()}
         </div>
       </div>
+      {theme?.name && (
+        <div style={{ fontSize: 28, fontWeight: 900, color: C.text, letterSpacing: -0.5, textShadow: `0 0 30px ${theme.primary}40` }}>
+          {theme.name}
+        </div>
+      )}
     </div>
   )
 }
