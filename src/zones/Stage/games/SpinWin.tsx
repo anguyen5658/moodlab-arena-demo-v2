@@ -85,13 +85,13 @@ export default function SpinWin() {
 
       if (seg.label === 'BUST') {
         setCommentary(`💀 BUST! -${Math.abs(actualValue)} coins!`)
-        playFx('lose')
+        playFx('error')
       } else if (seg.label === 'JACKPOT') {
         setCommentary(`👑 JACKPOT! +${actualValue} coins!`)
         playFx('crowd')
       } else {
         setCommentary(`${seg.emoji} +${actualValue} coins!`)
-        playFx('win')
+        playFx('coin')
       }
 
       const maxSpins = isBonusActive ? 1 : 3

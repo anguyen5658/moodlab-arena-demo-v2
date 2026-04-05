@@ -101,7 +101,7 @@ export default function HigherLower() {
           } else {
             setStreak(0); streakRef.current = 0
             setCommentary(`WRONG! It was ${actual.toUpperCase()}`)
-            playFx('lose')
+            playFx('error')
             setPhase('wrong'); phaseRef.current = 'wrong'
           }
           setTimeout(() => {

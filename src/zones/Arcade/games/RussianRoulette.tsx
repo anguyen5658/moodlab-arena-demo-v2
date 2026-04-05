@@ -142,7 +142,7 @@ export default function RussianRoulette() {
       }, 2500)
     } else if (isLoaded && dodged) {
       setDodgeResult('dodged'); setPhase('click'); phaseRef.current = 'click'
-      setComment(pick(RR_COMMENTS.dodge)); playFx('win'); triggerFlash('save')
+      setComment(pick(RR_COMMENTS.dodge)); playFx('success'); triggerFlash('save')
       const up = ps.map((p,i) => i===idx ? {...p,dodges:p.dodges+1,survived:p.survived+1} : p)
       setPlayers(up); playersRef.current = up
       setTimeout(() => {

@@ -87,7 +87,7 @@ export default function PuffAuction() {
         if (bidInterval.current) { clearInterval(bidInterval.current); bidInterval.current = null }
         setDisqualified(true); disqualifiedRef.current = true
         setCommentary('OVERBID! Disqualified this round! 💀')
-        playFx('lose')
+        playFx('error')
         // Auto reveal
         setTimeout(() => revealRound(MAX_BID + 1, true), 1000)
       }
@@ -116,11 +116,11 @@ export default function PuffAuction() {
       playFx('crowd')
     } else if (isDisq) {
       setCommentary(`💀 Overbid! You lose this round.`)
-      playFx('lose')
+      playFx('error')
     } else {
       const winner = validBids[0]
       setCommentary(winner ? `${winner.name} wins with bid ${winner.bid}!` : 'Nobody won! All overbid!')
-      playFx('lose')
+      playFx('error')
     }
 
     const newResult = { prize, playerBid: isDisq ? -1 : playerBid, won: playerWon }

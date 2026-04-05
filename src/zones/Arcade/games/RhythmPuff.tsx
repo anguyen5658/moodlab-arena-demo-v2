@@ -141,7 +141,7 @@ export default function RhythmPuff() {
   const rpBlinkerPuff = useCallback(() => {
     if (blinker) return
     setBlinker(true)
-    setComment(pick(RP_COMEDY.blinker)); triggerFlash('blinker'); playFx('win')
+    setComment(pick(RP_COMEDY.blinker)); triggerFlash('blinker'); playFx('perfect')
     setNotes(ns => {
       const unhit = ns.filter(n => !n.hit)
       if (unhit.length === 0) return ns

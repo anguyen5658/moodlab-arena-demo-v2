@@ -105,7 +105,7 @@ export default function PricePuff() {
       playFx('crowd')
     } else if (playerOver) {
       msg = `TOO HIGH! Guessed $${finalGuess} — real price $${realPrice} 📈`
-      playFx('lose')
+      playFx('error')
     } else if (diff <= 5) {
       roundCoins = 30; msg = `SO CLOSE! $${finalGuess} vs $${realPrice} 🎯`
       playFx('crowd')
@@ -114,7 +114,7 @@ export default function PricePuff() {
       playFx('select')
     } else {
       msg = `Off by $${diff}. Real price: $${realPrice}`
-      playFx('lose')
+      playFx('error')
     }
     setCommentary(msg)
 

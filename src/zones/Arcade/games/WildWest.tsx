@@ -132,7 +132,7 @@ export default function WildWest() {
             duelDrawTime.current = null
             setFiredShot(true); setMuzzleFlash('right')
             setTimeout(() => setMuzzleFlash(null), 500)
-            playFx('lose')
+            playFx('error')
             handleDuelRoundEnd(false, false, timeoutResult, roundNum, currentScore, currentResults)
           }
         }, 5000)
@@ -182,8 +182,8 @@ export default function WildWest() {
       const times = [...s.drawTimes, reactionMs]
       return { ...s, fastestDraw:Math.min(s.fastestDraw,reactionMs), avgDraw:Math.round(times.reduce((a,b)=>a+b,0)/times.length), drawTimes:times }
     })
-    if (win) { playFx('win'); playFx('crowd'); triggerFlash('goal'); if (bonusCoins > 0) setCoins((c: number) => c + bonusCoins) }
-    else { playFx('lose'); triggerFlash('miss') }
+    if (win) { playFx('goal'); playFx('crowd'); triggerFlash('goal'); if (bonusCoins > 0) setCoins((c: number) => c + bonusCoins) }
+    else { playFx('error'); triggerFlash('miss') }
     handleDuelRoundEnd(win, false, res, roundRef.current, scoreRef.current, resultsRef.current)
   }, [playFx, getAiDrawSpeed, triggerFlash, setCoins, handleDuelRoundEnd])
 

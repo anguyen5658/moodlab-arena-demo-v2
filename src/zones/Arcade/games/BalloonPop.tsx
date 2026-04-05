@@ -100,7 +100,6 @@ export default function BalloonPop() {
       setPhaseSync('popped')
       setComment(pick(BP_COMMENTS.pop))
       playFx('balloon_pop')
-      playFx('lose')
       triggerShake()
       triggerFlash('miss')
       playFx('crowd')
