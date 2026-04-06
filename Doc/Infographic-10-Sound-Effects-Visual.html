@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mood Lab Arena — Sound, Effects & Visual System · Infographic 10</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+  :root {
+    --bg: #0a0a0f;
+    --card-bg: #12121a;
+    --card-border: #1e1e2e;
+    --text: #e2e2e8;
+    --text-dim: #8888a0;
+    --text-bright: #ffffff;
+    --cyan: #00d4ff;
+    --gold: #ffd700;
+    --purple: #a855f7;
+    --orange: #ff8c00;
+    --red: #ef4444;
+    --pink: #f472b6;
+    --green: #22c55e;
+    --blue: #3b82f6;
+    --violet: #7c3aed;
+    --magenta: #e040a0;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, sans-serif;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+
+  .page {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 40px 24px 60px;
+  }
+
+  /* ── Header ── */
+  .header {
+    text-align: center;
+    margin-bottom: 48px;
+    position: relative;
+  }
+  .header::after {
+    content: '';
+    display: block;
+    width: 160px;
+    height: 3px;
+    background: linear-gradient(90deg, var(--purple), var(--pink), var(--magenta));
+    margin: 20px auto 0;
+    border-radius: 2px;
+  }
+  .header h1 {
+    font-size: clamp(26px, 4vw, 42px);
+    font-weight: 900;
+    letter-spacing: -1px;
+    background: linear-gradient(135deg, #fff 0%, #c0a0e0 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .header .subtitle {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-dim);
+    margin-top: 6px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+
+  /* ── Section Titles ── */
+  .section-title {
+    font-size: clamp(20px, 3vw, 28px);
+    font-weight: 800;
+    margin: 56px 0 24px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .section-title .icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 20px;
+    transition: border-color 0.3s;
+  }
+  .card:hover { border-color: #3a3a5a; }
+  .card h3 {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 14px;
+    color: var(--text-bright);
+  }
+  .card p, .card li {
+    font-size: 14px;
+    color: var(--text-dim);
+    line-height: 1.7;
+  }
+
+  /* ── Hero Banner ── */
+  .hero-banner {
+    background: linear-gradient(135deg, #1a0a2e 0%, #0d0d1a 40%, #1a0520 100%);
+    border: 1px solid #2a1a4a;
+    border-radius: 20px;
+    padding: 40px 32px;
+    margin-bottom: 32px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-banner::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at 30% 40%, rgba(168, 85, 247, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 70% 60%, rgba(224, 64, 160, 0.06) 0%, transparent 50%);
+    pointer-events: none;
+  }
+  .hero-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 20px;
+    position: relative;
+    z-index: 1;
+  }
+  .hero-stat {
+    text-align: center;
+  }
+  .hero-stat .number {
+    font-size: clamp(28px, 4vw, 40px);
+    font-weight: 900;
+    background: linear-gradient(135deg, var(--purple), var(--pink));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero-stat .label {
+    font-size: 12px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 4px;
+  }
+
+  /* ── Waveform Visualizer ── */
+  .waveform-container {
+    background: #0d0d18;
+    border-radius: 12px;
+    padding: 24px;
+    margin: 16px 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .waveform-svg {
+    width: 100%;
+    height: 80px;
+    display: block;
+  }
+  .waveform-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 8px;
+  }
+
+  /* ── Audio Node Pipeline ── */
+  .pipeline {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 20px 0;
+  }
+  .pipeline-node {
+    background: linear-gradient(135deg, #1a1030, #12121a);
+    border: 1px solid var(--purple);
+    border-radius: 10px;
+    padding: 12px 18px;
+    text-align: center;
+    min-width: 130px;
+    position: relative;
+  }
+  .pipeline-node .node-name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--purple);
+    font-weight: 600;
+  }
+  .pipeline-node .node-desc {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 4px;
+  }
+  .pipeline-arrow {
+    font-size: 20px;
+    color: var(--purple);
+    padding: 0 8px;
+    flex-shrink: 0;
+  }
+
+  /* ── Sound Category Grid ── */
+  .sound-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 16px;
+  }
+  .sound-cat {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    padding: 20px 24px;
+    transition: border-color 0.3s;
+  }
+  .sound-cat:hover { border-color: #3a3a5a; }
+  .sound-cat-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .sound-cat-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+  .sound-cat-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-bright);
+  }
+  .sound-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .sound-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 6px;
+    background: rgba(168, 85, 247, 0.1);
+    color: var(--purple);
+    border: 1px solid rgba(168, 85, 247, 0.2);
+  }
+
+  /* ── Audio Files Table ── */
+  .audio-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+  }
+  .audio-table th {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+    text-align: left;
+    padding: 8px 16px;
+    border-bottom: 1px solid var(--card-border);
+  }
+  .audio-table td {
+    font-size: 14px;
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(30, 30, 46, 0.5);
+  }
+  .audio-table tr:last-child td { border-bottom: none; }
+  .file-name {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--pink);
+    font-weight: 500;
+  }
+  .file-size {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--cyan);
+    font-size: 13px;
+  }
+
+  /* ── Visual Effects Grid ── */
+  .vfx-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 20px;
+  }
+  .vfx-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: border-color 0.3s, transform 0.2s;
+  }
+  .vfx-card:hover {
+    border-color: #3a3a5a;
+    transform: translateY(-2px);
+  }
+  .vfx-preview {
+    height: 120px;
+    position: relative;
+    overflow: hidden;
+  }
+  .vfx-card-body {
+    padding: 20px 24px;
+  }
+  .vfx-card-body h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-bright);
+    margin-bottom: 4px;
+  }
+  .vfx-card-body .vfx-fn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--purple);
+    margin-bottom: 10px;
+  }
+  .vfx-card-body p {
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.6;
+  }
+  .vfx-meta {
+    display: flex;
+    gap: 12px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+  }
+  .vfx-meta-tag {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 6px;
+    background: rgba(124, 58, 237, 0.1);
+    color: var(--violet);
+    border: 1px solid rgba(124, 58, 237, 0.2);
+  }
+
+  /* ── VFX Preview Animations ── */
+  /* Shake */
+  .preview-shake {
+    background: linear-gradient(135deg, #1a0a0a, #0d0d1a);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .shake-box {
+    width: 80px; height: 60px;
+    border: 2px solid var(--red);
+    border-radius: 8px;
+    background: rgba(239, 68, 68, 0.1);
+    animation: shakeAnim 0.4s infinite;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px;
+  }
+  @keyframes shakeAnim {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    25% { transform: translate(-4px, 2px) rotate(-1deg); }
+    50% { transform: translate(3px, -2px) rotate(1deg); }
+    75% { transform: translate(-2px, 3px) rotate(-0.5deg); }
+  }
+
+  /* Flash */
+  .preview-flash {
+    background: #0d0d1a;
+    display: flex; align-items: center; justify-content: center; gap: 16px;
+  }
+  .flash-circle {
+    width: 40px; height: 40px; border-radius: 50%;
+    animation: flashPulse 2s infinite;
+  }
+  .flash-green { background: var(--green); animation-delay: 0s; }
+  .flash-yellow { background: var(--gold); animation-delay: 0.4s; }
+  .flash-red { background: var(--red); animation-delay: 0.8s; }
+  @keyframes flashPulse {
+    0%, 100% { opacity: 0.15; transform: scale(0.8); }
+    50% { opacity: 1; transform: scale(1.3); box-shadow: 0 0 30px currentColor; }
+  }
+
+  /* Confetti */
+  .preview-confetti {
+    background: linear-gradient(180deg, #0d0d1a, #10101f);
+    position: relative;
+  }
+  .confetti-piece {
+    position: absolute;
+    width: 8px; height: 8px;
+    border-radius: 2px;
+    animation: confettiFall 2.5s linear infinite;
+  }
+  @keyframes confettiFall {
+    0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(140px) rotate(720deg); opacity: 0; }
+  }
+
+  /* Smoke */
+  .preview-smoke {
+    background: linear-gradient(180deg, #0d0d1a, #101018);
+    display: flex; align-items: flex-end; justify-content: center;
+    padding-bottom: 10px;
+  }
+  .smoke-puff {
+    width: 30px; height: 30px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(200,200,220,0.3), transparent);
+    animation: smokeRise 2.5s ease-out infinite;
+    position: absolute;
+  }
+  @keyframes smokeRise {
+    0% { transform: translateY(0) scale(0.5); opacity: 0.6; }
+    100% { transform: translateY(-100px) scale(2.5); opacity: 0; }
+  }
+
+  /* Bubbles */
+  .preview-bubbles {
+    background: linear-gradient(180deg, #0a0a1a, #0d1020);
+    position: relative;
+  }
+  .bubble {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    background: rgba(0, 212, 255, 0.05);
+    animation: bubbleRise 3s ease-out infinite;
+  }
+  @keyframes bubbleRise {
+    0% { transform: translateY(0) scale(1); opacity: 0.7; }
+    100% { transform: translateY(-130px) translateX(10px) scale(0.3); opacity: 0; }
+  }
+
+  /* Audience Emoji */
+  .preview-audience {
+    background: linear-gradient(180deg, #0a0a1a, #0d1020);
+    position: relative; overflow: hidden;
+  }
+  .audience-emoji {
+    position: absolute;
+    font-size: 20px;
+    animation: emojiFloat 3s ease-out infinite;
+  }
+  @keyframes emojiFloat {
+    0% { transform: translateY(0); opacity: 1; }
+    100% { transform: translateY(-120px); opacity: 0; }
+  }
+
+  /* Wave */
+  .preview-wave {
+    background: #0d0d1a;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .wave-ring {
+    position: absolute;
+    border-radius: 50%;
+    border: 2px solid var(--cyan);
+    animation: waveExpand 2s ease-out infinite;
+  }
+  @keyframes waveExpand {
+    0% { width: 10px; height: 10px; opacity: 1; }
+    100% { width: 160px; height: 160px; opacity: 0; }
+  }
+
+  /* Match Intro */
+  .preview-intro {
+    background: linear-gradient(135deg, #0d0a1f, #1a0a2e);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .intro-text {
+    font-weight: 900;
+    font-size: 28px;
+    animation: introFlash 3s ease-in-out infinite;
+    background: linear-gradient(135deg, var(--gold), var(--orange));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  @keyframes introFlash {
+    0%, 100% { opacity: 0; transform: scale(0.5); }
+    20%, 80% { opacity: 1; transform: scale(1); }
+  }
+
+  /* Dim Lights */
+  .preview-dim {
+    background: #0d0d1a;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .dim-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    animation: dimPulse 3s ease-in-out infinite;
+  }
+  .dim-meter {
+    width: 6px; height: 50px;
+    background: linear-gradient(0deg, var(--green), var(--gold), var(--red));
+    border-radius: 3px;
+    z-index: 2;
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+    animation: meterGrow 3s ease-in-out infinite;
+  }
+  @keyframes dimPulse {
+    0%, 100% { opacity: 0; }
+    30%, 70% { opacity: 1; }
+  }
+  @keyframes meterGrow {
+    0%, 100% { height: 20px; }
+    50% { height: 60px; }
+  }
+
+  /* CSS Anims */
+  .preview-css {
+    background: linear-gradient(135deg, #0d0a1f, #0d0d1a);
+    display: flex; align-items: center; justify-content: center; gap: 20px;
+  }
+  .css-dot {
+    width: 14px; height: 14px; border-radius: 50%;
+  }
+  .css-dot:nth-child(1) { background: var(--cyan); animation: bounce 1s ease infinite; }
+  .css-dot:nth-child(2) { background: var(--purple); animation: bounce 1s ease infinite 0.15s; }
+  .css-dot:nth-child(3) { background: var(--pink); animation: bounce 1s ease infinite 0.3s; }
+  .css-dot:nth-child(4) { background: var(--gold); animation: bounce 1s ease infinite 0.45s; }
+  .css-dot:nth-child(5) { background: var(--green); animation: bounce 1s ease infinite 0.6s; }
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-24px); }
+  }
+
+  /* ── Envelope Diagram ── */
+  .envelope-container {
+    background: #0d0d18;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 16px 0;
+  }
+  .envelope-svg {
+    width: 100%;
+    height: 100px;
+  }
+
+  /* ── Keyframes List ── */
+  .kf-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .kf-item {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    background: rgba(168, 85, 247, 0.08);
+    border: 1px solid rgba(168, 85, 247, 0.15);
+    color: var(--pink);
+    text-align: center;
+  }
+
+  /* ── Match Intro Timeline ── */
+  .timeline {
+    display: flex;
+    gap: 0;
+    margin: 16px 0;
+    position: relative;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--card-border);
+    transform: translateY(-50%);
+  }
+  .timeline-step {
+    flex: 1;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+  }
+  .timeline-dot {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    margin: 0 auto 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 800;
+    color: #fff;
+  }
+  .timeline-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-bright);
+  }
+  .timeline-desc {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 2px;
+  }
+
+  /* ── Footer ── */
+  .footer {
+    text-align: center;
+    margin-top: 56px;
+    padding-top: 24px;
+    border-top: 1px solid var(--card-border);
+    color: var(--text-dim);
+    font-size: 12px;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 800px) {
+    .sound-grid { grid-template-columns: 1fr; }
+    .vfx-grid { grid-template-columns: 1fr; }
+    .pipeline { flex-direction: column; align-items: center; }
+    .pipeline-arrow { transform: rotate(90deg); padding: 4px 0; }
+    .timeline { flex-direction: column; gap: 16px; }
+    .timeline::before { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ── HEADER ── -->
+  <div class="header">
+    <h1>MOOD LAB ARENA — Sound, Effects & Visual System</h1>
+    <div class="subtitle">Developer Guide &middot; Infographic 10</div>
+  </div>
+
+  <!-- ── HERO STATS ── -->
+  <div class="hero-banner">
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="number">90</div>
+        <div class="label">Synthesized Sounds</div>
+      </div>
+      <div class="hero-stat">
+        <div class="number">3</div>
+        <div class="label">Audio Files</div>
+      </div>
+      <div class="hero-stat">
+        <div class="number">293KB</div>
+        <div class="label">Total Audio Size</div>
+      </div>
+      <div class="hero-stat">
+        <div class="number">10</div>
+        <div class="label">Visual Effects</div>
+      </div>
+      <div class="hero-stat">
+        <div class="number">50+</div>
+        <div class="label">CSS @keyframes</div>
+      </div>
+      <div class="hero-stat">
+        <div class="number">0</div>
+        <div class="label">External Libraries</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- SOUND SYSTEM SECTION                       -->
+  <!-- ══════════════════════════════════════════ -->
+  <div class="section-title">
+    <div class="icon" style="background: linear-gradient(135deg, var(--purple), var(--magenta));">
+      <span>&#9835;</span>
+    </div>
+    <span>Sound System &mdash; <code style="font-family:'JetBrains Mono',monospace; font-size:0.75em; color:var(--purple);">playFx(type, vol)</code></span>
+  </div>
+
+  <!-- Audio Pipeline -->
+  <div class="card">
+    <h3>Web Audio API Synthesis Pipeline</h3>
+    <p style="margin-bottom:16px; color:var(--text-dim);">All 90 sounds are synthesized in real-time. Zero audio files needed for gameplay sound effects.</p>
+    <div class="pipeline">
+      <div class="pipeline-node">
+        <div class="node-name">OscillatorNode</div>
+        <div class="node-desc">sine / square / saw / triangle</div>
+      </div>
+      <div class="pipeline-arrow">&rarr;</div>
+      <div class="pipeline-node">
+        <div class="node-name">BiquadFilterNode</div>
+        <div class="node-desc">lowpass / highpass shaping</div>
+      </div>
+      <div class="pipeline-arrow">&rarr;</div>
+      <div class="pipeline-node">
+        <div class="node-name">GainNode</div>
+        <div class="node-desc">ADSR volume envelope</div>
+      </div>
+      <div class="pipeline-arrow">&rarr;</div>
+      <div class="pipeline-node">
+        <div class="node-name">AudioDestination</div>
+        <div class="node-desc">speaker output</div>
+      </div>
+    </div>
+    <div style="text-align:center; margin-top:8px;">
+      <span style="font-size:12px; color:var(--text-dim); font-style:italic;">+ White Noise Generator for impact &amp; explosion FX</span>
+    </div>
+  </div>
+
+  <!-- Waveform Visualization -->
+  <div class="card">
+    <h3>Waveform Types</h3>
+    <div class="waveform-container">
+      <svg class="waveform-svg" viewBox="0 0 800 80" preserveAspectRatio="none">
+        <!-- Sine -->
+        <path d="M0,40 Q50,5 100,40 Q150,75 200,40" stroke="#a855f7" stroke-width="2" fill="none" opacity="0.9"/>
+        <text x="10" y="14" fill="#a855f7" font-size="10" font-family="JetBrains Mono, monospace">sine</text>
+        <!-- Square -->
+        <path d="M220,60 L220,20 L280,20 L280,60 L340,60 L340,20 L400,20" stroke="#f472b6" stroke-width="2" fill="none" opacity="0.9"/>
+        <text x="230" y="14" fill="#f472b6" font-size="10" font-family="JetBrains Mono, monospace">square</text>
+        <!-- Sawtooth -->
+        <path d="M420,60 L480,20 L480,60 L540,20 L540,60 L600,20" stroke="#00d4ff" stroke-width="2" fill="none" opacity="0.9"/>
+        <text x="430" y="14" fill="#00d4ff" font-size="10" font-family="JetBrains Mono, monospace">sawtooth</text>
+        <!-- Triangle -->
+        <path d="M620,60 L660,20 L700,60 L740,20 L780,60" stroke="#ffd700" stroke-width="2" fill="none" opacity="0.9"/>
+        <text x="630" y="14" fill="#ffd700" font-size="10" font-family="JetBrains Mono, monospace">triangle</text>
+      </svg>
+    </div>
+  </div>
+
+  <!-- ADSR Envelope -->
+  <div class="card">
+    <h3>Gain Envelope (ADSR)</h3>
+    <div class="envelope-container">
+      <svg class="envelope-svg" viewBox="0 0 600 100" preserveAspectRatio="xMidYMid meet">
+        <!-- Grid -->
+        <line x1="50" y1="90" x2="560" y2="90" stroke="#1e1e2e" stroke-width="1"/>
+        <line x1="50" y1="10" x2="50" y2="90" stroke="#1e1e2e" stroke-width="1"/>
+        <!-- Labels -->
+        <text x="30" y="16" fill="#8888a0" font-size="9" font-family="JetBrains Mono" text-anchor="end">1.0</text>
+        <text x="30" y="92" fill="#8888a0" font-size="9" font-family="JetBrains Mono" text-anchor="end">0.0</text>
+        <!-- ADSR Curve -->
+        <polyline points="50,90 120,15 200,35 400,35 560,90"
+                  stroke="url(#adsrGrad)" stroke-width="2.5" fill="none" stroke-linejoin="round"/>
+        <defs>
+          <linearGradient id="adsrGrad" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#a855f7"/>
+            <stop offset="35%" stop-color="#f472b6"/>
+            <stop offset="70%" stop-color="#e040a0"/>
+            <stop offset="100%" stop-color="#7c3aed"/>
+          </linearGradient>
+        </defs>
+        <!-- Fill under curve -->
+        <polyline points="50,90 120,15 200,35 400,35 560,90"
+                  stroke="none" fill="url(#adsrGrad)" opacity="0.08"/>
+        <!-- Phase labels -->
+        <text x="85" y="80" fill="#a855f7" font-size="10" font-family="JetBrains Mono" text-anchor="middle" font-weight="600">A</text>
+        <text x="160" y="80" fill="#f472b6" font-size="10" font-family="JetBrains Mono" text-anchor="middle" font-weight="600">D</text>
+        <text x="300" y="80" fill="#e040a0" font-size="10" font-family="JetBrains Mono" text-anchor="middle" font-weight="600">S</text>
+        <text x="480" y="80" fill="#7c3aed" font-size="10" font-family="JetBrains Mono" text-anchor="middle" font-weight="600">R</text>
+        <!-- Phase full names -->
+        <text x="85" y="100" fill="#8888a0" font-size="8" font-family="Inter" text-anchor="middle">Attack</text>
+        <text x="160" y="100" fill="#8888a0" font-size="8" font-family="Inter" text-anchor="middle">Decay</text>
+        <text x="300" y="100" fill="#8888a0" font-size="8" font-family="Inter" text-anchor="middle">Sustain</text>
+        <text x="480" y="100" fill="#8888a0" font-size="8" font-family="Inter" text-anchor="middle">Release</text>
+        <!-- Dots -->
+        <circle cx="50" cy="90" r="4" fill="#a855f7"/>
+        <circle cx="120" cy="15" r="4" fill="#f472b6"/>
+        <circle cx="200" cy="35" r="4" fill="#e040a0"/>
+        <circle cx="400" cy="35" r="4" fill="#e040a0"/>
+        <circle cx="560" cy="90" r="4" fill="#7c3aed"/>
+      </svg>
+    </div>
+  </div>
+
+  <!-- Sound Categories -->
+  <div class="card" style="padding-bottom: 12px;">
+    <h3>Sound Categories (6 groups, 90 synthesized sounds)</h3>
+  </div>
+  <div class="sound-grid">
+    <!-- UI Sounds -->
+    <div class="sound-cat">
+      <div class="sound-cat-header">
+        <div class="sound-cat-icon" style="background: rgba(0, 212, 255, 0.15); color: var(--cyan);">&#9741;</div>
+        <div class="sound-cat-title">UI Sounds</div>
+      </div>
+      <div class="sound-tags">
+        <span class="sound-tag">click</span>
+        <span class="sound-tag">back</span>
+        <span class="sound-tag">tab</span>
+        <span class="sound-tag">open</span>
+        <span class="sound-tag">close</span>
+        <span class="sound-tag">toggle</span>
+        <span class="sound-tag">scroll</span>
+      </div>
+    </div>
+    <!-- Game Events -->
+    <div class="sound-cat">
+      <div class="sound-cat-header">
+        <div class="sound-cat-icon" style="background: rgba(34, 197, 94, 0.15); color: var(--green);">&#9917;</div>
+        <div class="sound-cat-title">Game Events</div>
+      </div>
+      <div class="sound-tags">
+        <span class="sound-tag" style="color:var(--green); border-color:rgba(34,197,94,0.3); background:rgba(34,197,94,0.08);">goal</span>
+        <span class="sound-tag" style="color:var(--green); border-color:rgba(34,197,94,0.3); background:rgba(34,197,94,0.08);">save</span>
+        <span class="sound-tag" style="color:var(--green); border-color:rgba(34,197,94,0.3); background:rgba(34,197,94,0.08);">miss</span>
+        <span class="sound-tag" style="color:var(--green); border-color:rgba(34,197,94,0.3); background:rgba(34,197,94,0.08);">whistle</span>
+        <span class="sound-tag" style="color:var(--green); border-color:rgba(34,197,94,0.3); background:rgba(34,197,94,0.08);">draw</span>
+        <span class="sound-tag" style="color:var(--green); border-color:rgba(34,197,94,0.3); background:rgba(34,197,94,0.08);">shoot</span>
+        <span class="sound-tag" style="color:var(--green); border-color:rgba(34,197,94,0.3); background:rgba(34,197,94,0.08);">kick</span>
+        <span class="sound-tag" style="color:var(--green); border-color:rgba(34,197,94,0.3); background:rgba(34,197,94,0.08);">hit</span>
+      </div>
+    </div>
+    <!-- Effects -->
+    <div class="sound-cat">
+      <div class="sound-cat-header">
+        <div class="sound-cat-icon" style="background: rgba(255, 215, 0, 0.15); color: var(--gold);">&#10024;</div>
+        <div class="sound-cat-title">Effects</div>
+      </div>
+      <div class="sound-tags">
+        <span class="sound-tag" style="color:var(--gold); border-color:rgba(255,215,0,0.3); background:rgba(255,215,0,0.08);">confetti</span>
+        <span class="sound-tag" style="color:var(--gold); border-color:rgba(255,215,0,0.3); background:rgba(255,215,0,0.08);">explosion</span>
+        <span class="sound-tag" style="color:var(--gold); border-color:rgba(255,215,0,0.3); background:rgba(255,215,0,0.08);">blinker</span>
+        <span class="sound-tag" style="color:var(--gold); border-color:rgba(255,215,0,0.3); background:rgba(255,215,0,0.08);">perfect</span>
+        <span class="sound-tag" style="color:var(--gold); border-color:rgba(255,215,0,0.3); background:rgba(255,215,0,0.08);">combo</span>
+        <span class="sound-tag" style="color:var(--gold); border-color:rgba(255,215,0,0.3); background:rgba(255,215,0,0.08);">streak</span>
+      </div>
+    </div>
+    <!-- Fortune -->
+    <div class="sound-cat">
+      <div class="sound-cat-header">
+        <div class="sound-cat-icon" style="background: rgba(255, 140, 0, 0.15); color: var(--orange);">&#127922;</div>
+        <div class="sound-cat-title">Fortune</div>
+      </div>
+      <div class="sound-tags">
+        <span class="sound-tag" style="color:var(--orange); border-color:rgba(255,140,0,0.3); background:rgba(255,140,0,0.08);">spin</span>
+        <span class="sound-tag" style="color:var(--orange); border-color:rgba(255,140,0,0.3); background:rgba(255,140,0,0.08);">reveal</span>
+        <span class="sound-tag" style="color:var(--orange); border-color:rgba(255,140,0,0.3); background:rgba(255,140,0,0.08);">jackpot</span>
+        <span class="sound-tag" style="color:var(--orange); border-color:rgba(255,140,0,0.3); background:rgba(255,140,0,0.08);">bust</span>
+        <span class="sound-tag" style="color:var(--orange); border-color:rgba(255,140,0,0.3); background:rgba(255,140,0,0.08);">coin</span>
+        <span class="sound-tag" style="color:var(--orange); border-color:rgba(255,140,0,0.3); background:rgba(255,140,0,0.08);">scratch</span>
+      </div>
+    </div>
+    <!-- Atmosphere -->
+    <div class="sound-cat">
+      <div class="sound-cat-header">
+        <div class="sound-cat-icon" style="background: rgba(59, 130, 246, 0.15); color: var(--blue);">&#127908;</div>
+        <div class="sound-cat-title">Atmosphere</div>
+      </div>
+      <div class="sound-tags">
+        <span class="sound-tag" style="color:var(--blue); border-color:rgba(59,130,246,0.3); background:rgba(59,130,246,0.08);">crowd</span>
+        <span class="sound-tag" style="color:var(--blue); border-color:rgba(59,130,246,0.3); background:rgba(59,130,246,0.08);">cheer</span>
+        <span class="sound-tag" style="color:var(--blue); border-color:rgba(59,130,246,0.3); background:rgba(59,130,246,0.08);">boo</span>
+        <span class="sound-tag" style="color:var(--blue); border-color:rgba(59,130,246,0.3); background:rgba(59,130,246,0.08);">gasp</span>
+        <span class="sound-tag" style="color:var(--blue); border-color:rgba(59,130,246,0.3); background:rgba(59,130,246,0.08);">tension</span>
+        <span class="sound-tag" style="color:var(--blue); border-color:rgba(59,130,246,0.3); background:rgba(59,130,246,0.08);">heartbeat</span>
+      </div>
+    </div>
+    <!-- Puff -->
+    <div class="sound-cat">
+      <div class="sound-cat-header">
+        <div class="sound-cat-icon" style="background: rgba(244, 114, 182, 0.15); color: var(--pink);">&#128168;</div>
+        <div class="sound-cat-title">Puff</div>
+      </div>
+      <div class="sound-tags">
+        <span class="sound-tag" style="color:var(--pink); border-color:rgba(244,114,182,0.3); background:rgba(244,114,182,0.08);">puff_start</span>
+        <span class="sound-tag" style="color:var(--pink); border-color:rgba(244,114,182,0.3); background:rgba(244,114,182,0.08);">puff_hold</span>
+        <span class="sound-tag" style="color:var(--pink); border-color:rgba(244,114,182,0.3); background:rgba(244,114,182,0.08);">puff_release</span>
+        <span class="sound-tag" style="color:var(--pink); border-color:rgba(244,114,182,0.3); background:rgba(244,114,182,0.08);">puff_sweet</span>
+        <span class="sound-tag" style="color:var(--pink); border-color:rgba(244,114,182,0.3); background:rgba(244,114,182,0.08);">puff_blinker</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Audio Files -->
+  <div class="card" style="margin-top: 20px;">
+    <h3>Audio Files (3 only) &mdash; <span style="font-size:13px; color:var(--text-dim); font-weight:400;">assets/arena/</span></h3>
+    <table class="audio-table">
+      <thead>
+        <tr>
+          <th>File</th>
+          <th>Size</th>
+          <th>Usage</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="file-name">win.m4a</span></td>
+          <td><span class="file-size">147 KB</span></td>
+          <td style="color:var(--text-dim);">Victory jingle</td>
+        </tr>
+        <tr>
+          <td><span class="file-name">lose.m4a</span></td>
+          <td><span class="file-size">88 KB</span></td>
+          <td style="color:var(--text-dim);">Defeat sound</td>
+        </tr>
+        <tr>
+          <td><span class="file-name">laugh.m4a</span></td>
+          <td><span class="file-size">58 KB</span></td>
+          <td style="color:var(--text-dim);">Comedy moment</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- VISUAL EFFECTS SECTION                     -->
+  <!-- ══════════════════════════════════════════ -->
+  <div class="section-title">
+    <div class="icon" style="background: linear-gradient(135deg, var(--pink), var(--violet));">
+      <span>&#10024;</span>
+    </div>
+    <span>Visual Effects System (10 Effect Types)</span>
+  </div>
+
+  <div class="vfx-grid">
+    <!-- 1. Screen Shake -->
+    <div class="vfx-card">
+      <div class="vfx-preview preview-shake">
+        <div class="shake-box">&#128165;</div>
+      </div>
+      <div class="vfx-card-body">
+        <h3>1. Screen Shake</h3>
+        <div class="vfx-fn">triggerShake()</div>
+        <p>CSS transform with random jitter applied to the game container. Creates an impact feel on goals, explosions, and blinker moments.</p>
+        <div class="vfx-meta">
+          <span class="vfx-meta-tag">300-500ms</span>
+          <span class="vfx-meta-tag">CSS transform</span>
+          <span class="vfx-meta-tag">random offset</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Screen Flash -->
+    <div class="vfx-card">
+      <div class="vfx-preview preview-flash">
+        <div class="flash-circle flash-green"></div>
+        <div class="flash-circle flash-yellow"></div>
+        <div class="flash-circle flash-red"></div>
+      </div>
+      <div class="vfx-card-body">
+        <h3>2. Screen Flash</h3>
+        <div class="vfx-fn">Color overlay &mdash; full screen</div>
+        <p>Color overlay covering the entire screen. Green for goals, yellow for saves, red for misses, red pulse for blinkers.</p>
+        <div class="vfx-meta">
+          <span class="vfx-meta-tag">200-400ms</span>
+          <span class="vfx-meta-tag">opacity fade</span>
+          <span class="vfx-meta-tag" style="color:var(--green);">goal</span>
+          <span class="vfx-meta-tag" style="color:var(--gold);">save</span>
+          <span class="vfx-meta-tag" style="color:var(--red);">miss</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. Confetti Particles -->
+    <div class="vfx-card">
+      <div class="vfx-preview preview-confetti" id="confettiPreview"></div>
+      <div class="vfx-card-body">
+        <h3>3. Confetti Particles</h3>
+        <div class="vfx-fn">30-50 particles &middot; physics simulation</div>
+        <p>Array of colored particles with gravity, wind, and rotation. Uses the C palette: cyan, gold, pink, purple, orange. Triggered on wins, achievements, and perfect shots.</p>
+        <div class="vfx-meta">
+          <span class="vfx-meta-tag">gravity + wind</span>
+          <span class="vfx-meta-tag">rotation</span>
+          <span class="vfx-meta-tag">C palette</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. Smoke Particles -->
+    <div class="vfx-card">
+      <div class="vfx-preview preview-smoke" id="smokePreview"></div>
+      <div class="vfx-card-body">
+        <h3>4. Smoke Particles</h3>
+        <div class="vfx-fn">Cloud particles &middot; opacity fade + scale</div>
+        <p>Cloud-like white and gray particles that rise upward. Opacity fades out while scale increases, creating an expanding smoke effect during puff animations.</p>
+        <div class="vfx-meta">
+          <span class="vfx-meta-tag">opacity fade</span>
+          <span class="vfx-meta-tag">scale increase</span>
+          <span class="vfx-meta-tag">puff trigger</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. Puff Bubbles -->
+    <div class="vfx-card">
+      <div class="vfx-preview preview-bubbles" id="bubblePreview"></div>
+      <div class="vfx-card-body">
+        <h3>5. Puff Bubbles</h3>
+        <div class="vfx-fn">Floating circles &middot; drift + rise</div>
+        <p>Floating circular bubbles during the puff charge phase. They rise upward with a slight horizontal drift, varying from small to medium sizes.</p>
+        <div class="vfx-meta">
+          <span class="vfx-meta-tag">vertical rise</span>
+          <span class="vfx-meta-tag">horizontal drift</span>
+          <span class="vfx-meta-tag">size variation</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6. Audience Bubbles -->
+    <div class="vfx-card">
+      <div class="vfx-preview preview-audience" id="audiencePreview"></div>
+      <div class="vfx-card-body">
+        <h3>6. Audience Bubbles</h3>
+        <div class="vfx-fn">Spectator emoji reactions</div>
+        <p>Random spectator emoji reactions that float up from the bottom of the screen. Used during exciting gameplay moments to simulate crowd engagement.</p>
+        <div class="vfx-meta">
+          <span class="vfx-meta-tag">emoji particles</span>
+          <span class="vfx-meta-tag">float upward</span>
+          <span class="vfx-meta-tag">random spawn</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 7. Puff Wave -->
+    <div class="vfx-card">
+      <div class="vfx-preview preview-wave" id="wavePreview"></div>
+      <div class="vfx-card-body">
+        <h3>7. Puff Wave</h3>
+        <div class="vfx-fn">Radial wave &middot; center outward</div>
+        <p>Full-screen radial wave effect triggered by the Puff Wave audience action. A ripple animation expands from the center outward across the entire screen.</p>
+        <div class="vfx-meta">
+          <span class="vfx-meta-tag">radial expand</span>
+          <span class="vfx-meta-tag">full-screen</span>
+          <span class="vfx-meta-tag">audience action</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 8. Match Intro Sequence -->
+    <div class="vfx-card">
+      <div class="vfx-preview preview-intro">
+        <div class="intro-text">GO!</div>
+      </div>
+      <div class="vfx-card-body">
+        <h3>8. Match Intro Sequence</h3>
+        <div class="vfx-fn">4-stage animated intro</div>
+        <p>Cinematic match opening: opponent enters, head-to-head stats display, countdown from 3, then the game begins with a "GO!" flash.</p>
+        <div class="timeline">
+          <div class="timeline-step">
+            <div class="timeline-dot" style="background: var(--purple);">1</div>
+            <div class="timeline-label">ENTERING</div>
+            <div class="timeline-desc">Opponent enters</div>
+          </div>
+          <div class="timeline-step">
+            <div class="timeline-dot" style="background: var(--pink);">2</div>
+            <div class="timeline-label">VS STATS</div>
+            <div class="timeline-desc">Head-to-head</div>
+          </div>
+          <div class="timeline-step">
+            <div class="timeline-dot" style="background: var(--orange);">3</div>
+            <div class="timeline-label">COUNTDOWN</div>
+            <div class="timeline-desc">3, 2, 1...</div>
+          </div>
+          <div class="timeline-step">
+            <div class="timeline-dot" style="background: var(--gold);">4</div>
+            <div class="timeline-label">GO!</div>
+            <div class="timeline-desc">Game begins</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 9. Dim Lights -->
+    <div class="vfx-card">
+      <div class="vfx-preview preview-dim">
+        <div class="dim-overlay"></div>
+        <div class="dim-meter"></div>
+      </div>
+      <div class="vfx-card-body">
+        <h3>9. Dim Lights</h3>
+        <div class="vfx-fn">Screen darken &middot; focus effect</div>
+        <p>Screen darkens during the puff charge phase, creating a focus effect that draws attention to the power meter. Returns to normal brightness on release.</p>
+        <div class="vfx-meta">
+          <span class="vfx-meta-tag">opacity overlay</span>
+          <span class="vfx-meta-tag">focus effect</span>
+          <span class="vfx-meta-tag">puff charge</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 10. CSS Animations -->
+    <div class="vfx-card">
+      <div class="vfx-preview preview-css">
+        <div class="css-dot"></div>
+        <div class="css-dot"></div>
+        <div class="css-dot"></div>
+        <div class="css-dot"></div>
+        <div class="css-dot"></div>
+      </div>
+      <div class="vfx-card-body">
+        <h3>10. CSS @keyframes (50+)</h3>
+        <div class="vfx-fn">All CSS-only &middot; zero animation libraries</div>
+        <p>Over 50 custom CSS keyframe animations powering every visual transition and effect. No external animation libraries are used.</p>
+        <div class="kf-grid">
+          <div class="kf-item">fadeIn</div>
+          <div class="kf-item">fadeInUp</div>
+          <div class="kf-item">slideUp</div>
+          <div class="kf-item">slideDown</div>
+          <div class="kf-item">pulse</div>
+          <div class="kf-item">glow</div>
+          <div class="kf-item">bounce</div>
+          <div class="kf-item">shake</div>
+          <div class="kf-item">spin</div>
+          <div class="kf-item">rotate360</div>
+          <div class="kf-item">wobble</div>
+          <div class="kf-item">ballFlight</div>
+          <div class="kf-item">keeperDive</div>
+          <div class="kf-item">confettiFall</div>
+          <div class="kf-item">tickerScroll</div>
+          <div class="kf-item">heroSlide</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Footer ── -->
+  <div class="footer">
+    MOOD LAB ARENA &middot; Sound, Effects & Visual System &middot; Infographic 10 &middot; Developer Reference
+  </div>
+
+</div>
+
+<!-- ── Dynamic Particle Generation ── -->
+<script>
+(function() {
+  // Confetti particles
+  const confettiEl = document.getElementById('confettiPreview');
+  const colors = ['#00d4ff','#ffd700','#f472b6','#a855f7','#ff8c00'];
+  for (let i = 0; i < 20; i++) {
+    const p = document.createElement('div');
+    p.className = 'confetti-piece';
+    p.style.left = (Math.random() * 100) + '%';
+    p.style.backgroundColor = colors[i % colors.length];
+    p.style.animationDelay = (Math.random() * 2.5) + 's';
+    p.style.width = (5 + Math.random() * 6) + 'px';
+    p.style.height = (5 + Math.random() * 6) + 'px';
+    p.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    confettiEl.appendChild(p);
+  }
+
+  // Smoke particles
+  const smokeEl = document.getElementById('smokePreview');
+  for (let i = 0; i < 6; i++) {
+    const s = document.createElement('div');
+    s.className = 'smoke-puff';
+    s.style.left = (35 + Math.random() * 30) + '%';
+    s.style.bottom = '10px';
+    s.style.animationDelay = (Math.random() * 2.5) + 's';
+    s.style.width = (20 + Math.random() * 20) + 'px';
+    s.style.height = s.style.width;
+    smokeEl.appendChild(s);
+  }
+
+  // Puff bubbles
+  const bubbleEl = document.getElementById('bubblePreview');
+  for (let i = 0; i < 10; i++) {
+    const b = document.createElement('div');
+    b.className = 'bubble';
+    const size = 8 + Math.random() * 18;
+    b.style.width = size + 'px';
+    b.style.height = size + 'px';
+    b.style.left = (10 + Math.random() * 80) + '%';
+    b.style.bottom = '-10px';
+    b.style.animationDelay = (Math.random() * 3) + 's';
+    b.style.animationDuration = (2 + Math.random() * 2) + 's';
+    bubbleEl.appendChild(b);
+  }
+
+  // Audience emojis
+  const audienceEl = document.getElementById('audiencePreview');
+  const emojis = ['\u{1F44F}','\u{1F525}','\u{26BD}','\u{1F60D}','\u{1F3C6}','\u{1F4AA}','\u{2B50}','\u{1F389}'];
+  for (let i = 0; i < 8; i++) {
+    const e = document.createElement('div');
+    e.className = 'audience-emoji';
+    e.textContent = emojis[i % emojis.length];
+    e.style.left = (5 + Math.random() * 85) + '%';
+    e.style.bottom = '-20px';
+    e.style.animationDelay = (Math.random() * 3) + 's';
+    e.style.animationDuration = (2 + Math.random() * 2) + 's';
+    audienceEl.appendChild(e);
+  }
+
+  // Wave rings
+  const waveEl = document.getElementById('wavePreview');
+  for (let i = 0; i < 3; i++) {
+    const r = document.createElement('div');
+    r.className = 'wave-ring';
+    r.style.animationDelay = (i * 0.7) + 's';
+    waveEl.appendChild(r);
+  }
+})();
+</script>
+</body>
+</html>

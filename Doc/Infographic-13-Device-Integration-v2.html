@@ -1,0 +1,1210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mood Lab Arena -- BLE Device Integration v2</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+  :root {
+    --bg: #050510;
+    --surface: rgba(255,255,255,0.03);
+    --surface2: rgba(255,255,255,0.06);
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.12);
+    --cyan: #00E5FF;
+    --purple: #C084FC;
+    --pink: #FF4D8D;
+    --gold: #FFD93D;
+    --orange: #FB923C;
+    --green: #34D399;
+    --red: #EF4444;
+    --lime: #A3E635;
+    --blue: #3B82F6;
+    --text: #F0F0F5;
+    --text2: #9CA3AF;
+    --text3: #6B7280;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+  }
+
+  /* ---- Header ---- */
+  .header {
+    text-align: center;
+    padding: 60px 0 48px;
+    position: relative;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    top: -80px; left: 50%; transform: translateX(-50%);
+    width: 600px; height: 400px;
+    background: radial-gradient(ellipse, rgba(0,229,255,0.12) 0%, rgba(192,132,252,0.06) 40%, transparent 70%);
+    pointer-events: none;
+  }
+  .header .badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 16px; border-radius: 100px;
+    background: rgba(0,229,255,0.08); border: 1px solid rgba(0,229,255,0.2);
+    font-size: 11px; font-weight: 700; color: var(--cyan);
+    letter-spacing: 1.5px; text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+  .header .badge .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--cyan);
+    animation: pulse-dot 2s ease-in-out infinite;
+  }
+  .header h1 {
+    font-size: 48px; font-weight: 900; line-height: 1.1;
+    background: linear-gradient(135deg, var(--cyan) 0%, var(--purple) 50%, var(--pink) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 12px;
+  }
+  .header .subtitle {
+    font-size: 16px; color: var(--text2); font-weight: 400;
+    max-width: 600px; margin: 0 auto;
+  }
+  .header .version-tag {
+    display: inline-block; margin-top: 16px;
+    padding: 4px 12px; border-radius: 6px;
+    background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.25);
+    font-size: 10px; font-weight: 800; color: var(--red);
+    letter-spacing: 1px;
+  }
+
+  /* ---- Section ---- */
+  .section {
+    margin-bottom: 48px;
+  }
+  .section-label {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 10px; font-weight: 800; letter-spacing: 2px;
+    text-transform: uppercase; margin-bottom: 12px;
+  }
+  .section-title {
+    font-size: 28px; font-weight: 800; margin-bottom: 8px;
+  }
+  .section-desc {
+    font-size: 13px; color: var(--text2); line-height: 1.6;
+    max-width: 700px; margin-bottom: 24px;
+  }
+
+  /* ---- Card ---- */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    backdrop-filter: blur(20px);
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+  }
+  .card-title {
+    font-size: 15px; font-weight: 800; margin-bottom: 6px;
+  }
+  .card-desc {
+    font-size: 12px; color: var(--text2); line-height: 1.5;
+  }
+
+  /* ---- Grid ---- */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; }
+
+  @media (max-width: 768px) {
+    .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+    .header h1 { font-size: 32px; }
+    .game-table { font-size: 10px; }
+  }
+
+  /* ---- Code block ---- */
+  .code-block {
+    background: rgba(0,0,0,0.5);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    line-height: 1.7;
+    overflow-x: auto;
+    color: var(--text2);
+  }
+  .code-block .kw { color: var(--purple); }
+  .code-block .fn { color: var(--cyan); }
+  .code-block .str { color: var(--green); }
+  .code-block .cm { color: var(--text3); font-style: italic; }
+  .code-block .num { color: var(--orange); }
+  .code-block .op { color: var(--text3); }
+
+  /* ---- Flow diagram ---- */
+  .flow-row {
+    display: flex; align-items: center; gap: 0;
+    flex-wrap: wrap; justify-content: center;
+    margin: 24px 0;
+  }
+  .flow-step {
+    display: flex; flex-direction: column; align-items: center;
+    padding: 16px 20px; border-radius: 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    min-width: 130px; text-align: center;
+    position: relative;
+  }
+  .flow-step .step-num {
+    position: absolute; top: -8px; left: -8px;
+    width: 22px; height: 22px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 800;
+  }
+  .flow-step .step-icon { font-size: 22px; margin-bottom: 6px; }
+  .flow-step .step-label { font-size: 11px; font-weight: 700; }
+  .flow-step .step-detail { font-size: 9px; color: var(--text3); margin-top: 3px; }
+  .flow-arrow {
+    font-size: 18px; color: var(--text3); padding: 0 6px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* ---- Packet visual ---- */
+  .packet-row {
+    display: flex; align-items: center; gap: 4px;
+    margin: 8px 0;
+  }
+  .packet-byte {
+    width: 42px; height: 36px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 6px; font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; font-weight: 700;
+  }
+  .packet-label {
+    font-size: 10px; color: var(--text3); margin-left: 12px;
+    font-weight: 600;
+  }
+
+  /* ---- Game wiring table ---- */
+  .game-table {
+    width: 100%; border-collapse: separate; border-spacing: 0;
+    font-size: 11px;
+  }
+  .game-table thead th {
+    padding: 10px 12px; text-align: left;
+    font-size: 9px; font-weight: 800; letter-spacing: 1.5px;
+    text-transform: uppercase; color: var(--text3);
+    border-bottom: 1px solid var(--border2);
+    position: sticky; top: 0; background: var(--bg);
+  }
+  .game-table tbody td {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  .game-table tbody tr:hover {
+    background: rgba(0,229,255,0.03);
+  }
+  .zone-badge {
+    display: inline-block; padding: 2px 8px; border-radius: 4px;
+    font-size: 9px; font-weight: 800; letter-spacing: 0.5px;
+  }
+  .handler-mono {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; color: var(--cyan);
+  }
+  .type-badge {
+    display: inline-block; padding: 2px 6px; border-radius: 4px;
+    font-size: 9px; font-weight: 700;
+  }
+
+  /* ---- Trivia thresholds ---- */
+  .trivia-bands {
+    display: flex; gap: 0; border-radius: 12px; overflow: hidden;
+    margin: 16px 0; height: 60px;
+    border: 1px solid var(--border);
+  }
+  .trivia-band {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    position: relative;
+  }
+  .trivia-band .band-letter {
+    font-size: 20px; font-weight: 900;
+  }
+  .trivia-band .band-time {
+    font-size: 9px; font-weight: 600; opacity: 0.7;
+    margin-top: 2px;
+  }
+
+  /* ---- Stat pill ---- */
+  .stat-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 14px; border-radius: 10px;
+    background: var(--surface); border: 1px solid var(--border);
+  }
+  .stat-pill .stat-value {
+    font-size: 20px; font-weight: 900;
+  }
+  .stat-pill .stat-label {
+    font-size: 10px; color: var(--text2); font-weight: 600;
+  }
+
+  /* ---- Glow overlay preview ---- */
+  .glow-preview {
+    width: 100%; height: 100px; border-radius: 12px;
+    position: relative; overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .glow-preview .glow-gradient {
+    position: absolute; top: 0; left: 0; right: 0; height: 100%;
+    background: linear-gradient(180deg,
+      rgba(0,229,255,0.55) 0%,
+      rgba(192,132,252,0.30) 35%,
+      rgba(255,77,141,0.15) 65%,
+      transparent 100%
+    );
+    animation: glow-pulse 1.4s ease-in-out infinite alternate;
+  }
+  .glow-preview .glow-label {
+    position: absolute; bottom: 10px; left: 50%;
+    transform: translateX(-50%);
+    font-size: 10px; font-weight: 700; color: var(--text);
+    text-shadow: 0 0 10px rgba(0,0,0,0.8);
+    letter-spacing: 1px;
+  }
+
+  /* ---- Divider ---- */
+  .divider {
+    height: 1px; margin: 48px 0;
+    background: linear-gradient(90deg, transparent, var(--border2), transparent);
+  }
+
+  /* ---- Keyframes ---- */
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.7); }
+  }
+  @keyframes glow-pulse {
+    0% { opacity: 0.7; }
+    100% { opacity: 1; }
+  }
+  @keyframes float-in {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .fade-in { animation: float-in 0.6s ease both; }
+  .fade-in-d1 { animation: float-in 0.6s ease 0.1s both; }
+  .fade-in-d2 { animation: float-in 0.6s ease 0.2s both; }
+  .fade-in-d3 { animation: float-in 0.6s ease 0.3s both; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ============================================================ -->
+  <!--  HEADER                                                      -->
+  <!-- ============================================================ -->
+  <header class="header fade-in">
+    <div class="badge"><span class="dot"></span> BLE INTEGRATION v2</div>
+    <h1>Device Integration</h1>
+    <p class="subtitle">
+      Cali Clear vaporizer connects via Web Bluetooth to become the sole input device.
+      32 games wired. Puff is the only way to play.
+    </p>
+    <div class="version-tag">DEVICE REQUIRED -- CONNECTION MANDATORY</div>
+  </header>
+
+  <!-- ============================================================ -->
+  <!--  1. DEVICE REQUIRED GATE                                     -->
+  <!-- ============================================================ -->
+  <section class="section fade-in-d1">
+    <div class="section-label" style="color:var(--red);">
+      <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--red);"></span>
+      SECTION 1
+    </div>
+    <h2 class="section-title">Device Required Gate</h2>
+    <p class="section-desc">
+      BLE connection is mandatory to play any game. Three launch functions each check
+      <code style="color:var(--cyan);font-family:'JetBrains Mono',monospace;font-size:12px;">bleConnected</code>
+      before allowing entry. If not connected, the BLE popup opens and a notification fires.
+    </p>
+
+    <div class="grid-3">
+      <div class="card">
+        <div class="card-title" style="color:var(--cyan);">startMatch()</div>
+        <div class="card-desc">
+          Gate for all 16 Arcade zone games. Checks <code style="color:var(--cyan);">bleConnected</code> at line 2828.
+          Covers Final Kick 1-3, Puff Pong, Wild West, Balloon Pop, Russian Roulette, and all other skill games.
+        </div>
+        <div style="margin-top:10px;padding:4px 8px;border-radius:6px;background:rgba(0,229,255,0.06);display:inline-block;">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--cyan);">16 games</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="color:var(--gold);">startShowGame()</div>
+        <div class="card-desc">
+          Gate for all 6 Stage zone shows. Checks <code style="color:var(--gold);">bleConnected</code> at line 7815.
+          Covers Vibe Check, Higher or Lower, Survival Trivia, Simon Puffs, Puff Auction, Price is Puff.
+        </div>
+        <div style="margin-top:10px;padding:4px 8px;border-radius:6px;background:rgba(255,217,61,0.06);display:inline-block;">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--gold);">6 shows</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="color:var(--purple);">launchGame()</div>
+        <div class="card-desc">
+          Gate for all 13 Fortune/Oracle zone games. Checks <code style="color:var(--purple);">bleConnected</code> at line 9068.
+          Covers Slots, Blackjack, Crystal Ball, Coin Flip, Mystery Box, and all fortune games.
+        </div>
+        <div style="margin-top:10px;padding:4px 8px;border-radius:6px;background:rgba(192,132,252,0.06);display:inline-block;">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--purple);">13 games</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="code-block" style="margin-top:16px;">
+      <span class="cm">// Every launch function has the same guard pattern:</span><br>
+      <span class="kw">const</span> <span class="fn">startMatch</span> = (game, mode) =&gt; {<br>
+      &nbsp;&nbsp;<span class="kw">if</span>(!<span class="fn">bleConnected</span>) { <span class="fn">setShowBlePopup</span>(<span class="num">true</span>); <span class="fn">notify</span>(<span class="str">"Connect your device to play!"</span>, C.orange); <span class="kw">return</span>; }<br>
+      &nbsp;&nbsp;<span class="cm">// ... proceed with matchmaking</span><br>
+      };
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ============================================================ -->
+  <!--  2. CONNECTION FLOW                                          -->
+  <!-- ============================================================ -->
+  <section class="section fade-in-d2">
+    <div class="section-label" style="color:var(--cyan);">
+      <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--cyan);"></span>
+      SECTION 2
+    </div>
+    <h2 class="section-title">Connection Flow</h2>
+    <p class="section-desc">
+      The app uses the Web Bluetooth API to pair with the Cali Clear device.
+      A single function <code style="color:var(--cyan);font-family:'JetBrains Mono',monospace;">connectBle()</code>
+      handles the entire handshake from device discovery through notification subscription.
+    </p>
+
+    <div class="flow-row">
+      <div class="flow-step" style="border-color:rgba(0,229,255,0.2);">
+        <div class="step-num" style="background:var(--cyan);color:var(--bg);">1</div>
+        <div class="step-icon">&#128268;</div>
+        <div class="step-label">requestDevice</div>
+        <div class="step-detail">Filter by service UUID</div>
+      </div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-step" style="border-color:rgba(192,132,252,0.2);">
+        <div class="step-num" style="background:var(--purple);color:var(--bg);">2</div>
+        <div class="step-icon">&#128279;</div>
+        <div class="step-label">GATT Connect</div>
+        <div class="step-detail">device.gatt.connect()</div>
+      </div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-step" style="border-color:rgba(52,211,153,0.2);">
+        <div class="step-num" style="background:var(--green);color:var(--bg);">3</div>
+        <div class="step-icon">&#128230;</div>
+        <div class="step-label">Get Service</div>
+        <div class="step-detail">getPrimaryService(FFE0)</div>
+      </div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-step" style="border-color:rgba(255,217,61,0.2);">
+        <div class="step-num" style="background:var(--gold);color:var(--bg);">4</div>
+        <div class="step-icon">&#128225;</div>
+        <div class="step-label">Get Characteristic</div>
+        <div class="step-detail">getCharacteristic(FFE6)</div>
+      </div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-step" style="border-color:rgba(255,77,141,0.2);">
+        <div class="step-num" style="background:var(--pink);color:var(--bg);">5</div>
+        <div class="step-icon">&#128276;</div>
+        <div class="step-label">Start Notifications</div>
+        <div class="step-detail">Listen for puff packets</div>
+      </div>
+    </div>
+
+    <div class="grid-2" style="margin-top:20px;">
+      <div class="card">
+        <div class="card-title" style="color:var(--cyan);">Service &amp; Characteristic UUIDs</div>
+        <table style="width:100%;font-size:11px;margin-top:10px;border-collapse:collapse;">
+          <tr>
+            <td style="padding:6px 0;color:var(--text3);font-weight:600;">Service</td>
+            <td style="padding:6px 0;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--cyan);">0000ffe0-0000-1000-8000-00805f9b34fb</td>
+          </tr>
+          <tr style="border-top:1px solid var(--border);">
+            <td style="padding:6px 0;color:var(--text3);font-weight:600;">Notify</td>
+            <td style="padding:6px 0;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--green);">0000ffe6-0000-1000-8000-00805f9b34fb</td>
+          </tr>
+          <tr style="border-top:1px solid var(--border);">
+            <td style="padding:6px 0;color:var(--text3);font-weight:600;">Write</td>
+            <td style="padding:6px 0;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);">0000ffe5-0000-1000-8000-00805f9b34fb <span style="color:var(--text3);font-style:italic;">(reserved)</span></td>
+          </tr>
+        </table>
+      </div>
+      <div class="card">
+        <div class="card-title" style="color:var(--green);">Key State &amp; Refs</div>
+        <table style="width:100%;font-size:11px;margin-top:10px;border-collapse:collapse;">
+          <tr>
+            <td style="padding:4px 0;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--cyan);">btPuffActive</td>
+            <td style="padding:4px 0;color:var(--text3);">state -- drives glow overlay</td>
+          </tr>
+          <tr><td style="padding:4px 0;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--cyan);">btDeviceRef</td>
+            <td style="padding:4px 0;color:var(--text3);">ref -- BluetoothDevice handle</td></tr>
+          <tr><td style="padding:4px 0;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--cyan);">btCharNotify</td>
+            <td style="padding:4px 0;color:var(--text3);">ref -- notify characteristic</td></tr>
+          <tr><td style="padding:4px 0;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--cyan);">btPuffDown / Up</td>
+            <td style="padding:4px 0;color:var(--text3);">refs -- active game handlers</td></tr>
+          <tr><td style="padding:4px 0;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--cyan);">btPuffTimeout</td>
+            <td style="padding:4px 0;color:var(--text3);">ref -- 15s safety timer</td></tr>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ============================================================ -->
+  <!--  3. PUFF PROTOCOL                                            -->
+  <!-- ============================================================ -->
+  <section class="section">
+    <div class="section-label" style="color:var(--green);">
+      <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);"></span>
+      SECTION 3
+    </div>
+    <h2 class="section-title">Puff Protocol</h2>
+    <p class="section-desc">
+      The device sends 6-byte packets over the BLE notify characteristic. Two packet types
+      are recognized. Any unrecognized packet is silently ignored.
+    </p>
+
+    <div class="grid-2">
+      <!-- PUFF START -->
+      <div class="card" style="border-color:rgba(0,229,255,0.15);">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+          <div style="width:10px;height:10px;border-radius:50%;background:var(--cyan);box-shadow:0 0 12px var(--cyan);"></div>
+          <div class="card-title" style="color:var(--cyan);margin:0;">PUFF_START</div>
+          <span style="font-size:10px;color:var(--text3);font-style:italic;">heating begins</span>
+        </div>
+        <div class="packet-row">
+          <div class="packet-byte" style="background:rgba(0,229,255,0.12);color:var(--cyan);">b4</div>
+          <div class="packet-byte" style="background:rgba(0,229,255,0.12);color:var(--cyan);">b4</div>
+          <div class="packet-byte" style="background:rgba(0,229,255,0.06);color:var(--text2);">02</div>
+          <div class="packet-byte" style="background:rgba(0,229,255,0.06);color:var(--text2);">00</div>
+          <div class="packet-byte" style="background:rgba(0,229,255,0.06);color:var(--text2);">04</div>
+          <div class="packet-byte" style="background:rgba(0,229,255,0.06);color:var(--text2);">4b</div>
+          <span class="packet-label">6 bytes</span>
+        </div>
+        <div style="margin-top:10px;font-size:11px;color:var(--text3);line-height:1.5;">
+          Triggers: <code style="color:var(--cyan);">setBtPuffActive(true)</code>,
+          calls <code style="color:var(--cyan);">btPuffDown.current?()</code>,
+          starts 15s safety timeout.
+        </div>
+      </div>
+
+      <!-- PUFF STOP -->
+      <div class="card" style="border-color:rgba(192,132,252,0.15);">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+          <div style="width:10px;height:10px;border-radius:50%;background:var(--purple);box-shadow:0 0 12px var(--purple);"></div>
+          <div class="card-title" style="color:var(--purple);margin:0;">PUFF_STOP</div>
+          <span style="font-size:10px;color:var(--text3);font-style:italic;">cancelled / done</span>
+        </div>
+        <div class="packet-row">
+          <div class="packet-byte" style="background:rgba(192,132,252,0.12);color:var(--purple);">b4</div>
+          <div class="packet-byte" style="background:rgba(192,132,252,0.12);color:var(--purple);">b5</div>
+          <div class="packet-byte" style="background:rgba(192,132,252,0.06);color:var(--text2);">02</div>
+          <div class="packet-byte" style="background:rgba(192,132,252,0.06);color:var(--text2);">00</div>
+          <div class="packet-byte" style="background:rgba(192,132,252,0.06);color:var(--text2);">05</div>
+          <div class="packet-byte" style="background:rgba(192,132,252,0.06);color:var(--text2);">4b</div>
+          <span class="packet-label">6 bytes</span>
+        </div>
+        <div style="margin-top:10px;font-size:11px;color:var(--text3);line-height:1.5;">
+          Triggers: <code style="color:var(--purple);">setBtPuffActive(false)</code>,
+          calls <code style="color:var(--purple);">btPuffUp.current?()</code>,
+          clears safety timeout.
+        </div>
+      </div>
+    </div>
+
+    <!-- Safety timeout -->
+    <div class="card" style="margin-top:16px;border-color:rgba(251,146,60,0.15);">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:20px;">&#9201;</span>
+        <div>
+          <div class="card-title" style="color:var(--orange);">15-Second Safety Timeout</div>
+          <div class="card-desc">
+            If <code style="color:var(--orange);">PUFF_STOP</code> is never received (e.g., Bluetooth dropout), a
+            <code style="color:var(--orange);">setTimeout(15000)</code> automatically fires
+            <code style="color:var(--orange);">btPuffUp.current?()</code> and sets
+            <code style="color:var(--orange);">btPuffActive = false</code>.
+            The timeout is cleared on each new PUFF_START to prevent double-firing.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ============================================================ -->
+  <!--  4. FULL GAME WIRING TABLE (35 entries)                      -->
+  <!-- ============================================================ -->
+  <section class="section">
+    <div class="section-label" style="color:var(--gold);">
+      <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--gold);"></span>
+      SECTION 4
+    </div>
+    <h2 class="section-title">All 35 Game Wirings</h2>
+    <p class="section-desc">
+      Complete table of every game ID mapped in the per-render IIFE block.
+      32 unique games (Final Kick counts 3 variants sharing one handler pair). Each entry shows
+      the game ID, zone, puff-down handler, puff-up handler, and input type.
+    </p>
+
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px;">
+      <div class="stat-pill">
+        <span class="stat-value" style="color:var(--cyan);">16</span>
+        <span class="stat-label">Arcade</span>
+      </div>
+      <div class="stat-pill">
+        <span class="stat-value" style="color:var(--gold);">6</span>
+        <span class="stat-label">Stage</span>
+      </div>
+      <div class="stat-pill">
+        <span class="stat-value" style="color:var(--purple);">13</span>
+        <span class="stat-label">Fortune</span>
+      </div>
+      <div class="stat-pill">
+        <span class="stat-value" style="color:var(--green);">35</span>
+        <span class="stat-label">Total Entries</span>
+      </div>
+    </div>
+
+    <div class="card" style="padding:0;overflow:auto;max-height:none;">
+      <table class="game-table">
+        <thead>
+          <tr>
+            <th style="width:30px;">#</th>
+            <th>Game ID</th>
+            <th>Zone</th>
+            <th>Puff Down Handler</th>
+            <th>Puff Up Handler</th>
+            <th>Type</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- ARCADE -->
+          <tr>
+            <td style="color:var(--text3);">1</td>
+            <td><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text);">finalkick</span></td>
+            <td><span class="zone-badge" style="background:rgba(0,229,255,0.1);color:var(--cyan);">Arcade</span></td>
+            <td class="handler-mono">kickStartCharge</td>
+            <td class="handler-mono">kickStopCharge</td>
+            <td><span class="type-badge" style="background:rgba(0,229,255,0.08);color:var(--cyan);">Hold</span></td>
+          </tr>
+          <tr>
+            <td style="color:var(--text3);">2</td>
+            <td><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text);">finalkick2</span></td>
+            <td><span class="zone-badge" style="background:rgba(0,229,255,0.1);color:var(--cyan);">Arcade</span></td>
+            <td class="handler-mono">kickStartCharge</td>
+            <td class="handler-mono">kickStopCharge</td>
+            <td><span class="type-badge" style="background:rgba(0,229,255,0.08);color:var(--cyan);">Hold</span></td>
+          </tr>
+          <tr>
+            <td style="color:var(--text3);">3</td>
+            <td><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text);">finalkick3</span></td>
+            <td><span class="zone-badge" style="background:rgba(0,229,255,0.1);color:var(--cyan);">Arcade</span></td>
+            <td class="handler-mono">kickStartCharge</td>
+            <td class="handler-mono">kickStopCharge</td>
+            <td><span class="type-badge" style="background:rgba(0,229,255,0.08);color:var(--cyan);">Hold</span></td>
+          </tr>
+          <tr>
+            <td style="color:var(--text3);">4</td>
+            <td><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text);">balloon</span></td>
+            <td><span class="zone-badge" style="background:rgba(0,229,255,0.1);color:var(--cyan);">Arcade</span></td>
+            <td class="handler-mono">bpStartCharge</td>
+            <td class="handler-mono">bpStopCharge</td>
+            <td><span class="type-badge" style="background:rgba(0,229,255,0.08);color:var(--cyan);">Hold</span></td>
+          </tr>
+          <tr>
+            <td style="color:var(--text3);">5</td>
+            <td><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text);">russian</span></td>
+            <td><span class="zone-badge" style="background:rgba(0,229,255,0.1);color:var(--cyan);">Arcade</span></td>
+            <td class="handler-mono">rrStartPuff</td>
+            <td class="handler-mono">rrStopPuff</td>
+            <td><span class="type-badge" style="background:rgba(0,229,255,0.08);color:var(--cyan);">Hold</span></td>
+          </tr>
+          <tr>
+            <td style="color:var(--text3);">6</td>
+            <td><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text);">wildwest</span></td>
+            <td><span class="zone-badge" style="background:rgba(0,229,255,0.1);color:var(--cyan);">Arcade</span></td>
+            <td class="handler-mono">duelShoot</td>
+            <td class="handler-mono">duelReleasePuff</td>
+            <td><span class="type-badge" style="background:rgba(0,229,255,0.08);color:var(--cyan);">Hold</span></td>
+          </tr>
+          <tr>
+            <td style="color:var(--text3);">7</td>
+            <td><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text);">hotpotato</span></td>
+            <td><span class="zone-badge" style="background:rgba(0,229,255,0.1);color:var(--cyan);">Arcade</span></td>
+            <td class="handler-mono">hpStartPuff</td>
+            <td class="handler-mono">hpStopPuff</td>
+            <td><span class="type-badge" style="background:rgba(0,229,255,0.08);color:var(--cyan);">Hold</span></td>
+          </tr>
+          <tr>
+            <td style="color:var(--text3);">8</td>
+            <td><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text);">hooked</span></td>
+            <td><span class="zone-badge" style="background:rgba(0,229,255,0.1);color:var(--cyan);">Arcade</span></td>
+            <td class="handler-mono">hookStartPuff</td>
+            <td class="handler-mono">hookStopPuff</td>
+            <td><span class="type-badge" style="background:rgba(0,229,255,0.08);color:var(--cyan);">Hold</span></td>
+          </tr>
+          <tr>
+            <td style="color:var(--text3);">9</td>
+            <td><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text);">rps</span></td>
+            <td><span class="zone-badge" style="background:rgba(0,229,255,0.1);color:var(--cyan);">Arcade</span></td>
+            <td class="handler-mono">rpsStartPuff</td>
+            <td class="handler-mono">rpsStopPuff</td>
+            <td><span class="type-badge" style="background:rgba(0,229,255,0.08);color:var(--cyan);">Hold</span></td>
+          </tr>
+          <tr>
+            <td style="color:var(--text3);">10</td>
+            <td><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text);">puffclock</span></td>
+            <td><span class="zone-badge" style="background:rgba(0,229,255,0.1);color:var(--cyan);">Arcade</span></td>
+            <td class="handler-mono">pcStartPuff</td>
+            <td class="handler-mono">pcStopPuff</td>
+            <td><span class="type-badge" style="background:rgba(0,229,255,0.08);color:var(--cyan);">Hold</span></td>
+          </tr>
+          <tr>
+            <td style="color:var(--text3);">11</td>
+            <td><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text);">beatdrop</span></td>
+            <td><span class="zone-badge" style="background:rgba(0,229,255,0.1);color:var(--cyan);">Arcade</span></td>
+            <td class="handler-mono">bdStartHold</td>
+            <td class="handler-mono">bdReleaseHold</td>
+            <td><span class="type-badge" style="background:rgba(0,229,255,0.08);color:var(--cyan);">Hold</span></td>
+          </tr>
+          <tr>
+            <td style="color:var(--text3);">12</td>
+            <td><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text);">pufflimbo</span></td>
+            <td><span class="zone-badge" style="background:rgba(0,229,255,0.1);color:var(--cyan);">Arcade</span></td>
+            <td class="handler-mono">plStartPuff</td>
+            <td class="handler-mono">plReleasePuff</td>
+            <td><span class="type-badge" style="background:rgba(0,229,255,0.08);color:var(--cyan);">Hold</span></td>
+          </tr>
+          <tr>
+            <td style="color:var(--text3);">13</td>
+            <td><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text);">puffpong</span></td>
+            <td><span class="zone-badge" style="background:rgba(0,229,255,0.1);color:var(--cyan);">Arcade</span></td>
+            <td class="handler-mono">ppPuffUp</td>
+            <td class="handler-mono">ppPuffRelease</td>
+            <td><span class="type-badge" style="background:rgba(0,229,255,0.08);color:var(--cyan);">Hold</span></td>
+          </tr>
+          <!-- TAP-BASED ARCADE -->
+          <tr>
+            <td style="color:var(--text3);">14</td>
+            <td><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text);">tugofwar</span></td>
+            <td><span class="zone-badge" style="background:rgba(0,229,255,0.1);color:var(--cyan);">Arcade</span></td>
+            <td class="handler-mono">towPuff</td>
+            <td style="color:var(--text3);font-style:italic;font-size:10px;">null</td>
+            <td><span class="type-badge" style="background:rgba(163,230,53,0.08);color:var(--lime);">Tap</span></td>
+          </tr>
+          <tr>
+            <td style="color:var(--text3);">15</td>
+            <td><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text);">puffderby</span></td>
+            <td><span class="zone-badge" style="background:rgba(0,229,255,0.1);color:var(--cyan);">Arcade</span></td>
+            <td class="handler-mono">pdPuff</td>
+            <td style="color:var(--text3);font-style:italic;font-size:10px;">null</td>
+            <td><span class="type-badge" style="background:rgba(163,230,53,0.08);color:var(--lime);">Tap</span></td>
+          </tr>
+          <tr>
+            <td style="color:var(--text3);">16</td>
+            <td><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text);">rhythm</span></td>
+            <td><span class="zone-badge" style="background:rgba(0,229,255,0.1);color:var(--cyan);">Arcade</span></td>
+            <td class="handler-mono">rpPuffHit</td>
+            <td style="color:var(--text3);font-style:italic;font-size:10px;">null</td>
+            <td><span class="type-badge" style="background:rgba(163,230,53,0.08);color:var(--lime);">Tap</span></td>
+          </tr>
+          <!-- STAGE -->
+          <tr style="border-top:2px solid var(--border2);">
+            <td style="color:var(--text3);">17</td>
+            <td><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text);">higherlower</span></td>
+            <td><span class="zone-badge" style="background:rgba(255,217,61,0.1);color:var(--gold);">Stage</span></td>
+            <td class="handler-mono" style="color:var(--gold);">setHlPuffStart(now)</td>
+            <td class="handler-mono" style="color:var(--gold);">hlHandlePuff(dur&gt;1.5s)</td>
+            <td><span class="type-badge" style="background:rgba(255,217,61,0.08);color:var(--gold);">Duration</span></td>
+          </tr>
+          <tr>
+            <td style="color:var(--text3);">18</td>
+            <td><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text);">vibecheck</span></td>
+            <td><span class="zone-badge" style="background:rgba(255,217,61,0.1);color:var(--gold);">Stage</span></td>
+            <td class="handler-mono" style="color:var(--gold);">vcPuffStart</td>
+            <td class="handler-mono" style="color:var(--gold);">vcPuffStop</td>
+            <td><span class="type-badge" style="background:rgba(239,68,68,0.08);color:var(--red);">Trivia</span></td>
+          </tr>
+          <tr>
+            <td style="color:var(--text3);">19</td>
+            <td><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text);">survivaltrivia</span></td>
+            <td><span class="zone-badge" style="background:rgba(255,217,61,0.1);color:var(--gold);">Stage</span></td>
+            <td class="handler-mono" style="color:var(--gold);">stPuffStart</td>
+            <td class="handler-mono" style="color:var(--gold);">stPuffStop</td>
+            <td><span class="type-badge" style="background:rgba(239,68,68,0.08);color:var(--red);">Trivia</span></td>
+          </tr>
+          <tr>
+            <td style="color:var(--text3);">20</td>
+            <td><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text);">simonpuffs</span></td>
+            <td><span class="zone-badge" style="background:rgba(255,217,61,0.1);color:var(--gold);">Stage</span></td>
+            <td class="handler-mono" style="color:var(--gold);">spStartPuff</td>
+            <td class="handler-mono" style="color:var(--gold);">spEndPuff</td>
+            <td><span class="type-badge" style="background:rgba(255,217,61,0.08);color:var(--gold);">Hold</span></td>
+          </tr>
+          <tr>
+            <td style="color:var(--text3);">21</td>
+            <td><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text);">puffauction</span></td>
+            <td><span class="zone-badge" style="background:rgba(255,217,61,0.1);color:var(--gold);">Stage</span></td>
+            <td class="handler-mono" style="color:var(--gold);">paStartBid</td>
+            <td class="handler-mono" style="color:var(--gold);">paEndBid</td>
+            <td><span class="type-badge" style="background:rgba(255,217,61,0.08);color:var(--gold);">Hold</span></td>
+          </tr>
+          <tr>
+            <td style="color:var(--text3);">22</td>
+            <td><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text);">pricepuff</span></td>
+            <td><span class="zone-badge" style="background:rgba(255,217,61,0.1);color:var(--gold);">Stage</span></td>
+            <td class="handler-mono" style="color:var(--gold);">pipStartPuff</td>
+            <td class="handler-mono" style="color:var(--gold);">pipStopPuff</td>
+            <td><span class="type-badge" style="background:rgba(255,217,61,0.08);color:var(--gold);">Hold</span></td>
+          </tr>
+          <!-- FORTUNE -->
+          <tr style="border-top:2px solid var(--border2);">
+            <td style="color:var(--text3);">23</td>
+            <td><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text);">crystalball</span></td>
+            <td><span class="zone-badge" style="background:rgba(192,132,252,0.1);color:var(--purple);">Fortune</span></td>
+            <td class="handler-mono" style="color:var(--purple);">cbHandlePuff</td>
+            <td class="handler-mono" style="color:var(--purple);">cbHandlePuffEnd</td>
+            <td><span class="type-badge" style="background:rgba(192,132,252,0.08);color:var(--purple);">Hold</span></td>
+          </tr>
+          <tr>
+            <td style="color:var(--text3);">24</td>
+            <td><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text);">strainbattle</span></td>
+            <td><span class="zone-badge" style="background:rgba(192,132,252,0.1);color:var(--purple);">Fortune</span></td>
+            <td class="handler-mono" style="color:var(--purple);">sbHandlePuff</td>
+            <td class="handler-mono" style="color:var(--purple);">sbHandlePuffEnd</td>
+            <td><span class="type-badge" style="background:rgba(192,132,252,0.08);color:var(--purple);">Hold</span></td>
+          </tr>
+          <tr>
+            <td style="color:var(--text3);">25</td>
+            <td><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text);">matchpredictor</span></td>
+            <td><span class="zone-badge" style="background:rgba(192,132,252,0.1);color:var(--purple);">Fortune</span></td>
+            <td class="handler-mono" style="color:var(--purple);">mpHandlePuff</td>
+            <td class="handler-mono" style="color:var(--purple);">mpHandlePuffEnd</td>
+            <td><span class="type-badge" style="background:rgba(192,132,252,0.08);color:var(--purple);">Hold</span></td>
+          </tr>
+          <tr>
+            <td style="color:var(--text3);">26</td>
+            <td><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text);">dailypicks</span></td>
+            <td><span class="zone-badge" style="background:rgba(192,132,252,0.1);color:var(--purple);">Fortune</span></td>
+            <td class="handler-mono" style="color:var(--purple);">dpHandlePuff</td>
+            <td class="handler-mono" style="color:var(--purple);">dpHandlePuffEnd</td>
+            <td><span class="type-badge" style="background:rgba(192,132,252,0.08);color:var(--purple);">Hold</span></td>
+          </tr>
+          <tr>
+            <td style="color:var(--text3);">27</td>
+            <td><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text);">puffslots</span></td>
+            <td><span class="zone-badge" style="background:rgba(192,132,252,0.1);color:var(--purple);">Fortune</span></td>
+            <td class="handler-mono" style="color:var(--purple);">slotsHandlePuff</td>
+            <td class="handler-mono" style="color:var(--purple);">slotsHandlePuffEnd</td>
+            <td><span class="type-badge" style="background:rgba(192,132,252,0.08);color:var(--purple);">Hold</span></td>
+          </tr>
+          <tr>
+            <td style="color:var(--text3);">28</td>
+            <td><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text);">puffblackjack</span></td>
+            <td><span class="zone-badge" style="background:rgba(192,132,252,0.1);color:var(--purple);">Fortune</span></td>
+            <td class="handler-mono" style="color:var(--purple);">bjHandlePuff</td>
+            <td class="handler-mono" style="color:var(--purple);">bjHandlePuffEnd</td>
+            <td><span class="type-badge" style="background:rgba(192,132,252,0.08);color:var(--purple);">Hold</span></td>
+          </tr>
+          <tr>
+            <td style="color:var(--text3);">29</td>
+            <td><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text);">coinflip</span></td>
+            <td><span class="zone-badge" style="background:rgba(192,132,252,0.1);color:var(--purple);">Fortune</span></td>
+            <td class="handler-mono" style="color:var(--purple);">cfHandlePuff</td>
+            <td class="handler-mono" style="color:var(--purple);">cfHandlePuffEnd</td>
+            <td><span class="type-badge" style="background:rgba(192,132,252,0.08);color:var(--purple);">Hold</span></td>
+          </tr>
+          <tr>
+            <td style="color:var(--text3);">30</td>
+            <td><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text);">crapsnclouds</span></td>
+            <td><span class="zone-badge" style="background:rgba(192,132,252,0.1);color:var(--purple);">Fortune</span></td>
+            <td class="handler-mono" style="color:var(--purple);">crapsHandlePuff</td>
+            <td class="handler-mono" style="color:var(--purple);">crapsHandlePuffEnd</td>
+            <td><span class="type-badge" style="background:rgba(192,132,252,0.08);color:var(--purple);">Hold</span></td>
+          </tr>
+          <tr>
+            <td style="color:var(--text3);">31</td>
+            <td><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text);">mysterybox</span></td>
+            <td><span class="zone-badge" style="background:rgba(192,132,252,0.1);color:var(--purple);">Fortune</span></td>
+            <td class="handler-mono" style="color:var(--purple);">mbHandlePuff</td>
+            <td class="handler-mono" style="color:var(--purple);">mbHandlePuffEnd</td>
+            <td><span class="type-badge" style="background:rgba(192,132,252,0.08);color:var(--purple);">Hold</span></td>
+          </tr>
+          <tr>
+            <td style="color:var(--text3);">32</td>
+            <td><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text);">scratchpuff</span></td>
+            <td><span class="zone-badge" style="background:rgba(192,132,252,0.1);color:var(--purple);">Fortune</span></td>
+            <td class="handler-mono" style="color:var(--purple);">scHandlePuff</td>
+            <td class="handler-mono" style="color:var(--purple);">scHandlePuffEnd</td>
+            <td><span class="type-badge" style="background:rgba(192,132,252,0.08);color:var(--purple);">Hold</span></td>
+          </tr>
+          <tr>
+            <td style="color:var(--text3);">33</td>
+            <td><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text);">fortunecookie</span></td>
+            <td><span class="zone-badge" style="background:rgba(192,132,252,0.1);color:var(--purple);">Fortune</span></td>
+            <td class="handler-mono" style="color:var(--purple);">fcHandlePuff</td>
+            <td class="handler-mono" style="color:var(--purple);">fcHandlePuffEnd</td>
+            <td><span class="type-badge" style="background:rgba(192,132,252,0.08);color:var(--purple);">Hold</span></td>
+          </tr>
+          <tr>
+            <td style="color:var(--text3);">34</td>
+            <td><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text);">treasuremap</span></td>
+            <td><span class="zone-badge" style="background:rgba(192,132,252,0.1);color:var(--purple);">Fortune</span></td>
+            <td class="handler-mono" style="color:var(--purple);">tmHandlePuff</td>
+            <td class="handler-mono" style="color:var(--purple);">tmHandlePuffEnd</td>
+            <td><span class="type-badge" style="background:rgba(192,132,252,0.08);color:var(--purple);">Hold</span></td>
+          </tr>
+          <tr>
+            <td style="color:var(--text3);">35</td>
+            <td><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text);">spinwin</span></td>
+            <td><span class="zone-badge" style="background:rgba(192,132,252,0.1);color:var(--purple);">Fortune</span></td>
+            <td class="handler-mono" style="color:var(--purple);">puffLockIn(swDoSpin)</td>
+            <td style="color:var(--text3);font-style:italic;font-size:10px;">null</td>
+            <td><span class="type-badge" style="background:rgba(163,230,53,0.08);color:var(--lime);">Tap</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ============================================================ -->
+  <!--  5. TRIVIA PUFF-TO-ANSWER                                    -->
+  <!-- ============================================================ -->
+  <section class="section">
+    <div class="section-label" style="color:var(--red);">
+      <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--red);"></span>
+      SECTION 5
+    </div>
+    <h2 class="section-title">Trivia Puff-to-Answer</h2>
+    <p class="section-desc">
+      Vibe Check and Survival Trivia use puff duration to select answers A through D.
+      The function <code style="color:var(--cyan);font-family:'JetBrains Mono',monospace;">getTriviaPuffAnswer(ms)</code>
+      maps hold time to one of four options. A live highlight updates while the player is still puffing.
+    </p>
+
+    <div class="code-block" style="margin-bottom:20px;">
+      <span class="kw">const</span> <span class="fn">getTriviaPuffAnswer</span> = (ms) =&gt;<br>
+      &nbsp;&nbsp;ms &lt; <span class="num">800</span> ? <span class="num">0</span> <span class="cm">// A</span><br>
+      &nbsp;&nbsp;: ms &lt; <span class="num">2000</span> ? <span class="num">1</span> <span class="cm">// B</span><br>
+      &nbsp;&nbsp;: ms &lt; <span class="num">3500</span> ? <span class="num">2</span> <span class="cm">// C</span><br>
+      &nbsp;&nbsp;: <span class="num">3</span>; <span class="cm">// D</span>
+    </div>
+
+    <!-- Visual bands -->
+    <div class="trivia-bands">
+      <div class="trivia-band" style="background:rgba(0,229,255,0.15);">
+        <div class="band-letter" style="color:var(--cyan);">A</div>
+        <div class="band-time" style="color:var(--cyan);">TAP &lt;0.8s</div>
+      </div>
+      <div class="trivia-band" style="background:rgba(52,211,153,0.15);">
+        <div class="band-letter" style="color:var(--green);">B</div>
+        <div class="band-time" style="color:var(--green);">SHORT 0.8-2s</div>
+      </div>
+      <div class="trivia-band" style="background:rgba(255,217,61,0.15);">
+        <div class="band-letter" style="color:var(--gold);">C</div>
+        <div class="band-time" style="color:var(--gold);">MED 2-3.5s</div>
+      </div>
+      <div class="trivia-band" style="background:rgba(239,68,68,0.15);">
+        <div class="band-letter" style="color:var(--red);">D</div>
+        <div class="band-time" style="color:var(--red);">LONG 3.5s+</div>
+      </div>
+    </div>
+
+    <div class="grid-2" style="margin-top:16px;">
+      <div class="card">
+        <div class="card-title" style="color:var(--gold);">Live Highlight</div>
+        <div class="card-desc">
+          While holding, a 100ms interval polls elapsed time and updates
+          <code style="color:var(--cyan);">vcPuffAnswer</code> / <code style="color:var(--cyan);">stPuffHighlight</code>
+          in real-time. The answer option visually glows as the player crosses each threshold.
+          On release, the highlighted answer is submitted.
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="color:var(--purple);">Used In</div>
+        <div class="card-desc">
+          <div style="margin-top:6px;">
+            <span style="display:inline-block;padding:3px 10px;border-radius:6px;background:rgba(255,217,61,0.08);border:1px solid rgba(255,217,61,0.15);font-size:10px;font-weight:700;color:var(--gold);margin-right:6px;">Vibe Check</span>
+            <span style="display:inline-block;padding:3px 10px;border-radius:6px;background:rgba(192,132,252,0.08);border:1px solid rgba(192,132,252,0.15);font-size:10px;font-weight:700;color:var(--purple);">Survival Trivia</span>
+          </div>
+          <div style="margin-top:8px;font-size:11px;color:var(--text3);">
+            Handlers: vcPuffStart/vcPuffStop and stPuffStart/stPuffStop
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ============================================================ -->
+  <!--  6. PER-RENDER IIFE                                          -->
+  <!-- ============================================================ -->
+  <section class="section">
+    <div class="section-label" style="color:var(--purple);">
+      <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--purple);"></span>
+      SECTION 6
+    </div>
+    <h2 class="section-title">Per-Render IIFE Pattern</h2>
+    <p class="section-desc">
+      The BLE notification listener is registered once at connect time. To avoid stale closures,
+      a per-render IIFE writes the current game's handler closures into refs on every render.
+      The listener always reads from refs, never from closed-over values.
+    </p>
+
+    <div class="code-block">
+      <span class="cm">// Runs as top-level IIFE inside component body (not in useEffect)</span><br>
+      (() =&gt; {<br>
+      &nbsp;&nbsp;<span class="kw">const</span> id = gameActive?.id;<br>
+      &nbsp;&nbsp;<span class="kw">let</span> down = <span class="num">null</span>, up = <span class="num">null</span>;<br>
+      &nbsp;&nbsp;<span class="kw">if</span> (id === <span class="str">"finalkick"</span>) { down = kickStartCharge; up = kickStopCharge; }<br>
+      &nbsp;&nbsp;<span class="kw">else if</span> (id === <span class="str">"balloon"</span>) { down = bpStartCharge; up = bpStopCharge; }<br>
+      &nbsp;&nbsp;<span class="cm">// ... 33 more branches ...</span><br>
+      &nbsp;&nbsp;btPuffDown.current = down;<br>
+      &nbsp;&nbsp;btPuffUp.current = up;<br>
+      &nbsp;&nbsp;<span class="cm">// Puff Events always wired regardless of active game</span><br>
+      &nbsp;&nbsp;btPuffEventDown.current = puffEventHoldDown;<br>
+      &nbsp;&nbsp;btPuffEventUp.current = puffEventHoldUp;<br>
+      })();
+    </div>
+
+    <div class="grid-3" style="margin-top:16px;">
+      <div class="card" style="text-align:center;">
+        <div style="font-size:28px;margin-bottom:6px;">&#128260;</div>
+        <div class="card-title">Every Render</div>
+        <div class="card-desc">IIFE executes on each React render cycle to capture the latest closures.</div>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div style="font-size:28px;margin-bottom:6px;">&#128204;</div>
+        <div class="card-title">Ref-Based</div>
+        <div class="card-desc">Handlers written to <code style="color:var(--cyan);">btPuffDown.current</code> / <code style="color:var(--cyan);">btPuffUp.current</code> refs.</div>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div style="font-size:28px;margin-bottom:6px;">&#128274;</div>
+        <div class="card-title">No Stale Closures</div>
+        <div class="card-desc">BLE listener reads from refs, never from values captured at connection time.</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ============================================================ -->
+  <!--  7. DEVICE BONUS                                             -->
+  <!-- ============================================================ -->
+  <section class="section">
+    <div class="section-label" style="color:var(--gold);">
+      <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--gold);"></span>
+      SECTION 7
+    </div>
+    <h2 class="section-title">Device Bonus: 1.5x Coins</h2>
+    <p class="section-desc">
+      When the BLE device is connected, a 1.5x coin multiplier is active for all game rewards.
+      Visual indicators show the bonus status during gameplay and on the hub.
+    </p>
+
+    <div class="grid-2">
+      <div class="card" style="border-color:rgba(255,217,61,0.15);">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="font-size:36px;">&#129689;</div>
+          <div>
+            <div class="card-title" style="color:var(--gold);">1.5x Multiplier</div>
+            <div class="card-desc">
+              Notification fires on connection:
+              <code style="color:var(--gold);font-size:10px;">"Device Connected! 1.5x Coin Bonus Active!"</code>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="border-color:rgba(0,229,255,0.15);">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="font-size:36px;">&#128171;</div>
+          <div>
+            <div class="card-title" style="color:var(--cyan);">Visual Indicators</div>
+            <div class="card-desc">
+              During gameplay, a floating badge in the top-right shows the active multiplier
+              and a cyan "BLE" pill when device is connected.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ============================================================ -->
+  <!--  8. WELCOME FLOW                                             -->
+  <!-- ============================================================ -->
+  <section class="section">
+    <div class="section-label" style="color:var(--green);">
+      <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);"></span>
+      SECTION 8
+    </div>
+    <h2 class="section-title">Welcome Flow</h2>
+    <p class="section-desc">
+      When the device is not connected, a prominent card on the hub invites the player to pair.
+      After connection, a celebration animation and notification play.
+    </p>
+
+    <div class="grid-2">
+      <div class="card" style="border-color:rgba(0,229,255,0.15);">
+        <div class="card-title" style="color:var(--cyan);">Connect Your Cali Clear</div>
+        <div class="card-desc" style="margin-top:8px;">
+          Bottom-pinned card on the hub (shown when <code style="color:var(--cyan);">!bleConnected</code>).
+          Shows two badges: "1.5x Coin Bonus" and "Play All Games". Clicking opens the BLE popup.
+        </div>
+        <div style="display:flex;gap:6px;margin-top:12px;">
+          <div style="padding:3px 10px;border-radius:6px;background:rgba(0,229,255,0.1);border:1px solid rgba(0,229,255,0.2);font-size:9px;font-weight:700;color:var(--cyan);">1.5x Coin Bonus</div>
+          <div style="padding:3px 10px;border-radius:6px;background:rgba(192,132,252,0.1);border:1px solid rgba(192,132,252,0.2);font-size:9px;font-weight:700;color:var(--purple);">Play All Games</div>
+        </div>
+      </div>
+      <div class="card" style="border-color:rgba(52,211,153,0.15);">
+        <div class="card-title" style="color:var(--green);">Connection Celebration</div>
+        <div class="card-desc" style="margin-top:8px;">
+          On first connect: Device Optimization screen launches (progress bar 0 to 100% over ~4s),
+          then notification with achievement sound plays after 1.5s delay.
+        </div>
+        <div style="margin-top:12px;height:8px;border-radius:4px;background:rgba(52,211,153,0.1);overflow:hidden;">
+          <div style="width:100%;height:100%;border-radius:4px;background:linear-gradient(90deg,var(--cyan),var(--green));animation:glow-pulse 2s ease-in-out infinite;"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ============================================================ -->
+  <!--  9. GLOW OVERLAY                                             -->
+  <!-- ============================================================ -->
+  <section class="section">
+    <div class="section-label" style="color:var(--pink);">
+      <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--pink);"></span>
+      SECTION 9
+    </div>
+    <h2 class="section-title">Glow Overlay</h2>
+    <p class="section-desc">
+      When <code style="color:var(--cyan);font-family:'JetBrains Mono',monospace;">btPuffActive</code> is true,
+      a full-width gradient glow radiates from the top of the viewport. It fades in at 0.18s and out at 0.6s
+      with a continuous 1.4s breathing animation.
+    </p>
+
+    <div class="glow-preview">
+      <div class="glow-gradient"></div>
+      <div class="glow-label">PUFF ACTIVE -- btPuffGlow ANIMATION</div>
+    </div>
+
+    <div class="code-block" style="margin-top:16px;">
+      <span class="cm">// Fixed overlay at z-index 250</span><br>
+      background: <span class="str">linear-gradient</span>(180deg,<br>
+      &nbsp;&nbsp;rgba(<span class="num">0,229,255</span>,<span class="num">0.55</span>) 0%, &nbsp;&nbsp;&nbsp;<span class="cm">// cyan</span><br>
+      &nbsp;&nbsp;rgba(<span class="num">192,132,252</span>,<span class="num">0.30</span>) 35%, <span class="cm">// purple</span><br>
+      &nbsp;&nbsp;rgba(<span class="num">255,77,141</span>,<span class="num">0.15</span>) 65%, &nbsp;<span class="cm">// pink</span><br>
+      &nbsp;&nbsp;transparent 100%<br>
+      );<br>
+      opacity: btPuffActive ? <span class="num">1</span> : <span class="num">0</span>;<br>
+      animation: btPuffGlow <span class="num">1.4s</span> ease-in-out infinite alternate;
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ============================================================ -->
+  <!--  10. INPUT SIMPLIFIED                                        -->
+  <!-- ============================================================ -->
+  <section class="section">
+    <div class="section-label" style="color:var(--lime);">
+      <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--lime);"></span>
+      SECTION 10
+    </div>
+    <h2 class="section-title">Input Simplified</h2>
+    <p class="section-desc">
+      The input mode selector has been removed. There is no longer a choice between button, slider,
+      or swipe inputs. The BLE puff device is the sole input mechanism.
+      Every game requires a connected device to start.
+    </p>
+
+    <div class="grid-4">
+      <div class="card" style="text-align:center;border-color:rgba(0,229,255,0.2);">
+        <div style="font-size:24px;margin-bottom:6px;">&#128168;</div>
+        <div style="font-size:12px;font-weight:800;color:var(--cyan);">Hold</div>
+        <div style="font-size:9px;color:var(--text3);margin-top:3px;">Duration = power</div>
+        <div style="font-size:9px;color:var(--text3);">22 games</div>
+      </div>
+      <div class="card" style="text-align:center;border-color:rgba(163,230,53,0.2);">
+        <div style="font-size:24px;margin-bottom:6px;">&#9889;</div>
+        <div style="font-size:12px;font-weight:800;color:var(--lime);">Tap</div>
+        <div style="font-size:9px;color:var(--text3);margin-top:3px;">Quick burst</div>
+        <div style="font-size:9px;color:var(--text3);">4 games</div>
+      </div>
+      <div class="card" style="text-align:center;border-color:rgba(239,68,68,0.2);">
+        <div style="font-size:24px;margin-bottom:6px;">&#127891;</div>
+        <div style="font-size:12px;font-weight:800;color:var(--red);">Trivia</div>
+        <div style="font-size:9px;color:var(--text3);margin-top:3px;">Duration = answer</div>
+        <div style="font-size:9px;color:var(--text3);">2 games</div>
+      </div>
+      <div class="card" style="text-align:center;border-color:rgba(255,217,61,0.2);">
+        <div style="font-size:24px;margin-bottom:6px;">&#9202;</div>
+        <div style="font-size:12px;font-weight:800;color:var(--gold);">Duration</div>
+        <div style="font-size:9px;color:var(--text3);margin-top:3px;">Short/long = choice</div>
+        <div style="font-size:9px;color:var(--text3);">1 game</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!--  FOOTER                                                      -->
+  <!-- ============================================================ -->
+  <div class="divider"></div>
+  <footer style="text-align:center;padding:24px 0;">
+    <div style="font-size:11px;color:var(--text3);">Mood Lab Arena -- BLE Device Integration v2</div>
+    <div style="font-size:10px;color:var(--text3);margin-top:4px;">
+      Generated from moodlab-arena-v6.jsx | 35 IIFE entries | 32 unique games | 3 zones
+    </div>
+    <div style="margin-top:12px;display:flex;justify-content:center;gap:8px;">
+      <span style="padding:3px 10px;border-radius:6px;background:rgba(0,229,255,0.06);border:1px solid rgba(0,229,255,0.1);font-size:9px;color:var(--cyan);font-weight:700;">Web Bluetooth API</span>
+      <span style="padding:3px 10px;border-radius:6px;background:rgba(192,132,252,0.06);border:1px solid rgba(192,132,252,0.1);font-size:9px;color:var(--purple);font-weight:700;">Cali Clear BLE</span>
+      <span style="padding:3px 10px;border-radius:6px;background:rgba(52,211,153,0.06);border:1px solid rgba(52,211,153,0.1);font-size:9px;color:var(--green);font-weight:700;">React 18</span>
+    </div>
+  </footer>
+
+</div>
+</body>
+</html>

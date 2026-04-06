@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mood Lab Arena — App Architecture & Tech Stack</title>
+<style>
+  /* ── Reset & Base ── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #050510;
+    --bg2: #0a0a1a;
+    --bg3: #111128;
+    --cyan: #00E5FF;
+    --gold: #FFD93D;
+    --pink: #FF4D8D;
+    --purple: #C084FC;
+    --orange: #FB923C;
+    --green: #34D399;
+    --white: #f0f0f8;
+    --dim: #8888aa;
+    --glass: rgba(255,255,255,0.04);
+    --glass-border: rgba(255,255,255,0.08);
+    --radius: 16px;
+    --radius-sm: 10px;
+  }
+  html { font-size: 15px; }
+  body {
+    background: var(--bg);
+    color: var(--white);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', Roboto, sans-serif;
+    line-height: 1.6;
+    padding: 0;
+    min-height: 100vh;
+  }
+
+  /* ── Page Container ── */
+  .page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 48px 32px 40px;
+  }
+
+  /* ── Header ── */
+  .header {
+    text-align: center;
+    margin-bottom: 48px;
+    position: relative;
+  }
+  .header::after {
+    content: '';
+    display: block;
+    width: 200px;
+    height: 3px;
+    margin: 24px auto 0;
+    background: linear-gradient(90deg, var(--cyan), var(--purple), var(--pink));
+    border-radius: 2px;
+  }
+  .header .badge {
+    display: inline-block;
+    padding: 4px 16px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    background: rgba(0,229,255,0.1);
+    color: var(--cyan);
+    border: 1px solid rgba(0,229,255,0.2);
+    margin-bottom: 16px;
+  }
+  .header h1 {
+    font-size: 2.2rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    background: linear-gradient(135deg, var(--cyan), var(--purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.2;
+  }
+  .header .subtitle {
+    font-size: 0.95rem;
+    color: var(--dim);
+    margin-top: 8px;
+    letter-spacing: 1px;
+  }
+
+  /* ── Section ── */
+  .section {
+    margin-bottom: 36px;
+  }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 18px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--glass-border);
+  }
+  .section-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+  .section-header h2 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .section-header .num {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--dim);
+    margin-left: auto;
+    letter-spacing: 1.5px;
+  }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius);
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+  .card.cyan::before { background: linear-gradient(90deg, var(--cyan), transparent); }
+  .card.gold::before { background: linear-gradient(90deg, var(--gold), transparent); }
+  .card.pink::before { background: linear-gradient(90deg, var(--pink), transparent); }
+  .card.purple::before { background: linear-gradient(90deg, var(--purple), transparent); }
+  .card.orange::before { background: linear-gradient(90deg, var(--orange), transparent); }
+  .card.green::before { background: linear-gradient(90deg, var(--green), transparent); }
+
+  /* ── Grid Layouts ── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+  .grid-6 { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
+
+  /* ── Tech Stack Diagram ── */
+  .tech-stack-row {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: 16px;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+  }
+  .tech-stack-row:last-child { border-bottom: none; }
+  .tech-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+  }
+  .tech-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    border: 1px solid;
+    white-space: nowrap;
+  }
+  .pill.cyan  { background: rgba(0,229,255,0.08); color: var(--cyan); border-color: rgba(0,229,255,0.2); }
+  .pill.gold  { background: rgba(255,217,61,0.08); color: var(--gold); border-color: rgba(255,217,61,0.2); }
+  .pill.pink  { background: rgba(255,77,141,0.08); color: var(--pink); border-color: rgba(255,77,141,0.2); }
+  .pill.purple{ background: rgba(192,132,252,0.08); color: var(--purple); border-color: rgba(192,132,252,0.2); }
+  .pill.orange{ background: rgba(251,146,60,0.08); color: var(--orange); border-color: rgba(251,146,60,0.2); }
+  .pill.green { background: rgba(52,211,153,0.08); color: var(--green); border-color: rgba(52,211,153,0.2); }
+  .pill.dim   { background: rgba(136,136,170,0.06); color: var(--dim); border-color: rgba(136,136,170,0.15); }
+
+  /* ── File Tree ── */
+  .file-tree {
+    font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+    font-size: 0.8rem;
+    line-height: 2;
+  }
+  .file-tree .dir  { color: var(--purple); font-weight: 600; }
+  .file-tree .file { color: var(--dim); }
+  .file-tree .jsx  { color: var(--cyan); font-weight: 700; }
+  .file-tree .html { color: var(--gold); }
+  .file-tree .media{ color: var(--pink); }
+  .file-tree .audio{ color: var(--orange); }
+  .file-tree .img  { color: var(--green); }
+  .file-tree .annotation {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 0.7rem;
+    color: var(--dim);
+    margin-left: 8px;
+  }
+  .tree-indent { padding-left: 24px; }
+  .tree-indent-2 { padding-left: 48px; }
+
+  /* ── Stat Boxes ── */
+  .stat-box {
+    text-align: center;
+    padding: 16px 8px;
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-sm);
+  }
+  .stat-box .number {
+    font-size: 1.6rem;
+    font-weight: 800;
+    line-height: 1.1;
+  }
+  .stat-box .label {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--dim);
+    margin-top: 4px;
+  }
+
+  /* ── Flow Diagram ── */
+  .flow {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 8px 0;
+  }
+  .flow-node {
+    padding: 8px 16px;
+    border-radius: var(--radius-sm);
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-align: center;
+    border: 1px solid;
+    white-space: nowrap;
+  }
+  .flow-arrow {
+    font-size: 1rem;
+    margin: 0 6px;
+    flex-shrink: 0;
+  }
+  .flow-arrow.cyan { color: var(--cyan); }
+  .flow-arrow.gold { color: var(--gold); }
+  .flow-arrow.pink { color: var(--pink); }
+  .flow-arrow.purple { color: var(--purple); }
+  .flow-arrow.orange { color: var(--orange); }
+  .flow-arrow.down {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    margin: 6px 0;
+    font-size: 1.2rem;
+  }
+
+  /* ── Component List ── */
+  .comp-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.04);
+    margin-bottom: 6px;
+    transition: background 0.2s;
+  }
+  .comp-item:hover {
+    background: rgba(255,255,255,0.05);
+  }
+  .comp-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .comp-name {
+    font-size: 0.82rem;
+    font-weight: 600;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+  }
+  .comp-desc {
+    font-size: 0.72rem;
+    color: var(--dim);
+    margin-left: auto;
+  }
+
+  /* ── Color Swatch ── */
+  .swatch-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+  }
+  .swatch {
+    text-align: center;
+  }
+  .swatch-circle {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    margin: 0 auto 6px;
+    border: 2px solid rgba(255,255,255,0.1);
+    position: relative;
+  }
+  .swatch-circle::after {
+    content: '';
+    position: absolute;
+    inset: -6px;
+    border-radius: 50%;
+    border: 1px solid;
+    opacity: 0.15;
+  }
+  .swatch-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .swatch-hex {
+    font-size: 0.62rem;
+    color: var(--dim);
+    font-family: monospace;
+  }
+
+  /* ── Zone Cards ── */
+  .zone-card {
+    padding: 14px;
+    border-radius: var(--radius-sm);
+    border: 1px solid;
+    text-align: center;
+  }
+  .zone-emoji { font-size: 1.3rem; margin-bottom: 4px; }
+  .zone-name {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  /* ── Deployment ── */
+  .deploy-url {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 24px;
+    background: rgba(0,229,255,0.06);
+    border: 1px solid rgba(0,229,255,0.2);
+    font-family: monospace;
+    font-size: 0.82rem;
+    color: var(--cyan);
+    font-weight: 600;
+  }
+  .deploy-detail {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 0;
+    font-size: 0.82rem;
+  }
+  .deploy-detail .icon {
+    font-size: 1rem;
+  }
+
+  /* ── Big Architecture Diagram ── */
+  .arch-diagram {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    padding: 20px 0;
+  }
+  .arch-layer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+    padding: 14px 20px;
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-align: center;
+    border: 1px solid;
+    position: relative;
+  }
+  .arch-connector {
+    display: flex;
+    justify-content: center;
+    padding: 2px 0;
+    font-size: 1.2rem;
+    opacity: 0.5;
+  }
+
+  /* ── "No" badges ── */
+  .no-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    background: rgba(255,77,141,0.08);
+    color: var(--pink);
+    border: 1px solid rgba(255,77,141,0.15);
+  }
+
+  /* ── Footer ── */
+  .footer {
+    margin-top: 48px;
+    text-align: center;
+    padding-top: 24px;
+    border-top: 1px solid var(--glass-border);
+  }
+  .footer-text {
+    font-size: 0.75rem;
+    color: var(--dim);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .footer-sub {
+    font-size: 0.65rem;
+    color: rgba(136,136,170,0.5);
+    margin-top: 6px;
+  }
+
+  /* ── Glass panels ── */
+  .glass-panel {
+    padding: 16px 20px;
+    border-radius: var(--radius-sm);
+    font-size: 0.78rem;
+    font-family: monospace;
+    line-height: 1.9;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 800px) {
+    .grid-2 { grid-template-columns: 1fr; }
+    .grid-3 { grid-template-columns: 1fr; }
+    .grid-6 { grid-template-columns: repeat(3, 1fr); }
+    .swatch-grid { grid-template-columns: repeat(3, 1fr); }
+    .page { padding: 24px 16px; }
+    .header h1 { font-size: 1.5rem; }
+  }
+
+  /* ── Print ── */
+  @media print {
+    body { background: #fff; color: #111; }
+    .card { border: 1px solid #ddd; background: #fafafa; }
+    .pill { border: 1px solid #ccc; }
+    .header h1 { -webkit-text-fill-color: #111; background: none; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ═══════════ HEADER ═══════════ -->
+  <header class="header">
+    <div class="badge">Infographic 01</div>
+    <h1>MOOD LAB ARENA</h1>
+    <h1 style="font-size:1.3rem; margin-top:2px;">App Architecture &amp; Tech Stack</h1>
+    <p class="subtitle">Developer Guide &middot; Infographic 01</p>
+  </header>
+
+  <!-- ═══════════ 01 · TECH STACK ═══════════ -->
+  <section class="section">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(0,229,255,0.1); color:var(--cyan);">&#9881;</div>
+      <h2 style="color:var(--cyan);">Tech Stack</h2>
+      <span class="num">01</span>
+    </div>
+
+    <div class="grid-2">
+      <!-- Left: stack layers -->
+      <div class="card cyan">
+        <div class="tech-stack-row">
+          <span class="tech-label" style="color:var(--cyan);">Frontend</span>
+          <div class="tech-pills">
+            <span class="pill cyan">&#9883; React 18</span>
+            <span class="pill cyan">UMD via CDN</span>
+          </div>
+        </div>
+        <div class="tech-stack-row">
+          <span class="tech-label" style="color:var(--gold);">Compiler</span>
+          <div class="tech-pills">
+            <span class="pill gold">&#9889; Babel</span>
+            <span class="pill gold">In-Browser</span>
+          </div>
+        </div>
+        <div class="tech-stack-row">
+          <span class="tech-label" style="color:var(--purple);">3D</span>
+          <div class="tech-pills">
+            <span class="pill purple">&#9826; Three.js 0.160.0</span>
+            <span class="pill purple">CDN</span>
+          </div>
+        </div>
+        <div class="tech-stack-row">
+          <span class="tech-label" style="color:var(--orange);">Audio</span>
+          <div class="tech-pills">
+            <span class="pill orange">&#9835; Web Audio API</span>
+            <span class="pill orange">90 Synth Sounds</span>
+          </div>
+        </div>
+        <div class="tech-stack-row">
+          <span class="tech-label" style="color:var(--pink);">BLE</span>
+          <div class="tech-pills">
+            <span class="pill pink">&#9887; Web Bluetooth API</span>
+            <span class="pill pink">Vape Controller</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Architecture diagram -->
+      <div class="card cyan">
+        <div style="text-align:center; margin-bottom:14px;">
+          <span style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:var(--dim);">Runtime Architecture</span>
+        </div>
+        <div class="arch-diagram">
+          <div class="arch-layer" style="background:rgba(0,229,255,0.06); border-color:rgba(0,229,255,0.2); color:var(--cyan); max-width:280px;">
+            &#127760; Browser (Chrome/Edge)
+          </div>
+          <div class="arch-connector" style="color:var(--cyan);">&#8595;</div>
+          <div class="arch-layer" style="background:rgba(255,217,61,0.06); border-color:rgba(255,217,61,0.2); color:var(--gold); max-width:320px;">
+            &#9889; Babel &mdash; compiles JSX at runtime
+          </div>
+          <div class="arch-connector" style="color:var(--gold);">&#8595;</div>
+          <div class="arch-layer" style="background:rgba(192,132,252,0.06); border-color:rgba(192,132,252,0.2); color:var(--purple); max-width:360px;">
+            &#9883; React 18 &mdash; Single MoodLabArena() component
+          </div>
+          <div class="arch-connector" style="color:var(--purple);">&#8595;</div>
+          <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+            <div class="arch-layer" style="background:rgba(255,77,141,0.06); border-color:rgba(255,77,141,0.2); color:var(--pink); font-size:0.72rem; padding:8px 14px;">
+              &#9887; BLE
+            </div>
+            <div class="arch-layer" style="background:rgba(251,146,60,0.06); border-color:rgba(251,146,60,0.2); color:var(--orange); font-size:0.72rem; padding:8px 14px;">
+              &#9835; Audio
+            </div>
+            <div class="arch-layer" style="background:rgba(52,211,153,0.06); border-color:rgba(52,211,153,0.2); color:var(--green); font-size:0.72rem; padding:8px 14px;">
+              &#9826; Three.js
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex; justify-content:center; gap:10px; margin-top:16px; flex-wrap:wrap;">
+          <span class="no-badge">&#10005; No Build Step</span>
+          <span class="no-badge">&#10005; No Bundler</span>
+          <span class="no-badge">&#10005; No Node</span>
+          <span class="no-badge">&#10005; No NPM</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ 02 · FILE STRUCTURE ═══════════ -->
+  <section class="section">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(255,217,61,0.1); color:var(--gold);">&#128193;</div>
+      <h2 style="color:var(--gold);">File Structure</h2>
+      <span class="num">02</span>
+    </div>
+
+    <div class="grid-2">
+      <div class="card gold">
+        <div class="file-tree">
+          <div><span class="dir">/</span></div>
+          <div class="tree-indent">
+            <span class="html">index.html</span>
+            <span class="annotation">&larr; loader, phone frame 430&times;932, Babel, back button</span>
+          </div>
+          <div class="tree-indent">
+            <span class="jsx">moodlab-arena-v6.jsx</span>
+            <span class="annotation">&larr; 21,600 lines &mdash; THE app</span>
+          </div>
+          <div class="tree-indent"><span class="dir">assets/arena/</span></div>
+          <div class="tree-indent-2">
+            <span class="media">hub.png/mp4</span>,
+            <span class="media">arcade.png/mp4</span>,
+            <span class="media">stage.png/mp4</span>
+          </div>
+          <div class="tree-indent-2">
+            <span class="media">oracle.png/mp4</span>,
+            <span class="media">wall.png/mp4</span>,
+            <span class="media">worldcup.png/mp4</span>
+          </div>
+          <div class="tree-indent-2">
+            <span class="audio">win.m4a</span>,
+            <span class="audio">lose.m4a</span>,
+            <span class="audio">laugh.m4a</span>
+          </div>
+          <div class="tree-indent-2">
+            <span class="img">cali-clear-logo.png</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="card gold" style="display:flex; flex-direction:column; justify-content:center;">
+        <div class="grid-3" style="margin-bottom:16px;">
+          <div class="stat-box">
+            <div class="number" style="color:var(--cyan);">21.6K</div>
+            <div class="label">Lines of JSX</div>
+          </div>
+          <div class="stat-box">
+            <div class="number" style="color:var(--gold);">1</div>
+            <div class="label">JSX File</div>
+          </div>
+          <div class="stat-box">
+            <div class="number" style="color:var(--pink);">0</div>
+            <div class="label">Build Steps</div>
+          </div>
+        </div>
+        <div class="grid-3">
+          <div class="stat-box">
+            <div class="number" style="color:var(--purple);">6</div>
+            <div class="label">Zone Videos</div>
+          </div>
+          <div class="stat-box">
+            <div class="number" style="color:var(--orange);">90</div>
+            <div class="label">Synth Sounds</div>
+          </div>
+          <div class="stat-box">
+            <div class="number" style="color:var(--green);">3</div>
+            <div class="label">Audio Files</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ 03 · COMPONENT ARCHITECTURE ═══════════ -->
+  <section class="section">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(192,132,252,0.1); color:var(--purple);">&#9881;</div>
+      <h2 style="color:var(--purple);">Component Architecture</h2>
+      <span class="num">03</span>
+    </div>
+
+    <div class="grid-2">
+      <!-- Left: Component info -->
+      <div class="card purple">
+        <div style="text-align:center; margin-bottom:16px;">
+          <div style="font-family:monospace; font-size:1rem; color:var(--purple); font-weight:800;">function MoodLabArena()</div>
+          <div style="font-size:0.72rem; color:var(--dim); margin-top:4px;">Single component &mdash; entire application</div>
+        </div>
+
+        <div class="grid-3" style="margin-bottom:16px;">
+          <div class="stat-box">
+            <div class="number" style="color:var(--cyan); font-size:1.3rem;">200+</div>
+            <div class="label">useState</div>
+          </div>
+          <div class="stat-box">
+            <div class="number" style="color:var(--gold); font-size:1.3rem;">30+</div>
+            <div class="label">useRef</div>
+          </div>
+          <div class="stat-box">
+            <div class="number" style="color:var(--pink); font-size:1.3rem;">50+</div>
+            <div class="label">@keyframes</div>
+          </div>
+        </div>
+
+        <div style="margin-top:4px;">
+          <div style="font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:var(--dim); margin-bottom:8px;">Module-Level Constants</div>
+          <div class="tech-pills">
+            <span class="pill dim">Game Data</span>
+            <span class="pill dim">Teams</span>
+            <span class="pill dim">Colors (C)</span>
+            <span class="pill dim">Zones (Z)</span>
+            <span class="pill dim">Sound Defs</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Key Render Functions -->
+      <div class="card purple">
+        <div style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:var(--dim); margin-bottom:10px;">Key Render Functions</div>
+
+        <div class="comp-item"><div class="comp-dot" style="background:var(--cyan);"></div><span class="comp-name">renderArenaHub()</span><span class="comp-desc">Main hub / zone selector</span></div>
+        <div class="comp-item"><div class="comp-dot" style="background:var(--gold);"></div><span class="comp-name">renderArcade()</span><span class="comp-desc">Arcade zone games</span></div>
+        <div class="comp-item"><div class="comp-dot" style="background:var(--pink);"></div><span class="comp-name">renderStage()</span><span class="comp-desc">Stage zone games</span></div>
+        <div class="comp-item"><div class="comp-dot" style="background:var(--purple);"></div><span class="comp-name">renderOracle()</span><span class="comp-desc">Oracle zone games</span></div>
+        <div class="comp-item"><div class="comp-dot" style="background:var(--orange);"></div><span class="comp-name">renderWall()</span><span class="comp-desc">Wall zone games</span></div>
+        <div class="comp-item"><div class="comp-dot" style="background:var(--green);"></div><span class="comp-name">renderWorldCupHub()</span><span class="comp-desc">World Cup zone</span></div>
+        <div class="comp-item"><div class="comp-dot" style="background:var(--white);"></div><span class="comp-name">renderGameOverlay()</span><span class="comp-desc">Active game layer</span></div>
+
+        <div style="margin-top:12px;">
+          <span class="no-badge" style="background:rgba(192,132,252,0.08); color:var(--purple); border-color:rgba(192,132,252,0.15);">&#10005; No Routing Library &mdash; state-driven navigation</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ 04 · STATE FLOW ═══════════ -->
+  <section class="section">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(251,146,60,0.1); color:var(--orange);">&#8634;</div>
+      <h2 style="color:var(--orange);">State Flow</h2>
+      <span class="num">04</span>
+    </div>
+
+    <div class="card orange">
+      <div style="text-align:center; margin-bottom:6px;">
+        <span style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:var(--dim);">Navigation State Machine</span>
+      </div>
+
+      <!-- Row 1: tab -->
+      <div class="flow">
+        <div class="flow-node" style="background:rgba(0,229,255,0.08); border-color:rgba(0,229,255,0.25); color:var(--cyan);">
+          tab
+        </div>
+        <span class="flow-arrow cyan">&#8594;</span>
+        <span class="pill cyan" style="font-size:0.72rem;">arena</span>
+        <span class="pill cyan" style="font-size:0.72rem;">live</span>
+        <span class="pill cyan" style="font-size:0.72rem;">me</span>
+      </div>
+      <div class="flow-arrow down cyan">&#8595;</div>
+
+      <!-- Row 2: arenaView -->
+      <div class="flow">
+        <div class="flow-node" style="background:rgba(255,217,61,0.08); border-color:rgba(255,217,61,0.25); color:var(--gold);">
+          arenaView
+        </div>
+        <span class="flow-arrow gold">&#8594;</span>
+        <span class="pill gold" style="font-size:0.72rem;">hub</span>
+        <span class="pill gold" style="font-size:0.72rem;">arcade</span>
+        <span class="pill gold" style="font-size:0.72rem;">stage</span>
+        <span class="pill gold" style="font-size:0.72rem;">oracle</span>
+        <span class="pill gold" style="font-size:0.72rem;">wall</span>
+        <span class="pill gold" style="font-size:0.72rem;">worldcup</span>
+      </div>
+      <div class="flow-arrow down gold">&#8595;</div>
+
+      <!-- Row 3: selectedGame -->
+      <div class="flow">
+        <div class="flow-node" style="background:rgba(192,132,252,0.08); border-color:rgba(192,132,252,0.25); color:var(--purple);">
+          selectedGame
+        </div>
+        <span class="flow-arrow purple">&#8594;</span>
+        <span class="pill purple" style="font-size:0.72rem;">Game Object</span>
+      </div>
+      <div class="flow-arrow down purple">&#8595;</div>
+
+      <!-- Row 4: matchmaking -->
+      <div class="flow">
+        <div class="flow-node" style="background:rgba(255,77,141,0.08); border-color:rgba(255,77,141,0.25); color:var(--pink);">
+          matchmaking
+        </div>
+        <span class="flow-arrow pink">&#8594;</span>
+        <span class="pill pink" style="font-size:0.72rem;">Countdown Timer</span>
+      </div>
+      <div class="flow-arrow down pink">&#8595;</div>
+
+      <!-- Row 5: gameActive -->
+      <div class="flow">
+        <div class="flow-node" style="background:rgba(251,146,60,0.08); border-color:rgba(251,146,60,0.25); color:var(--orange);">
+          gameActive
+        </div>
+        <span class="flow-arrow orange">&#8594;</span>
+        <span class="pill orange" style="font-size:0.72rem;">Active Game</span>
+      </div>
+      <div class="flow-arrow down orange">&#8595;</div>
+
+      <!-- Row 6: game-specific -->
+      <div class="flow" style="flex-wrap:wrap; gap:6px;">
+        <span class="pill dim" style="font-size:0.68rem;">kickState</span>
+        <span class="pill dim" style="font-size:0.68rem;">duelPhase</span>
+        <span class="pill dim" style="font-size:0.68rem;">triviaQ</span>
+        <span class="pill dim" style="font-size:0.68rem;">spinAngle</span>
+        <span class="pill dim" style="font-size:0.68rem;">puffPower</span>
+        <span class="pill dim" style="font-size:0.68rem;">wordGuess</span>
+        <span class="pill dim" style="font-size:0.68rem;">cardState</span>
+        <span class="pill dim" style="font-size:0.68rem;">racePos</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ 05 · DESIGN SYSTEM ═══════════ -->
+  <section class="section">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(255,77,141,0.1); color:var(--pink);">&#127912;</div>
+      <h2 style="color:var(--pink);">Design System</h2>
+      <span class="num">05</span>
+    </div>
+
+    <div class="grid-2">
+      <!-- Left: Color Palette -->
+      <div class="card pink">
+        <div style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:var(--dim); margin-bottom:14px;">
+          Color Constants (C Object) &mdash; 15 Colors
+        </div>
+        <div class="swatch-grid">
+          <div class="swatch">
+            <div class="swatch-circle" style="background:var(--cyan);"></div>
+            <div class="swatch-label" style="color:var(--cyan);">Cyan</div>
+            <div class="swatch-hex">#00E5FF</div>
+          </div>
+          <div class="swatch">
+            <div class="swatch-circle" style="background:var(--gold);"></div>
+            <div class="swatch-label" style="color:var(--gold);">Gold</div>
+            <div class="swatch-hex">#FFD93D</div>
+          </div>
+          <div class="swatch">
+            <div class="swatch-circle" style="background:var(--pink);"></div>
+            <div class="swatch-label" style="color:var(--pink);">Pink</div>
+            <div class="swatch-hex">#FF4D8D</div>
+          </div>
+          <div class="swatch">
+            <div class="swatch-circle" style="background:var(--purple);"></div>
+            <div class="swatch-label" style="color:var(--purple);">Purple</div>
+            <div class="swatch-hex">#C084FC</div>
+          </div>
+          <div class="swatch">
+            <div class="swatch-circle" style="background:var(--orange);"></div>
+            <div class="swatch-label" style="color:var(--orange);">Orange</div>
+            <div class="swatch-hex">#FB923C</div>
+          </div>
+        </div>
+
+        <div style="margin-top:18px; font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:var(--dim); margin-bottom:10px;">
+          Glass Morphism System
+        </div>
+        <div class="tech-pills">
+          <span class="pill dim">GLASS_CLEAR</span>
+          <span class="pill dim">GLASS_CARD</span>
+          <span class="pill dim">LG System</span>
+        </div>
+      </div>
+
+      <!-- Right: Zone Themes -->
+      <div class="card pink">
+        <div style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:var(--dim); margin-bottom:14px;">
+          Zone Themes (Z Object) &mdash; 5 Zones
+        </div>
+        <div class="grid-3" style="margin-bottom:14px;">
+          <div class="zone-card" style="background:rgba(0,229,255,0.06); border-color:rgba(0,229,255,0.2);">
+            <div class="zone-emoji">&#127918;</div>
+            <div class="zone-name" style="color:var(--cyan);">Arcade</div>
+          </div>
+          <div class="zone-card" style="background:rgba(255,77,141,0.06); border-color:rgba(255,77,141,0.2);">
+            <div class="zone-emoji">&#127908;</div>
+            <div class="zone-name" style="color:var(--pink);">Stage</div>
+          </div>
+          <div class="zone-card" style="background:rgba(192,132,252,0.06); border-color:rgba(192,132,252,0.2);">
+            <div class="zone-emoji">&#128302;</div>
+            <div class="zone-name" style="color:var(--purple);">Oracle</div>
+          </div>
+        </div>
+        <div class="grid-2" style="max-width:66%; margin:0 auto;">
+          <div class="zone-card" style="background:rgba(251,146,60,0.06); border-color:rgba(251,146,60,0.2);">
+            <div class="zone-emoji">&#128293;</div>
+            <div class="zone-name" style="color:var(--orange);">Wall</div>
+          </div>
+          <div class="zone-card" style="background:rgba(255,217,61,0.06); border-color:rgba(255,217,61,0.2);">
+            <div class="zone-emoji">&#9917;</div>
+            <div class="zone-name" style="color:var(--gold);">World Cup</div>
+          </div>
+        </div>
+
+        <div style="margin-top:16px; font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:var(--dim); margin-bottom:8px;">
+          Each zone provides:
+        </div>
+        <div class="tech-pills">
+          <span class="pill cyan" style="font-size:0.68rem;">primary</span>
+          <span class="pill purple" style="font-size:0.68rem;">glow</span>
+          <span class="pill dim" style="font-size:0.68rem;">dim</span>
+          <span class="pill gold" style="font-size:0.68rem;">gradient</span>
+          <span class="pill pink" style="font-size:0.68rem;">bg pattern</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ 06 · DEPLOYMENT ═══════════ -->
+  <section class="section">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(52,211,153,0.1); color:var(--green);">&#9650;</div>
+      <h2 style="color:var(--green);">Deployment</h2>
+      <span class="num">06</span>
+    </div>
+
+    <div class="card green">
+      <div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:20px;">
+        <!-- URL -->
+        <div>
+          <div style="font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:var(--dim); margin-bottom:8px;">Production URL</div>
+          <div class="deploy-url">&#9650; moodlab-arena-demo-v2.vercel.app</div>
+        </div>
+
+        <!-- Process -->
+        <div style="flex:1; min-width:280px;">
+          <div style="font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:var(--dim); margin-bottom:8px;">Deploy Process</div>
+          <div class="flow" style="justify-content:flex-start;">
+            <div class="flow-node" style="background:rgba(52,211,153,0.08); border-color:rgba(52,211,153,0.25); color:var(--green); font-size:0.72rem;">
+              git push
+            </div>
+            <span class="flow-arrow green" style="color:var(--green);">&#8594;</span>
+            <div class="flow-node" style="background:rgba(52,211,153,0.08); border-color:rgba(52,211,153,0.25); color:var(--green); font-size:0.72rem;">
+              Vercel detects
+            </div>
+            <span class="flow-arrow green" style="color:var(--green);">&#8594;</span>
+            <div class="flow-node" style="background:rgba(52,211,153,0.08); border-color:rgba(52,211,153,0.25); color:var(--green); font-size:0.72rem;">
+              Live &#10003;
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:16px; display:flex; flex-wrap:wrap; gap:12px;">
+        <span class="pill green">&#10003; No Build &mdash; just push files</span>
+        <span class="pill green">&#10003; Cache Busting: ?v=Date.now()</span>
+        <span class="pill green">&#10003; Static hosting</span>
+        <span class="pill green">&#10003; Instant deploys</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ FOOTER ═══════════ -->
+  <footer class="footer">
+    <div class="footer-text">Mood Lab &times; Cali Clear &middot; FIFA World Cup 2026</div>
+    <div class="footer-sub">Single-file React app &middot; 21,600 lines &middot; Zero build steps &middot; Vape-controlled gaming</div>
+  </footer>
+
+</div>
+</body>
+</html>

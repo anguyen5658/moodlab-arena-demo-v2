@@ -19,17 +19,38 @@
     @media(min-width:431px){
       #root{border-radius:40px;box-shadow:0 0 80px rgba(0,0,0,0.8),0 0 0 8px #1a1a2e,0 0 0 10px #333;}
     }
-    @media(min-width:431px){}
+    #back-btn{
+      display:none;
+      position:fixed;top:10px;left:10px;
+      z-index:2147483647;
+      width:36px;height:36px;border-radius:18px;
+      background:rgba(10,14,30,0.9);
+      border:1px solid rgba(255,255,255,0.2);
+      color:#E8EBF6;font-size:18px;line-height:36px;text-align:center;
+      cursor:pointer;
+      -webkit-appearance:none;
+      -webkit-tap-highlight-color:transparent;
+      backdrop-filter:blur(10px);
+      box-shadow:0 3px 12px rgba(0,0,0,0.6);
+      font-family:-apple-system,sans-serif;
+      touch-action:manipulation;
+      padding:0;margin:0;outline:none;
+    }
+    #back-btn:active{background:rgba(0,229,255,0.2);border-color:rgba(0,229,255,0.5);}
+    @media(min-width:431px){
+      #back-btn{top:calc(50% - 466px + 10px);left:calc(50% - 215px + 10px);}
+    }
   </style>
 </head>
 <body>
   <div id="root"></div>
-  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <button id="back-btn" onclick="if(window.__moodlabGoBack){window.__moodlabGoBack();}else{window.location.reload();}">←</button>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script>
-    fetch('moodlab-arena-v7.jsx?v=' + Date.now())
+    fetch('moodlab-arena-v6.jsx?v=' + Date.now())
       .then(r => r.text())
       .then(jsx => {
         const code = jsx.replace(
@@ -45,31 +66,7 @@
         }).code;
         const fn = new Function('React', 'ReactDOM', transformed + '\nreturn MoodLabArena;');
         const App = fn(React, ReactDOM);
-        // Error Boundary to catch and DISPLAY render errors on screen
-        class ErrorBoundary extends React.Component {
-          constructor(props) { super(props); this.state = { error: null, info: null }; }
-          static getDerivedStateFromError(error) { return { error }; }
-          componentDidCatch(error, info) { this.setState({ info }); console.error('GAME RENDER ERROR:', error, info); }
-          render() {
-            if (this.state.error) {
-              return React.createElement('div', {
-                style: { position:'fixed', inset:0, zIndex:999999, background:'#1a0000', color:'#ff4444', padding:20, fontFamily:'monospace', fontSize:12, overflow:'auto' }
-              },
-                React.createElement('h2', {style:{color:'#ff6666',marginBottom:10}}, 'GAME RENDER ERROR'),
-                React.createElement('pre', {style:{color:'#ffaaaa',whiteSpace:'pre-wrap',wordBreak:'break-all'}}, String(this.state.error)),
-                React.createElement('pre', {style:{color:'#ff8888',marginTop:10,fontSize:10,whiteSpace:'pre-wrap'}}, this.state.info?.componentStack || ''),
-                React.createElement('button', {
-                  onClick: () => { this.setState({error:null,info:null}); },
-                  style: { marginTop:20, padding:'10px 20px', background:'#ff4444', color:'white', border:'none', borderRadius:8, cursor:'pointer', fontSize:14 }
-                }, 'DISMISS & RETRY')
-              );
-            }
-            return this.props.children;
-          }
-        }
-        ReactDOM.createRoot(document.getElementById('root')).render(
-          React.createElement(ErrorBoundary, null, React.createElement(App))
-        );
+        ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
       })
       .catch(err => {
         document.getElementById('root').innerHTML =
