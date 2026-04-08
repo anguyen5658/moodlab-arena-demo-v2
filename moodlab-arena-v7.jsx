@@ -3433,6 +3433,8 @@ export default function MoodLabArena() {
     duelTumbleX.current = -50;
     duelDustArr.current = Array.from({length:12},()=>({x:Math.random()*430,y:350+Math.random()*200,s:1+Math.random()*3,vx:(Math.random()-0.5)*0.4,vy:-0.1-Math.random()*0.3,a:0.2+Math.random()*0.4}));
     duelComedy.current = {lastRoast:"",streak:0};
+    // MP: init P2 tracking
+    window._duelP2 = {reactionTime:null, puffStart:null, puffDuration:null, fired:false};
     // Intro sequence
     setDuelPhase("intro");
     setDuelIntroStage("enter");
@@ -3475,6 +3477,8 @@ export default function MoodLabArena() {
     setDuelStaredownStage(0);
     setDuelStaredownText("");
     duelDrawTime.current = null;
+    // MP: reset P2 for new round
+    if (window._duelP2) window._duelP2 = {reactionTime:null, puffStart:null, puffDuration:null, fired:false};
     duelReactionTime.current = null;
     setDuelTumbleweed(Math.random() > 0.5);
     setDuelDustParticles(Array.from({length:8},(_,i)=>({id:Date.now()+i, x:Math.random()*100, y:55+Math.random()*35, size:2+Math.random()*5, dur:3+Math.random()*4})));
@@ -3621,7 +3625,7 @@ export default function MoodLabArena() {
 
     const reactionMs = duelReactionTime.current || 999;
     const puffDuration = duelPuffStart.current ? (Date.now() - duelPuffStart.current) / 1000 : 0;
-    const aiTime = getAiDrawSpeed(duelRound);
+    const aiTime = (mpActive && window._duelP2 && window._duelP2.reactionTime != null) ? window._duelP2.reactionTime : getAiDrawSpeed(duelRound);
 
     // Three-Input: puff hold affects reaction advantage
     let effectiveReaction = reactionMs;
@@ -3742,6 +3746,26 @@ export default function MoodLabArena() {
         }, 2500);
       }
     }, 1800);
+  };
+
+  // ── MP Slot-aware duel handlers (Phase 3 batch 2) ──
+  const duelShootSlot = (slotIdx) => {
+    if (slotIdx === 0) { duelShoot(); return; }
+    // P2 shoot
+    const p2 = window._duelP2; if (!p2 || p2.fired) return;
+    if ((duelPhase === "staredown" || duelPhase === "countdown") && !(duelExpectedDrawTime.current && (duelExpectedDrawTime.current - Date.now()) < 200)) {
+      p2.fired = true; return; // P2 foul — just mark fired, P1 foul logic handles round
+    }
+    if (duelPhase === "draw" && duelDrawTime.current) {
+      p2.reactionTime = Date.now() - duelDrawTime.current;
+      p2.puffStart = Date.now();
+    }
+  };
+  const duelReleasePuffSlot = (slotIdx) => {
+    if (slotIdx === 0) { duelReleasePuff(); return; }
+    const p2 = window._duelP2; if (!p2 || !p2.puffStart) return;
+    p2.puffDuration = (Date.now() - p2.puffStart) / 1000;
+    p2.fired = true;
   };
 
   // ── Canvas Draw Engine for Wild West Duel ──
@@ -9452,7 +9476,11 @@ export default function MoodLabArena() {
         // If no devices left, set bleConnected false
         const anyLeft = bleDevicesRef.current.some(d => d && d.device?.gatt?.connected);
         if (!anyLeft) setBleConnected(false);
-        notify("Slot " + (slotIndex+1) + " disconnected", C.orange);
+        if (mpActive) {
+          notify((partyPlayerNames[slotIndex] || "Player") + " disconnected!", C.orange);
+        } else {
+          notify("Slot " + (slotIndex+1) + " disconnected", C.orange);
+        }
       });
 
       const server  = await device.gatt.connect();
@@ -9651,6 +9679,52 @@ export default function MoodLabArena() {
             else { dev.down = null; dev.up = null; }
           }
         });
+      }
+      // --- WILD WEST DUEL (1v1): both devices react simultaneously ---
+      else if (id === "wildwest") {
+        bleDevicesRef.current.forEach((dev, i) => {
+          if (!dev) return;
+          dev.down = () => duelShootSlot(i);
+          dev.up = () => duelReleasePuffSlot(i);
+        });
+      }
+      // --- PUFF CLOCK (simultaneous precision): all devices hold independently ---
+      else if (id === "puffclock") {
+        bleDevicesRef.current.forEach((dev, i) => {
+          if (!dev) return;
+          dev.down = () => pcStartPuffSlot(i);
+          dev.up = () => pcStopPuffSlot(i);
+        });
+      }
+      // --- PUFF LIMBO (simultaneous elimination): all alive devices hold ---
+      else if (id === "pufflimbo") {
+        bleDevicesRef.current.forEach((dev, i) => {
+          if (!dev) return;
+          const mp = window._plMp;
+          if (mp && !mp.alive[i]) { dev.down = null; dev.up = null; }
+          else { dev.down = () => plStartPuffSlot(i); dev.up = () => plReleasePuffSlot(i); }
+        });
+      }
+      // --- FISH WAR (real-time battle royale): each device boosts its fish ---
+      else if (id === "fishwar") {
+        bleDevicesRef.current.forEach((dev, i) => {
+          if (!dev) return;
+          dev.down = () => fwPuffStartSlot(i);
+          dev.up = () => fwPuffStopSlot(i);
+        });
+      }
+      // --- PUFF RPS (1v1): P1 puffs for power, P2 puffs for choice+power ---
+      else if (id === "rps") {
+        if (bleDevicesRef.current[0]) {
+          bleDevicesRef.current[0].down = () => rpsStartPuff();
+          bleDevicesRef.current[0].up = () => rpsStopPuff();
+        }
+        for (let i = 1; i < bleDevicesRef.current.length; i++) {
+          if (bleDevicesRef.current[i]) {
+            bleDevicesRef.current[i].down = () => rpsP2Puff();
+            bleDevicesRef.current[i].up = () => rpsP2Release();
+          }
+        }
       }
       // --- Default: all slots get the same handler ---
       else {
@@ -12451,6 +12525,17 @@ export default function MoodLabArena() {
     if(mode==="1v1"){bots.push({x:FW_W-100,y:FW_H/2,sz:1.0,spd:3,facing:-1,level:1,eaten:0,score:0,form:"fish",fuel:100,boosting:false,col:"#EF4444",body:"#B91C1C",alive:true,name:botNames[0],aiTimer:0,targetX:FW_W/2,targetY:FW_H/2});}
     else if(mode==="pvp"){for(let i=0;i<3;i++)bots.push({x:80+i*120,y:100+i*100,sz:1.0,spd:3,facing:1,level:1,eaten:0,score:0,form:"fish",fuel:100,boosting:false,col:["#EF4444","#F59E0B","#A855F7"][i],body:["#B91C1C","#D97706","#7C3AED"][i],alive:true,name:botNames[i],aiTimer:0,targetX:FW_W/2,targetY:FW_H/2});}
     else if(mode==="boss"){for(let i=0;i<3;i++)bots.push({x:60+i*50,y:FW_H/2-60+i*60,sz:1.0,spd:3,facing:1,level:1,eaten:0,score:0,form:"fish",fuel:100,boosting:false,col:["#4CAF50","#66BB6A","#81C784"][i],body:["#2E7D32","#388E3C","#43A047"][i],alive:true,name:botNames[i+1],aiTimer:0,targetX:FW_W/2,targetY:FW_H/2,team:0});}
+    // MP: mark first N-1 bots as human-controlled
+    const fwMpCount = mpActive ? Math.min(ssPlayerCount || 2, 4) : 0;
+    window._fwMp = {boosting:[false,false,false,false], count:fwMpCount};
+    if (mpActive && fwMpCount > 1) {
+      for (let hi = 0; hi < Math.min(fwMpCount - 1, bots.length); hi++) {
+        bots[hi].humanSlot = hi + 1;
+        bots[hi].name = partyPlayerNames[hi + 1] || "P" + (hi + 2);
+        bots[hi].col = ["#60A5FA","#FFD93D","#FF6B8A"][hi] || "#60A5FA";
+        bots[hi].body = ["#3B82F6","#F59E0B","#EF4444"][hi] || "#3B82F6";
+      }
+    }
     fwBotsRef.current=bots;
     if(mode==="boss"){const b=FW_BOSSES[Math.floor(Math.random()*FW_BOSSES.length)];const boss={...b,x:FW_W-60,y:FW_H/2,alive:true,facing:-1};fwBossRef.current=boss;setFwBossHp(boss.hp);setFwBossMaxHp(boss.hp);}else{fwBossRef.current=null;setFwBossHp(0);}
     const fishes=[];for(let i=0;i<10;i++)fishes.push(fwMakeNPC(1.0));fwFishesRef.current=fishes;
@@ -12486,7 +12571,8 @@ export default function MoodLabArena() {
           if(p.alive&&p.sz<bot.sz*0.9&&fwDist(p,bot)<200){bestTarget=p;bestScore=999;}
           if(bestTarget){bot.targetX=bestTarget.x;bot.targetY=bestTarget.y;}else{bot.targetX=Math.random()*FW_W;bot.targetY=Math.random()*FW_H;}}}
       const bdx=bot.targetX-bot.x,bdy=bot.targetY-bot.y;const bd=Math.sqrt(bdx*bdx+bdy*bdy);
-      const bBoost=bot.fuel>30&&bd>80;if(bBoost){bot.fuel=Math.max(0,bot.fuel-0.8);}else{bot.fuel=Math.min(100,bot.fuel+0.12);}
+      const bBoostHuman=(bot.humanSlot!=null&&window._fwMp)?window._fwMp.boosting[bot.humanSlot]:false;
+      const bBoost=bBoostHuman?(bot.fuel>0):(bot.fuel>30&&bd>80);if(bBoost){bot.fuel=Math.max(0,bot.fuel-0.8);}else{bot.fuel=Math.min(100,bot.fuel+0.12);}
       bot.boosting=bBoost;const bSpd=bot.spd*(bBoost?2.2:1);
       if(bd>3){bot.x+=(bdx/bd)*bSpd;bot.y+=(bdy/bd)*bSpd;if(bdx>0.5)bot.facing=1;if(bdx<-0.5)bot.facing=-1;}
       bot.x=Math.max(12,Math.min(FW_W-12,bot.x));bot.y=Math.max(12,Math.min(FW_H-12,bot.y));
@@ -12553,6 +12639,10 @@ export default function MoodLabArena() {
   const fwPuffStart=()=>{if(fwPhase!=="playing")return;fwBoostRef.current=true;fwPuffStartRef.current=Date.now();fwInputTypeRef.current=bleConnected?"puff":"tap";};
   const fwPuffStop=()=>{const dur=fwPuffStartRef.current?(Date.now()-fwPuffStartRef.current)/1000:0;fwBoostRef.current=false;fwPuffStartRef.current=0;fwLastPuffDur.current=dur;
     if(dur>=5.0&&fwInputTypeRef.current==="puff"){fwBlinkerActive.current=true;notify("BLINKER BOOST! +20% score!",C.gold);triggerFlash("goal");fwChat("BLINKER ACTIVATED! 2.5x speed + 20% bonus!",C.gold);setTimeout(()=>{fwBlinkerActive.current=false;},3000);}};
+
+  // ── MP Slot-aware Fish War handlers (Phase 3 batch 2) ──
+  const fwPuffStartSlot=(slotIdx)=>{if(slotIdx===0){fwPuffStart();return;}const mp=window._fwMp;if(mp)mp.boosting[slotIdx]=true;};
+  const fwPuffStopSlot=(slotIdx)=>{if(slotIdx===0){fwPuffStop();return;}const mp=window._fwMp;if(mp)mp.boosting[slotIdx]=false;};
 
   const fwDraw=()=>{const canvas=fwCanvasRef.current;if(!canvas)return;const ctx=canvas.getContext("2d");ctx.clearRect(0,0,canvas.width,canvas.height);ctx.save();ctx.scale(FW_DPR,FW_DPR);const w=FW_W,h=FW_H;const now=Date.now();
     // Ocean gradient
@@ -13957,6 +14047,12 @@ export default function MoodLabArena() {
     setStageElim(null);
     setMpActive(false);
     setSsPlayerCount(null);
+    // Multiplayer window objects cleanup
+    window._duelP2 = null;
+    window._pcMp = null;
+    window._plMp = null;
+    window._fwMp = null;
+    window._rpsP2 = null;
   };
 
   // ═══════════════════════════════════════════════════════════════
@@ -14408,6 +14504,8 @@ export default function MoodLabArena() {
     rpsAuraRef.current=0; rpsClashT.current=0; rpsSlowMo.current=0;
     const guard = {v:true};
     window._rpsActive = guard;
+    // MP: init P2 tracking
+    window._rpsP2 = {choice:null, puffPower:0, puffStart:0, puffHeld:false, interval:null};
     setRpsPhase("intro");
     setRpsIntro(1);
     playFx("crowd");
@@ -14458,11 +14556,15 @@ export default function MoodLabArena() {
     setRpsPuffPower(finalPower);
     if(!window._rpsActive) return;
     const opp = rpsOpponent || RPS_OPPONENTS[0];
-    const aiChoice = rpsGetAiChoice(opp);
+    // MP: use P2's actual choice and power if available
+    const p2d = (mpActive && window._rpsP2) ? window._rpsP2 : null;
+    const aiChoice = (p2d && p2d.choice) ? p2d.choice : rpsGetAiChoice(opp);
     setRpsAiChoice(aiChoice);
-    let aiPwr = 30 + Math.random()*40;
-    if(opp.style==="blinker") aiPwr = 80 + Math.random()*20;
+    let aiPwr = (p2d && p2d.choice) ? p2d.puffPower : (30 + Math.random()*40);
+    if(!p2d?.choice && opp.style==="blinker") aiPwr = 80 + Math.random()*20;
     setRpsAiPuffPower(aiPwr);
+    // MP: reset P2 for next round
+    if (p2d) { window._rpsP2 = {choice:null, puffPower:0, puffStart:0, puffHeld:false, interval:null}; }
     const playerPwrInfo = rpsGetPowerLabel(finalPower);
     const aiPwrInfo = rpsGetPowerLabel(aiPwr);
     const pc = rpsPlayerChoiceRef.current;
@@ -14564,6 +14666,29 @@ export default function MoodLabArena() {
         });
       },2500);
     },1200);
+  };
+
+  // ── MP P2 Puff RPS handlers (Phase 3 batch 2) ──
+  const rpsP2Puff = () => {
+    const p2 = window._rpsP2; if (!p2 || p2.puffHeld) return;
+    p2.puffHeld = true;
+    p2.puffStart = Date.now();
+    if (p2.interval) clearInterval(p2.interval);
+    p2.interval = setInterval(() => {
+      const elapsed = (Date.now() - p2.puffStart) / 1000;
+      p2.puffPower = Math.min(100, elapsed * 20);
+    }, 30);
+  };
+  const rpsP2Release = () => {
+    const p2 = window._rpsP2; if (!p2 || !p2.puffHeld) return;
+    p2.puffHeld = false;
+    if (p2.interval) { clearInterval(p2.interval); p2.interval = null; }
+    const elapsed = (Date.now() - p2.puffStart) / 1000;
+    p2.puffPower = Math.min(100, elapsed * 20);
+    // Encode choice from duration: <1.5s=rock, 1.5-3s=paper, 3s+=scissors
+    if (elapsed < 1.5) p2.choice = "rock";
+    else if (elapsed < 3.0) p2.choice = "paper";
+    else p2.choice = "scissors";
   };
 
   const rpsEndGame = (skipWc) => {
@@ -14820,8 +14945,13 @@ export default function MoodLabArena() {
     gameSoundsMuted.current = false;
     setPcRound(0); setPcResults([]); setPcPuffTime(0); setPcHolding(false);
     setPcPerfect420(false); setPcComment(""); pcInputMode.current = "none";
+    // MP: init per-slot tracking
+    const pcMpCount = mpActive ? Math.min(ssPlayerCount || 2, 4) : 0;
+    window._pcMp = {holding:[false,false,false,false], startTime:[0,0,0,0], submitted:[false,false,false,false], results:[[],[],[],[]], count:pcMpCount};
     pcBotResults.current = PC_BOT_NAMES.map(() => []);
-    const lb = PC_BOT_NAMES.map((n, i) => ({ name: n, emoji: SPECTATOR_EMOJIS[i % SPECTATOR_EMOJIS.length], totalError: 0, rank: i + 1 }));
+    // MP: replace bot names with player names
+    const pcNames = mpActive ? Array.from({length:3}, (_, i) => i < pcMpCount - 1 ? (partyPlayerNames[i+1] || "P"+(i+2)) : PC_BOT_NAMES[i]) : PC_BOT_NAMES;
+    const lb = pcNames.map((n, i) => ({ name: n, emoji: SPECTATOR_EMOJIS[i % SPECTATOR_EMOJIS.length], totalError: 0, rank: i + 1 }));
     lb.push({ name: "You", emoji: "\uD83C\uDF1F", totalError: 0, rank: 4 });
     setPcLeaderboard(lb);
     setPcPhase("intro"); playFx("crowd");
@@ -14840,6 +14970,8 @@ export default function MoodLabArena() {
     if (target === 0) target = +(1.0 + Math.random() * 3.5).toFixed(2);
     setPcTarget(target); setPcRound(roundNum + 1); pcRoundRef.current = roundNum;
     setPcPuffTime(0); setPcHolding(false); pcInputMode.current = "none";
+    // MP: reset per-slot submitted flags for new round
+    if (window._pcMp) { window._pcMp.holding = [false,false,false,false]; window._pcMp.startTime = [0,0,0,0]; window._pcMp.submitted = [false,false,false,false]; }
     setPcComment(PC_ROUND_NAMES[roundNum]); setPcPhase("target");
     setCommentary("Target: " + target.toFixed(2) + " seconds!");
     addGameChat("Announcer", "Target: " + target.toFixed(2) + "s!", C.gold);
@@ -14896,6 +15028,33 @@ export default function MoodLabArena() {
       entries.sort((a, b) => a.totalError - b.totalError); entries.forEach((p, i) => p.rank = i + 1); return entries;
     });
     setTimeout(() => pcStartRound(pcRoundRef.current + 1), 3500);
+  };
+
+  // ── MP Slot-aware Puff Clock handlers (Phase 3 batch 2) ──
+  const pcStartPuffSlot = (slotIdx) => {
+    if (slotIdx === 0) { pcStartPuff(); return; }
+    const mp = window._pcMp; if (!mp || mp.submitted[slotIdx]) return;
+    if (pcPhase !== "puffing") return;
+    mp.holding[slotIdx] = true;
+    mp.startTime[slotIdx] = Date.now();
+  };
+  const pcStopPuffSlot = (slotIdx) => {
+    if (slotIdx === 0) { pcStopPuff(); return; }
+    const mp = window._pcMp; if (!mp || !mp.holding[slotIdx]) return;
+    mp.holding[slotIdx] = false;
+    const elapsed = +((Date.now() - mp.startTime[slotIdx]) / 1000).toFixed(2);
+    const clamped = Math.min(elapsed, 6.0);
+    const error = +(Math.abs(clamped - pcTarget)).toFixed(2);
+    mp.results[slotIdx].push(error);
+    mp.submitted[slotIdx] = true;
+    // Replace bot result for this slot (slot 1 -> bot index 0, etc.)
+    const botIdx = slotIdx - 1;
+    if (botIdx >= 0 && botIdx < pcBotResults.current.length) pcBotResults.current[botIdx].push(error);
+    // Check if all connected humans submitted
+    const allDone = Array.from({length: mp.count}, (_, i) => i === 0 ? true : mp.submitted[i]).every(Boolean);
+    if (allDone && !mp.submitted[0]) {
+      // Set 10s timeout for P1 if they haven't gone yet
+    }
   };
 
   const pcShowFinalResults = () => {
@@ -15565,6 +15724,9 @@ export default function MoodLabArena() {
     setPlRound(0); setPlTarget(PL_TARGETS[0]); setPlPlayers(8);
     setPlSurvived(true); setPlPuffTime(0); setPlHolding(false);
     setPlEliminatedList([]); setPlRoundResults([]);
+    // MP: init per-slot tracking
+    const plMpCount = mpActive ? Math.min(ssPlayerCount || 2, 4) : 0;
+    window._plMp = {holding:[false,false,false,false], startTime:[0,0,0,0], alive:[true,true,true,true], submitted:[false,false,false,false], count:plMpCount};
     setPlPhase("intro"); playFx("crowd");
     addGameChat("Announcer", "Welcome to PUFF LIMBO! 8 players enter!", C.gold);
     setCommentary("Welcome to PUFF LIMBO! Can you survive the blinker threshold?");
@@ -15577,6 +15739,8 @@ export default function MoodLabArena() {
     const target = PL_TARGETS[roundNum];
     setPlRound(roundNum); setPlTarget(target); setPlPuffTime(0); setPlHolding(false);
     setPlSurvived(true); setPlPhase("ready");
+    // MP: reset submitted flags for new round
+    if (window._plMp) { window._plMp.holding = [false,false,false,false]; window._plMp.startTime = [0,0,0,0]; window._plMp.submitted = [false,false,false,false]; }
     if (roundNum > 0) playFx("limbo_bar_raise");
     const isBlinkerRound = roundNum === 7;
     const dangerMsg = isBlinkerRound ? " -- BLINKER ROUND!" : target >= 3.5 ? " -- getting serious" : "";
@@ -15645,6 +15809,30 @@ export default function MoodLabArena() {
         plStartRound(plRound + 1, newPlayers + 1, guard);
       }
     }, 2500);
+  };
+
+  // ── MP Slot-aware Puff Limbo handlers (Phase 3 batch 2) ──
+  const plStartPuffSlot = (slotIdx) => {
+    if (slotIdx === 0) { plStartPuff(); return; }
+    const mp = window._plMp; if (!mp || !mp.alive[slotIdx] || mp.submitted[slotIdx]) return;
+    if (plPhase !== "ready") return;
+    mp.holding[slotIdx] = true;
+    mp.startTime[slotIdx] = Date.now();
+  };
+  const plReleasePuffSlot = (slotIdx) => {
+    if (slotIdx === 0) { plReleasePuff(); return; }
+    const mp = window._plMp; if (!mp || !mp.holding[slotIdx]) return;
+    mp.holding[slotIdx] = false;
+    const elapsed = (Date.now() - mp.startTime[slotIdx]) / 1000;
+    const target = PL_TARGETS[plRound];
+    const deviation = Math.abs(elapsed - target);
+    const survived = deviation <= 0.3;
+    if (!survived) {
+      mp.alive[slotIdx] = false;
+      const pName = partyPlayerNames[slotIdx] || "P" + (slotIdx + 1);
+      addGameChat("Announcer", pName + " ELIMINATED at " + elapsed.toFixed(2) + "s!", C.red);
+    }
+    mp.submitted[slotIdx] = true;
   };
 
   const plDrawCanvas = () => {
@@ -16617,6 +16805,7 @@ const startSimonPuffs = () => {
                     <div style={{width:5,height:5,borderRadius:"50%",background:bleConnected?C.green:C.orange}}/>
                     <span style={{fontSize:8,fontWeight:700,color:bleConnected?C.green:C.orange}}>{bleConnected?"Puff":"Connect"}</span>
                   </div>
+                  {bleDevices.filter(d=>d.connected).length>=2&&(<div style={{display:"flex",gap:2,alignItems:"center",padding:"2px 6px",borderRadius:100,background:"rgba(255,255,255,0.03)"}}>{[0,1,2,3].map(s=>{const SC=["#00E5FF","#60A5FA","#FFD93D","#FF6B8A"];return <div key={s} style={{width:5,height:5,borderRadius:"50%",background:bleDevices.some(d=>d.slot===s&&d.connected)?SC[s]:"rgba(255,255,255,0.1)"}}/>;})}</div>)}
                   <div style={{display:"flex",alignItems:"center",gap:2,padding:"2px 7px",borderRadius:100,background:"rgba(255,217,61,0.06)",border:"1px solid rgba(255,217,61,0.12)"}}>
                     <span style={{fontSize:9}}>{"\uD83E\uDE99"}</span><span style={{fontSize:10,fontWeight:800,color:C.gold,fontFamily:"'Courier New',monospace"}}>{coins.toLocaleString()}</span>
                   </div>
@@ -16940,6 +17129,7 @@ const startSimonPuffs = () => {
                     <div style={{width:5,height:5,borderRadius:"50%",background:bleConnected?C.green:C.orange}}/>
                     <span style={{fontSize:8,fontWeight:700,color:bleConnected?C.green:C.orange}}>{bleConnected?"Puff":"Connect"}</span>
                   </div>
+                  {bleDevices.filter(d=>d.connected).length>=2&&(<div style={{display:"flex",gap:2,alignItems:"center",padding:"2px 6px",borderRadius:100,background:"rgba(255,255,255,0.03)"}}>{[0,1,2,3].map(s=>{const SC=["#00E5FF","#60A5FA","#FFD93D","#FF6B8A"];return <div key={s} style={{width:5,height:5,borderRadius:"50%",background:bleDevices.some(d=>d.slot===s&&d.connected)?SC[s]:"rgba(255,255,255,0.1)"}}/>;})}</div>)}
                   <div style={{display:"flex",alignItems:"center",gap:2,padding:"2px 7px",borderRadius:100,background:"rgba(255,217,61,0.06)",border:"1px solid rgba(255,217,61,0.12)"}}>
                     <span style={{fontSize:9}}>{"\uD83E\uDE99"}</span><span style={{fontSize:10,fontWeight:800,color:C.gold,fontFamily:"'Courier New',monospace"}}>{coins.toLocaleString()}</span>
                   </div>
@@ -17421,6 +17611,7 @@ const startSimonPuffs = () => {
                     <div style={{width:5,height:5,borderRadius:"50%",background:bleConnected?C.green:C.orange}}/>
                     <span style={{fontSize:8,fontWeight:700,color:bleConnected?C.green:C.orange}}>{bleConnected?"Puff":"Connect"}</span>
                   </div>
+                  {bleDevices.filter(d=>d.connected).length>=2&&(<div style={{display:"flex",gap:2,alignItems:"center",padding:"2px 6px",borderRadius:100,background:"rgba(255,255,255,0.03)"}}>{[0,1,2,3].map(s=>{const SC=["#00E5FF","#60A5FA","#FFD93D","#FF6B8A"];return <div key={s} style={{width:5,height:5,borderRadius:"50%",background:bleDevices.some(d=>d.slot===s&&d.connected)?SC[s]:"rgba(255,255,255,0.1)"}}/>;})}</div>)}
                   <div style={{display:"flex",alignItems:"center",gap:2,padding:"2px 7px",borderRadius:100,background:"rgba(255,217,61,0.06)",border:"1px solid rgba(255,217,61,0.12)"}}>
                     <span style={{fontSize:9}}>{"\uD83E\uDE99"}</span><span style={{fontSize:10,fontWeight:800,color:C.gold,fontFamily:"'Courier New',monospace"}}>{coins.toLocaleString()}</span>
                   </div>
@@ -17601,6 +17792,7 @@ const startSimonPuffs = () => {
                     <div style={{width:5,height:5,borderRadius:"50%",background:bleConnected?C.green:C.orange}}/>
                     <span style={{fontSize:8,fontWeight:700,color:bleConnected?C.green:C.orange}}>{bleConnected?"Puff":"Connect"}</span>
                   </div>
+                  {bleDevices.filter(d=>d.connected).length>=2&&(<div style={{display:"flex",gap:2,alignItems:"center",padding:"2px 6px",borderRadius:100,background:"rgba(255,255,255,0.03)"}}>{[0,1,2,3].map(s=>{const SC=["#00E5FF","#60A5FA","#FFD93D","#FF6B8A"];return <div key={s} style={{width:5,height:5,borderRadius:"50%",background:bleDevices.some(d=>d.slot===s&&d.connected)?SC[s]:"rgba(255,255,255,0.1)"}}/>;})}</div>)}
                   <div style={{display:"flex",alignItems:"center",gap:2,padding:"2px 7px",borderRadius:100,background:"rgba(255,217,61,0.06)",border:"1px solid rgba(255,217,61,0.12)"}}>
                     <span style={{fontSize:9}}>{"\uD83E\uDE99"}</span><span style={{fontSize:10,fontWeight:800,color:C.gold,fontFamily:"'Courier New',monospace"}}>{coins.toLocaleString()}</span>
                   </div>
@@ -17664,6 +17856,7 @@ const startSimonPuffs = () => {
                     <div style={{width:5,height:5,borderRadius:"50%",background:bleConnected?C.green:C.orange}}/>
                     <span style={{fontSize:8,fontWeight:700,color:bleConnected?C.green:C.orange}}>{bleConnected?"Puff":"Connect"}</span>
                   </div>
+                  {bleDevices.filter(d=>d.connected).length>=2&&(<div style={{display:"flex",gap:2,alignItems:"center",padding:"2px 6px",borderRadius:100,background:"rgba(255,255,255,0.03)"}}>{[0,1,2,3].map(s=>{const SC=["#00E5FF","#60A5FA","#FFD93D","#FF6B8A"];return <div key={s} style={{width:5,height:5,borderRadius:"50%",background:bleDevices.some(d=>d.slot===s&&d.connected)?SC[s]:"rgba(255,255,255,0.1)"}}/>;})}</div>)}
                   <div style={{display:"flex",alignItems:"center",gap:2,padding:"2px 7px",borderRadius:100,background:"rgba(255,217,61,0.06)",border:"1px solid rgba(255,217,61,0.12)"}}>
                     <span style={{fontSize:9}}>{"\uD83E\uDE99"}</span><span style={{fontSize:10,fontWeight:800,color:C.gold,fontFamily:"'Courier New',monospace"}}>{coins.toLocaleString()}</span>
                   </div>
@@ -18318,6 +18511,7 @@ const startSimonPuffs = () => {
                     <div style={{width:5,height:5,borderRadius:"50%",background:bleConnected?C.green:C.orange}}/>
                     <span style={{fontSize:8,fontWeight:700,color:bleConnected?C.green:C.orange}}>{bleConnected?"Puff":"Connect"}</span>
                   </div>
+                  {bleDevices.filter(d=>d.connected).length>=2&&(<div style={{display:"flex",gap:2,alignItems:"center",padding:"2px 6px",borderRadius:100,background:"rgba(255,255,255,0.03)"}}>{[0,1,2,3].map(s=>{const SC=["#00E5FF","#60A5FA","#FFD93D","#FF6B8A"];return <div key={s} style={{width:5,height:5,borderRadius:"50%",background:bleDevices.some(d=>d.slot===s&&d.connected)?SC[s]:"rgba(255,255,255,0.1)"}}/>;})}</div>)}
                   <div style={{display:"flex",alignItems:"center",gap:2,padding:"2px 7px",borderRadius:100,background:"rgba(255,217,61,0.06)",border:"1px solid rgba(255,217,61,0.12)"}}>
                     <span style={{fontSize:9}}>{"\uD83E\uDE99"}</span><span style={{fontSize:10,fontWeight:800,color:C.gold,fontFamily:"'Courier New',monospace"}}>{coins.toLocaleString()}</span>
                   </div>
@@ -18511,6 +18705,7 @@ const startSimonPuffs = () => {
                     <div style={{width:5,height:5,borderRadius:"50%",background:bleConnected?C.green:C.orange}}/>
                     <span style={{fontSize:8,fontWeight:700,color:bleConnected?C.green:C.orange}}>{bleConnected?"Puff":"Connect"}</span>
                   </div>
+                  {bleDevices.filter(d=>d.connected).length>=2&&(<div style={{display:"flex",gap:2,alignItems:"center",padding:"2px 6px",borderRadius:100,background:"rgba(255,255,255,0.03)"}}>{[0,1,2,3].map(s=>{const SC=["#00E5FF","#60A5FA","#FFD93D","#FF6B8A"];return <div key={s} style={{width:5,height:5,borderRadius:"50%",background:bleDevices.some(d=>d.slot===s&&d.connected)?SC[s]:"rgba(255,255,255,0.1)"}}/>;})}</div>)}
                   <div style={{display:"flex",alignItems:"center",gap:2,padding:"2px 7px",borderRadius:100,background:"rgba(255,217,61,0.06)",border:"1px solid rgba(255,217,61,0.12)"}}>
                     <span style={{fontSize:9}}>{"\uD83E\uDE99"}</span><span style={{fontSize:10,fontWeight:800,color:C.gold,fontFamily:"'Courier New',monospace"}}>{coins.toLocaleString()}</span>
                   </div>
@@ -18703,6 +18898,7 @@ const startSimonPuffs = () => {
                     <div style={{width:5,height:5,borderRadius:"50%",background:bleConnected?C.green:C.orange}}/>
                     <span style={{fontSize:8,fontWeight:700,color:bleConnected?C.green:C.orange}}>{bleConnected?"Puff":"Connect"}</span>
                   </div>
+                  {bleDevices.filter(d=>d.connected).length>=2&&(<div style={{display:"flex",gap:2,alignItems:"center",padding:"2px 6px",borderRadius:100,background:"rgba(255,255,255,0.03)"}}>{[0,1,2,3].map(s=>{const SC=["#00E5FF","#60A5FA","#FFD93D","#FF6B8A"];return <div key={s} style={{width:5,height:5,borderRadius:"50%",background:bleDevices.some(d=>d.slot===s&&d.connected)?SC[s]:"rgba(255,255,255,0.1)"}}/>;})}</div>)}
                   <div style={{display:"flex",alignItems:"center",gap:2,padding:"2px 7px",borderRadius:100,background:"rgba(255,217,61,0.06)",border:"1px solid rgba(255,217,61,0.12)"}}>
                     <span style={{fontSize:9}}>🪙</span><span style={{fontSize:10,fontWeight:800,color:C.gold,fontFamily:"'Courier New',monospace"}}>{coins.toLocaleString()}</span>
                   </div>
@@ -18954,6 +19150,7 @@ const startSimonPuffs = () => {
                     <div style={{width:5,height:5,borderRadius:"50%",background:bleConnected?C.green:C.orange}}/>
                     <span style={{fontSize:8,fontWeight:700,color:bleConnected?C.green:C.orange}}>{bleConnected?"Puff":"Connect"}</span>
                   </div>
+                  {bleDevices.filter(d=>d.connected).length>=2&&(<div style={{display:"flex",gap:2,alignItems:"center",padding:"2px 6px",borderRadius:100,background:"rgba(255,255,255,0.03)"}}>{[0,1,2,3].map(s=>{const SC=["#00E5FF","#60A5FA","#FFD93D","#FF6B8A"];return <div key={s} style={{width:5,height:5,borderRadius:"50%",background:bleDevices.some(d=>d.slot===s&&d.connected)?SC[s]:"rgba(255,255,255,0.1)"}}/>;})}</div>)}
                   <div style={{display:"flex",alignItems:"center",gap:2,padding:"2px 7px",borderRadius:100,background:"rgba(255,217,61,0.06)",border:"1px solid rgba(255,217,61,0.12)"}}>
                     <span style={{fontSize:9}}>{"\uD83E\uDE99"}</span><span style={{fontSize:10,fontWeight:800,color:C.gold,fontFamily:"'Courier New',monospace"}}>{coins.toLocaleString()}</span>
                   </div>
@@ -19199,6 +19396,7 @@ const startSimonPuffs = () => {
                   <div onClick={()=>{playFx("tap");setShowBlePopup(true);}} data-btn="true" style={{touchAction:"none",display:"flex",alignItems:"center",gap:3,padding:"2px 8px",borderRadius:100,cursor:"pointer",background:bleConnected?"rgba(52,211,153,0.1)":"rgba(251,146,60,0.1)",border:"1px solid "+(bleConnected?"rgba(52,211,153,0.25)":"rgba(251,146,60,0.25)")}}>
                     <div style={{width:5,height:5,borderRadius:"50%",background:bleConnected?C.green:C.orange}}/><span style={{fontSize:8,fontWeight:700,color:bleConnected?C.green:C.orange}}>{bleConnected?"Puff":"Connect"}</span>
                   </div>
+                  {bleDevices.filter(d=>d.connected).length>=2&&(<div style={{display:"flex",gap:2,alignItems:"center",padding:"2px 6px",borderRadius:100,background:"rgba(255,255,255,0.03)"}}>{[0,1,2,3].map(s=>{const SC=["#00E5FF","#60A5FA","#FFD93D","#FF6B8A"];return <div key={s} style={{width:5,height:5,borderRadius:"50%",background:bleDevices.some(d=>d.slot===s&&d.connected)?SC[s]:"rgba(255,255,255,0.1)"}}/>;})}</div>)}
                   <div style={{display:"flex",alignItems:"center",gap:2,padding:"2px 7px",borderRadius:100,background:"rgba(255,217,61,0.06)",border:"1px solid rgba(255,217,61,0.12)"}}>
                     <span style={{fontSize:9}}>{"\uD83E\uDE99"}</span><span style={{fontSize:10,fontWeight:800,color:C.gold,fontFamily:"'Courier New',monospace"}}>{coins.toLocaleString()}</span>
                   </div>
@@ -19428,6 +19626,7 @@ const startSimonPuffs = () => {
                     <div style={{width:5,height:5,borderRadius:"50%",background:bleConnected?C.green:C.orange}}/>
                     <span style={{fontSize:8,fontWeight:700,color:bleConnected?C.green:C.orange}}>{bleConnected?"Puff":"Connect"}</span>
                   </div>
+                  {bleDevices.filter(d=>d.connected).length>=2&&(<div style={{display:"flex",gap:2,alignItems:"center",padding:"2px 6px",borderRadius:100,background:"rgba(255,255,255,0.03)"}}>{[0,1,2,3].map(s=>{const SC=["#00E5FF","#60A5FA","#FFD93D","#FF6B8A"];return <div key={s} style={{width:5,height:5,borderRadius:"50%",background:bleDevices.some(d=>d.slot===s&&d.connected)?SC[s]:"rgba(255,255,255,0.1)"}}/>;})}</div>)}
                   <div style={{display:"flex",alignItems:"center",gap:2,padding:"2px 7px",borderRadius:100,background:"rgba(255,217,61,0.06)",border:"1px solid rgba(255,217,61,0.12)"}}>
                     <span style={{fontSize:9}}>{"\uD83E\uDE99"}</span><span style={{fontSize:10,fontWeight:800,color:C.gold,fontFamily:"'Courier New',monospace"}}>{coins.toLocaleString()}</span>
                   </div>
@@ -19522,6 +19721,7 @@ const startSimonPuffs = () => {
                   <div onClick={()=>{playFx("tap");setShowBlePopup(true);}} data-btn="true" style={{touchAction:"none",display:"flex",alignItems:"center",gap:3,padding:"2px 8px",borderRadius:100,cursor:"pointer",background:bleConnected?"rgba(52,211,153,0.1)":"rgba(251,146,60,0.1)",border:"1px solid "+(bleConnected?"rgba(52,211,153,0.25)":"rgba(251,146,60,0.25)")}}>
                     <div style={{width:5,height:5,borderRadius:"50%",background:bleConnected?C.green:C.orange}}/><span style={{fontSize:8,fontWeight:700,color:bleConnected?C.green:C.orange}}>{bleConnected?"Puff":"Connect"}</span>
                   </div>
+                  {bleDevices.filter(d=>d.connected).length>=2&&(<div style={{display:"flex",gap:2,alignItems:"center",padding:"2px 6px",borderRadius:100,background:"rgba(255,255,255,0.03)"}}>{[0,1,2,3].map(s=>{const SC=["#00E5FF","#60A5FA","#FFD93D","#FF6B8A"];return <div key={s} style={{width:5,height:5,borderRadius:"50%",background:bleDevices.some(d=>d.slot===s&&d.connected)?SC[s]:"rgba(255,255,255,0.1)"}}/>;})}</div>)}
                   <div style={{display:"flex",alignItems:"center",gap:2,padding:"2px 7px",borderRadius:100,background:"rgba(255,217,61,0.06)",border:"1px solid rgba(255,217,61,0.12)"}}>
                     <span style={{fontSize:9}}>{"\uD83E\uDE99"}</span><span style={{fontSize:10,fontWeight:800,color:C.gold,fontFamily:"'Courier New',monospace"}}>{coins.toLocaleString()}</span>
                   </div>
@@ -19926,6 +20126,7 @@ const startSimonPuffs = () => {
                   <div onClick={()=>{playFx("tap");setShowBlePopup(true);}} data-btn="true" style={{touchAction:"none",display:"flex",alignItems:"center",gap:3,padding:"2px 8px",borderRadius:100,cursor:"pointer",background:bleConnected?"rgba(52,211,153,0.1)":"rgba(251,146,60,0.1)",border:"1px solid "+(bleConnected?"rgba(52,211,153,0.25)":"rgba(251,146,60,0.25)")}}>
                     <div style={{width:5,height:5,borderRadius:"50%",background:bleConnected?C.green:C.orange}}/><span style={{fontSize:8,fontWeight:700,color:bleConnected?C.green:C.orange}}>{bleConnected?"Puff":"Connect"}</span>
                   </div>
+                  {bleDevices.filter(d=>d.connected).length>=2&&(<div style={{display:"flex",gap:2,alignItems:"center",padding:"2px 6px",borderRadius:100,background:"rgba(255,255,255,0.03)"}}>{[0,1,2,3].map(s=>{const SC=["#00E5FF","#60A5FA","#FFD93D","#FF6B8A"];return <div key={s} style={{width:5,height:5,borderRadius:"50%",background:bleDevices.some(d=>d.slot===s&&d.connected)?SC[s]:"rgba(255,255,255,0.1)"}}/>;})}</div>)}
                   <div style={{display:"flex",alignItems:"center",gap:2,padding:"2px 7px",borderRadius:100,background:"rgba(255,217,61,0.06)",border:"1px solid rgba(255,217,61,0.12)"}}>
                     <span style={{fontSize:9}}>{"\uD83E\uDE99"}</span><span style={{fontSize:10,fontWeight:800,color:C.gold,fontFamily:"'Courier New',monospace"}}>{coins.toLocaleString()}</span>
                   </div>
@@ -21048,6 +21249,7 @@ const startSimonPuffs = () => {
                     <div style={{width:5,height:5,borderRadius:"50%",background:bleConnected?C.green:C.orange}}/>
                     <span style={{fontSize:8,fontWeight:700,color:bleConnected?C.green:C.orange}}>{bleConnected?"Puff":"Connect"}</span>
                   </div>
+                  {bleDevices.filter(d=>d.connected).length>=2&&(<div style={{display:"flex",gap:2,alignItems:"center",padding:"2px 6px",borderRadius:100,background:"rgba(255,255,255,0.03)"}}>{[0,1,2,3].map(s=>{const SC=["#00E5FF","#60A5FA","#FFD93D","#FF6B8A"];return <div key={s} style={{width:5,height:5,borderRadius:"50%",background:bleDevices.some(d=>d.slot===s&&d.connected)?SC[s]:"rgba(255,255,255,0.1)"}}/>;})}</div>)}
                   <div style={{display:"flex",alignItems:"center",gap:2,padding:"2px 7px",borderRadius:100,background:"rgba(255,217,61,0.06)",border:"1px solid rgba(255,217,61,0.12)"}}>
                     <span style={{fontSize:9}}>{"\uD83E\uDE99"}</span><span style={{fontSize:10,fontWeight:800,color:C.gold,fontFamily:"'Courier New',monospace"}}>{coins.toLocaleString()}</span>
                   </div>
@@ -21439,6 +21641,7 @@ const startSimonPuffs = () => {
                     <div style={{width:5,height:5,borderRadius:"50%",background:bleConnected?C.green:C.orange}}/>
                     <span style={{fontSize:8,fontWeight:700,color:bleConnected?C.green:C.orange}}>{bleConnected?"Puff":"Connect"}</span>
                   </div>
+                  {bleDevices.filter(d=>d.connected).length>=2&&(<div style={{display:"flex",gap:2,alignItems:"center",padding:"2px 6px",borderRadius:100,background:"rgba(255,255,255,0.03)"}}>{[0,1,2,3].map(s=>{const SC=["#00E5FF","#60A5FA","#FFD93D","#FF6B8A"];return <div key={s} style={{width:5,height:5,borderRadius:"50%",background:bleDevices.some(d=>d.slot===s&&d.connected)?SC[s]:"rgba(255,255,255,0.1)"}}/>;})}</div>)}
                   <div style={{display:"flex",alignItems:"center",gap:2,padding:"2px 7px",borderRadius:100,background:"rgba(255,217,61,0.06)",border:"1px solid rgba(255,217,61,0.12)"}}>
                     <span style={{fontSize:9}}>{"\uD83E\uDE99"}</span><span style={{fontSize:10,fontWeight:800,color:C.gold,fontFamily:"'Courier New',monospace"}}>{coins.toLocaleString()}</span>
                   </div>
@@ -21583,6 +21786,7 @@ const startSimonPuffs = () => {
                     <div style={{width:5,height:5,borderRadius:"50%",background:bleConnected?C.green:C.orange}}/>
                     <span style={{fontSize:8,fontWeight:700,color:bleConnected?C.green:C.orange}}>{bleConnected?"Puff":"Connect"}</span>
                   </div>
+                  {bleDevices.filter(d=>d.connected).length>=2&&(<div style={{display:"flex",gap:2,alignItems:"center",padding:"2px 6px",borderRadius:100,background:"rgba(255,255,255,0.03)"}}>{[0,1,2,3].map(s=>{const SC=["#00E5FF","#60A5FA","#FFD93D","#FF6B8A"];return <div key={s} style={{width:5,height:5,borderRadius:"50%",background:bleDevices.some(d=>d.slot===s&&d.connected)?SC[s]:"rgba(255,255,255,0.1)"}}/>;})}</div>)}
                   <div style={{display:"flex",alignItems:"center",gap:2,padding:"2px 7px",borderRadius:100,background:"rgba(255,217,61,0.06)",border:"1px solid rgba(255,217,61,0.12)"}}>
                     <span style={{fontSize:9}}>{"\uD83E\uDE99"}</span><span style={{fontSize:10,fontWeight:800,color:C.gold,fontFamily:"'Courier New',monospace"}}>{coins.toLocaleString()}</span>
                   </div>
