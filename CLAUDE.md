@@ -132,30 +132,35 @@ Real puff only builds streak. x5 cap (+10% max). Dry holds streak. Tap breaks st
 | World Cup | Gold | FIFA 2026 tournament |
 | Live | Green #22C55E | Streams, spectating |
 
-## Current Work: Multi-Device Multiplayer (Phase 3 of 4)
+## Multi-Device Multiplayer — COMPLETE (All 4 Phases Done)
 
-### DONE:
+### All Phases:
 - Phase 1: Multi-BLE Device Hub (4 slots, connect/disconnect per slot)
 - Phase 2: Player count selection ("Play With Friends" → 2P/3P/4P)
-- Phase 3 Batch 1: 5 games multiplayer-adapted
+- Phase 3: All 10 games adapted for multiplayer
+- Phase 4: Device indicator dots in all 16 headers, disconnect notifications, cleanup
 
-### TODO:
-- Phase 3 Batch 2: 5 more games (Wild West Duel, Puff Clock, Puff Limbo, Fish War, Puff RPS)
-- Phase 4: Polish (device indicators in headers, disconnect→AI takeover, victory screen)
+### 10 Multiplayer Games (ALL DONE):
+| Game | Multi-Device Type | Routing |
+|------|-------------------|---------|
+| Puff Derby | Simultaneous — all puff at once | Each device boosts one horse |
+| Hot Potato | Turn-based — bomb holder's device | Only holder's slot fires |
+| Balloon Pop | Turn-based — active player's device | Only active slot fires |
+| Russian Roulette | Turn-based — dodge charger's device | Only active slot fires |
+| Tug of War | Simultaneous teams — 2v2 | Slots 0,1=left; 2,3=right |
+| Wild West Duel | 1v1 reaction — first puff wins | Both devices race on DRAW |
+| Puff Clock | Simultaneous — all hold for target | Independent per-slot timing |
+| Puff Limbo | Simultaneous — endurance elimination | Dead slots get null handlers |
+| Fish War | Real-time — each device = one fish | Each slot boosts one fish |
+| Puff RPS | 1v1 — puff duration = choice | P2: short=rock, med=paper, long=scissors |
 
-### 10 Multiplayer Games:
-| Game | Multi-Device Type | Status |
-|------|-------------------|--------|
-| Puff Derby | Simultaneous — all puff at once | DONE |
-| Hot Potato | Turn-based — bomb holder's device | DONE |
-| Balloon Pop | Turn-based — active player's device | DONE |
-| Russian Roulette | Turn-based — dodge charger's device | DONE |
-| Tug of War | Simultaneous teams — 2v2 | DONE |
-| Wild West Duel | 1v1 reaction — first puff wins | TODO |
-| Puff Clock | Simultaneous — all hold for target | TODO |
-| Puff Limbo | Simultaneous — endurance elimination | TODO |
-| Fish War | Real-time — each device = one fish | TODO |
-| Puff RPS | 1v1 — puff duration = choice | TODO |
+### MP State (no new hooks — uses window objects):
+- `window._duelP2` — Wild West Duel P2 reaction tracking
+- `window._pcMp` — Puff Clock per-slot holding/results
+- `window._plMp` — Puff Limbo per-slot alive/submitted
+- `window._fwMp` — Fish War per-slot boost state
+- `window._rpsP2` — Puff RPS P2 choice/power tracking
+- All cleaned up in `cleanupAllGames()`
 
 ### Multiplayer Puff Routing (in the IIFE at ~line 9460):
 - **Simultaneous games:** All device slots active at once, each routes to different player
