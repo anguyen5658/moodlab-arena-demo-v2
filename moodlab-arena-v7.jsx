@@ -4759,11 +4759,27 @@ export default function MoodLabArena() {
     randomizeUniversalSweetSpot();
     if(bpAnimRef.current){cancelAnimationFrame(bpAnimRef.current);bpAnimRef.current=null;}
     bpParticles.current=[];bpBokeh.current=[];bpConfettiParts.current=[];
-    const shuffled = [...BP_AI_PLAYERS].sort(()=>Math.random()-0.5);
-    const aiP = shuffled.slice(0,7).map((a,i)=>({...a,isYou:false,isAI:true,alive:true,puffs:0,totalAir:0,color:BP_PLAYER_COLORS[(i+1)%8]}));
-    const youIdx = Math.floor(Math.random()*(aiP.length+1));
-    const players = [...aiP];
-    players.splice(youIdx,0,{name:"You",emoji:"😤",img:PLAYER_IMG,isYou:true,isAI:false,alive:true,puffs:0,totalAir:0,strategy:"human",color:BP_PLAYER_COLORS[0]});
+    const mpCount = (mpActive && ssPlayerCount >= 2) ? ssPlayerCount : 0;
+    const players = [];
+    if (mpCount > 0) {
+      // Human players first
+      players.push({name:partyPlayerNames[0],emoji:"\uD83D\uDE24",img:PLAYER_IMG,isYou:true,isAI:false,isHuman:false,alive:true,puffs:0,totalAir:0,strategy:"human",color:SLOT_COLORS[0],deviceSlot:0});
+      for (let s = 1; s < mpCount; s++) {
+        players.push({name:partyPlayerNames[s],emoji:"\uD83C\uDFAE",isYou:false,isAI:false,isHuman:true,alive:true,puffs:0,totalAir:0,strategy:"human",color:SLOT_COLORS[s],deviceSlot:s});
+      }
+      // Fill rest with AI
+      const shuffled = [...BP_AI_PLAYERS].sort(()=>Math.random()-0.5);
+      const aiNeeded = 8 - mpCount;
+      shuffled.slice(0, aiNeeded).forEach((a,i) => {
+        players.push({...a,isYou:false,isAI:true,isHuman:false,alive:true,puffs:0,totalAir:0,color:BP_PLAYER_COLORS[(mpCount+i)%8]});
+      });
+    } else {
+      const shuffled = [...BP_AI_PLAYERS].sort(()=>Math.random()-0.5);
+      const aiP = shuffled.slice(0,7).map((a,i)=>({...a,isYou:false,isAI:true,isHuman:false,alive:true,puffs:0,totalAir:0,color:BP_PLAYER_COLORS[(i+1)%8]}));
+      const youIdx = Math.floor(Math.random()*(aiP.length+1));
+      aiP.splice(youIdx,0,{name:"You",emoji:"\uD83D\uDE24",img:PLAYER_IMG,isYou:true,isAI:false,isHuman:false,alive:true,puffs:0,totalAir:0,strategy:"human",color:BP_PLAYER_COLORS[0]});
+      players.push(...aiP);
+    }
     const threshold = 80+Math.floor(Math.random()*41);
     setBpPlayers(players);setBpCurrentTurn(0);setBpAirLevel(0);setBpPopThreshold(threshold);
     setBpPuffAmount(0);setBpCharging(false);setBpComment("");setBpRound(0);
@@ -4834,7 +4850,7 @@ export default function MoodLabArena() {
           if(nextAlive!==null){
             setBpCurrentTurn(nextAlive);
             if(newPlayers[nextAlive].isAI){setBpPhase("ai_turn");setTimeout(()=>bpDoAITurn(newPlayers,nextAlive,0,newThreshold),1500+Math.random()*1000);}
-            else{setBpPhase("playing");setBpComment("YOUR TURN! Tap or Puff!");playFx("select");addGameChat("Announcer","Your turn! Choose wisely...",C.cyan);}
+            else{setBpPhase("playing");const tn2=newPlayers[nextAlive].isYou?"YOUR":newPlayers[nextAlive].name+"'s";setBpComment(tn2+" TURN! Tap or Puff!");playFx("select");addGameChat("Announcer",tn2+" turn! Choose wisely...",newPlayers[nextAlive].color||C.cyan);}
           }
         }
       },2200);
@@ -4845,7 +4861,7 @@ export default function MoodLabArena() {
     if(nextAlive===null)return;
     setBpCurrentTurn(nextAlive);
     if(up[nextAlive].isAI){setBpPhase("ai_turn");setTimeout(()=>bpDoAITurn(up,nextAlive,newAir,threshold),1000+Math.random()*1500);}
-    else{setBpPhase("playing");setBpComment("YOUR TURN!");playFx("select");addGameChat("Announcer","Your turn!",C.cyan);}
+    else{setBpPhase("playing");const tn=up[nextAlive].isYou?"YOUR":up[nextAlive].name+"'s";setBpComment(tn+" TURN!");playFx("select");addGameChat("Announcer",tn+" turn!",up[nextAlive].color||C.cyan);}
   };
 
   const bpDoAITurn = (players,idx,airLevel,threshold) => {
@@ -4862,7 +4878,8 @@ export default function MoodLabArena() {
   // THREE-INPUT (Puff Game): Tap (on-screen), Puff (real hold), Blinker (on-screen big)
   const bpTapInflate = () => {
     if(bpPhase!=="playing"||bpCharging)return;
-    if(bpPlayers[bpCurrentTurn]&&bpPlayers[bpCurrentTurn].isAI)return;
+    const bpCur = bpPlayers[bpCurrentTurn];
+    if(bpCur && bpCur.isAI)return;
     const amt = 3+Math.floor(Math.random()*3);
     playFx("tap");
     bpProcessPuff(bpCurrentTurn,amt,bpPlayers,bpAirLevel,bpPopThreshold);
@@ -4871,6 +4888,7 @@ export default function MoodLabArena() {
   const bpStartCharge = () => {
     if(bpPhase!=="playing"||bpCharging)return;
     if(bpPlayers[bpCurrentTurn]&&bpPlayers[bpCurrentTurn].isAI)return;
+    // Human or You can inflate
     setBpCharging(true);setBpPuffAmount(0);bpPuffStart.current=Date.now();setDimLights(true);playFx("balloon_inflate");
     bpChargeInterval.current=setInterval(()=>{
       const e=(Date.now()-bpPuffStart.current)/1000;
@@ -4896,6 +4914,7 @@ export default function MoodLabArena() {
   const bpBlinkerInflate = () => {
     if(bpPhase!=="playing"||bpCharging)return;
     if(bpPlayers[bpCurrentTurn]&&bpPlayers[bpCurrentTurn].isAI)return;
+    // Human or You can blinker
     const amt = 20+Math.floor(Math.random()*11);
     playFx("kick");triggerShake();
     addGameChat("Announcer","BLINKER INFLATION! INSANE RISK!",C.red);
@@ -4950,10 +4969,22 @@ export default function MoodLabArena() {
   const startRussianRoulette = () => {
     randomizeUniversalSweetSpot();
     if(rrAnimRef.current){cancelAnimationFrame(rrAnimRef.current);rrAnimRef.current=null;}
-    const shuffled=[...RR_AI].sort(()=>Math.random()-0.5).slice(0,5);
-    const players=shuffled.map((a,i)=>({...a,isYou:false,isAI:true,alive:true,dodges:0,survived:0,color:RR_PLAYER_COLORS[(i+1)%6]}));
-    const youIdx=Math.floor(Math.random()*(players.length+1));
-    players.splice(youIdx,0,{name:"You",emoji:"\uD83D\uDE24",img:PLAYER_IMG,isYou:true,isAI:false,alive:true,dodges:0,survived:0,color:RR_PLAYER_COLORS[0]});
+    const mpCount = (mpActive && ssPlayerCount >= 2) ? ssPlayerCount : 0;
+    const players = [];
+    if (mpCount > 0) {
+      players.push({name:partyPlayerNames[0],emoji:"\uD83D\uDE24",img:PLAYER_IMG,isYou:true,isAI:false,isHuman:false,alive:true,dodges:0,survived:0,color:SLOT_COLORS[0],deviceSlot:0});
+      for (let s = 1; s < mpCount; s++) {
+        players.push({name:partyPlayerNames[s],emoji:"\uD83C\uDFAE",isYou:false,isAI:false,isHuman:true,alive:true,dodges:0,survived:0,color:SLOT_COLORS[s],deviceSlot:s});
+      }
+      const shuffled=[...RR_AI].sort(()=>Math.random()-0.5).slice(0, 6 - mpCount);
+      shuffled.forEach((a,i) => players.push({...a,isYou:false,isAI:true,isHuman:false,alive:true,dodges:0,survived:0,color:RR_PLAYER_COLORS[(mpCount+i)%6]}));
+    } else {
+      const shuffled=[...RR_AI].sort(()=>Math.random()-0.5).slice(0,5);
+      const aiPlayers=shuffled.map((a,i)=>({...a,isYou:false,isAI:true,isHuman:false,alive:true,dodges:0,survived:0,color:RR_PLAYER_COLORS[(i+1)%6]}));
+      const youIdx=Math.floor(Math.random()*(aiPlayers.length+1));
+      aiPlayers.splice(youIdx,0,{name:"You",emoji:"\uD83D\uDE24",img:PLAYER_IMG,isYou:true,isAI:false,isHuman:false,alive:true,dodges:0,survived:0,color:RR_PLAYER_COLORS[0]});
+      players.push(...aiPlayers);
+    }
     const chamber=Math.floor(Math.random()*6);
     setRrPlayers(players);setRrCurrentTurn(0);setRrChamber(chamber);setRrCurrentChamber(0);
     setRrComment("");setRrEliminated(null);setRrRound(0);setRrSpinAngle(0);setRrTension(0);
@@ -4980,8 +5011,9 @@ export default function MoodLabArena() {
       addGameChat(p.name,pick(["Here goes nothing...","Please be empty","I hate this game","*deep breath*","Lord have mercy"]),p.color||C.text2);
       setTimeout(()=>{setRrPhase("pulling");setTimeout(()=>rrResolveTurn(players,idx,bullet,chamberPos,Math.random()*60),800);},1200+Math.random()*800);
     } else {
-      setRrComment(pick(RR_COMMENTS.yourTurn));setRrPhase("player_turn");playFx("select");setRrHeartRate(h=>Math.min(160,h+10));
-      addGameChat("Announcer",pick(RR_COMMENTS.yourTurn),C.red);
+      const rrTurnName = p.isYou ? "YOUR" : p.name + "'s";
+      setRrComment(rrTurnName + " TURN... Hold to puff for dodge chance!");setRrPhase("player_turn");playFx("select");setRrHeartRate(h=>Math.min(160,h+10));
+      addGameChat("Announcer",rrTurnName + " TURN... " + pick(RR_COMMENTS.yourTurn),p.color||C.red);
     }
   };
   const rrResolveTurn=(players,idx,bullet,chamberPos,dodgeCharge)=>{
@@ -5027,7 +5059,7 @@ export default function MoodLabArena() {
       setTimeout(()=>{const next=rrFindNextAlive(up,idx);if(next!==null){setRrPhase("player_turn");rrStartTurn(up,next,bullet,newChamber);}},1800);
     }
   };
-  const rrStartPuff=()=>{if(rrPhase!=="player_turn")return;const cur=rrPlayers[rrCurrentTurn];if(!cur||cur.isAI)return;
+  const rrStartPuff=()=>{if(rrPhase!=="player_turn")return;const cur=rrPlayers[rrCurrentTurn];if(!cur||cur.isAI)return;/* isYou or isHuman can puff */
     setRrPhase("puffing");setRrPuffCharge(0);rrPuffStart.current=Date.now();setDimLights(true);playFx("charge");
     rrPuffInterval.current=setInterval(()=>{const e=(Date.now()-rrPuffStart.current)/1000;setRrPuffCharge(Math.min(100,(e/5.0)*100));if(Math.random()<0.3)spawnSmoke(2);if(e>=5.5)rrStopPuff();},50);};
   const rrStopPuff=()=>{if(rrPhase!=="puffing")return;setDimLights(false);if(rrPuffInterval.current){clearInterval(rrPuffInterval.current);rrPuffInterval.current=null;}
@@ -5927,18 +5959,29 @@ export default function MoodLabArena() {
     setTowRopeStrain(0);setTowCrowdHype(0);setTowFlameFlicker(0);setTowCharging(false);
     towPosRef.current=50;towHoldRef.current=false;
     setTowPhase("intro");
-    playFx("crowd");setCommentary("TUG OF WAR! Teams entering the arena! 🏟️");
-    addGameChat("Announcer","Teams are entering the arena! 💪🏟️",C.gold);
+    const mpCount = (mpActive && ssPlayerCount >= 2) ? ssPlayerCount : 0;
+    if (mpCount >= 2) {
+      const leftNames = [partyPlayerNames[0]];
+      const rightNames = [];
+      if (mpCount === 2) { rightNames.push(partyPlayerNames[1]); }
+      else if (mpCount === 3) { leftNames.push(partyPlayerNames[1]); rightNames.push(partyPlayerNames[2]); }
+      else { leftNames.push(partyPlayerNames[1]); rightNames.push(partyPlayerNames[2]); rightNames.push(partyPlayerNames[3]); }
+      playFx("crowd");setCommentary("TUG OF WAR! " + leftNames.join(" & ") + " vs " + rightNames.join(" & ") + "!");
+      addGameChat("Announcer","LEFT: " + leftNames.join(", ") + "  vs  RIGHT: " + rightNames.join(", "),C.gold);
+    } else {
+      playFx("crowd");setCommentary("TUG OF WAR! Teams entering the arena!");
+      addGameChat("Announcer","Teams are entering the arena!",C.gold);
+    }
     let step=0;
     const introTimer=setInterval(()=>{
       step++;setTowIntroStep(step);
-      if(step===2) addGameChat("Announcer","5 vs 5 -- your team needs those LUNGS!",C.cyan);
+      if(step===2) addGameChat("Announcer",mpCount>=2?"Players get ready!":"5 vs 5 -- your team needs those LUNGS!",C.cyan);
       if(step>=4&&step<=6)playFx("tick");
       if(step>=7){
         clearInterval(introTimer);
-        playFx("whistle");setCommentary("PULL! Spam puff to win! 💪🫁");
-        setTowComment("PULL! 💪");
-        addGameChat("Announcer","PULL! Spam puff to drag them into the MUD! 🫁",C.gold);
+        playFx("whistle");setCommentary("PULL! Spam puff to win!");
+        setTowComment("PULL!");
+        addGameChat("Announcer","PULL! Spam puff to drag them into the MUD!",C.gold);
         towStartMatch();
       }
     },700);
@@ -5971,16 +6014,20 @@ export default function MoodLabArena() {
         }
         return newT;
       });
-      // AI pull with variable force
-      const aiStr=0.8+Math.random()*1.8;
-      if(Math.random()<0.45){
-        towPosRef.current=Math.max(0,towPosRef.current-aiStr);
-        setTowPosition(towPosRef.current);setTowAiPuffs(a=>a+1);
-        if(Math.random()<0.15){
-          towPosRef.current=Math.max(0,towPosRef.current-2.5);
-          setTowPosition(towPosRef.current);triggerShake();
-          setTowComment("AI BURST! They're pulling hard! 😤");
-          addGameChat(pick(["BotBruiser","AI_Tank","RoboPull"]),"HEAVE! We're pulling HARDER! 💪",C.red);
+      // AI pull with variable force (reduced/disabled in multiplayer when humans control right)
+      const towMpCount = (mpActive && ssPlayerCount >= 2) ? ssPlayerCount : 0;
+      const towAiScale = towMpCount >= 2 ? Math.max(0, 1 - (towMpCount === 2 ? 0.85 : towMpCount === 3 ? 0.7 : 0.6)) : 1;
+      if(towAiScale > 0) {
+        const aiStr=(0.8+Math.random()*1.8)*towAiScale;
+        if(Math.random()<0.45*towAiScale){
+          towPosRef.current=Math.max(0,towPosRef.current-aiStr);
+          setTowPosition(towPosRef.current);setTowAiPuffs(a=>a+1);
+          if(Math.random()<0.15*towAiScale){
+            towPosRef.current=Math.max(0,towPosRef.current-2.5*towAiScale);
+            setTowPosition(towPosRef.current);triggerShake();
+            setTowComment("AI BURST! They're pulling hard!");
+            addGameChat(pick(["BotBruiser","AI_Tank","RoboPull"]),"HEAVE! We're pulling HARDER!",C.red);
+          }
         }
       }
       // Comedy chat
@@ -6080,6 +6127,36 @@ export default function MoodLabArena() {
     }
   };
 
+  // Multiplayer right-side pull functions (pulls position toward 0 = right team wins)
+  const towTapPullRight = () => {
+    if(towPhase!=="playing"&&towPhase!=="suddendeath")return;
+    const force = 2 + Math.random()*1;
+    towPosRef.current=Math.max(0,towPosRef.current-force);
+    setTowPosition(towPosRef.current);playFx("tap");
+    setTowComment("RIGHT TEAM PULLS!");
+  };
+  const towStartChargeRight = () => {
+    if(towPhase!=="playing"&&towPhase!=="suddendeath")return;
+    setTowCharging(true);towHoldRef.current=true;setTowHolding(true);
+    setTowPuffIntensity(0);
+    if(towChargeRef.current)clearInterval(towChargeRef.current);
+    towChargeRef.current=setInterval(()=>{
+      setTowPuffIntensity(p=>Math.min(100,p+4));
+    },50);
+  };
+  const towStopChargeRight = () => {
+    if(!towHoldRef.current)return;
+    towHoldRef.current=false;setTowHolding(false);setTowCharging(false);
+    if(towChargeRef.current){clearInterval(towChargeRef.current);towChargeRef.current=null;}
+    if(towPhase!=="playing"&&towPhase!=="suddendeath")return;
+    const force = 5 + (towPuffIntensity/100)*5;
+    towPosRef.current=Math.max(0,towPosRef.current-force);
+    setTowPosition(towPosRef.current);playFx("crowd");
+    setTowComment("RIGHT TEAM POWER PULL!");
+    if(force>6)triggerShake();
+    setTowPuffIntensity(0);
+  };
+
   // Legacy alias kept for BT puff dispatch (tap-based)
   const towPuff = towTapPull;
 
@@ -6123,11 +6200,23 @@ export default function MoodLabArena() {
   const HP_PLAYER_COLORS = ["#00E5FF","#FF6B8A","#FFD93D","#7CFF6B","#C084FC","#60A5FA","#FF4D8D","#FB923C"];
   const startHotPotato = () => {
     randomizeUniversalSweetSpot();
-    const aiCount = 7; // you + 7 bots = 8 players
+    const mpCount = (mpActive && ssPlayerCount >= 2) ? ssPlayerCount : 0;
+    const aiCount = 8 - (mpCount > 0 ? mpCount : 1); // fill rest with AI
     const shuffled = [...HP_AI].sort(()=>Math.random()-0.5).slice(0, aiCount);
-    const players = shuffled.map((a,i)=>({...a,isYou:false,isAI:true,alive:true,color:a.color}));
-    const youIdx = Math.floor(Math.random()*(players.length+1));
-    players.splice(youIdx, 0, {name:"You",emoji:"\uD83D\uDE24",color:"#00E5FF",isYou:true,isAI:false,alive:true});
+    const players = [];
+    // Add human players first (slot 0 = You, rest = device players)
+    if (mpCount > 0) {
+      players.push({name:partyPlayerNames[0],emoji:"\uD83D\uDE24",color:SLOT_COLORS[0],isYou:true,isAI:false,isHuman:false,alive:true,deviceSlot:0});
+      for (let s = 1; s < mpCount; s++) {
+        players.push({name:partyPlayerNames[s],emoji:"\uD83C\uDFAE",color:SLOT_COLORS[s],isYou:false,isAI:false,isHuman:true,alive:true,deviceSlot:s});
+      }
+      shuffled.forEach(a => players.push({...a,isYou:false,isAI:true,isHuman:false,alive:true,color:a.color}));
+    } else {
+      const aiPlayers = shuffled.map((a,i)=>({...a,isYou:false,isAI:true,isHuman:false,alive:true,color:a.color}));
+      const youIdx = Math.floor(Math.random()*(aiPlayers.length+1));
+      aiPlayers.splice(youIdx, 0, {name:"You",emoji:"\uD83D\uDE24",color:"#00E5FF",isYou:true,isAI:false,isHuman:false,alive:true});
+      players.push(...aiPlayers);
+    }
     setHpPlayers(players);setHpCurrentHolder(-1);setHpRound(1);setHpMaxTimer(5+Math.random()*3);
     setHpBombTimer(0);setHpComment("");setHpExploded(null);setHpWinner(null);setHpEliminatedList([]);
     setHpFuse(1);setHpTension(0);setHpPuffHeld(false);setHpPuffPower(0);setHpPassTarget(null);
@@ -6222,14 +6311,14 @@ export default function MoodLabArena() {
   const hpTapPass = () => {
     if(hpPhase!=="playing"||hpPuffHeld||hpPassing) return;
     const cur = hpPlayers[hpCurrentHolder];
-    if(!cur||!cur.isYou) return;
+    if(!cur||(!cur.isYou && !cur.isHuman)) return;
     hpPassBomb(hpPlayers, hpCurrentHolder, 0, hpRound);
     playFx("tap");
   };
   const hpStartPuff = () => {
     if(hpPhase!=="playing"||hpPuffHeld) return;
     const cur = hpPlayers[hpCurrentHolder];
-    if(!cur||!cur.isYou) return;
+    if(!cur||(!cur.isYou && !cur.isHuman)) return;
     setHpPuffHeld(true);setHpPuffPower(0);hpPuffStart.current=Date.now();
     setDimLights(true);playFx("charge");
     if(hpPuffRef.current) clearInterval(hpPuffRef.current);
@@ -9505,20 +9594,70 @@ export default function MoodLabArena() {
     // puffEvent handlers are always live regardless of active game
     btPuffEventDown.current = puffEventHoldDown;
     btPuffEventUp.current   = puffEventHoldUp;
-    // Multi-device routing
+    // Multi-device routing (Phase 3: per-game differentiation)
     if (mpActive && bleDevicesRef.current.length > 0) {
-      // Slot 0 always gets the default handler (same as btPuffDown/btPuffUp)
-      bleDevicesRef.current.forEach((dev, i) => {
-        if (dev) {
-          if (i === 0) { dev.down = down; dev.up = up; }
-          else {
-            // For now, all slots get the same handler
-            // Phase 3 will differentiate per game type (turn-based vs simultaneous)
-            dev.down = down;
-            dev.up = up;
+      // --- PUFF DERBY (simultaneous race): each device boosts its own horse ---
+      if (id === "puffderby") {
+        bleDevicesRef.current.forEach((dev, i) => {
+          if (dev) {
+            if (i === 0) { dev.down = () => pdPuffStart(); dev.up = () => pdPuffRelease(); }
+            else { dev.down = () => pdPuffForSlot(i); dev.up = null; }
           }
-        }
-      });
+        });
+      }
+      // --- HOT POTATO (turn-based): only the current holder's device fires ---
+      else if (id === "hotpotato") {
+        const hpHolder = hpPlayers[hpCurrentHolder];
+        bleDevicesRef.current.forEach((dev, i) => {
+          if (dev) {
+            if (hpHolder && (hpHolder.isYou && i === 0 || hpHolder.isHuman && hpHolder.deviceSlot === i)) {
+              dev.down = () => hpStartPuff(); dev.up = () => hpStopPuff();
+            } else { dev.down = null; dev.up = null; }
+          }
+        });
+      }
+      // --- BALLOON POP (turn-based): only current turn player's device fires ---
+      else if (id === "balloon") {
+        const bpCurP = bpPlayers[bpCurrentTurn];
+        bleDevicesRef.current.forEach((dev, i) => {
+          if (dev) {
+            if (bpCurP && (bpCurP.isYou && i === 0 || bpCurP.isHuman && bpCurP.deviceSlot === i)) {
+              dev.down = () => bpStartCharge(); dev.up = () => bpStopCharge();
+            } else { dev.down = null; dev.up = null; }
+          }
+        });
+      }
+      // --- RUSSIAN ROULETTE (turn-based): only current turn player's device fires ---
+      else if (id === "russian") {
+        const rrCurP = rrPlayers[rrCurrentTurn];
+        bleDevicesRef.current.forEach((dev, i) => {
+          if (dev) {
+            if (rrCurP && !rrCurP.isAI && (rrCurP.isYou && i === 0 || rrCurP.isHuman && rrCurP.deviceSlot === i)) {
+              dev.down = () => rrStartPuff(); dev.up = () => rrStopPuff();
+            } else { dev.down = null; dev.up = null; }
+          }
+        });
+      }
+      // --- TUG OF WAR (simultaneous teams): left slots pull left, right slots pull right ---
+      else if (id === "tugofwar") {
+        const towMp = ssPlayerCount || 2;
+        // 2P: slot0=left, slot1=right; 3P: slot0,1=left, slot2=right; 4P: slot0,1=left, slot2,3=right
+        const towLeftSlots = towMp === 2 ? [0] : [0, 1];
+        const towRightSlots = towMp === 2 ? [1] : towMp === 3 ? [2] : [2, 3];
+        bleDevicesRef.current.forEach((dev, i) => {
+          if (dev) {
+            if (towLeftSlots.includes(i)) { dev.down = () => towStartCharge(); dev.up = () => towStopCharge(); }
+            else if (towRightSlots.includes(i)) { dev.down = () => towStartChargeRight(); dev.up = () => towStopChargeRight(); }
+            else { dev.down = null; dev.up = null; }
+          }
+        });
+      }
+      // --- Default: all slots get the same handler ---
+      else {
+        bleDevicesRef.current.forEach((dev, i) => {
+          if (dev) { dev.down = down; dev.up = up; }
+        });
+      }
     } else {
       // Solo play or non-multiplayer: all slots get the same handler
       bleDevicesRef.current.forEach((dev, i) => {
@@ -15941,13 +16080,31 @@ const startSimonPuffs = () => {
 
   const startPuffDerby = () => {
     gameSoundsMuted.current = false;
-    setPdPhase("pick"); setPdPlayerHorse(null); setPdRaceTime(30); setPdPuffCount(0);
+    setPdRaceTime(30); setPdPuffCount(0);
     setPdStamina(100); pdStaminaRef.current = 100;
     setPdPositions([0,0,0,0,0,0]); pdPosRef.current = [0,0,0,0,0,0];
     setPdFinishOrder([]); pdFinishRef.current = []; pdLastPuff.current = 0;
     pdInputMode.current = "tap"; pdPuffHolding.current = false;
-    setCommentary("Pick your horse!"); playFx("crowd");
-    addGameChat("Announcer", "Welcome to the Puff Derby! Pick your horse!", C.gold);
+    // Multiplayer: auto-assign horses, skip pick phase
+    if (mpActive && ssPlayerCount >= 2) {
+      setPdPlayerHorse(0); // P1 always horse 0
+      setCommentary("Puff Derby! " + ssPlayerCount + " players racing!"); playFx("crowd");
+      addGameChat("Announcer", "Multiplayer Puff Derby! " + ssPlayerCount + " human racers!", C.gold);
+      for (let s = 0; s < ssPlayerCount; s++) {
+        addGameChat(partyPlayerNames[s], "Racing as " + PD_HORSE_NAMES[s] + "!", SLOT_COLORS[s]);
+      }
+      setPdPhase("countdown");
+      let c = 3;
+      const cd = setInterval(() => {
+        c--;
+        if (c <= 0) { clearInterval(cd); setPdPhase("racing"); setCommentary("AND THEY'RE OFF!"); playFx("whistle"); triggerFlash("goal"); pdStartRace(0); }
+      }, 800);
+    } else {
+      setPdPlayerHorse(null);
+      setPdPhase("pick");
+      setCommentary("Pick your horse!"); playFx("crowd");
+      addGameChat("Announcer", "Welcome to the Puff Derby! Pick your horse!", C.gold);
+    }
   };
 
   const pdPickHorse = (idx) => {
@@ -15968,8 +16125,10 @@ const startSimonPuffs = () => {
     pdAiRef.current = setInterval(() => {
       if (Date.now() - pdLastPuff.current > 500) { pdStaminaRef.current = Math.min(100, pdStaminaRef.current + 0.6); setPdStamina(Math.round(pdStaminaRef.current)); }
       const np = [...pdPosRef.current];
+      const mpHorseCount = (mpActive && ssPlayerCount >= 2) ? ssPlayerCount : 0;
       for (let i = 0; i < 6; i++) {
         if (i === pi || pdFinishRef.current.includes(i)) continue;
+        if (mpHorseCount > 0 && i < mpHorseCount) continue; // skip human horses in MP
         const p = PD_AI[i]; let mv = p.bs * (0.6 + Math.random() * 0.8);
         if (Math.random() < p.bc) mv += p.bz; if (Math.random() < p.rc) mv = 0;
         if (np[i] > 70) mv *= 1.2; if (np[i] > 90) mv *= 1.1;
@@ -16017,6 +16176,18 @@ const startSimonPuffs = () => {
     const np = [...pdPosRef.current]; np[idx] = Math.min(100, np[idx] + boost);
     pdPosRef.current = np; setPdPositions([...np]);
     if (np[idx] >= 100 && !pdFinishRef.current.includes(idx)) { pdFinishRef.current = [...pdFinishRef.current, idx]; setPdFinishOrder([...pdFinishRef.current]); }
+  };
+
+  // Multiplayer: boost a specific horse by slot index
+  const pdPuffForSlot = (slotIdx) => {
+    if (pdPhase !== "racing") return;
+    if (slotIdx < 0 || slotIdx >= 6) return;
+    if (pdFinishRef.current.includes(slotIdx)) return;
+    const boost = 1.5 + Math.random() * 0.8;
+    const np = [...pdPosRef.current]; np[slotIdx] = Math.min(100, np[slotIdx] + boost);
+    pdPosRef.current = np; setPdPositions([...np]);
+    playFx("horse_gallop");
+    if (np[slotIdx] >= 100 && !pdFinishRef.current.includes(slotIdx)) { pdFinishRef.current = [...pdFinishRef.current, slotIdx]; setPdFinishOrder([...pdFinishRef.current]); }
   };
 
   const pdEndRace = (pi) => {
