@@ -2269,6 +2269,8 @@ export default function MoodLabArena() {
   const [bleDevices, setBleDevices] = useState([]); // [{slot, name, deviceName, connected}]
   const [partyPlayerNames, setPartyPlayerNames] = useState(["You","Friend 1","Friend 2","Friend 3"]);
   const bleDevicesRef = useRef([]); // [{slot, device, characteristic, puffTimeout, down, up}] — mutable mirror for BLE callbacks
+  const [ssPlayerCount, setSsPlayerCount] = useState(null); // 2, 3, or 4 (null = not selected)
+  const [mpActive, setMpActive] = useState(false); // true when playing a multiplayer game with friends
 
   // ── Derived ──
   const wcDays = Math.max(0, Math.floor((new Date("2026-06-11") - new Date()) / 86400000));
@@ -9503,11 +9505,26 @@ export default function MoodLabArena() {
     // puffEvent handlers are always live regardless of active game
     btPuffEventDown.current = puffEventHoldDown;
     btPuffEventUp.current   = puffEventHoldUp;
-    // Multi-device routing: assign the same game handler to all connected slots
-    // Phase 2 will differentiate per-player for true multiplayer
-    bleDevicesRef.current.forEach((dev, i) => {
-      if (dev) { dev.down = down; dev.up = up; }
-    });
+    // Multi-device routing
+    if (mpActive && bleDevicesRef.current.length > 0) {
+      // Slot 0 always gets the default handler (same as btPuffDown/btPuffUp)
+      bleDevicesRef.current.forEach((dev, i) => {
+        if (dev) {
+          if (i === 0) { dev.down = down; dev.up = up; }
+          else {
+            // For now, all slots get the same handler
+            // Phase 3 will differentiate per game type (turn-based vs simultaneous)
+            dev.down = down;
+            dev.up = up;
+          }
+        }
+      });
+    } else {
+      // Solo play or non-multiplayer: all slots get the same handler
+      bleDevicesRef.current.forEach((dev, i) => {
+        if (dev) { dev.down = down; dev.up = up; }
+      });
+    }
   })();
 
   const closePuffEvent = () => {
@@ -13799,6 +13816,8 @@ export default function MoodLabArena() {
     setCommentatorText(""); setPuffBubbles([]); setAudienceBubbles([]);
     setConfettiParticles([]); setSmokeParticles([]);
     setStageElim(null);
+    setMpActive(false);
+    setSsPlayerCount(null);
   };
 
   // ═══════════════════════════════════════════════════════════════
@@ -21987,6 +22006,48 @@ const startSimonPuffs = () => {
               </div>);
             })()}
 
+            {/* ── Play With Friends — Player Count & Device Status ── */}
+            {ssOpponent === "friends" && (
+              <div style={{width:"100%",maxWidth:340,marginBottom:12,animation:"fadeIn 0.4s ease 0.35s both"}}>
+                <div style={{fontSize:9,fontWeight:800,color:"rgba(232,235,246,0.4)",letterSpacing:1,marginBottom:8,textTransform:"uppercase"}}>HOW MANY PLAYERS?</div>
+                <div style={{display:"flex",gap:8,justifyContent:"center"}}>
+                  {[2,3,4].map(n => {
+                    const connectedCount = bleDevices.filter(d=>d.connected).length;
+                    const canSelect = n <= Math.max(connectedCount, 1);
+                    const isSelected = ssPlayerCount === n;
+                    return (
+                      <div key={n} data-btn="true" onClick={()=>{if(canSelect){setSsPlayerCount(n);playFx("tap");}}}
+                        style={{touchAction:"none",flex:1,maxWidth:100,padding:"12px 8px",borderRadius:14,cursor:canSelect?"pointer":"default",textAlign:"center",
+                          opacity:canSelect?1:0.35,
+                          background:isSelected?"linear-gradient(135deg, "+gColor+"20, "+gColor+"08)":"rgba(255,255,255,0.02)",
+                          border:"1px solid "+(isSelected?gColor+"40":"rgba(255,255,255,0.06)"),
+                          transform:isSelected?"scale(1.02)":"scale(1)",transition:"all 0.2s ease"}}>
+                        <div style={{fontSize:20,marginBottom:4}}>{n===2?"\uD83D\uDC64\uD83D\uDC64":n===3?"\uD83D\uDC64\uD83D\uDC64\uD83D\uDC64":"\uD83D\uDC64\uD83D\uDC64\uD83D\uDC64\uD83D\uDC64"}</div>
+                        <div style={{fontSize:12,fontWeight:800,color:isSelected?gColor:"rgba(232,235,246,0.6)"}}>{n}P</div>
+                        <div style={{fontSize:7,color:"rgba(232,235,246,0.3)",marginTop:2}}>{n} human + AI</div>
+                      </div>
+                    );
+                  })}
+                </div>
+                {/* Connected devices summary */}
+                <div style={{marginTop:10,padding:"8px 12px",borderRadius:10,background:"rgba(255,255,255,0.02)",border:"1px solid rgba(255,255,255,0.04)"}}>
+                  <div style={{fontSize:8,fontWeight:700,color:"rgba(232,235,246,0.35)",letterSpacing:1,marginBottom:4,textTransform:"uppercase"}}>CONNECTED DEVICES</div>
+                  {[0,1,2,3].map(slot => {
+                    const SLOT_COLORS = ["#00E5FF","#60A5FA","#FFD93D","#FF6B8A"];
+                    const dev = bleDevices.find(d=>d.slot===slot);
+                    const isConn = dev && dev.connected;
+                    return (
+                      <div key={slot} style={{display:"flex",alignItems:"center",gap:6,padding:"2px 0"}}>
+                        <div style={{width:6,height:6,borderRadius:"50%",background:isConn?SLOT_COLORS[slot]:"rgba(255,255,255,0.1)"}}/>
+                        <span style={{fontSize:9,color:isConn?"rgba(232,235,246,0.7)":"rgba(232,235,246,0.2)"}}>P{slot+1}: {isConn?(partyPlayerNames[slot]||("Player "+(slot+1))):"Not connected"}</span>
+                      </div>
+                    );
+                  })}
+                  <div data-btn="true" onClick={()=>setShowBlePopup(true)} style={{touchAction:"none",marginTop:6,padding:"6px 12px",borderRadius:8,cursor:"pointer",textAlign:"center",background:"rgba(0,229,255,0.06)",border:"1px solid rgba(0,229,255,0.15)",fontSize:9,fontWeight:700,color:"#00E5FF"}}>+ Connect Device</div>
+                </div>
+              </div>
+            )}
+
             {/* ── How to Play button (opens popup) — with glow ── */}
             <div onClick={()=>{playFx("tap");setShowHowToPlay(true);}} style={{
               width:"100%",maxWidth:340,marginBottom:16,display:"flex",alignItems:"center",justifyContent:"space-between",
@@ -22011,11 +22072,13 @@ const startSimonPuffs = () => {
               const fortuneNeedsOpp = hasFortune && (ssFortune==="table"||ssFortune==="group") && (!ssOpponent||ssOpponent==="none");
               const arcadeNeedsOpp = !hasFortune && !gc.roles && !gc.solo && !gc.modes && !ssOpponent;
               const needOpp = fortuneNeedsOpp || arcadeNeedsOpp;
-              const ready = !needRole && !needFortune && !needOpp && !needInput;
-              const missing = [needInput&&"Input",needRole&&"Role",needFortune&&"Play Style",needOpp&&"Opponent"].filter(Boolean);
+              const needPlayerCount = ssOpponent === "friends" && !ssPlayerCount;
+              const ready = !needRole && !needFortune && !needOpp && !needInput && !needPlayerCount;
+              const missing = [needInput&&"Input",needRole&&"Role",needFortune&&"Play Style",needOpp&&"Opponent",needPlayerCount&&"Player Count"].filter(Boolean);
               return (
               <div onClick={()=>{
                 if(!ready){playFx("tap");notify("Select " + missing.join(" & ") + " first!", C.orange);return;}
+                if(ssOpponent === "friends") setMpActive(true);
                 playFx("select");
                 // Launch Tank War → game lobby (mode select inside game)
                 if(selectedGame.id === "tankwar") {
