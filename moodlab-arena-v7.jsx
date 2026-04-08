@@ -1062,11 +1062,6 @@ const GAME_CONFIG = {
     stats:[{v:"400",l:"spinning"},{v:"12",l:"segments"},{v:"500",l:"gold wedge"}], hotStats:["GOLD WEDGE! 500 coins in one spin \u{1F3A1}\u2728"],
     htp:[{e:"\u{1F3A1}",t:"Big wheel",d:"12 prize segments."},{e:"\u{1F4A8}",t:"Puff to spin",d:"Puff force = spin power."},{e:"\u{1F3AF}",t:"Land on prize",d:"Each segment has different coins."},{e:"\u26A1",t:"Gold wedge",d:"Land on gold = 500+ coins!"}],
     reward:50 },
-  highcard: { modes:null, puffGame:false,
-    stats:[{v:"320",l:"playing"},{v:"52",l:"cards"},{v:"7",l:"rounds"}],
-    hotStats:["Someone drew Ace vs King \u2014 ONE card apart! \u{1F3B4}\u{1F480}"],
-    htp:[{e:"\u{1F3B4}",t:"Cards dealt",d:"Two cards dealt face down."},{e:"\u{1F4A8}",t:"Place your bet",d:"Puff longer = bigger bet."},{e:"\u{1F446}",t:"Reveal!",d:"Flip to see who's higher."},{e:"\u{1F3C6}",t:"7 rounds",d:"Win more than you lose!"}],
-    reward:50 },
 };
 
 const WC_GROUPS = {
@@ -1334,25 +1329,6 @@ export default function MoodLabArena() {
   const vcTimerRef = useRef(null);
   const vcPuffStartRef = useRef(null);
   const vcPuffHighlightRef = useRef(null);
-  const VC_DPR = typeof window !== 'undefined' ? Math.min(window.devicePixelRatio || 1, 2) : 1;
-  const vcCanvasRef = useRef(null);
-  const vcAnimRef = useRef(null);
-  const HL_DPR = typeof window !== 'undefined' ? Math.min(window.devicePixelRatio || 1, 2) : 1;
-  const hlCanvasRef = useRef(null);
-  const hlAnimRef = useRef(null);
-  const ST_DPR = typeof window !== 'undefined' ? Math.min(window.devicePixelRatio || 1, 2) : 1;
-  const stCanvasRef = useRef(null);
-  const stAnimRef = useRef(null);
-  const PIP_DPR = typeof window !== 'undefined' ? Math.min(window.devicePixelRatio || 1, 2) : 1;
-  const pipCanvasRef = useRef(null);
-  const pipAnimRef = useRef(null);
-  const SP_DPR = typeof window !== 'undefined' ? Math.min(window.devicePixelRatio || 1, 2) : 1;
-  const spCanvasRef = useRef(null);
-  const spAnimRef = useRef(null);
-  const PA_DPR = typeof window !== 'undefined' ? Math.min(window.devicePixelRatio || 1, 2) : 1;
-  const paCanvasRef = useRef(null);
-  const paAnimRef = useRef(null);
-
   const VC_DPR = typeof window !== 'undefined' ? Math.min(window.devicePixelRatio || 1, 2) : 1;
   const vcCanvasRef = useRef(null);
   const vcAnimRef = useRef(null);
@@ -2216,16 +2192,6 @@ export default function MoodLabArena() {
   const [sbMatchups, setSbMatchups] = useState([]);
   const sbPuffStart = useRef(0);
 
-  // ── High Card Puff ──
-  const [hcPhase, setHcPhase] = useState(null); // null|betting|reveal|result|complete
-  const [hcPlayerCard, setHcPlayerCard] = useState(null);
-  const [hcOpponentCard, setHcOpponentCard] = useState(null);
-  const [hcBet, setHcBet] = useState(0);
-  const [hcRound, setHcRound] = useState(0);
-  const [hcScore, setHcScore] = useState(0);
-  const [hcStreak, setHcStreak] = useState(0);
-  const [hcRevealed, setHcRevealed] = useState(false);
-
   // ── Match Predictor ──
   const [mpPhase, setMpPhase] = useState(null); // null|"intro"|"match"|"puffing"|"prediction"|"result"|"complete"
   const [mpMatch, setMpMatch] = useState(null);
@@ -2298,6 +2264,11 @@ export default function MoodLabArena() {
   const [crapsHotDice, setCrapsHotDice] = useState(false);
   const [crapsPuffing, setCrapsPuffing] = useState(false);
   const crapsPuffStart = useRef(0);
+
+  // ── Multi-Device Party Play ──
+  const [bleDevices, setBleDevices] = useState([]); // [{slot, name, deviceName, connected}]
+  const [partyPlayerNames, setPartyPlayerNames] = useState(["You","Friend 1","Friend 2","Friend 3"]);
+  const bleDevicesRef = useRef([]); // [{slot, device, characteristic, puffTimeout, down, up}] — mutable mirror for BLE callbacks
 
   // ── Derived ──
   const wcDays = Math.max(0, Math.floor((new Date("2026-06-11") - new Date()) / 86400000));
@@ -8593,7 +8564,6 @@ export default function MoodLabArena() {
   ];
 
   const swStartGame = () => {
-    gameSoundsMuted.current = false;
     setSwPhase("intro");
     setSwAngle(0);
     setSwRound(0);
@@ -8750,10 +8720,10 @@ export default function MoodLabArena() {
       <>
         {/* Chat overlay — always at bottom, toggle shows/hides content */}
         <div style={{position:"absolute",bottom:0,left:0,right:0,zIndex:40,
-          background:gameChatOpen?"linear-gradient(0deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.6) 55%, rgba(0,0,0,0.15) 85%, transparent 100%)":"none",
+          background:(gameChatOpen||controlsSlot)?"linear-gradient(0deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.6) 55%, rgba(0,0,0,0.15) 85%, transparent 100%)":"none",
           padding:"0 10px 6px",pointerEvents:"none"}}>
-          {/* Controls slot */}
-          {gameChatOpen && controlsSlot && <div style={{pointerEvents:"auto",marginBottom:4}}>{controlsSlot}</div>}
+          {/* Controls slot — ALWAYS visible regardless of chat toggle */}
+          {controlsSlot && <div style={{pointerEvents:"auto",marginBottom:gameChatOpen?4:0}}>{controlsSlot}</div>}
           {/* Messages */}
           {gameChatOpen && (
             <div style={{marginBottom:4,pointerEvents:"none"}}>
@@ -9360,8 +9330,8 @@ export default function MoodLabArena() {
     });
   };
 
-  // ── WEB BLUETOOTH — real device connection ──
-  const connectBle = async () => {
+  // ── WEB BLUETOOTH — multi-device connection (up to 4 slots) ──
+  const connectBleSlot = async (slotIndex) => {
     if (!navigator.bluetooth) {
       notify("Web Bluetooth not supported in this browser", C.red);
       return;
@@ -9371,47 +9341,72 @@ export default function MoodLabArena() {
       const device = await navigator.bluetooth.requestDevice({
         filters: [{ services: [BLE_SERVICE_UUID] }],
       });
-      btDeviceRef.current = device;
+
+      // For slot 0, also keep backward-compat refs
+      if (slotIndex === 0) btDeviceRef.current = device;
 
       device.addEventListener("gattserverdisconnected", () => {
-        clearTimeout(btPuffTimeout.current); // cancel safety timeout on unexpected disconnect
-        setBleConnected(false);
-        setBtPuffActive(false);
-        btCharNotify.current = null;
-        notify("Device disconnected", C.orange);
+        // Clear this slot's safety timeout
+        const slotRef = bleDevicesRef.current[slotIndex];
+        if (slotRef) clearTimeout(slotRef.puffTimeout);
+        // For slot 0, also clear legacy refs
+        if (slotIndex === 0) {
+          clearTimeout(btPuffTimeout.current);
+          setBtPuffActive(false);
+          btCharNotify.current = null;
+        }
+        // Update slot state
+        bleDevicesRef.current[slotIndex] = null;
+        setBleDevices(prev => prev.map(d => d.slot === slotIndex ? {...d, connected: false} : d));
+        // If no devices left, set bleConnected false
+        const anyLeft = bleDevicesRef.current.some(d => d && d.device?.gatt?.connected);
+        if (!anyLeft) setBleConnected(false);
+        notify("Slot " + (slotIndex+1) + " disconnected", C.orange);
       });
 
       const server  = await device.gatt.connect();
       const service = await server.getPrimaryService(BLE_SERVICE_UUID);
       const charNotify = await service.getCharacteristic(BLE_NOTIFY_CHAR_UUID);
-      btCharNotify.current = charNotify;
+
+      // For slot 0, keep backward-compat refs
+      if (slotIndex === 0) btCharNotify.current = charNotify;
+
+      // Store in mutable ref array
+      bleDevicesRef.current[slotIndex] = {
+        slot: slotIndex, device, characteristic: charNotify,
+        puffTimeout: null, down: null, up: null,
+      };
 
       charNotify.addEventListener("characteristicvaluechanged", (e) => {
         const dv = e.target.value;
         const b  = Array.from({ length: dv.byteLength }, (_, i) => dv.getUint8(i));
-        const hex = b.map(v => v.toString(16).padStart(2, "0")).join(" ");
         const match = (template) => b.length === template.length && template.every((v, i) => b[i] === v);
+        const slotRef = bleDevicesRef.current[slotIndex];
+        if (!slotRef) return;
         if (match(BLE_PUFF_START)) {
-          // console.log("[BLE] PUFF START →", hex);
-          // Clear any previous safety timeout (e.g. two starts in a row)
-          clearTimeout(btPuffTimeout.current);
-          setBtPuffActive(true);
-          btPuffDown.current?.();
-          btPuffEventDown.current?.();
-          // Safety net: if PUFF_STOP packet is never received, auto-stop after 15 s
-          btPuffTimeout.current = setTimeout(() => {
+          clearTimeout(slotRef.puffTimeout);
+          // For slot 0, also fire legacy handlers
+          if (slotIndex === 0) {
+            setBtPuffActive(true);
+            btPuffDown.current?.();
+            btPuffEventDown.current?.();
+            btPuffTimeout.current = setTimeout(() => {
+              setBtPuffActive(false);
+              btPuffUp.current?.();
+              btPuffEventUp.current?.();
+            }, 15000);
+          }
+          slotRef.down?.();
+          slotRef.puffTimeout = setTimeout(() => { slotRef.up?.(); }, 15000);
+        } else if (match(BLE_PUFF_STOP)) {
+          clearTimeout(slotRef.puffTimeout);
+          if (slotIndex === 0) {
+            clearTimeout(btPuffTimeout.current);
             setBtPuffActive(false);
             btPuffUp.current?.();
             btPuffEventUp.current?.();
-          }, 15000);
-        } else if (match(BLE_PUFF_STOP)) {
-          // console.log("[BLE] PUFF STOP  →", hex);
-          clearTimeout(btPuffTimeout.current);
-          setBtPuffActive(false);
-          btPuffUp.current?.();
-          btPuffEventUp.current?.();
-        } else {
-          // console.log("[BLE] unknown packet →", hex);
+          }
+          slotRef.up?.();
         }
       });
 
@@ -9419,23 +9414,42 @@ export default function MoodLabArena() {
       setBleScanning(false);
       setBleConnected(true);
       playFx("success");
-      setShowBlePopup(false);
-      // Device connected — ready to play (optimization screen removed)
+
+      // Update UI state
+      setBleDevices(prev => {
+        const filtered = prev.filter(d => d.slot !== slotIndex);
+        return [...filtered, { slot: slotIndex, name: partyPlayerNames[slotIndex], deviceName: device.name || "Cali Clear", connected: true }]
+          .sort((a,b) => a.slot - b.slot);
+      });
     } catch (err) {
       setBleScanning(false);
-      if (err.name !== "NotFoundError") { // NotFoundError = user cancelled picker
+      if (err.name !== "NotFoundError") {
         notify("BLE error: " + err.message, C.red);
       }
     }
   };
 
-  const disconnectBle = () => {
-    clearTimeout(btPuffTimeout.current); // cancel safety timeout on intentional disconnect
-    if (btDeviceRef.current?.gatt?.connected) btDeviceRef.current.gatt.disconnect();
-    setBleConnected(false);
-    setBtPuffActive(false);
-    btCharNotify.current = null;
+  const disconnectBleSlot = (slotIndex) => {
+    const slotRef = bleDevicesRef.current[slotIndex];
+    if (slotRef) {
+      clearTimeout(slotRef.puffTimeout);
+      if (slotRef.device?.gatt?.connected) slotRef.device.gatt.disconnect();
+    }
+    bleDevicesRef.current[slotIndex] = null;
+    // For slot 0, also clear legacy refs
+    if (slotIndex === 0) {
+      clearTimeout(btPuffTimeout.current);
+      setBtPuffActive(false);
+      btCharNotify.current = null;
+    }
+    setBleDevices(prev => prev.map(d => d.slot === slotIndex ? {...d, connected: false} : d));
+    const anyLeft = bleDevicesRef.current.some(d => d && d.device?.gatt?.connected);
+    if (!anyLeft) setBleConnected(false);
   };
+
+  // Backward-compat wrappers (solo play still works unchanged)
+  const connectBle = async () => { await connectBleSlot(0); };
+  const disconnectBle = () => { disconnectBleSlot(0); };
 
   // Keep BT puff refs in sync with whichever game is currently active.
   // Updated every render so the notification handler always calls the freshest closure.
@@ -9489,6 +9503,11 @@ export default function MoodLabArena() {
     // puffEvent handlers are always live regardless of active game
     btPuffEventDown.current = puffEventHoldDown;
     btPuffEventUp.current   = puffEventHoldUp;
+    // Multi-device routing: assign the same game handler to all connected slots
+    // Phase 2 will differentiate per-player for true multiplayer
+    bleDevicesRef.current.forEach((dev, i) => {
+      if (dev) { dev.down = down; dev.up = up; }
+    });
   })();
 
   const closePuffEvent = () => {
@@ -10772,7 +10791,6 @@ export default function MoodLabArena() {
   // CRYSTAL BALL -- Oracle Prediction Game Engine
   // ═══════════════════════════════════════════════════════════════
   const startCrystalBall = () => {
-    gameSoundsMuted.current = false;
     const used = [];
     const q = CB_PREDICTIONS[Math.floor(Math.random()*CB_PREDICTIONS.length)];
     used.push(q.q);
@@ -10851,7 +10869,6 @@ export default function MoodLabArena() {
   // STRAIN BATTLE -- Cannabis Strain Vote Game Engine
   // ═══════════════════════════════════════════════════════════════
   const startStrainBattle = () => {
-    gameSoundsMuted.current = false;
     const shuffled = [...SB_STRAINS].sort(()=>Math.random()-0.5);
     const matchups = [];
     for(let i=0;i<10;i+=2) matchups.push([shuffled[i],shuffled[i+1]]);
@@ -10905,7 +10922,6 @@ export default function MoodLabArena() {
   // MATCH PREDICTOR -- Sports Prediction Game Engine
   // ═══════════════════════════════════════════════════════════════
   const startMatchPredictor = () => {
-    gameSoundsMuted.current = false;
     const shuffled = [...MP_MATCHES].sort(()=>Math.random()-0.5);
     setMpUsed(shuffled.slice(0,5).map(m=>m.id));
     setMpMatch(shuffled[0]);
@@ -10967,7 +10983,6 @@ export default function MoodLabArena() {
   // DAILY PICKS -- Daily Prediction Streak Game Engine
   // ═══════════════════════════════════════════════════════════════
   const startDailyPicks = () => {
-    gameSoundsMuted.current = false;
     const shuffled = [...DP_QUESTIONS].sort(()=>Math.random()-0.5);
     const picks = [
       shuffled.find(q=>q.cat==="morning") || shuffled[0],
@@ -11054,7 +11069,6 @@ export default function MoodLabArena() {
   const SLOTS_SYMBOLS = ["🍒","🍋","🔔","💎","7️⃣","🌿"];
   const SLOTS_PAYOUTS = {"🍒":50,"🍋":75,"🔔":100,"💎":200,"7️⃣":500,"🌿":1000};
   const startPuffSlots = () => {
-    gameSoundsMuted.current = false;
     setSlotsReels(["🍒","🍒","🍒"]);
     setSlotsSpinning(false);
     setSlotsWin(0);
@@ -11167,7 +11181,6 @@ export default function MoodLabArena() {
     return total;
   };
   const startPuffBlackjack = () => {
-    gameSoundsMuted.current = false;
     setBjPlayerHand([]);setBjDealerHand([]);setBjPlayerTotal(0);setBjDealerTotal(0);
     setBjBet(50);bjBetRef.current=50;setBjResult(null);setBjRound(0);setBjScore(0);setBjPuffing(false);
     setBjPhase("intro");
@@ -11305,7 +11318,6 @@ export default function MoodLabArena() {
   // COIN FLIP -- 50/50 with Puff Confidence Multiplier
   // ═══════════════════════════════════════════════════════════════
   const startCoinFlip = () => {
-    gameSoundsMuted.current = false;
     setCfChoice(null);setCfResult(null);setCfBet(50);setCfPuffConfidence(0);
     setCfStreak(0);setCfRound(0);setCfScore(0);setCfFlipping(false);setCfPuffing(false);
     setCfPhase("intro");
@@ -11383,7 +11395,6 @@ export default function MoodLabArena() {
   // CRAPS & CLOUDS -- Dice Game with Puff Roll Control
   // ═══════════════════════════════════════════════════════════════
   const startCrapsNClouds = () => {
-    gameSoundsMuted.current = false;
     setCrapsDice([1,1]);setCrapsRolling(false);setCrapsPoint(null);setCrapsBet(50);
     setCrapsResult(null);setCrapsRound(0);setCrapsScore(0);setCrapsHotDice(false);setCrapsPuffing(false);
     setCrapsPhase("intro");
@@ -11497,7 +11508,6 @@ export default function MoodLabArena() {
     return [pick(),pick(),pick()];
   };
   const startMysteryBox = () => {
-    gameSoundsMuted.current = false;
     const boxes = mbGenerateBoxes();
     setMbBoxes(boxes);setMbPicked(null);setMbRevealed(false);setMbPrize(null);
     setMbRound(0);setMbScore(0);setMbPhase("intro");
@@ -11560,7 +11570,6 @@ export default function MoodLabArena() {
     return symbols;
   };
   const startScratchPuff = () => {
-    gameSoundsMuted.current = false;
     setScCard(scGenerateCard());setScRevealed([false,false,false,false,false,false]);
     setScCurrentIdx(null);setScMatches({});setScPrize(null);setScRound(0);setScScore(0);
     setScPhase("intro");playFx("crowd");
@@ -11663,7 +11672,6 @@ export default function MoodLabArena() {
     "The stars align for a perfect blinker tonight",
   ];
   const startFortuneCookie = () => {
-    gameSoundsMuted.current = false;
     setFcFortune("");setFcCoins(0);setFcCracking(false);setFcRound(0);setFcScore(0);setFcGolden(false);
     setFcPhase("intro");playFx("crowd");
     setCommentary("Fortune Cookie! HOLD to puff and crack it open!");
@@ -11728,7 +11736,6 @@ export default function MoodLabArena() {
     clover:{emoji:"🍀",label:"+75",value:75,color:C.lime},
   };
   const startTreasureMap = () => {
-    gameSoundsMuted.current = false;
     const grid = tmGenerateGrid();
     setTmGrid(grid);setTmRevealed(Array(16).fill(false));setTmTreasures(0);setTmBombs(0);
     setTmCoins(0);setTmGameOver(false);setTmSelected(null);setTmXray(false);setTmXrayTiles([]);
@@ -12679,1315 +12686,9 @@ export default function MoodLabArena() {
       else if(g.id==="fortunecookie"){setGameActive({id:"fortunecookie",name:"Fortune Cookie",emoji:"🥠",color:C.orange});startFortuneCookie();}
       else if(g.id==="treasuremap"){setGameActive({id:"treasuremap",name:"Treasure Map",emoji:"🗺️",color:C.gold});startTreasureMap();}
       else if(g.id==="puffderby"){setGameActive({id:"puffderby",name:"Puff Derby",emoji:"🏇",color:C.green});startPuffDerby();}
-      else if(g.id==="highcard"){setGameActive({id:"highcard",name:"High Card Puff",emoji:"\u{1F3B4}",color:C.red});startHighCard();}
+      else if(g.id==="highcard"){notify("High Card Puff coming soon!",C.red);}
       else notify(g.name+" coming soon!",g.color);
     };
-
-    // ═══ FORTUNE GAME RENDERS — check before returning the hub ═══
-
-    // ═══════════════════════════════════════════════════════════════
-    // HIGH CARD PUFF -- Render
-    // ═══════════════════════════════════════════════════════════════
-    if(gameActive && gameActive.id==="highcard" && hcPhase) {
-      const isRed = hcPlayerCard?.suit === '\u2665' || hcPlayerCard?.suit === '\u2666';
-      const isRedO = hcOpponentCard?.suit === '\u2665' || hcOpponentCard?.suit === '\u2666';
-      return (
-        <div style={{position:"fixed",inset:0,zIndex:100,overflow:"hidden",touchAction:"none",
-          background:"linear-gradient(180deg, #0a0520, #1a0838, #0a0520)",
-          display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:20}}>
-
-          {/* Back button */}
-          <div onClick={()=>{playFx("tap");hcCleanup();}} data-btn="true"
-            style={{position:"absolute",top:16,left:16,display:"flex",alignItems:"center",gap:4,
-              cursor:"pointer",padding:"6px 12px",borderRadius:10,
-              background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.08)",zIndex:5}}>
-            <span style={{fontSize:12,color:"#B8B4D9"}}>{"\u2190"}</span>
-            <span style={{fontSize:10,fontWeight:700,color:"#B8B4D9"}}>Fortune</span>
-          </div>
-
-          {/* Score bar */}
-          <div style={{position:"absolute",top:16,right:16,display:"flex",gap:8,alignItems:"center"}}>
-            <span style={{fontSize:11,fontWeight:800,color:C.gold}}>{"\u{1FA99}"} {hcScore}</span>
-            <span style={{fontSize:10,color:C.text2}}>Round {hcRound}/7</span>
-            {hcStreak > 0 && <span style={{fontSize:10,color:C.orange}}>{"\u{1F525}"}{hcStreak}</span>}
-          </div>
-
-          {/* Title */}
-          <div style={{fontSize:18,fontWeight:900,color:C.red,letterSpacing:2,marginBottom:20}}>HIGH CARD PUFF</div>
-
-          {/* Cards */}
-          <div style={{display:"flex",gap:30,alignItems:"center",marginBottom:24}}>
-            {/* Your card */}
-            <div style={{width:100,height:140,borderRadius:12,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
-              background:hcRevealed?"#fff":"linear-gradient(135deg, #1a0838, #2d1060)",
-              border:hcRevealed?("3px solid "+(isRed?C.red:"#333")):"2px solid rgba(255,255,255,0.15)",
-              boxShadow:hcRevealed?("0 0 20px "+(isRed?C.red+"40":"rgba(0,0,0,0.5)")):("0 0 15px rgba(128,0,255,0.2)"),
-              transition:"all 0.5s ease",transform:hcRevealed?"rotateY(0deg)":"rotateY(180deg)"}}>
-              {hcRevealed && hcPlayerCard ? (
-                <React.Fragment>
-                  <div style={{fontSize:32,fontWeight:900,color:isRed?"#EF4444":"#333"}}>{hcPlayerCard.rank}</div>
-                  <div style={{fontSize:24,color:isRed?"#EF4444":"#333"}}>{hcPlayerCard.suit}</div>
-                </React.Fragment>
-              ) : (
-                <div style={{fontSize:24,color:"rgba(255,255,255,0.3)"}}>{"\u{1F3B4}"}</div>
-              )}
-              <div style={{fontSize:8,fontWeight:700,color:hcRevealed?(isRed?"#EF4444":"#333"):"rgba(255,255,255,0.4)",marginTop:4}}>YOU</div>
-            </div>
-
-            <div style={{fontSize:20,fontWeight:900,color:C.text3}}>VS</div>
-
-            {/* Opponent card */}
-            <div style={{width:100,height:140,borderRadius:12,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
-              background:hcRevealed?"#fff":"linear-gradient(135deg, #380808, #601010)",
-              border:hcRevealed?("3px solid "+(isRedO?C.red:"#333")):"2px solid rgba(255,255,255,0.15)",
-              boxShadow:hcRevealed?("0 0 20px "+(isRedO?C.red+"40":"rgba(0,0,0,0.5)")):("0 0 15px rgba(255,0,0,0.2)"),
-              transition:"all 0.5s ease",transform:hcRevealed?"rotateY(0deg)":"rotateY(180deg)"}}>
-              {hcRevealed && hcOpponentCard ? (
-                <React.Fragment>
-                  <div style={{fontSize:32,fontWeight:900,color:isRedO?"#EF4444":"#333"}}>{hcOpponentCard.rank}</div>
-                  <div style={{fontSize:24,color:isRedO?"#EF4444":"#333"}}>{hcOpponentCard.suit}</div>
-                </React.Fragment>
-              ) : (
-                <div style={{fontSize:24,color:"rgba(255,255,255,0.3)"}}>{"\u{1F3B4}"}</div>
-              )}
-              <div style={{fontSize:8,fontWeight:700,color:hcRevealed?(isRedO?"#EF4444":"#333"):"rgba(255,255,255,0.4)",marginTop:4}}>OPPONENT</div>
-            </div>
-          </div>
-
-          {/* Commentary */}
-          <div style={{fontSize:12,color:C.text2,marginBottom:16,textAlign:"center",minHeight:20}}>{commentatorText}</div>
-
-          {/* Betting phase */}
-          {hcPhase==="betting" && (
-            <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:10}}>
-              <div style={{fontSize:11,fontWeight:700,color:C.gold}}>PLACE YOUR BET</div>
-              <div style={{display:"flex",gap:8}}>
-                {[10,25,50,100].map(amt => (
-                  <div key={amt} data-btn="true" onClick={()=>hcPlaceBet(amt)}
-                    style={{padding:"10px 16px",borderRadius:10,cursor:"pointer",textAlign:"center",
-                      background:hcBet===amt?(C.gold+"20"):"rgba(255,255,255,0.04)",
-                      border:"1px solid "+(hcBet===amt?(C.gold+"50"):"rgba(255,255,255,0.1)"),
-                      fontSize:13,fontWeight:800,color:hcBet===amt?C.gold:C.text2}}>
-                    {"\u{1FA99}"}{amt}
-                  </div>
-                ))}
-              </div>
-              {hcBet > 0 && (
-                <div data-btn="true" onClick={hcReveal}
-                  style={{padding:"12px 32px",borderRadius:12,cursor:"pointer",marginTop:8,
-                    background:"linear-gradient(135deg, "+C.red+", "+C.red+"CC)",
-                    boxShadow:"0 4px 20px "+C.red+"40",
-                    fontSize:14,fontWeight:900,color:"#fff",letterSpacing:1}}>
-                  REVEAL! {"\u{1F3B4}"}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Result phase */}
-          {hcPhase==="result" && (
-            <div data-btn="true" onClick={hcNextRound}
-              style={{padding:"12px 32px",borderRadius:12,cursor:"pointer",
-                background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.12)",
-                fontSize:13,fontWeight:800,color:C.text}}>
-              {hcRound >= 7 ? "See Results" : "Next Round \u2192"}
-            </div>
-          )}
-
-          {/* Complete */}
-          {hcPhase==="complete" && (
-            <div style={{textAlign:"center"}}>
-              <div style={{fontSize:48,marginBottom:8}}>{hcScore > 0 ? "\u{1F3C6}" : "\u{1F480}"}</div>
-              <div style={{fontSize:20,fontWeight:900,color:hcScore>0?C.gold:C.red}}>{hcScore > 0 ? "PROFIT!" : "BUSTED"}</div>
-              <div style={{fontSize:14,color:C.text2,marginTop:4}}>Total: {hcScore > 0 ? "+" : ""}{hcScore} coins</div>
-              <div style={{display:"flex",gap:10,justifyContent:"center",marginTop:16}}>
-                <div data-btn="true" onClick={()=>{hcCleanup();setGameActive({id:"highcard",name:"High Card Puff",emoji:"\u{1F3B4}",color:C.red});startHighCard();}}
-                  style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:C.red+"15",border:"1px solid "+C.red+"30",fontSize:13,fontWeight:800,color:C.red}}>Play Again</div>
-                <div data-btn="true" onClick={hcCleanup}
-                  style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
-              </div>
-            </div>
-          )}
-        </div>
-      );
-    }
-
-    // ═══════════════════════════════════════════════════════════════
-    // CRYSTAL BALL -- Render
-    // ═══════════════════════════════════════════════════════════════
-    if(gameActive && gameActive.id==="crystalball" && cbPhase) {
-      const isQ=cbPhase==="question";const isR=cbPhase==="reveal";const isRes=cbPhase==="result";const isComp=cbPhase==="complete";
-      return (
-        <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden",touchAction:"none",display:"flex",flexDirection:"column",animation:screenShake?"shake 0.4s ease":"none"}}
-          onMouseDown={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;cbHandlePuff();}} onMouseUp={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;cbHandlePuffEnd();}} onTouchStart={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;cbHandlePuff();}} onTouchEnd={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;cbHandlePuffEnd();}}>
-          <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg, #0a0520 0%, #1a0838 30%, #0d0625 60%, #06031a 100%)"}}/>
-          <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse at 50% 30%, rgba(147,51,234,0.15), transparent 60%)",pointerEvents:"none"}}/>
-          {[...Array(15)].map((_,i)=>(<div key={"cbp"+i} style={{position:"absolute",left:`${(i*19+7)%100}%`,top:`${(i*23+5)%100}%`,width:2+i%3,height:2+i%3,borderRadius:"50%",background:i%2?"#9333EA":"#FFD700",opacity:0.1+Math.random()*0.2,animation:`pulse ${2+i%3}s infinite ${i*0.2}s`,pointerEvents:"none"}}/>))}
-          {screenFlash&&<div style={{position:"absolute",inset:0,zIndex:200,pointerEvents:"none",opacity:0,background:"rgba(147,51,234,0.3)",animation:"flashOverlay 0.4s ease forwards"}}/>}
-          {confettiParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size*0.6,background:p.color,borderRadius:1,transform:`rotate(${p.rot}deg)`,zIndex:210,pointerEvents:"none",animation:"confettiFall 1.5s ease-out forwards"}}/>))}
-                      {/* V3 DEDICATED HEADER */}
-          <div style={{position:"relative",zIndex:50,flexShrink:0,background:"rgba(6,16,30,0.98)",borderBottom:"1px solid rgba(255,255,255,0.06)"}}>
-            <div style={{padding:"6px 12px 2px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-              <div style={{fontSize:8,fontWeight:600,color:"rgba(255,255,255,0.4)",letterSpacing:1}}><span style={{fontWeight:800,color:"rgba(255,255,255,0.6)"}}>{"Powered by "}<span style={{fontWeight:900,letterSpacing:2}}>MOOD LAB</span></span></div>
-              <div style={{display:"flex",gap:5,alignItems:"center"}}>
-                <div onClick={()=>{playFx("tap");setShowBlePopup(true);}} data-btn="true" style={{touchAction:"none",display:"flex",alignItems:"center",gap:3,padding:"2px 8px",borderRadius:100,cursor:"pointer",background:bleConnected?"rgba(52,211,153,0.1)":"rgba(251,146,60,0.1)",border:"1px solid "+(bleConnected?"rgba(52,211,153,0.25)":"rgba(251,146,60,0.25)")}}>
-                  <div style={{width:5,height:5,borderRadius:"50%",background:bleConnected?C.green:C.orange}}/><span style={{fontSize:8,fontWeight:700,color:bleConnected?C.green:C.orange}}>{bleConnected?"Puff":"Connect"}</span>
-                </div>
-                <div style={{display:"flex",alignItems:"center",gap:2,padding:"2px 7px",borderRadius:100,background:"rgba(255,217,61,0.06)",border:"1px solid rgba(255,217,61,0.12)"}}>
-                  <span style={{fontSize:9}}>{"\uD83E\uDE99"}</span><span style={{fontSize:10,fontWeight:800,color:C.gold,fontFamily:"'Courier New',monospace"}}>{coins.toLocaleString()}</span>
-                </div>
-              </div>
-            </div>
-            <div style={{padding:"2px 12px 2px",display:"flex",alignItems:"center",gap:6}}>
-              <div onClick={()=>{playFx("tap");cbCleanup();}} data-btn="true" style={{touchAction:"none",display:"inline-flex",alignItems:"center",gap:3,cursor:"pointer",padding:"3px 8px",borderRadius:8,background:"rgba(255,255,255,0.04)",border:"1px solid "+C.border,flexShrink:0}}>
-                <span style={{fontSize:10,color:C.text2}}>{"\u2190"}</span><span style={{fontSize:9,fontWeight:700,color:C.text2}}>Back</span>
-              </div>
-              <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
-                <span style={{fontSize:10,fontWeight:800,color:"#9333EA"}}>{"🔮"} CRYSTAL BALL</span>
-                <span style={{fontSize:9,fontWeight:700,color:C.gold}}>{"\uD83E\uDE99"} {cbScore}</span>
-              </div>
-            </div>
-            <div style={{padding:"2px 12px 4px",display:"flex",alignItems:"center",justifyContent:"center",gap:12}}>
-              <span style={{fontSize:9,fontWeight:700,color:"#F97316"}}>{cbStreak}🔥 Streak</span><span style={{fontSize:9,fontWeight:700,color:C.text3}}>Round {cbRound+1}/5</span>
-              {fortunePlayStyle&&<span style={{fontSize:8,fontWeight:600,color:C.text3,padding:"1px 6px",borderRadius:4,background:"rgba(255,255,255,0.04)"}}>{fortunePlayStyle}</span>}
-            </div>
-          </div>
-          {/* V3 GAME AREA */}
-          <div style={{position:"relative",flex:1,overflow:"hidden"}}>
-          <div style={{display:"flex",flexDirection:"column",alignItems:"center",maxWidth:380,width:"100%",padding:"50px 16px 20px",gap:8,zIndex:10,flex:1,margin:"0 auto"}}>
-            <div style={{fontSize:18,fontWeight:900,letterSpacing:4,background:"linear-gradient(135deg, #9333EA, #FFD700)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>CRYSTAL BALL</div>
-            <div style={{display:"flex",gap:16,marginBottom:4}}>
-              <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.gold}}>{cbScore}</div><div style={{fontSize:8,color:C.text3}}>SCORE</div></div>
-              <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:"#F97316"}}>{cbStreak}🔥</div><div style={{fontSize:8,color:C.text3}}>STREAK</div></div>
-              <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.text2}}>{cbRound+1}/5</div><div style={{fontSize:8,color:C.text3}}>ROUND</div></div>
-            </div>
-
-            {cbPhase==="intro"&&(<div style={{textAlign:"center",animation:"fadeIn 0.5s ease"}}><div style={{fontSize:64,marginBottom:12,animation:"gentleFloat 2s infinite",filter:"drop-shadow(0 0 20px rgba(147,51,234,0.6))"}}>🔮</div><div style={{fontSize:20,fontWeight:900,color:"#9333EA",letterSpacing:3}}>THE ORACLE AWAITS</div><div style={{fontSize:11,color:C.text3,marginTop:8}}>Short puff = NO | Long puff = YES | Blinker = CERTAIN (3x/−2x)</div></div>)}
-
-            {isQ&&cbQuestion&&(<div style={{textAlign:"center",width:"100%",animation:"fadeIn 0.4s ease"}}>
-              <div style={{fontSize:48,marginBottom:12,animation:cbPuffing?"countPulse 0.5s infinite":"gentleFloat 2s infinite",filter:cbPuffing?"drop-shadow(0 0 30px rgba(255,215,0,0.8))":"drop-shadow(0 0 15px rgba(147,51,234,0.5))"}}>🔮</div>
-              <div style={{padding:"2px 10px",borderRadius:6,background:"rgba(147,51,234,0.12)",display:"inline-block",marginBottom:8}}><span style={{fontSize:9,fontWeight:700,color:"#9333EA"}}>{cbQuestion.cat.toUpperCase()} {cbQuestion.emoji}</span></div>
-              <div style={{fontSize:16,fontWeight:800,color:C.text,lineHeight:1.4,maxWidth:300,margin:"0 auto",marginBottom:16}}>{cbQuestion.q}</div>
-              <div style={{display:"flex",gap:12,justifyContent:"center",marginBottom:12}}>
-                <div style={{padding:"10px 24px",borderRadius:12,background:"rgba(239,68,68,0.10)",border:"1px solid rgba(239,68,68,0.25)"}}><div style={{fontSize:14,fontWeight:800,color:C.red}}>NO</div><div style={{fontSize:8,color:C.text3}}>Short (&lt;1.5s)</div></div>
-                <div style={{padding:"10px 24px",borderRadius:12,background:"rgba(34,197,94,0.10)",border:"1px solid rgba(34,197,94,0.25)"}}><div style={{fontSize:14,fontWeight:800,color:C.green}}>YES</div><div style={{fontSize:8,color:C.text3}}>Long (&gt;1.5s)</div></div>
-                <div style={{padding:"10px 24px",borderRadius:12,background:"rgba(255,215,0,0.10)",border:"1px solid rgba(255,215,0,0.25)"}}><div style={{fontSize:14,fontWeight:800,color:C.gold}}>CERTAIN</div><div style={{fontSize:8,color:C.text3}}>Blinker (&gt;3s)</div></div>
-              </div>
-              {cbPuffing&&<div style={{fontSize:13,fontWeight:800,color:C.gold,animation:"pulse 0.5s infinite"}}>CHANNELING... hold for YES or Blinker! 🔮</div>}
-              {!cbPuffing&&<div style={{fontSize:11,color:C.text3}}>PUFF FOR PREDICTION 🔮</div>}
-            </div>)}
-
-            {isR&&(<div style={{textAlign:"center",animation:"fadeIn 0.4s ease"}}><div style={{fontSize:56,marginBottom:12,animation:"countPulse 0.8s infinite",filter:"drop-shadow(0 0 25px rgba(147,51,234,0.7))"}}>🔮</div><div style={{fontSize:20,fontWeight:900,color:cbAnswer==="certain"?C.gold:cbAnswer==="yes"?C.green:C.red,marginBottom:4}}>{cbAnswer==="certain"?"ABSOLUTELY CERTAIN!":cbAnswer==="yes"?"YES":"NO"}</div><div style={{fontSize:12,color:C.text3}}>The Crystal Ball is revealing...</div></div>)}
-
-            {isRes&&(<div style={{textAlign:"center",animation:"fadeIn 0.4s ease"}}>
-              <div style={{fontSize:48,marginBottom:8}}>{cbResult==="correct"?"✅":"❌"}</div>
-              <div style={{fontSize:24,fontWeight:900,color:cbResult==="correct"?C.green:C.red,marginBottom:4}}>{cbResult==="correct"?"CORRECT!":"WRONG!"}</div>
-              {cbResult==="correct"&&cbAnswer==="certain"&&<div style={{fontSize:14,fontWeight:800,color:C.gold,marginBottom:4}}>BLINKER BONUS! 3x coins! +150</div>}
-              {cbResult==="correct"&&cbAnswer!=="certain"&&<div style={{fontSize:14,fontWeight:800,color:C.green,marginBottom:4}}>+50 coins!</div>}
-              {cbResult==="wrong"&&cbAnswer==="certain"&&<div style={{fontSize:14,fontWeight:800,color:C.red,marginBottom:4}}>Blinker penalty! -100 coins</div>}
-              <div style={{fontSize:11,color:C.text2,fontStyle:"italic",marginBottom:12}}>{commentatorText}</div>
-              <div data-btn="true" onClick={(e)=>{e.stopPropagation();cbNextRound();}} style={{padding:"10px 28px",borderRadius:12,cursor:"pointer",background:"rgba(147,51,234,0.15)",border:"1px solid rgba(147,51,234,0.30)",fontSize:13,fontWeight:800,color:"#9333EA",display:"inline-block"}}>Next Prediction</div>
-            </div>)}
-
-            {isComp&&(<div style={{textAlign:"center",animation:"fadeIn 0.4s ease"}}>
-              <div style={{fontSize:48,marginBottom:8}}>🔮</div>
-              <div style={{fontSize:24,fontWeight:900,color:C.gold,marginBottom:4}}>ORACLE SESSION COMPLETE</div>
-              <div style={{fontSize:18,fontWeight:800,color:C.text,marginBottom:4}}>Score: {cbScore}</div>
-              <div style={{fontSize:13,color:"#F97316"}}>Best Streak: {cbStreak} 🔥</div>
-              <div style={{fontSize:14,fontWeight:700,color:C.lime,marginTop:8}}>+{cbScore} coins earned</div>
-              <div style={{display:"flex",gap:10,justifyContent:"center",marginTop:16}}>
-                <div data-btn="true" onClick={(e)=>{e.stopPropagation();cbCleanup();startCrystalBall();setGameActive({id:"crystalball",name:"Crystal Ball",emoji:"🔮",color:"#9333EA"});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(147,51,234,0.15)",border:"1px solid rgba(147,51,234,0.30)",fontSize:13,fontWeight:800,color:"#9333EA"}}>Play Again</div>
-                <div data-btn="true" onClick={(e)=>{e.stopPropagation();cbCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
-              </div>
-              <div data-btn="true" onClick={(e)=>{e.stopPropagation();cbCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
-            </div>)}
-          </div>
-          {renderGameChatOverlay()}
-        </div>
-      );
-    }
-
-    // ═══════════════════════════════════════════════════════════════
-    // STRAIN BATTLE -- Render
-    // ═══════════════════════════════════════════════════════════════
-    if(gameActive && gameActive.id==="strainbattle" && sbPhase) {
-      const isM=sbPhase==="matchup";const isR=sbPhase==="results";const isComp=sbPhase==="complete";
-      return (
-        <div style={{position:"fixed",inset:0,zIndex:100,display:"flex",flexDirection:"column",touchAction:"none"}}
-          onMouseDown={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;sbHandlePuff();}} onMouseUp={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;sbHandlePuffEnd();}} onTouchStart={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;sbHandlePuff();}} onTouchEnd={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;sbHandlePuffEnd();}}>
-          <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg, #061a0d 0%, #0a2818 30%, #0d3318 60%, #061a0d 100%)"}}/>
-          <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse at 50% 30%, rgba(34,197,94,0.12), transparent 60%)",pointerEvents:"none"}}/>
-          {confettiParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size*0.6,background:p.color,borderRadius:1,transform:`rotate(${p.rot}deg)`,zIndex:210,pointerEvents:"none",animation:"confettiFall 1.5s ease-out forwards"}}/>))}
-                      {/* V3 DEDICATED HEADER */}
-          <div style={{position:"relative",zIndex:50,flexShrink:0,background:"rgba(6,16,30,0.98)",borderBottom:"1px solid rgba(255,255,255,0.06)"}}>
-            <div style={{padding:"6px 12px 2px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-              <div style={{fontSize:8,fontWeight:600,color:"rgba(255,255,255,0.4)",letterSpacing:1}}><span style={{fontWeight:800,color:"rgba(255,255,255,0.6)"}}>{"Powered by "}<span style={{fontWeight:900,letterSpacing:2}}>MOOD LAB</span></span></div>
-              <div style={{display:"flex",gap:5,alignItems:"center"}}>
-                <div onClick={()=>{playFx("tap");setShowBlePopup(true);}} data-btn="true" style={{touchAction:"none",display:"flex",alignItems:"center",gap:3,padding:"2px 8px",borderRadius:100,cursor:"pointer",background:bleConnected?"rgba(52,211,153,0.1)":"rgba(251,146,60,0.1)",border:"1px solid "+(bleConnected?"rgba(52,211,153,0.25)":"rgba(251,146,60,0.25)")}}>
-                  <div style={{width:5,height:5,borderRadius:"50%",background:bleConnected?C.green:C.orange}}/><span style={{fontSize:8,fontWeight:700,color:bleConnected?C.green:C.orange}}>{bleConnected?"Puff":"Connect"}</span>
-                </div>
-                <div style={{display:"flex",alignItems:"center",gap:2,padding:"2px 7px",borderRadius:100,background:"rgba(255,217,61,0.06)",border:"1px solid rgba(255,217,61,0.12)"}}>
-                  <span style={{fontSize:9}}>{"\uD83E\uDE99"}</span><span style={{fontSize:10,fontWeight:800,color:C.gold,fontFamily:"'Courier New',monospace"}}>{coins.toLocaleString()}</span>
-                </div>
-              </div>
-            </div>
-            <div style={{padding:"2px 12px 2px",display:"flex",alignItems:"center",gap:6}}>
-              <div onClick={()=>{playFx("tap");sbCleanup();}} data-btn="true" style={{touchAction:"none",display:"inline-flex",alignItems:"center",gap:3,cursor:"pointer",padding:"3px 8px",borderRadius:8,background:"rgba(255,255,255,0.04)",border:"1px solid "+C.border,flexShrink:0}}>
-                <span style={{fontSize:10,color:C.text2}}>{"\u2190"}</span><span style={{fontSize:9,fontWeight:700,color:C.text2}}>Back</span>
-              </div>
-              <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
-                <span style={{fontSize:10,fontWeight:800,color:"#22C55E"}}>{"🌿"} STRAIN BATTLE</span>
-                <span style={{fontSize:9,fontWeight:700,color:C.gold}}>{"\uD83E\uDE99"} {sbScore}</span>
-              </div>
-            </div>
-            <div style={{padding:"2px 12px 4px",display:"flex",alignItems:"center",justifyContent:"center",gap:12}}>
-              <span style={{fontSize:9,fontWeight:700,color:C.text3}}>Round {sbRound+1}/5</span>
-              {fortunePlayStyle&&<span style={{fontSize:8,fontWeight:600,color:C.text3,padding:"1px 6px",borderRadius:4,background:"rgba(255,255,255,0.04)"}}>{fortunePlayStyle}</span>}
-            </div>
-          </div>
-          {/* V3 GAME AREA */}
-          <div style={{position:"relative",flex:1,overflow:"hidden"}}>
-          <div style={{display:"flex",flexDirection:"column",alignItems:"center",maxWidth:380,width:"100%",padding:"50px 16px 20px",gap:8,zIndex:10,flex:1,margin:"0 auto",overflowY:"auto"}}>
-            <div style={{fontSize:18,fontWeight:900,letterSpacing:4,background:"linear-gradient(135deg, #22C55E, #FFD700)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>STRAIN BATTLE</div>
-            <div style={{display:"flex",gap:16,marginBottom:4}}>
-              <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.gold}}>{sbScore}</div><div style={{fontSize:8,color:C.text3}}>SCORE</div></div>
-              <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.text2}}>{sbRound+1}/5</div><div style={{fontSize:8,color:C.text3}}>ROUND</div></div>
-            </div>
-
-            {sbPhase==="intro"&&(<div style={{textAlign:"center",animation:"fadeIn 0.5s ease"}}><div style={{fontSize:48,marginBottom:8}}>🌿</div><div style={{fontSize:20,fontWeight:900,color:"#22C55E",letterSpacing:3}}>STRAIN BATTLE</div><div style={{fontSize:11,color:C.text3,marginTop:8}}>Short puff = Left strain | Long puff = Right strain</div></div>)}
-
-            {isM&&sbMatchup&&(<div style={{width:"100%",animation:"fadeIn 0.4s ease"}}>
-              <div style={{display:"flex",gap:8,alignItems:"stretch"}}>
-                {sbMatchup.map((strain,si)=>(
-                  <div key={si} style={{flex:1,padding:"14px 8px",borderRadius:16,textAlign:"center",background:si===0?"rgba(34,197,94,0.06)":"rgba(255,215,0,0.06)",border:`1px solid ${si===0?"rgba(34,197,94,0.20)":"rgba(255,215,0,0.20)"}`}}>
-                    <div style={{fontSize:32,marginBottom:4}}>{strain.emoji}</div>
-                    <div style={{fontSize:13,fontWeight:800,color:C.text,marginBottom:4}}>{strain.name}</div>
-                    <div style={{fontSize:9,fontWeight:700,color:strain.type==="Sativa"?C.green:strain.type==="Indica"?"#9333EA":C.gold,marginBottom:4,padding:"2px 6px",borderRadius:4,background:"rgba(255,255,255,0.04)",display:"inline-block"}}>{strain.type}</div>
-                    <div style={{width:"100%",height:6,borderRadius:3,background:"rgba(255,255,255,0.06)",marginBottom:4,overflow:"hidden"}}><div style={{width:`${(strain.thc/30)*100}%`,height:"100%",borderRadius:3,background:"linear-gradient(90deg, #22C55E, #FFD700)"}}/></div>
-                    <div style={{fontSize:9,fontWeight:700,color:C.gold}}>THC: {strain.thc}%</div>
-                    <div style={{fontSize:8,color:C.text3,marginTop:4}}>{strain.effects}</div>
-                    <div style={{fontSize:8,color:C.text3,marginTop:2}}>Flavor: {strain.flavor}</div>
-                  </div>
-                ))}
-              </div>
-              <div style={{textAlign:"center",marginTop:12}}>
-                <div style={{fontSize:11,color:C.text3}}>TAP TO VOTE 🌿 · Short puff = <span style={{color:"#22C55E",fontWeight:700}}>{sbMatchup[0].name}</span> | Long puff = <span style={{color:C.gold,fontWeight:700}}>{sbMatchup[1].name}</span></div>
-              </div>
-            </div>)}
-
-            {isR&&sbMatchup&&(<div style={{width:"100%",textAlign:"center",animation:"fadeIn 0.4s ease"}}>
-              <div style={{fontSize:14,fontWeight:800,color:C.text,marginBottom:8}}>You voted: <span style={{color:sbVote==="left"?"#22C55E":C.gold}}>{sbVote==="left"?sbMatchup[0].name:sbMatchup[1].name}</span></div>
-              <div style={{display:"flex",gap:8,alignItems:"center",marginBottom:12}}>
-                <div style={{flex:1,textAlign:"center"}}><div style={{fontSize:24,fontWeight:900,color:"#22C55E"}}>{sbResults.left}%</div><div style={{fontSize:10,color:C.text3}}>{sbMatchup[0].name}</div></div>
-                <div style={{flex:2}}>
-                  <div style={{width:"100%",height:12,borderRadius:6,background:"rgba(255,255,255,0.06)",overflow:"hidden",display:"flex"}}>
-                    <div style={{width:`${sbResults.left}%`,height:"100%",background:"linear-gradient(90deg, #22C55E, #22C55EAA)",transition:"width 1s"}}/>
-                    <div style={{width:`${sbResults.right}%`,height:"100%",background:"linear-gradient(90deg, #FFD700AA, #FFD700)",transition:"width 1s"}}/>
-                  </div>
-                </div>
-                <div style={{flex:1,textAlign:"center"}}><div style={{fontSize:24,fontWeight:900,color:C.gold}}>{sbResults.right}%</div><div style={{fontSize:10,color:C.text3}}>{sbMatchup[1].name}</div></div>
-              </div>
-              <div style={{fontSize:11,color:C.text2,fontStyle:"italic",marginBottom:12}}>{commentatorText}</div>
-              <div data-btn="true" onClick={(e)=>{e.stopPropagation();sbNextRound();}} style={{padding:"10px 28px",borderRadius:12,cursor:"pointer",background:"rgba(34,197,94,0.15)",border:"1px solid rgba(34,197,94,0.30)",fontSize:13,fontWeight:800,color:"#22C55E",display:"inline-block"}}>Next Matchup</div>
-            </div>)}
-
-            {isComp&&(<div style={{textAlign:"center",animation:"fadeIn 0.4s ease"}}>
-              <div style={{fontSize:48,marginBottom:8}}>🌿</div>
-              <div style={{fontSize:24,fontWeight:900,color:"#22C55E",marginBottom:4}}>BATTLE COMPLETE!</div>
-              <div style={{fontSize:18,fontWeight:800,color:C.text,marginBottom:4}}>Score: {sbScore}</div>
-              <div style={{fontSize:14,fontWeight:700,color:C.lime,marginTop:4}}>+{sbScore} coins earned</div>
-              <div style={{display:"flex",gap:10,justifyContent:"center",marginTop:16}}>
-                <div data-btn="true" onClick={(e)=>{e.stopPropagation();sbCleanup();startStrainBattle();setGameActive({id:"strainbattle",name:"Strain Battle",emoji:"🌿",color:"#22C55E"});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(34,197,94,0.15)",border:"1px solid rgba(34,197,94,0.30)",fontSize:13,fontWeight:800,color:"#22C55E"}}>Play Again</div>
-                <div data-btn="true" onClick={(e)=>{e.stopPropagation();sbCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
-              </div>
-              <div data-btn="true" onClick={(e)=>{e.stopPropagation();sbCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
-            </div>)}
-          </div>
-          {renderGameChatOverlay()}
-        </div>
-      );
-    }
-
-    // ═══════════════════════════════════════════════════════════════
-    // MATCH PREDICTOR -- Render
-    // ═══════════════════════════════════════════════════════════════
-    if(gameActive && gameActive.id==="matchpredictor" && mpPhase) {
-      const isMt=mpPhase==="match";const isPr=mpPhase==="prediction";const isRes=mpPhase==="result";const isComp=mpPhase==="complete";
-      return (
-        <div style={{position:"fixed",inset:0,zIndex:100,display:"flex",flexDirection:"column",touchAction:"none"}}
-          onMouseDown={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;mpHandlePuff();}} onMouseUp={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;mpHandlePuffEnd();}} onTouchStart={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;mpHandlePuff();}} onTouchEnd={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;mpHandlePuffEnd();}}>
-          <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg, #061020 0%, #0c1a38 30%, #102240 60%, #081830 100%)"}}/>
-          <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse at 50% 30%, rgba(59,130,246,0.12), transparent 60%)",pointerEvents:"none"}}/>
-          <div style={{position:"absolute",bottom:0,left:0,right:0,height:"15%",background:"linear-gradient(180deg, transparent, rgba(34,197,94,0.08))",pointerEvents:"none"}}/>
-          {confettiParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size*0.6,background:p.color,borderRadius:1,transform:`rotate(${p.rot}deg)`,zIndex:210,pointerEvents:"none",animation:"confettiFall 1.5s ease-out forwards"}}/>))}
-                      {/* V3 DEDICATED HEADER */}
-          <div style={{position:"relative",zIndex:50,flexShrink:0,background:"rgba(6,16,30,0.98)",borderBottom:"1px solid rgba(255,255,255,0.06)"}}>
-            <div style={{padding:"6px 12px 2px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-              <div style={{fontSize:8,fontWeight:600,color:"rgba(255,255,255,0.4)",letterSpacing:1}}><span style={{fontWeight:800,color:"rgba(255,255,255,0.6)"}}>{"Powered by "}<span style={{fontWeight:900,letterSpacing:2}}>MOOD LAB</span></span></div>
-              <div style={{display:"flex",gap:5,alignItems:"center"}}>
-                <div onClick={()=>{playFx("tap");setShowBlePopup(true);}} data-btn="true" style={{touchAction:"none",display:"flex",alignItems:"center",gap:3,padding:"2px 8px",borderRadius:100,cursor:"pointer",background:bleConnected?"rgba(52,211,153,0.1)":"rgba(251,146,60,0.1)",border:"1px solid "+(bleConnected?"rgba(52,211,153,0.25)":"rgba(251,146,60,0.25)")}}>
-                  <div style={{width:5,height:5,borderRadius:"50%",background:bleConnected?C.green:C.orange}}/><span style={{fontSize:8,fontWeight:700,color:bleConnected?C.green:C.orange}}>{bleConnected?"Puff":"Connect"}</span>
-                </div>
-                <div style={{display:"flex",alignItems:"center",gap:2,padding:"2px 7px",borderRadius:100,background:"rgba(255,217,61,0.06)",border:"1px solid rgba(255,217,61,0.12)"}}>
-                  <span style={{fontSize:9}}>{"\uD83E\uDE99"}</span><span style={{fontSize:10,fontWeight:800,color:C.gold,fontFamily:"'Courier New',monospace"}}>{coins.toLocaleString()}</span>
-                </div>
-              </div>
-            </div>
-            <div style={{padding:"2px 12px 2px",display:"flex",alignItems:"center",gap:6}}>
-              <div onClick={()=>{playFx("tap");mpCleanup();}} data-btn="true" style={{touchAction:"none",display:"inline-flex",alignItems:"center",gap:3,cursor:"pointer",padding:"3px 8px",borderRadius:8,background:"rgba(255,255,255,0.04)",border:"1px solid "+C.border,flexShrink:0}}>
-                <span style={{fontSize:10,color:C.text2}}>{"\u2190"}</span><span style={{fontSize:9,fontWeight:700,color:C.text2}}>Back</span>
-              </div>
-              <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
-                <span style={{fontSize:10,fontWeight:800,color:"#3B82F6"}}>{"📊"} MATCH PREDICTOR</span>
-                <span style={{fontSize:9,fontWeight:700,color:C.gold}}>{"\uD83E\uDE99"} {mpScore}</span>
-              </div>
-            </div>
-            <div style={{padding:"2px 12px 4px",display:"flex",alignItems:"center",justifyContent:"center",gap:12}}>
-              <span style={{fontSize:9,fontWeight:700,color:C.text3}}>Match {mpRound+1}/5</span>
-              {fortunePlayStyle&&<span style={{fontSize:8,fontWeight:600,color:C.text3,padding:"1px 6px",borderRadius:4,background:"rgba(255,255,255,0.04)"}}>{fortunePlayStyle}</span>}
-            </div>
-          </div>
-          {/* V3 GAME AREA */}
-          <div style={{position:"relative",flex:1,overflow:"hidden"}}>
-          <div style={{display:"flex",flexDirection:"column",alignItems:"center",maxWidth:380,width:"100%",padding:"50px 16px 20px",gap:8,zIndex:10,flex:1,margin:"0 auto"}}>
-            <div style={{fontSize:18,fontWeight:900,letterSpacing:4,background:"linear-gradient(135deg, #3B82F6, #22C55E)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>MATCH PREDICTOR</div>
-            <div style={{display:"flex",gap:16,marginBottom:4}}>
-              <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.gold}}>{mpScore}</div><div style={{fontSize:8,color:C.text3}}>SCORE</div></div>
-              <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.text2}}>{mpRound+1}/5</div><div style={{fontSize:8,color:C.text3}}>MATCH</div></div>
-            </div>
-
-            {mpPhase==="intro"&&(<div style={{textAlign:"center",animation:"fadeIn 0.5s ease"}}><div style={{fontSize:48,marginBottom:8}}>📊</div><div style={{fontSize:20,fontWeight:900,color:"#3B82F6",letterSpacing:3}}>MATCH PREDICTOR</div><div style={{fontSize:11,color:C.text3,marginTop:8}}>Short = Home Win | Medium = Draw | Long = Away Win</div></div>)}
-
-            {isMt&&mpMatch&&(<div style={{width:"100%",textAlign:"center",animation:"fadeIn 0.4s ease"}}>
-              <div style={{padding:"2px 10px",borderRadius:6,background:"rgba(59,130,246,0.12)",display:"inline-block",marginBottom:8}}><span style={{fontSize:9,fontWeight:700,color:"#3B82F6"}}>Group {mpMatch.group} | {mpMatch.time}</span></div>
-              <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:12,marginBottom:12}}>
-                <div style={{flex:1,textAlign:"center"}}><div style={{fontSize:22,fontWeight:800,color:C.text}}>{mpMatch.home}</div></div>
-                <div style={{fontSize:14,fontWeight:900,color:C.text3}}>VS</div>
-                <div style={{flex:1,textAlign:"center"}}><div style={{fontSize:22,fontWeight:800,color:C.text}}>{mpMatch.away}</div></div>
-              </div>
-              <div style={{fontSize:10,color:C.text3,marginBottom:8}}>Prediction pool:</div>
-              <div style={{display:"flex",gap:4,marginBottom:8}}>
-                {["Home","Draw","Away"].map((o,j)=>(<div key={j} style={{flex:1,padding:"6px",borderRadius:8,textAlign:"center",background:"rgba(59,130,246,0.06)",border:"1px solid rgba(59,130,246,0.15)"}}>
-                  <div style={{fontSize:10,fontWeight:600,color:C.text2}}>{o}</div>
-                  <div style={{fontSize:14,fontWeight:800,color:"#3B82F6"}}>{mpMatch.pool[j]}%</div>
-                </div>))}
-              </div>
-              <div style={{display:"flex",gap:8,justifyContent:"center",marginBottom:8}}>
-                <div style={{padding:"8px 16px",borderRadius:10,background:"rgba(59,130,246,0.10)",border:"1px solid rgba(59,130,246,0.25)"}}><div style={{fontSize:11,fontWeight:700,color:"#3B82F6"}}>Home Win</div><div style={{fontSize:8,color:C.text3}}>Short (&lt;1s)</div></div>
-                <div style={{padding:"8px 16px",borderRadius:10,background:"rgba(255,215,0,0.10)",border:"1px solid rgba(255,215,0,0.25)"}}><div style={{fontSize:11,fontWeight:700,color:C.gold}}>Draw</div><div style={{fontSize:8,color:C.text3}}>Medium (1-2.5s)</div></div>
-                <div style={{padding:"8px 16px",borderRadius:10,background:"rgba(239,68,68,0.10)",border:"1px solid rgba(239,68,68,0.25)"}}><div style={{fontSize:11,fontWeight:700,color:C.red}}>Away Win</div><div style={{fontSize:8,color:C.text3}}>Long (&gt;2.5s)</div></div>
-              </div>
-              <div style={{fontSize:11,color:C.text3}}>TAP TO PREDICT 📊</div>
-            </div>)}
-
-            {isPr&&(<div style={{textAlign:"center",animation:"fadeIn 0.4s ease"}}><div style={{fontSize:48,marginBottom:8}}>📊</div><div style={{fontSize:20,fontWeight:900,color:mpPrediction==="home"?"#3B82F6":mpPrediction==="draw"?C.gold:C.red}}>{mpPrediction==="home"?"HOME WIN":mpPrediction==="draw"?"DRAW":"AWAY WIN"}</div><div style={{fontSize:12,color:C.text3,marginTop:4}}>Waiting for result...</div></div>)}
-
-            {isRes&&(<div style={{textAlign:"center",animation:"fadeIn 0.4s ease"}}>
-              <div style={{fontSize:48,marginBottom:8}}>{mpResults[mpResults.length-1]?.correct?"✅":"❌"}</div>
-              <div style={{fontSize:24,fontWeight:900,color:mpResults[mpResults.length-1]?.correct?C.green:C.red}}>{mpResults[mpResults.length-1]?.correct?"CORRECT!":"WRONG!"}</div>
-              {mpResults[mpResults.length-1]?.correct&&<div style={{fontSize:14,fontWeight:700,color:C.green,marginBottom:4}}>+100 coins!</div>}
-              <div style={{fontSize:11,color:C.text2,fontStyle:"italic",marginBottom:12}}>{commentatorText}</div>
-              <div data-btn="true" onClick={(e)=>{e.stopPropagation();mpNextRound();}} style={{padding:"10px 28px",borderRadius:12,cursor:"pointer",background:"rgba(59,130,246,0.15)",border:"1px solid rgba(59,130,246,0.30)",fontSize:13,fontWeight:800,color:"#3B82F6",display:"inline-block"}}>Next Match</div>
-            </div>)}
-
-            {isComp&&(<div style={{textAlign:"center",animation:"fadeIn 0.4s ease"}}>
-              <div style={{fontSize:48,marginBottom:8}}>📊</div>
-              <div style={{fontSize:24,fontWeight:900,color:C.gold,marginBottom:4}}>ALL MATCHES PREDICTED</div>
-              <div style={{fontSize:18,fontWeight:800,color:C.text,marginBottom:4}}>Score: {mpScore}</div>
-              <div style={{fontSize:13,color:C.green}}>Correct: {mpResults.filter(r=>r.correct).length}/5</div>
-              <div style={{fontSize:14,fontWeight:700,color:C.lime,marginTop:4}}>+{mpScore} coins earned</div>
-              <div style={{display:"flex",gap:10,justifyContent:"center",marginTop:16}}>
-                <div data-btn="true" onClick={(e)=>{e.stopPropagation();mpCleanup();startMatchPredictor();setGameActive({id:"matchpredictor",name:"Match Predictor",emoji:"📊",color:"#3B82F6"});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(59,130,246,0.15)",border:"1px solid rgba(59,130,246,0.30)",fontSize:13,fontWeight:800,color:"#3B82F6"}}>Play Again</div>
-                <div data-btn="true" onClick={(e)=>{e.stopPropagation();mpCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
-              </div>
-              <div data-btn="true" onClick={(e)=>{e.stopPropagation();mpCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
-            </div>)}
-          </div>
-          {renderGameChatOverlay()}
-        </div>
-      );
-    }
-
-    // ═══════════════════════════════════════════════════════════════
-    // DAILY PICKS -- Render
-    // ═══════════════════════════════════════════════════════════════
-    if(gameActive && gameActive.id==="dailypicks" && dpPhase) {
-      const catColors = {morning:"#F97316",afternoon:"#3B82F6",night:"#9333EA"};
-      const catEmojis = {morning:"🌅",afternoon:"☀️",night:"🌙"};
-      const isP=dpPhase==="pick";const isRev=dpPhase==="reveal";const isSum=dpPhase==="summary";
-      const currentQ = dpPicks[dpCurrentPick];
-      const mult = dpStreak >= 30 ? 10 : dpStreak >= 14 ? 5 : dpStreak >= 7 ? 3 : 1;
-      return (
-        <div style={{position:"fixed",inset:0,zIndex:100,display:"flex",flexDirection:"column",touchAction:"none"}}
-          onMouseDown={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;dpHandlePuff();}} onMouseUp={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;dpHandlePuffEnd();}} onTouchStart={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;dpHandlePuff();}} onTouchEnd={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;dpHandlePuffEnd();}}>
-          <div style={{position:"absolute",inset:0,background:`linear-gradient(180deg, #1a0a04 0%, ${dpCurrentPick===0?"#2a1005":dpCurrentPick===1?"#0a1830":"#1a0830"} 50%, #0a0618 100%)`}}/>
-          <div style={{position:"absolute",inset:0,background:`radial-gradient(ellipse at 50% 30%, ${catColors[currentQ?.cat||"morning"]}15, transparent 60%)`,pointerEvents:"none"}}/>
-          {confettiParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size*0.6,background:p.color,borderRadius:1,transform:`rotate(${p.rot}deg)`,zIndex:210,pointerEvents:"none",animation:"confettiFall 1.5s ease-out forwards"}}/>))}
-                      {/* V3 DEDICATED HEADER */}
-          <div style={{position:"relative",zIndex:50,flexShrink:0,background:"rgba(6,16,30,0.98)",borderBottom:"1px solid rgba(255,255,255,0.06)"}}>
-            <div style={{padding:"6px 12px 2px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-              <div style={{fontSize:8,fontWeight:600,color:"rgba(255,255,255,0.4)",letterSpacing:1}}><span style={{fontWeight:800,color:"rgba(255,255,255,0.6)"}}>{"Powered by "}<span style={{fontWeight:900,letterSpacing:2}}>MOOD LAB</span></span></div>
-              <div style={{display:"flex",gap:5,alignItems:"center"}}>
-                <div onClick={()=>{playFx("tap");setShowBlePopup(true);}} data-btn="true" style={{touchAction:"none",display:"flex",alignItems:"center",gap:3,padding:"2px 8px",borderRadius:100,cursor:"pointer",background:bleConnected?"rgba(52,211,153,0.1)":"rgba(251,146,60,0.1)",border:"1px solid "+(bleConnected?"rgba(52,211,153,0.25)":"rgba(251,146,60,0.25)")}}>
-                  <div style={{width:5,height:5,borderRadius:"50%",background:bleConnected?C.green:C.orange}}/><span style={{fontSize:8,fontWeight:700,color:bleConnected?C.green:C.orange}}>{bleConnected?"Puff":"Connect"}</span>
-                </div>
-                <div style={{display:"flex",alignItems:"center",gap:2,padding:"2px 7px",borderRadius:100,background:"rgba(255,217,61,0.06)",border:"1px solid rgba(255,217,61,0.12)"}}>
-                  <span style={{fontSize:9}}>{"\uD83E\uDE99"}</span><span style={{fontSize:10,fontWeight:800,color:C.gold,fontFamily:"'Courier New',monospace"}}>{coins.toLocaleString()}</span>
-                </div>
-              </div>
-            </div>
-            <div style={{padding:"2px 12px 2px",display:"flex",alignItems:"center",gap:6}}>
-              <div onClick={()=>{playFx("tap");dpCleanup();}} data-btn="true" style={{touchAction:"none",display:"inline-flex",alignItems:"center",gap:3,cursor:"pointer",padding:"3px 8px",borderRadius:8,background:"rgba(255,255,255,0.04)",border:"1px solid "+C.border,flexShrink:0}}>
-                <span style={{fontSize:10,color:C.text2}}>{"\u2190"}</span><span style={{fontSize:9,fontWeight:700,color:C.text2}}>Back</span>
-              </div>
-              <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
-                <span style={{fontSize:10,fontWeight:800,color:"#F97316"}}>{"📅"} DAILY PICKS</span>
-                <span style={{fontSize:9,fontWeight:700,color:C.gold}}>{"\uD83E\uDE99"} {dpStreak}</span>
-              </div>
-            </div>
-            <div style={{padding:"2px 12px 4px",display:"flex",alignItems:"center",justifyContent:"center",gap:12}}>
-              <span style={{fontSize:9,fontWeight:700,color:C.text3}}>Pick {dpCurrentPick+1}/3</span>
-              {fortunePlayStyle&&<span style={{fontSize:8,fontWeight:600,color:C.text3,padding:"1px 6px",borderRadius:4,background:"rgba(255,255,255,0.04)"}}>{fortunePlayStyle}</span>}
-            </div>
-          </div>
-          {/* V3 GAME AREA */}
-          <div style={{position:"relative",flex:1,overflow:"hidden"}}>
-          <div style={{display:"flex",flexDirection:"column",alignItems:"center",maxWidth:380,width:"100%",padding:"50px 16px 20px",gap:8,zIndex:10,flex:1,margin:"0 auto",overflowY:"auto"}}>
-            <div style={{fontSize:18,fontWeight:900,letterSpacing:4,background:"linear-gradient(135deg, #F97316, #9333EA)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>DAILY PICKS</div>
-            <div style={{display:"flex",gap:16,marginBottom:4}}>
-              <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:"#F97316"}}>{dpStreak}🔥</div><div style={{fontSize:8,color:C.text3}}>STREAK</div></div>
-              <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.gold}}>{mult}x</div><div style={{fontSize:8,color:C.text3}}>MULTIPLIER</div></div>
-              <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.text2}}>{dpCurrentPick+1}/3</div><div style={{fontSize:8,color:C.text3}}>PICK</div></div>
-            </div>
-            {/* Progress dots */}
-            <div style={{display:"flex",gap:8,marginBottom:8}}>
-              {[0,1,2].map(i=>(<div key={i} style={{width:10,height:10,borderRadius:"50%",background:i<dpCurrentPick?C.green:i===dpCurrentPick?catColors[dpPicks[i]?.cat||"morning"]:C.text3+"30",boxShadow:i===dpCurrentPick?`0 0 8px ${catColors[dpPicks[i]?.cat||"morning"]}60`:"none",transition:"all 0.3s"}}/>))}
-            </div>
-
-            {dpPhase==="intro"&&(<div style={{textAlign:"center",animation:"fadeIn 0.5s ease"}}><div style={{fontSize:48,marginBottom:8}}>📅</div><div style={{fontSize:20,fontWeight:900,color:"#F97316",letterSpacing:3}}>DAILY PICKS</div><div style={{fontSize:11,color:C.text3,marginTop:8}}>3 predictions | Build your streak | Earn multipliers</div><div style={{fontSize:9,color:C.gold,marginTop:4}}>7-day = 3x | 14-day = 5x | 30-day = 10x</div></div>)}
-
-            {isP&&currentQ&&(<div style={{width:"100%",textAlign:"center",animation:"fadeIn 0.4s ease"}}>
-              <div style={{fontSize:36,marginBottom:8}}>{catEmojis[currentQ.cat]}</div>
-              <div style={{padding:"2px 10px",borderRadius:6,background:`${catColors[currentQ.cat]}15`,display:"inline-block",marginBottom:8}}><span style={{fontSize:9,fontWeight:700,color:catColors[currentQ.cat]}}>{currentQ.cat.toUpperCase()} PICK</span></div>
-              <div style={{fontSize:16,fontWeight:800,color:C.text,lineHeight:1.4,maxWidth:300,margin:"0 auto",marginBottom:16}}>{currentQ.q}</div>
-              {currentQ.type==="yn"?(
-                <div style={{display:"flex",gap:12,justifyContent:"center"}}>
-                  <div style={{padding:"10px 24px",borderRadius:12,background:"rgba(239,68,68,0.10)",border:"1px solid rgba(239,68,68,0.25)"}}><div style={{fontSize:14,fontWeight:800,color:C.red}}>NO</div><div style={{fontSize:8,color:C.text3}}>Short puff</div></div>
-                  <div style={{padding:"10px 24px",borderRadius:12,background:"rgba(34,197,94,0.10)",border:"1px solid rgba(34,197,94,0.25)"}}><div style={{fontSize:14,fontWeight:800,color:C.green}}>YES</div><div style={{fontSize:8,color:C.text3}}>Long puff</div></div>
-                </div>
-              ):(
-                <div style={{display:"flex",gap:12,justifyContent:"center"}}>
-                  <div style={{padding:"10px 24px",borderRadius:12,background:`${catColors[currentQ.cat]}10`,border:`1px solid ${catColors[currentQ.cat]}25`}}><div style={{fontSize:14,fontWeight:800,color:catColors[currentQ.cat]}}>{currentQ.a}</div><div style={{fontSize:8,color:C.text3}}>Short puff</div></div>
-                  <div style={{padding:"10px 24px",borderRadius:12,background:`${catColors[currentQ.cat]}10`,border:`1px solid ${catColors[currentQ.cat]}25`}}><div style={{fontSize:14,fontWeight:800,color:catColors[currentQ.cat]}}>{currentQ.b}</div><div style={{fontSize:8,color:C.text3}}>Long puff</div></div>
-                </div>
-              )}
-              <div style={{fontSize:11,color:C.text3,marginTop:12}}>TAP TO PICK 📅</div>
-            </div>)}
-
-            {isRev&&(<div style={{textAlign:"center",animation:"fadeIn 0.4s ease"}}>
-              <div style={{fontSize:36,marginBottom:8}}>{dpResults.length>0&&dpResults[dpResults.length-1].correct?"✅":"❌"}</div>
-              <div style={{fontSize:20,fontWeight:900,color:dpResults.length>0&&dpResults[dpResults.length-1].correct?C.green:C.red}}>{dpResults.length>0&&dpResults[dpResults.length-1].correct?"CORRECT!":"WRONG!"}</div>
-              <div style={{fontSize:13,color:C.text2,marginTop:4}}>You picked: <span style={{fontWeight:700,color:C.text}}>{dpAnswer}</span></div>
-              {dpResults.length>0&&dpResults[dpResults.length-1].correct&&<div style={{fontSize:14,fontWeight:700,color:C.gold,marginTop:4}}>+{dpResults[dpResults.length-1].pts} coins{mult>1?" ("+mult+"x multiplier!)":""}</div>}
-              <div style={{fontSize:11,color:C.text2,fontStyle:"italic",marginTop:8}}>{commentatorText}</div>
-            </div>)}
-
-            {isSum&&(<div style={{textAlign:"center",animation:"fadeIn 0.4s ease"}}>
-              <div style={{fontSize:48,marginBottom:8}}>📅</div>
-              <div style={{fontSize:24,fontWeight:900,color:C.gold,marginBottom:8}}>DAILY PICKS COMPLETE</div>
-              {dpResults.map((r,i)=>(
-                <div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 12px",borderRadius:10,marginBottom:4,background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.06)"}}>
-                  <span style={{fontSize:16}}>{catEmojis[r.question.cat]}</span>
-                  <span style={{fontSize:11,color:C.text,flex:1,textAlign:"left"}}>{r.question.q.substring(0,35)}...</span>
-                  <span style={{fontSize:11,fontWeight:700,color:r.correct?C.green:C.red}}>{r.correct?"✅":"❌"}</span>
-                  {r.pts>0&&<span style={{fontSize:9,fontWeight:700,color:C.gold}}>+{r.pts}</span>}
-                </div>
-              ))}
-              <div style={{fontSize:14,fontWeight:700,color:"#F97316",marginTop:8}}>Current Streak: {dpStreak} 🔥</div>
-              <div style={{fontSize:12,color:C.gold,marginTop:4}}>Total earned: +{dpResults.reduce((a,r)=>a+r.pts,0)} coins</div>
-              <div style={{display:"flex",gap:10,justifyContent:"center",marginTop:16}}>
-                <div data-btn="true" onClick={(e)=>{e.stopPropagation();dpCleanup();startDailyPicks();setGameActive({id:"dailypicks",name:"Daily Picks",emoji:"📅",color:"#F97316"});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(249,115,22,0.15)",border:"1px solid rgba(249,115,22,0.30)",fontSize:13,fontWeight:800,color:"#F97316"}}>Play Again</div>
-                <div data-btn="true" onClick={(e)=>{e.stopPropagation();dpCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
-              </div>
-              <div data-btn="true" onClick={(e)=>{e.stopPropagation();dpCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
-            </div>)}
-          </div>
-          {renderGameChatOverlay()}
-        </div>
-      );
-    }
-
-    // ═══════════════════════════════════════════════════════════════
-    // PUFF SLOTS -- Render
-    // ═══════════════════════════════════════════════════════════════
-    if(gameActive && gameActive.id==="puffslots" && slotsPhase) {
-      const isReady=slotsPhase==="ready";const isSpin=slotsPhase==="spinning";const isRes=slotsPhase==="result";const isComp=slotsPhase==="complete";
-      return (
-        <div style={{position:"fixed",inset:0,zIndex:100,display:"flex",flexDirection:"column",touchAction:"none"}}
-          onMouseDown={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;slotsHandlePuff();}} onMouseUp={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;slotsHandlePuffEnd();}} onTouchStart={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;slotsHandlePuff();}} onTouchEnd={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;slotsHandlePuffEnd();}}>
-          <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg, #0a0a1a 0%, #1a0a2e 40%, #0d0d20 100%)"}}/>
-          <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse at 50% 40%, rgba(255,215,0,0.08), transparent 60%)",pointerEvents:"none"}}/>
-          {confettiParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size*0.6,background:p.color,borderRadius:1,transform:`rotate(${p.rot}deg)`,zIndex:210,pointerEvents:"none",animation:"confettiFall 1.5s ease-out forwards"}}/>))}
-                      {/* V3 DEDICATED HEADER */}
-          <div style={{position:"relative",zIndex:50,flexShrink:0,background:"rgba(6,16,30,0.98)",borderBottom:"1px solid rgba(255,255,255,0.06)"}}>
-            <div style={{padding:"6px 12px 2px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-              <div style={{fontSize:8,fontWeight:600,color:"rgba(255,255,255,0.4)",letterSpacing:1}}><span style={{fontWeight:800,color:"rgba(255,255,255,0.6)"}}>{"Powered by "}<span style={{fontWeight:900,letterSpacing:2}}>MOOD LAB</span></span></div>
-              <div style={{display:"flex",gap:5,alignItems:"center"}}>
-                <div onClick={()=>{playFx("tap");setShowBlePopup(true);}} data-btn="true" style={{touchAction:"none",display:"flex",alignItems:"center",gap:3,padding:"2px 8px",borderRadius:100,cursor:"pointer",background:bleConnected?"rgba(52,211,153,0.1)":"rgba(251,146,60,0.1)",border:"1px solid "+(bleConnected?"rgba(52,211,153,0.25)":"rgba(251,146,60,0.25)")}}>
-                  <div style={{width:5,height:5,borderRadius:"50%",background:bleConnected?C.green:C.orange}}/><span style={{fontSize:8,fontWeight:700,color:bleConnected?C.green:C.orange}}>{bleConnected?"Puff":"Connect"}</span>
-                </div>
-                <div style={{display:"flex",alignItems:"center",gap:2,padding:"2px 7px",borderRadius:100,background:"rgba(255,217,61,0.06)",border:"1px solid rgba(255,217,61,0.12)"}}>
-                  <span style={{fontSize:9}}>{"\uD83E\uDE99"}</span><span style={{fontSize:10,fontWeight:800,color:C.gold,fontFamily:"'Courier New',monospace"}}>{coins.toLocaleString()}</span>
-                </div>
-              </div>
-            </div>
-            <div style={{padding:"2px 12px 2px",display:"flex",alignItems:"center",gap:6}}>
-              <div onClick={()=>{playFx("tap");slotsCleanup();}} data-btn="true" style={{touchAction:"none",display:"inline-flex",alignItems:"center",gap:3,cursor:"pointer",padding:"3px 8px",borderRadius:8,background:"rgba(255,255,255,0.04)",border:"1px solid "+C.border,flexShrink:0}}>
-                <span style={{fontSize:10,color:C.text2}}>{"\u2190"}</span><span style={{fontSize:9,fontWeight:700,color:C.text2}}>Back</span>
-              </div>
-              <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
-                <span style={{fontSize:10,fontWeight:800,color:"#FFD700"}}>{"🎰"} PUFF SLOTS</span>
-                <span style={{fontSize:9,fontWeight:700,color:C.gold}}>{"\uD83E\uDE99"} {slotsScore}</span>
-              </div>
-            </div>
-            <div style={{padding:"2px 12px 4px",display:"flex",alignItems:"center",justifyContent:"center",gap:12}}>
-              <span style={{fontSize:9,fontWeight:700,color:C.text3}}>Spin {slotsRound+1}/8</span>{slotsBonusRound&&<span style={{fontSize:9,fontWeight:800,color:C.purple}}>2x BONUS</span>}
-              {fortunePlayStyle&&<span style={{fontSize:8,fontWeight:600,color:C.text3,padding:"1px 6px",borderRadius:4,background:"rgba(255,255,255,0.04)"}}>{fortunePlayStyle}</span>}
-            </div>
-          </div>
-          {/* V3 GAME AREA */}
-          <div style={{position:"relative",flex:1,overflow:"hidden"}}>
-          <div style={{display:"flex",flexDirection:"column",alignItems:"center",maxWidth:380,width:"100%",padding:"50px 16px 20px",gap:8,zIndex:10,flex:1,margin:"0 auto"}}>
-            <div style={{fontSize:18,fontWeight:900,letterSpacing:4,background:"linear-gradient(135deg, #FFD700, #FF6B00)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>PUFF SLOTS</div>
-            <div style={{display:"flex",gap:16,marginBottom:4}}>
-              <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.gold}}>{slotsScore}</div><div style={{fontSize:8,color:C.text3}}>COINS</div></div>
-              <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.text2}}>{slotsRound+1}/8</div><div style={{fontSize:8,color:C.text3}}>SPIN</div></div>
-              {slotsBonusRound&&<div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.purple}}>2x</div><div style={{fontSize:8,color:C.text3}}>BONUS</div></div>}
-            </div>
-            {slotsPhase==="intro"&&(<div style={{textAlign:"center",animation:"fadeIn 0.5s ease"}}><div style={{fontSize:48,marginBottom:8}}>🎰</div><div style={{fontSize:20,fontWeight:900,color:"#FFD700",letterSpacing:3}}>PUFF SLOTS</div><div style={{fontSize:11,color:C.text3,marginTop:8}}>Hold to spin! Blinker (4.5s+) = BONUS ROUND</div></div>)}
-            {(isReady||isSpin||isRes)&&(<div style={{width:"100%",textAlign:"center"}}>
-              <div style={{padding:20,borderRadius:20,border:"3px solid #FFD70050",background:"linear-gradient(180deg, rgba(255,215,0,0.08), rgba(0,0,0,0.4))",boxShadow:"0 0 40px rgba(255,215,0,0.15), inset 0 0 30px rgba(255,215,0,0.05)",margin:"0 auto",maxWidth:300}}>
-                <div style={{fontSize:12,fontWeight:800,color:C.gold,marginBottom:12,letterSpacing:3}}>CASINO ROYALE</div>
-                <div style={{display:"flex",justifyContent:"center",gap:8,marginBottom:16}}>
-                  {slotsReels.map((sym,i)=>(
-                    <div key={i} style={{width:70,height:80,borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",fontSize:40,
-                      background:"linear-gradient(180deg, rgba(0,0,0,0.6), rgba(20,10,30,0.8))",border:"2px solid rgba(255,215,0,0.3)",
-                      boxShadow:sym!=="❓"?"0 0 15px rgba(255,215,0,0.2)":"none",
-                      animation:isSpin?`pulse 0.3s infinite ${i*0.1}s`:"none",transition:"all 0.3s"}}>
-                      {sym}
-                    </div>
-                  ))}
-                </div>
-                {isRes&&slotsWin>0&&(<div style={{fontSize:24,fontWeight:900,color:C.gold,animation:"pulse 1s infinite",marginBottom:8}}>WIN +{slotsWin}{slotsBonusRound?" (2x BONUS!)":""}</div>)}
-                {isRes&&slotsWin===0&&(<div style={{fontSize:16,fontWeight:700,color:C.text3,marginBottom:8}}>No match</div>)}
-                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:4,marginTop:8}}>
-                  {SLOTS_SYMBOLS.map(s=>(<div key={s} style={{fontSize:8,color:C.text3,padding:"2px 4px",borderRadius:4,background:"rgba(255,255,255,0.03)"}}>{s}{s}{s} = {SLOTS_PAYOUTS[s]}</div>))}
-                </div>
-              </div>
-              {isReady&&(<div style={{marginTop:16,fontSize:14,fontWeight:800,color:C.gold,animation:"pulse 1.5s infinite"}}>PUFF TO SPIN 🎰</div>)}
-              {isSpin&&(<div style={{marginTop:16,fontSize:14,fontWeight:800,color:C.cyan,animation:"pulse 0.5s infinite"}}>SPINNING... RELEASE TO STOP</div>)}
-            </div>)}
-            {slotsHistory.length>0&&(<div style={{display:"flex",gap:4,flexWrap:"wrap",justifyContent:"center",marginTop:8}}>
-              {slotsHistory.map((h,i)=>(<div key={i} style={{fontSize:10,padding:"2px 6px",borderRadius:6,background:h.win>0?"rgba(34,197,94,0.10)":"rgba(255,255,255,0.03)",border:h.win>0?"1px solid rgba(34,197,94,0.20)":"1px solid rgba(255,255,255,0.06)",color:h.win>0?C.green:C.text3}}>{h.reels.join("")}{h.win>0?" +"+h.win:""}</div>))}
-            </div>)}
-            {isComp&&(<div style={{textAlign:"center",animation:"fadeIn 0.4s ease"}}>
-              <div style={{fontSize:48,marginBottom:8}}>🎰</div>
-              <div style={{fontSize:24,fontWeight:900,color:C.gold,marginBottom:8}}>ALL SPINS COMPLETE</div>
-              <div style={{fontSize:18,fontWeight:800,color:C.text}}>Total Won: {slotsScore} coins</div>
-              <div style={{display:"flex",gap:10,justifyContent:"center",marginTop:16}}>
-                <div data-btn="true" onClick={(e)=>{e.stopPropagation();slotsCleanup();startPuffSlots();setGameActive({id:"puffslots",name:"Puff Slots",emoji:"🎰",color:"#FFD700"});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,215,0,0.15)",border:"1px solid rgba(255,215,0,0.30)",fontSize:13,fontWeight:800,color:"#FFD700"}}>Play Again</div>
-                <div data-btn="true" onClick={(e)=>{e.stopPropagation();slotsCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
-              </div>
-              <div data-btn="true" onClick={(e)=>{e.stopPropagation();slotsCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
-            </div>)}
-            <div style={{fontSize:11,color:C.text3,fontStyle:"italic",marginTop:8}}>{commentatorText}</div>
-          </div>
-          {renderGameChatOverlay()}
-        </div>
-      );
-    }
-
-    // ═══════════════════════════════════════════════════════════════
-    // PUFF BLACKJACK -- Render
-    // ═══════════════════════════════════════════════════════════════
-    if(gameActive && gameActive.id==="puffblackjack" && bjPhase) {
-      const renderCard = (c,hidden) => (
-        <div style={{width:48,height:68,borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",
-          background:hidden?"linear-gradient(135deg, #1a3a5c, #0a1a30)":"linear-gradient(180deg, #fafafa, #e0e0e0)",
-          border:hidden?"2px solid #2a5a8c":"2px solid #ccc",boxShadow:"0 2px 8px rgba(0,0,0,0.3)",fontSize:hidden?20:12,fontWeight:800,
-          color:hidden?"#4a8abf":(c.suit==="♥️"||c.suit==="♦️")?"#dc2626":"#1a1a1a"}}>
-          {hidden?"🂠":c.display}
-        </div>
-      );
-      const isPlayerTurn=bjPhase==="player_turn";const isDealerTurn=bjPhase==="dealer_turn";const isResult=bjPhase==="result";const isComp=bjPhase==="complete";
-      return (
-        <div style={{position:"fixed",inset:0,zIndex:100,display:"flex",flexDirection:"column",touchAction:"none"}}
-          onMouseDown={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;bjHandlePuff();}} onMouseUp={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;bjHandlePuffEnd();}} onTouchStart={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;bjHandlePuff();}} onTouchEnd={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;bjHandlePuffEnd();}}>
-          <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg, #0a1e0a 0%, #0d3d0d 40%, #0a2a0a 100%)"}}/>
-          <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse at 50% 50%, rgba(34,197,94,0.06), transparent 60%)",pointerEvents:"none"}}/>
-          {confettiParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size*0.6,background:p.color,borderRadius:1,transform:`rotate(${p.rot}deg)`,zIndex:210,pointerEvents:"none",animation:"confettiFall 1.5s ease-out forwards"}}/>))}
-                      {/* V3 DEDICATED HEADER */}
-          <div style={{position:"relative",zIndex:50,flexShrink:0,background:"rgba(6,16,30,0.98)",borderBottom:"1px solid rgba(255,255,255,0.06)"}}>
-            <div style={{padding:"6px 12px 2px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-              <div style={{fontSize:8,fontWeight:600,color:"rgba(255,255,255,0.4)",letterSpacing:1}}><span style={{fontWeight:800,color:"rgba(255,255,255,0.6)"}}>{"Powered by "}<span style={{fontWeight:900,letterSpacing:2}}>MOOD LAB</span></span></div>
-              <div style={{display:"flex",gap:5,alignItems:"center"}}>
-                <div onClick={()=>{playFx("tap");setShowBlePopup(true);}} data-btn="true" style={{touchAction:"none",display:"flex",alignItems:"center",gap:3,padding:"2px 8px",borderRadius:100,cursor:"pointer",background:bleConnected?"rgba(52,211,153,0.1)":"rgba(251,146,60,0.1)",border:"1px solid "+(bleConnected?"rgba(52,211,153,0.25)":"rgba(251,146,60,0.25)")}}>
-                  <div style={{width:5,height:5,borderRadius:"50%",background:bleConnected?C.green:C.orange}}/><span style={{fontSize:8,fontWeight:700,color:bleConnected?C.green:C.orange}}>{bleConnected?"Puff":"Connect"}</span>
-                </div>
-                <div style={{display:"flex",alignItems:"center",gap:2,padding:"2px 7px",borderRadius:100,background:"rgba(255,217,61,0.06)",border:"1px solid rgba(255,217,61,0.12)"}}>
-                  <span style={{fontSize:9}}>{"\uD83E\uDE99"}</span><span style={{fontSize:10,fontWeight:800,color:C.gold,fontFamily:"'Courier New',monospace"}}>{coins.toLocaleString()}</span>
-                </div>
-              </div>
-            </div>
-            <div style={{padding:"2px 12px 2px",display:"flex",alignItems:"center",gap:6}}>
-              <div onClick={()=>{playFx("tap");bjCleanup();}} data-btn="true" style={{touchAction:"none",display:"inline-flex",alignItems:"center",gap:3,cursor:"pointer",padding:"3px 8px",borderRadius:8,background:"rgba(255,255,255,0.04)",border:"1px solid "+C.border,flexShrink:0}}>
-                <span style={{fontSize:10,color:C.text2}}>{"\u2190"}</span><span style={{fontSize:9,fontWeight:700,color:C.text2}}>Back</span>
-              </div>
-              <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
-                <span style={{fontSize:10,fontWeight:800,color:"#22C55E"}}>{"🃏"} PUFF BLACKJACK</span>
-                <span style={{fontSize:9,fontWeight:700,color:C.gold}}>{"\uD83E\uDE99"} {bjScore}</span>
-              </div>
-            </div>
-            <div style={{padding:"2px 12px 4px",display:"flex",alignItems:"center",justifyContent:"center",gap:12}}>
-              <span style={{fontSize:9,fontWeight:700,color:C.text3}}>Hand {bjRound+1}/7</span><span style={{fontSize:9,fontWeight:700,color:C.cyan}}>Bet:{bjBet}</span>
-              {fortunePlayStyle&&<span style={{fontSize:8,fontWeight:600,color:C.text3,padding:"1px 6px",borderRadius:4,background:"rgba(255,255,255,0.04)"}}>{fortunePlayStyle}</span>}
-            </div>
-          </div>
-          {/* V3 GAME AREA */}
-          <div style={{position:"relative",flex:1,overflow:"hidden"}}>
-          <div style={{display:"flex",flexDirection:"column",alignItems:"center",maxWidth:380,width:"100%",padding:"50px 16px 20px",gap:8,zIndex:10,flex:1,margin:"0 auto"}}>
-            <div style={{fontSize:18,fontWeight:900,letterSpacing:4,background:"linear-gradient(135deg, #22C55E, #10B981)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>PUFF BLACKJACK</div>
-            <div style={{display:"flex",gap:16,marginBottom:4}}>
-              <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.gold}}>{bjScore}</div><div style={{fontSize:8,color:C.text3}}>COINS</div></div>
-              <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.text2}}>{bjRound+1}/7</div><div style={{fontSize:8,color:C.text3}}>HAND</div></div>
-              <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.cyan}}>Bet:{bjBet}</div><div style={{fontSize:8,color:C.text3}}>WAGER</div></div>
-            </div>
-            <div style={{fontSize:9,color:C.gold,fontWeight:700,marginBottom:4,textAlign:"center"}}>Win up to: {Math.round(bjBet * 2.5 * (getCoinMultiplier?.() || 1))} 🪙 ({(2.5 * (getCoinMultiplier?.() || 1)).toFixed(1)}x)</div>
-            {bjPhase==="intro"&&(<div style={{textAlign:"center",animation:"fadeIn 0.5s ease"}}><div style={{fontSize:48,marginBottom:8}}>🃏</div><div style={{fontSize:20,fontWeight:900,color:"#22C55E",letterSpacing:3}}>BLACKJACK</div><div style={{fontSize:11,color:C.text3,marginTop:8}}>Short puff = HIT | Long puff = STAND | Blinker = DOUBLE DOWN</div></div>)}
-            {(bjPhase==="dealing"||isPlayerTurn||isDealerTurn||isResult)&&(<div style={{width:"100%"}}>
-              <div style={{textAlign:"center",marginBottom:16}}>
-                <div style={{fontSize:10,fontWeight:700,color:C.text3,marginBottom:4}}>DEALER {(isDealerTurn||isResult)?"("+bjDealerTotal+")":""}</div>
-                <div style={{display:"flex",justifyContent:"center",gap:6}}>
-                  {bjDealerHand.map((c,i)=>(<div key={i}>{renderCard(c,i===1&&bjPhase==="dealing"||i===1&&isPlayerTurn)}</div>))}
-                </div>
-              </div>
-              <div style={{textAlign:"center",margin:"8px 0",fontSize:12,fontWeight:800,color:C.gold}}>
-                {isResult&&bjResult==="win"?"YOU WIN!":isResult&&bjResult==="blackjack"?"BLACKJACK!":isResult&&bjResult==="lose"?"DEALER WINS":isResult&&bjResult==="bust"?"BUST!":isResult&&bjResult==="push"?"PUSH":"VS"}
-              </div>
-              <div style={{textAlign:"center",marginBottom:12}}>
-                <div style={{fontSize:10,fontWeight:700,color:C.cyan,marginBottom:4}}>YOU ({bjPlayerTotal})</div>
-                <div style={{display:"flex",justifyContent:"center",gap:6}}>
-                  {bjPlayerHand.map((c,i)=>(<div key={i}>{renderCard(c,false)}</div>))}
-                </div>
-              </div>
-              {isPlayerTurn&&(<div style={{textAlign:"center",marginTop:8}}>
-                <div style={{display:"flex",gap:8,justifyContent:"center"}}>
-                  <div style={{padding:"6px 14px",borderRadius:8,background:"rgba(34,197,94,0.10)",border:"1px solid rgba(34,197,94,0.20)"}}><div style={{fontSize:11,fontWeight:700,color:C.green}}>HIT</div><div style={{fontSize:7,color:C.text3}}>&lt;1.5s</div></div>
-                  <div style={{padding:"6px 14px",borderRadius:8,background:"rgba(239,68,68,0.10)",border:"1px solid rgba(239,68,68,0.20)"}}><div style={{fontSize:11,fontWeight:700,color:C.red}}>STAND</div><div style={{fontSize:7,color:C.text3}}>&gt;1.5s</div></div>
-                  <div style={{padding:"6px 14px",borderRadius:8,background:"rgba(147,51,234,0.10)",border:"1px solid rgba(147,51,234,0.20)"}}><div style={{fontSize:11,fontWeight:700,color:C.purple}}>DOUBLE</div><div style={{fontSize:7,color:C.text3}}>4.5s+</div></div>
-                </div>
-                <div style={{fontSize:12,fontWeight:700,color:C.gold,marginTop:10,animation:"pulse 1.5s infinite"}}>TAP: Hit/Stand · PUFF: Double Down 🃏</div>
-              </div>)}
-              {isResult&&(<div style={{textAlign:"center",marginTop:8}}>
-                <div style={{fontSize:16,fontWeight:800,color:bjResult==="win"||bjResult==="blackjack"?C.gold:bjResult==="push"?C.cyan:C.red}}>
-                  {bjResult==="win"||bjResult==="blackjack"?"+"+bjBet*(bjResult==="blackjack"?2.5:2)+" coins":bjResult==="push"?"Bet returned":"-"+bjBet+" coins"}
-                </div>
-              </div>)}
-            </div>)}
-            {isComp&&(<div style={{textAlign:"center",animation:"fadeIn 0.4s ease"}}>
-              <div style={{fontSize:48,marginBottom:8}}>🃏</div>
-              <div style={{fontSize:24,fontWeight:900,color:C.gold,marginBottom:8}}>SESSION COMPLETE</div>
-              <div style={{fontSize:18,fontWeight:800,color:C.text}}>Total Won: {bjScore} coins</div>
-              <div style={{display:"flex",gap:10,justifyContent:"center",marginTop:16}}>
-                <div data-btn="true" onClick={(e)=>{e.stopPropagation();bjCleanup();startPuffBlackjack();setGameActive({id:"puffblackjack",name:"Puff Blackjack",emoji:"🃏",color:"#22C55E"});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(34,197,94,0.15)",border:"1px solid rgba(34,197,94,0.30)",fontSize:13,fontWeight:800,color:"#22C55E"}}>Play Again</div>
-                <div data-btn="true" onClick={(e)=>{e.stopPropagation();bjCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
-              </div>
-              <div data-btn="true" onClick={(e)=>{e.stopPropagation();bjCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
-            </div>)}
-            <div style={{fontSize:11,color:C.text3,fontStyle:"italic",marginTop:8}}>{commentatorText}</div>
-          </div>
-          {renderGameChatOverlay()}
-        </div>
-      );
-    }
-
-    // ═══════════════════════════════════════════════════════════════
-    // COIN FLIP -- Render
-    // ═══════════════════════════════════════════════════════════════
-    if(gameActive && gameActive.id==="coinflip" && cfPhase) {
-      const isBet=cfPhase==="betting";const isPuff=cfPhase==="puffing";const isFlip=cfPhase==="flipping";const isRes=cfPhase==="result";const isComp=cfPhase==="complete";
-      return (
-        <div style={{position:"fixed",inset:0,zIndex:100,display:"flex",flexDirection:"column",touchAction:"none"}}
-          onMouseDown={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;cfHandlePuff();}} onMouseUp={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;cfHandlePuffEnd();}} onTouchStart={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;cfHandlePuff();}} onTouchEnd={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;cfHandlePuffEnd();}}>
-          <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg, #1a1500 0%, #2a1f00 40%, #0a0800 100%)"}}/>
-          <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse at 50% 40%, rgba(245,158,11,0.10), transparent 60%)",pointerEvents:"none"}}/>
-          {confettiParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size*0.6,background:p.color,borderRadius:1,transform:`rotate(${p.rot}deg)`,zIndex:210,pointerEvents:"none",animation:"confettiFall 1.5s ease-out forwards"}}/>))}
-                      {/* V3 DEDICATED HEADER */}
-          <div style={{position:"relative",zIndex:50,flexShrink:0,background:"rgba(6,16,30,0.98)",borderBottom:"1px solid rgba(255,255,255,0.06)"}}>
-            <div style={{padding:"6px 12px 2px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-              <div style={{fontSize:8,fontWeight:600,color:"rgba(255,255,255,0.4)",letterSpacing:1}}><span style={{fontWeight:800,color:"rgba(255,255,255,0.6)"}}>{"Powered by "}<span style={{fontWeight:900,letterSpacing:2}}>MOOD LAB</span></span></div>
-              <div style={{display:"flex",gap:5,alignItems:"center"}}>
-                <div onClick={()=>{playFx("tap");setShowBlePopup(true);}} data-btn="true" style={{touchAction:"none",display:"flex",alignItems:"center",gap:3,padding:"2px 8px",borderRadius:100,cursor:"pointer",background:bleConnected?"rgba(52,211,153,0.1)":"rgba(251,146,60,0.1)",border:"1px solid "+(bleConnected?"rgba(52,211,153,0.25)":"rgba(251,146,60,0.25)")}}>
-                  <div style={{width:5,height:5,borderRadius:"50%",background:bleConnected?C.green:C.orange}}/><span style={{fontSize:8,fontWeight:700,color:bleConnected?C.green:C.orange}}>{bleConnected?"Puff":"Connect"}</span>
-                </div>
-                <div style={{display:"flex",alignItems:"center",gap:2,padding:"2px 7px",borderRadius:100,background:"rgba(255,217,61,0.06)",border:"1px solid rgba(255,217,61,0.12)"}}>
-                  <span style={{fontSize:9}}>{"\uD83E\uDE99"}</span><span style={{fontSize:10,fontWeight:800,color:C.gold,fontFamily:"'Courier New',monospace"}}>{coins.toLocaleString()}</span>
-                </div>
-              </div>
-            </div>
-            <div style={{padding:"2px 12px 2px",display:"flex",alignItems:"center",gap:6}}>
-              <div onClick={()=>{playFx("tap");cfCleanup();}} data-btn="true" style={{touchAction:"none",display:"inline-flex",alignItems:"center",gap:3,cursor:"pointer",padding:"3px 8px",borderRadius:8,background:"rgba(255,255,255,0.04)",border:"1px solid "+C.border,flexShrink:0}}>
-                <span style={{fontSize:10,color:C.text2}}>{"\u2190"}</span><span style={{fontSize:9,fontWeight:700,color:C.text2}}>Back</span>
-              </div>
-              <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
-                <span style={{fontSize:10,fontWeight:800,color:"#F59E0B"}}>{"🪙"} COIN FLIP</span>
-                <span style={{fontSize:9,fontWeight:700,color:C.gold}}>{"\uD83E\uDE99"} {cfScore}</span>
-              </div>
-            </div>
-            <div style={{padding:"2px 12px 4px",display:"flex",alignItems:"center",justifyContent:"center",gap:12}}>
-              <span style={{fontSize:9,fontWeight:700,color:C.text3}}>Flip {cfRound+1}/8</span><span style={{fontSize:9,fontWeight:700,color:C.orange}}>Streak:{cfStreak}</span>
-              {fortunePlayStyle&&<span style={{fontSize:8,fontWeight:600,color:C.text3,padding:"1px 6px",borderRadius:4,background:"rgba(255,255,255,0.04)"}}>{fortunePlayStyle}</span>}
-            </div>
-          </div>
-          {/* V3 GAME AREA */}
-          <div style={{position:"relative",flex:1,overflow:"hidden"}}>
-          <div style={{display:"flex",flexDirection:"column",alignItems:"center",maxWidth:380,width:"100%",padding:"50px 16px 20px",gap:8,zIndex:10,flex:1,margin:"0 auto"}}>
-            <div style={{fontSize:18,fontWeight:900,letterSpacing:4,background:"linear-gradient(135deg, #F59E0B, #D97706)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>COIN FLIP</div>
-            <div style={{display:"flex",gap:16,marginBottom:4}}>
-              <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.gold}}>{cfScore}</div><div style={{fontSize:8,color:C.text3}}>COINS</div></div>
-              <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.text2}}>{cfRound+1}/8</div><div style={{fontSize:8,color:C.text3}}>FLIP</div></div>
-              <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.orange}}>{cfStreak}</div><div style={{fontSize:8,color:C.text3}}>STREAK</div></div>
-            </div>
-            {cfPhase==="intro"&&(<div style={{textAlign:"center",animation:"fadeIn 0.5s ease"}}><div style={{fontSize:48,marginBottom:8}}>🪙</div><div style={{fontSize:20,fontWeight:900,color:"#F59E0B",letterSpacing:3}}>COIN FLIP</div><div style={{fontSize:11,color:C.text3,marginTop:8}}>Pick a side, puff your confidence, win big!</div></div>)}
-            {isBet&&(<div style={{textAlign:"center",animation:"fadeIn 0.4s ease"}}>
-              <div style={{fontSize:60,marginBottom:12}}>🪙</div>
-              <div style={{fontSize:16,fontWeight:800,color:C.text,marginBottom:16}}>Pick your side!</div>
-              <div style={{display:"flex",gap:16,justifyContent:"center"}}>
-                <div data-btn="true" onClick={(e)=>{e.stopPropagation();cfPickSide("heads");}} style={{padding:"16px 28px",borderRadius:16,cursor:"pointer",background:"rgba(245,158,11,0.10)",border:"2px solid rgba(245,158,11,0.30)",textAlign:"center"}}>
-                  <div style={{fontSize:28,marginBottom:4}}>👑</div>
-                  <div style={{fontSize:14,fontWeight:800,color:"#F59E0B"}}>HEADS</div>
-                </div>
-                <div data-btn="true" onClick={(e)=>{e.stopPropagation();cfPickSide("tails");}} style={{padding:"16px 28px",borderRadius:16,cursor:"pointer",background:"rgba(168,85,247,0.10)",border:"2px solid rgba(168,85,247,0.30)",textAlign:"center"}}>
-                  <div style={{fontSize:28,marginBottom:4}}>🌿</div>
-                  <div style={{fontSize:14,fontWeight:800,color:"#A855F7"}}>TAILS</div>
-                </div>
-              </div>
-            </div>)}
-            {isPuff&&(<div style={{textAlign:"center",animation:"fadeIn 0.4s ease"}}>
-              <div style={{fontSize:48,marginBottom:8}}>{cfChoice==="heads"?"👑":"🌿"}</div>
-              <div style={{fontSize:16,fontWeight:800,color:C.text,marginBottom:8}}>You picked: {cfChoice.toUpperCase()}</div>
-              <div style={{display:"flex",gap:6,justifyContent:"center",flexWrap:"wrap",marginBottom:12}}>
-                <div style={{padding:"4px 10px",borderRadius:8,background:"rgba(34,197,94,0.10)",border:"1px solid rgba(34,197,94,0.20)"}}><div style={{fontSize:9,fontWeight:700,color:C.green}}>TAP: 1x</div></div>
-                <div style={{padding:"4px 10px",borderRadius:8,background:"rgba(59,130,246,0.10)",border:"1px solid rgba(59,130,246,0.20)"}}><div style={{fontSize:9,fontWeight:700,color:C.blue}}>SHORT: 1.5x</div></div>
-                <div style={{padding:"4px 10px",borderRadius:8,background:"rgba(245,158,11,0.10)",border:"1px solid rgba(245,158,11,0.20)"}}><div style={{fontSize:9,fontWeight:700,color:"#F59E0B"}}>MED: 2x</div></div>
-                <div style={{padding:"4px 10px",borderRadius:8,background:"rgba(239,68,68,0.10)",border:"1px solid rgba(239,68,68,0.20)"}}><div style={{fontSize:9,fontWeight:700,color:C.red}}>LONG: 3x</div></div>
-                <div style={{padding:"4px 10px",borderRadius:8,background:"rgba(147,51,234,0.10)",border:"1px solid rgba(147,51,234,0.20)"}}><div style={{fontSize:9,fontWeight:700,color:C.purple}}>BLINKER: 5x</div></div>
-              </div>
-              <div style={{fontSize:14,fontWeight:800,color:C.gold,animation:"pulse 1.5s infinite"}}>PUFF TO FLIP 🪙</div>
-              {cfPuffing&&<div style={{fontSize:12,fontWeight:700,color:C.cyan,marginTop:8,animation:"pulse 0.5s infinite"}}>FLIPPING...</div>}
-            </div>)}
-            {(isFlip||isRes)&&(<div style={{textAlign:"center"}}>
-              <div style={{fontSize:72,marginBottom:12,transition:"all 0.5s",animation:isFlip?"spin 1.5s linear":"none"}}>
-                {isFlip?"🪙":cfResult==="heads"?"👑":"🌿"}
-              </div>
-              {isRes&&(<div>
-                <div style={{fontSize:22,fontWeight:900,color:cfResult===cfChoice?C.gold:C.red,marginBottom:4}}>{cfResult===cfChoice?"YOU WIN!":"YOU LOSE!"}</div>
-                <div style={{fontSize:14,color:C.text2}}>It was {cfResult.toUpperCase()}{cfPuffConfidence>1?" at "+cfPuffConfidence+"x":""}</div>
-                {cfResult===cfChoice&&<div style={{fontSize:16,fontWeight:800,color:C.gold,marginTop:4}}>+{Math.floor(cfBet*cfPuffConfidence)} coins!</div>}
-                {cfResult!==cfChoice&&cfPuffConfidence>=5&&<div style={{fontSize:12,fontWeight:700,color:C.red,marginTop:4}}>Blinker penalty: -{cfBet*2}</div>}
-              </div>)}
-            </div>)}
-            {isComp&&(<div style={{textAlign:"center",animation:"fadeIn 0.4s ease"}}>
-              <div style={{fontSize:48,marginBottom:8}}>🪙</div>
-              <div style={{fontSize:24,fontWeight:900,color:C.gold,marginBottom:8}}>ALL FLIPS COMPLETE</div>
-              <div style={{fontSize:18,fontWeight:800,color:C.text}}>Total Won: {cfScore} coins</div>
-              <div style={{fontSize:13,color:C.orange,marginTop:4}}>Best Streak: {cfStreak}</div>
-              <div style={{display:"flex",gap:10,justifyContent:"center",marginTop:16}}>
-                <div data-btn="true" onClick={(e)=>{e.stopPropagation();cfCleanup();startCoinFlip();setGameActive({id:"coinflip",name:"Coin Flip",emoji:"🪙",color:"#F59E0B"});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(245,158,11,0.15)",border:"1px solid rgba(245,158,11,0.30)",fontSize:13,fontWeight:800,color:"#F59E0B"}}>Play Again</div>
-                <div data-btn="true" onClick={(e)=>{e.stopPropagation();cfCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
-              </div>
-              <div data-btn="true" onClick={(e)=>{e.stopPropagation();cfCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
-            </div>)}
-            <div style={{fontSize:11,color:C.text3,fontStyle:"italic",marginTop:8}}>{commentatorText}</div>
-          </div>
-          {renderGameChatOverlay()}
-        </div>
-      );
-    }
-
-    // ═══════════════════════════════════════════════════════════════
-    // CRAPS & CLOUDS -- Render
-    // ═══════════════════════════════════════════════════════════════
-    if(gameActive && gameActive.id==="crapsnclouds" && crapsPhase) {
-      const DICE_FACES = {1:"⚀",2:"⚁",3:"⚂",4:"⚃",5:"⚄",6:"⚅"};
-      const isRoll=crapsPhase==="rolling";const isRes=crapsPhase==="result";const isComp=crapsPhase==="complete";
-      return (
-        <div style={{position:"fixed",inset:0,zIndex:100,display:"flex",flexDirection:"column",touchAction:"none"}}
-          onMouseDown={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;crapsHandlePuff();}} onMouseUp={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;crapsHandlePuffEnd();}} onTouchStart={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;crapsHandlePuff();}} onTouchEnd={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;crapsHandlePuffEnd();}}>
-          <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg, #0a1e0a 0%, #1a3a1a 40%, #0d2a0d 100%)"}}/>
-          <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse at 50% 40%, rgba(239,68,68,0.06), transparent 60%)",pointerEvents:"none"}}/>
-          {confettiParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size*0.6,background:p.color,borderRadius:1,transform:`rotate(${p.rot}deg)`,zIndex:210,pointerEvents:"none",animation:"confettiFall 1.5s ease-out forwards"}}/>))}
-                      {/* V3 DEDICATED HEADER */}
-          <div style={{position:"relative",zIndex:50,flexShrink:0,background:"rgba(6,16,30,0.98)",borderBottom:"1px solid rgba(255,255,255,0.06)"}}>
-            <div style={{padding:"6px 12px 2px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-              <div style={{fontSize:8,fontWeight:600,color:"rgba(255,255,255,0.4)",letterSpacing:1}}><span style={{fontWeight:800,color:"rgba(255,255,255,0.6)"}}>{"Powered by "}<span style={{fontWeight:900,letterSpacing:2}}>MOOD LAB</span></span></div>
-              <div style={{display:"flex",gap:5,alignItems:"center"}}>
-                <div onClick={()=>{playFx("tap");setShowBlePopup(true);}} data-btn="true" style={{touchAction:"none",display:"flex",alignItems:"center",gap:3,padding:"2px 8px",borderRadius:100,cursor:"pointer",background:bleConnected?"rgba(52,211,153,0.1)":"rgba(251,146,60,0.1)",border:"1px solid "+(bleConnected?"rgba(52,211,153,0.25)":"rgba(251,146,60,0.25)")}}>
-                  <div style={{width:5,height:5,borderRadius:"50%",background:bleConnected?C.green:C.orange}}/><span style={{fontSize:8,fontWeight:700,color:bleConnected?C.green:C.orange}}>{bleConnected?"Puff":"Connect"}</span>
-                </div>
-                <div style={{display:"flex",alignItems:"center",gap:2,padding:"2px 7px",borderRadius:100,background:"rgba(255,217,61,0.06)",border:"1px solid rgba(255,217,61,0.12)"}}>
-                  <span style={{fontSize:9}}>{"\uD83E\uDE99"}</span><span style={{fontSize:10,fontWeight:800,color:C.gold,fontFamily:"'Courier New',monospace"}}>{coins.toLocaleString()}</span>
-                </div>
-              </div>
-            </div>
-            <div style={{padding:"2px 12px 2px",display:"flex",alignItems:"center",gap:6}}>
-              <div onClick={()=>{playFx("tap");crapsCleanup();}} data-btn="true" style={{touchAction:"none",display:"inline-flex",alignItems:"center",gap:3,cursor:"pointer",padding:"3px 8px",borderRadius:8,background:"rgba(255,255,255,0.04)",border:"1px solid "+C.border,flexShrink:0}}>
-                <span style={{fontSize:10,color:C.text2}}>{"\u2190"}</span><span style={{fontSize:9,fontWeight:700,color:C.text2}}>Back</span>
-              </div>
-              <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
-                <span style={{fontSize:10,fontWeight:800,color:"#EF4444"}}>{"🎲"} CRAPS & CLOUDS</span>
-                <span style={{fontSize:9,fontWeight:700,color:C.gold}}>{"\uD83E\uDE99"} {crapsScore}</span>
-              </div>
-            </div>
-            <div style={{padding:"2px 12px 4px",display:"flex",alignItems:"center",justifyContent:"center",gap:12}}>
-              <span style={{fontSize:9,fontWeight:700,color:C.text3}}>Roll {crapsRound+1}/8</span>{crapsPoint&&<span style={{fontSize:9,fontWeight:700,color:C.cyan}}>Point:{crapsPoint}</span>}
-              {fortunePlayStyle&&<span style={{fontSize:8,fontWeight:600,color:C.text3,padding:"1px 6px",borderRadius:4,background:"rgba(255,255,255,0.04)"}}>{fortunePlayStyle}</span>}
-            </div>
-          </div>
-          {/* V3 GAME AREA */}
-          <div style={{position:"relative",flex:1,overflow:"hidden"}}>
-          <div style={{display:"flex",flexDirection:"column",alignItems:"center",maxWidth:380,width:"100%",padding:"50px 16px 20px",gap:8,zIndex:10,flex:1,margin:"0 auto"}}>
-            <div style={{fontSize:18,fontWeight:900,letterSpacing:4,background:"linear-gradient(135deg, #EF4444, #DC2626)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>CRAPS & CLOUDS</div>
-            <div style={{display:"flex",gap:16,marginBottom:4}}>
-              <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.gold}}>{crapsScore}</div><div style={{fontSize:8,color:C.text3}}>COINS</div></div>
-              <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.text2}}>{crapsRound+1}/8</div><div style={{fontSize:8,color:C.text3}}>ROLL</div></div>
-              {crapsPoint&&<div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.cyan}}>Point:{crapsPoint}</div><div style={{fontSize:8,color:C.text3}}>TARGET</div></div>}
-              {crapsHotDice&&<div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.red}}>HOT</div><div style={{fontSize:8,color:C.text3}}>+50%</div></div>}
-            </div>
-            {crapsPhase==="intro"&&(<div style={{textAlign:"center",animation:"fadeIn 0.5s ease"}}><div style={{fontSize:48,marginBottom:8}}>🎲</div><div style={{fontSize:20,fontWeight:900,color:"#EF4444",letterSpacing:3}}>CRAPS & CLOUDS</div><div style={{fontSize:11,color:C.text3,marginTop:8}}>Puff duration controls your roll! Blinker = HOT DICE!</div></div>)}
-            {(isRoll||isRes)&&(<div style={{width:"100%",textAlign:"center"}}>
-              <div style={{padding:20,borderRadius:20,border:"3px solid rgba(239,68,68,0.30)",background:"linear-gradient(180deg, rgba(34,100,34,0.3), rgba(10,40,10,0.5))",boxShadow:"0 0 30px rgba(239,68,68,0.10)",margin:"0 auto",maxWidth:300}}>
-                <div style={{fontSize:11,fontWeight:800,color:crapsPoint?C.cyan:C.gold,marginBottom:12,letterSpacing:2}}>{crapsPoint?"POINT PHASE: Hit "+crapsPoint+" to WIN!":"COME-OUT ROLL"}</div>
-                <div style={{display:"flex",justifyContent:"center",gap:16,marginBottom:16}}>
-                  {crapsDice.map((d,i)=>(
-                    <div key={i} style={{width:64,height:64,borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",fontSize:36,
-                      background:"linear-gradient(135deg, #fafafa, #e8e8e8)",border:"2px solid #ccc",boxShadow:"0 4px 12px rgba(0,0,0,0.3)",
-                      color:"#1a1a1a",fontWeight:900,
-                      animation:crapsRolling?`pulse 0.2s infinite ${i*0.1}s`:"none",transition:"all 0.3s"}}>
-                      {DICE_FACES[d]||d}
-                    </div>
-                  ))}
-                </div>
-                <div style={{fontSize:20,fontWeight:900,color:C.text}}>Total: {crapsDice[0]+crapsDice[1]}</div>
-                {crapsHotDice&&<div style={{fontSize:12,fontWeight:700,color:C.red,marginTop:4,animation:"pulse 1s infinite"}}>HOT DICE ACTIVE! +50% payout</div>}
-                {isRes&&(<div style={{marginTop:12}}>
-                  <div style={{fontSize:22,fontWeight:900,color:crapsResult==="win"?C.gold:C.red}}>{crapsResult==="win"?"YOU WIN!":"CRAPS OUT!"}</div>
-                  {crapsResult==="win"&&<div style={{fontSize:14,fontWeight:700,color:C.gold}}>+{crapsHotDice?Math.floor(crapsBet*1.5):crapsBet} coins</div>}
-                </div>)}
-              </div>
-              {isRoll&&!crapsRolling&&(<div style={{marginTop:12}}>
-                <div style={{display:"flex",gap:4,justifyContent:"center",flexWrap:"wrap"}}>
-                  <div style={{padding:"3px 8px",borderRadius:6,background:"rgba(255,255,255,0.04)",fontSize:8,color:C.text3}}>Tap:2-3</div>
-                  <div style={{padding:"3px 8px",borderRadius:6,background:"rgba(255,255,255,0.04)",fontSize:8,color:C.text3}}>Short:4-5</div>
-                  <div style={{padding:"3px 8px",borderRadius:6,background:"rgba(34,197,94,0.10)",fontSize:8,color:C.green}}>Med:6-8</div>
-                  <div style={{padding:"3px 8px",borderRadius:6,background:"rgba(255,255,255,0.04)",fontSize:8,color:C.text3}}>Long:9-10</div>
-                  <div style={{padding:"3px 8px",borderRadius:6,background:"rgba(255,255,255,0.04)",fontSize:8,color:C.text3}}>Max:11-12</div>
-                </div>
-                <div style={{fontSize:14,fontWeight:800,color:C.gold,marginTop:10,animation:"pulse 1.5s infinite"}}>PUFF TO ROLL 🎲</div>
-              </div>)}
-              {isRoll&&crapsRolling&&(<div style={{marginTop:12,fontSize:14,fontWeight:800,color:C.cyan,animation:"pulse 0.5s infinite"}}>ROLLING... RELEASE!</div>)}
-            </div>)}
-            {isComp&&(<div style={{textAlign:"center",animation:"fadeIn 0.4s ease"}}>
-              <div style={{fontSize:48,marginBottom:8}}>🎲</div>
-              <div style={{fontSize:24,fontWeight:900,color:C.gold,marginBottom:8}}>ALL ROLLS COMPLETE</div>
-              <div style={{fontSize:18,fontWeight:800,color:C.text}}>Total Won: {crapsScore} coins</div>
-              <div style={{display:"flex",gap:10,justifyContent:"center",marginTop:16}}>
-                <div data-btn="true" onClick={(e)=>{e.stopPropagation();crapsCleanup();startCrapsNClouds();setGameActive({id:"crapsnclouds",name:"Craps & Clouds",emoji:"🎲",color:"#EF4444"});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(239,68,68,0.15)",border:"1px solid rgba(239,68,68,0.30)",fontSize:13,fontWeight:800,color:"#EF4444"}}>Play Again</div>
-                <div data-btn="true" onClick={(e)=>{e.stopPropagation();crapsCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
-              </div>
-              <div data-btn="true" onClick={(e)=>{e.stopPropagation();crapsCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
-            </div>)}
-            <div style={{fontSize:11,color:C.text3,fontStyle:"italic",marginTop:8}}>{commentatorText}</div>
-          </div>
-          {renderGameChatOverlay()}
-        </div>
-      );
-    }
-
-    // ═══════════════════════════════════════════════════════════════
-    // MYSTERY BOX -- Render
-    // ═══════════════════════════════════════════════════════════════
-    if(gameActive && gameActive.id==="mysterybox" && mbPhase) {
-      const isPick=mbPhase==="pick";const isPuff=mbPhase==="puffing";const isReveal=mbPhase==="reveal";const isComp=mbPhase==="complete";
-      const rarityGlow = mbPrize ? (mbPrize.rarity==="legendary"?C.gold:mbPrize.rarity==="rare"?C.purple:C.cyan) : C.gold;
-      return (
-        <div style={{position:"fixed",inset:0,zIndex:100,display:"flex",flexDirection:"column",touchAction:"none"}}
-          onMouseDown={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;mbHandlePuff();}} onMouseUp={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;mbHandlePuffEnd();}} onTouchStart={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;mbHandlePuff();}} onTouchEnd={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;mbHandlePuffEnd();}}>
-          <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg, #0a0a1a 0%, #1a1028 40%, #0d0d1a 100%)"}}/>
-          <div style={{position:"absolute",inset:0,background:`radial-gradient(ellipse at 50% 40%, ${C.gold}08, transparent 60%)`,pointerEvents:"none"}}/>
-          {confettiParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size*0.6,background:p.color,borderRadius:1,transform:`rotate(${p.rot}deg)`,zIndex:210,pointerEvents:"none",animation:"confettiFall 1.5s ease-out forwards"}}/>))}
-                      {/* V3 DEDICATED HEADER */}
-          <div style={{position:"relative",zIndex:50,flexShrink:0,background:"rgba(6,16,30,0.98)",borderBottom:"1px solid rgba(255,255,255,0.06)"}}>
-            <div style={{padding:"6px 12px 2px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-              <div style={{fontSize:8,fontWeight:600,color:"rgba(255,255,255,0.4)",letterSpacing:1}}><span style={{fontWeight:800,color:"rgba(255,255,255,0.6)"}}>{"Powered by "}<span style={{fontWeight:900,letterSpacing:2}}>MOOD LAB</span></span></div>
-              <div style={{display:"flex",gap:5,alignItems:"center"}}>
-                <div onClick={()=>{playFx("tap");setShowBlePopup(true);}} data-btn="true" style={{touchAction:"none",display:"flex",alignItems:"center",gap:3,padding:"2px 8px",borderRadius:100,cursor:"pointer",background:bleConnected?"rgba(52,211,153,0.1)":"rgba(251,146,60,0.1)",border:"1px solid "+(bleConnected?"rgba(52,211,153,0.25)":"rgba(251,146,60,0.25)")}}>
-                  <div style={{width:5,height:5,borderRadius:"50%",background:bleConnected?C.green:C.orange}}/><span style={{fontSize:8,fontWeight:700,color:bleConnected?C.green:C.orange}}>{bleConnected?"Puff":"Connect"}</span>
-                </div>
-                <div style={{display:"flex",alignItems:"center",gap:2,padding:"2px 7px",borderRadius:100,background:"rgba(255,217,61,0.06)",border:"1px solid rgba(255,217,61,0.12)"}}>
-                  <span style={{fontSize:9}}>{"\uD83E\uDE99"}</span><span style={{fontSize:10,fontWeight:800,color:C.gold,fontFamily:"'Courier New',monospace"}}>{coins.toLocaleString()}</span>
-                </div>
-              </div>
-            </div>
-            <div style={{padding:"2px 12px 2px",display:"flex",alignItems:"center",gap:6}}>
-              <div onClick={()=>{playFx("tap");mbCleanup();}} data-btn="true" style={{touchAction:"none",display:"inline-flex",alignItems:"center",gap:3,cursor:"pointer",padding:"3px 8px",borderRadius:8,background:"rgba(255,255,255,0.04)",border:"1px solid "+C.border,flexShrink:0}}>
-                <span style={{fontSize:10,color:C.text2}}>{"\u2190"}</span><span style={{fontSize:9,fontWeight:700,color:C.text2}}>Back</span>
-              </div>
-              <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
-                <span style={{fontSize:10,fontWeight:800,color:C.gold}}>{"🎁"} MYSTERY BOX</span>
-                <span style={{fontSize:9,fontWeight:700,color:C.gold}}>{"\uD83E\uDE99"} {mbScore}</span>
-              </div>
-            </div>
-            <div style={{padding:"2px 12px 4px",display:"flex",alignItems:"center",justifyContent:"center",gap:12}}>
-              <span style={{fontSize:9,fontWeight:700,color:C.text3}}>Round {mbRound+1}/5</span>
-              {fortunePlayStyle&&<span style={{fontSize:8,fontWeight:600,color:C.text3,padding:"1px 6px",borderRadius:4,background:"rgba(255,255,255,0.04)"}}>{fortunePlayStyle}</span>}
-            </div>
-          </div>
-          {/* V3 GAME AREA */}
-          <div style={{position:"relative",flex:1,overflow:"hidden"}}>
-          <div style={{display:"flex",flexDirection:"column",alignItems:"center",maxWidth:380,width:"100%",padding:"50px 16px 20px",gap:8,zIndex:10,flex:1,margin:"0 auto"}}>
-            <div style={{fontSize:18,fontWeight:900,letterSpacing:4,background:`linear-gradient(135deg, ${C.gold}, ${C.purple})`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>MYSTERY BOX</div>
-            <div style={{display:"flex",gap:16,marginBottom:8}}>
-              <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.gold}}>{mbScore}</div><div style={{fontSize:8,color:C.text3}}>COINS</div></div>
-              <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.text2}}>{mbRound+1}/5</div><div style={{fontSize:8,color:C.text3}}>ROUND</div></div>
-            </div>
-            {mbPhase==="intro"&&(<div style={{textAlign:"center",animation:"fadeIn 0.5s ease"}}><div style={{fontSize:56,marginBottom:8}}>🎁</div><div style={{fontSize:20,fontWeight:900,color:C.gold,letterSpacing:3}}>MYSTERY BOX</div><div style={{fontSize:11,color:C.text3,marginTop:8}}>Pick a box. Puff to reveal. Blinker = rarity upgrade!</div></div>)}
-            {(isPick||isPuff)&&(
-              <div style={{display:"flex",gap:20,justifyContent:"center",marginTop:16}}>
-                {mbBoxes.map((box,i)=>(
-                  <div key={i} data-btn="true" onClick={(e)=>{e.stopPropagation();mbPickBox(i);}} style={{
-                    width:90,height:90,borderRadius:16,display:"flex",alignItems:"center",justifyContent:"center",cursor:isPick?"pointer":"default",
-                    fontSize:mbPicked===i?44:40,
-                    background:mbPicked===i?`${C.gold}20`:"rgba(255,255,255,0.04)",
-                    border:mbPicked===i?`2px solid ${C.gold}`:`1px solid ${C.border}`,
-                    transition:"all 0.3s",transform:mbPicked===i?"scale(1.1)":"scale(1)",
-                    boxShadow:mbPicked===i?`0 0 30px ${C.gold}40`:"0 0 10px rgba(255,215,0,0.08)",
-                    animation:isPick?`pulse 2s infinite ${i*0.3}s`:(mbPicked===i&&isPuff?"pulse 0.5s infinite":"none"),
-                  }}>
-                    🎁
-                  </div>
-                ))}
-              </div>
-            )}
-            {isPuff&&<div style={{fontSize:14,fontWeight:800,color:C.gold,marginTop:16,animation:"pulse 1.5s infinite"}}>TAP TO OPEN 🎁</div>}
-            {isReveal&&mbPrize&&(
-              <div style={{textAlign:"center",animation:"fadeIn 0.4s ease",marginTop:12}}>
-                <div style={{fontSize:64,marginBottom:8,filter:`drop-shadow(0 0 20px ${rarityGlow}60)`,animation:"pulse 1s infinite"}}>{mbPrize.emoji}</div>
-                <div style={{fontSize:22,fontWeight:900,color:rarityGlow}}>{mbPrize.name}</div>
-                {mbPrize.value>0&&<div style={{fontSize:16,fontWeight:700,color:C.gold,marginTop:4}}>+{mbPrize.value} coins</div>}
-                <div style={{fontSize:10,fontWeight:700,color:rarityGlow,marginTop:4,textTransform:"uppercase",letterSpacing:2}}>{mbPrize.rarity}</div>
-              </div>
-            )}
-            {isComp&&(<div style={{textAlign:"center",animation:"fadeIn 0.4s ease"}}>
-              <div style={{fontSize:48,marginBottom:8}}>🎁</div>
-              <div style={{fontSize:24,fontWeight:900,color:C.gold,marginBottom:8}}>ALL BOXES OPENED!</div>
-              <div style={{fontSize:18,fontWeight:800,color:C.text}}>Total Won: {mbScore} coins</div>
-              <div style={{display:"flex",gap:10,justifyContent:"center",marginTop:16}}>
-                <div data-btn="true" onClick={(e)=>{e.stopPropagation();mbCleanup();startMysteryBox();setGameActive({id:"mysterybox",name:"Mystery Box",emoji:"🎁",color:C.gold});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.gold}15`,border:`1px solid ${C.gold}30`,fontSize:13,fontWeight:800,color:C.gold}}>Play Again</div>
-                <div data-btn="true" onClick={(e)=>{e.stopPropagation();mbCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
-              </div>
-              <div data-btn="true" onClick={(e)=>{e.stopPropagation();mbCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
-            </div>)}
-            <div style={{fontSize:11,color:C.text3,fontStyle:"italic",marginTop:8}}>{commentatorText}</div>
-          </div>
-          {renderGameChatOverlay()}
-        </div>
-      );
-    }
-
-    // ═══════════════════════════════════════════════════════════════
-    // SCRATCH & PUFF -- Render
-    // ═══════════════════════════════════════════════════════════════
-    if(gameActive && gameActive.id==="scratchpuff" && scPhase) {
-      const isScratch=scPhase==="scratching";const isRes=scPhase==="result";const isComp=scPhase==="complete";
-      return (
-        <div style={{position:"fixed",inset:0,zIndex:100,display:"flex",flexDirection:"column",touchAction:"none"}}
-          onMouseDown={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;scHandlePuff();}} onMouseUp={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;scHandlePuffEnd();}} onTouchStart={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;scHandlePuff();}} onTouchEnd={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;scHandlePuffEnd();}}>
-
-          <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg, #1a0a1a 0%, #2a1535 40%, #1a0a1a 100%)"}}/>
-          <div style={{position:"absolute",inset:0,background:`radial-gradient(ellipse at 50% 40%, ${C.pink}08, transparent 60%)`,pointerEvents:"none"}}/>
-          {confettiParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size*0.6,background:p.color,borderRadius:1,transform:`rotate(${p.rot}deg)`,zIndex:210,pointerEvents:"none",animation:"confettiFall 1.5s ease-out forwards"}}/>))}
-                      {/* V3 DEDICATED HEADER */}
-          <div style={{position:"relative",zIndex:50,flexShrink:0,background:"rgba(6,16,30,0.98)",borderBottom:"1px solid rgba(255,255,255,0.06)"}}>
-            <div style={{padding:"6px 12px 2px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-              <div style={{fontSize:8,fontWeight:600,color:"rgba(255,255,255,0.4)",letterSpacing:1}}><span style={{fontWeight:800,color:"rgba(255,255,255,0.6)"}}>{"Powered by "}<span style={{fontWeight:900,letterSpacing:2}}>MOOD LAB</span></span></div>
-              <div style={{display:"flex",gap:5,alignItems:"center"}}>
-                <div onClick={()=>{playFx("tap");setShowBlePopup(true);}} data-btn="true" style={{touchAction:"none",display:"flex",alignItems:"center",gap:3,padding:"2px 8px",borderRadius:100,cursor:"pointer",background:bleConnected?"rgba(52,211,153,0.1)":"rgba(251,146,60,0.1)",border:"1px solid "+(bleConnected?"rgba(52,211,153,0.25)":"rgba(251,146,60,0.25)")}}>
-                  <div style={{width:5,height:5,borderRadius:"50%",background:bleConnected?C.green:C.orange}}/><span style={{fontSize:8,fontWeight:700,color:bleConnected?C.green:C.orange}}>{bleConnected?"Puff":"Connect"}</span>
-                </div>
-                <div style={{display:"flex",alignItems:"center",gap:2,padding:"2px 7px",borderRadius:100,background:"rgba(255,217,61,0.06)",border:"1px solid rgba(255,217,61,0.12)"}}>
-                  <span style={{fontSize:9}}>{"\uD83E\uDE99"}</span><span style={{fontSize:10,fontWeight:800,color:C.gold,fontFamily:"'Courier New',monospace"}}>{coins.toLocaleString()}</span>
-                </div>
-              </div>
-            </div>
-            <div style={{padding:"2px 12px 2px",display:"flex",alignItems:"center",gap:6}}>
-              <div onClick={()=>{playFx("tap");scCleanup();}} data-btn="true" style={{touchAction:"none",display:"inline-flex",alignItems:"center",gap:3,cursor:"pointer",padding:"3px 8px",borderRadius:8,background:"rgba(255,255,255,0.04)",border:"1px solid "+C.border,flexShrink:0}}>
-                <span style={{fontSize:10,color:C.text2}}>{"\u2190"}</span><span style={{fontSize:9,fontWeight:700,color:C.text2}}>Back</span>
-              </div>
-              <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
-                <span style={{fontSize:10,fontWeight:800,color:C.pink}}>{"🎫"} SCRATCH & PUFF</span>
-                <span style={{fontSize:9,fontWeight:700,color:C.gold}}>{"\uD83E\uDE99"} {scScore}</span>
-              </div>
-            </div>
-            <div style={{padding:"2px 12px 4px",display:"flex",alignItems:"center",justifyContent:"center",gap:12}}>
-              <span style={{fontSize:9,fontWeight:700,color:C.text3}}>Card {scRound+1}/3</span>
-              {fortunePlayStyle&&<span style={{fontSize:8,fontWeight:600,color:C.text3,padding:"1px 6px",borderRadius:4,background:"rgba(255,255,255,0.04)"}}>{fortunePlayStyle}</span>}
-            </div>
-          </div>
-          {/* V3 GAME AREA */}
-          <div style={{position:"relative",flex:1,overflow:"hidden"}}>
-          <div style={{display:"flex",flexDirection:"column",alignItems:"center",maxWidth:380,width:"100%",padding:"50px 16px 20px",gap:8,zIndex:10,flex:1,margin:"0 auto"}}>
-            <div style={{fontSize:18,fontWeight:900,letterSpacing:4,background:`linear-gradient(135deg, ${C.pink}, ${C.gold})`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>SCRATCH & PUFF</div>
-            <div style={{display:"flex",gap:16,marginBottom:4}}>
-              <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.gold}}>{scScore}</div><div style={{fontSize:8,color:C.text3}}>COINS</div></div>
-              <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.text2}}>{scRound+1}/3</div><div style={{fontSize:8,color:C.text3}}>CARD</div></div>
-              <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.cyan}}>{scRevealed.filter(Boolean).length}/6</div><div style={{fontSize:8,color:C.text3}}>SCRATCHED</div></div>
-            </div>
-            {scPhase==="intro"&&(<div style={{textAlign:"center",animation:"fadeIn 0.5s ease"}}><div style={{fontSize:56,marginBottom:8}}>🎫</div><div style={{fontSize:20,fontWeight:900,color:C.pink,letterSpacing:3}}>SCRATCH & PUFF</div><div style={{fontSize:11,color:C.text3,marginTop:8}}>Tap an area, then PUFF to scratch. Match 3 to win!</div></div>)}
-            {(isScratch||isRes)&&(
-              <div style={{padding:16,borderRadius:20,border:`3px solid ${C.gold}30`,background:"linear-gradient(135deg, rgba(255,215,0,0.05), rgba(255,105,180,0.05))",boxShadow:`0 0 30px ${C.gold}10`,margin:"8px auto",maxWidth:300}}>
-                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10}}>
-                  {scCard.map((sym,i)=>(
-                    <div key={i} data-btn="true" onClick={(e)=>{e.stopPropagation();scSelectArea(i);}} style={{
-                      width:72,height:72,borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",
-                      fontSize:scRevealed[i]?30:20,cursor:(!scRevealed[i]&&isScratch)?"pointer":"default",
-                      background:scRevealed[i]?"rgba(255,255,255,0.06)":(scCurrentIdx===i?"rgba(255,215,0,0.15)":"linear-gradient(135deg, rgba(192,192,192,0.25), rgba(169,169,169,0.15))"),
-                      border:scCurrentIdx===i?`2px solid ${C.gold}`:`1px solid ${scRevealed[i]?C.pink+"40":C.text3+"30"}`,
-                      transition:"all 0.3s",
-                      boxShadow:scCurrentIdx===i?`0 0 12px ${C.gold}40`:"none",
-                    }}>
-                      {scRevealed[i]?sym:(scCurrentIdx===i?"💨":"?")}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-            {isScratch&&scCurrentIdx!==null&&<div style={{fontSize:14,fontWeight:800,color:C.pink,marginTop:8,animation:"pulse 1.5s infinite"}}>SWIPE TO SCRATCH 🎫</div>}
-            {isScratch&&scCurrentIdx===null&&<div style={{fontSize:12,color:C.text3,marginTop:8}}>Tap an area to select it</div>}
-            {isRes&&scPrize&&(
-              <div style={{textAlign:"center",animation:"fadeIn 0.4s ease",marginTop:8}}>
-                <div style={{fontSize:22,fontWeight:900,color:C.gold}}>WINNER! {scPrize.symbol} x3</div>
-                <div style={{fontSize:16,fontWeight:700,color:C.gold}}>+{scPrize.amount} coins</div>
-              </div>
-            )}
-            {isRes&&!scPrize&&<div style={{fontSize:16,fontWeight:800,color:C.red,marginTop:8}}>No Match</div>}
-            {isComp&&(<div style={{textAlign:"center",animation:"fadeIn 0.4s ease"}}>
-              <div style={{fontSize:48,marginBottom:8}}>🎫</div>
-              <div style={{fontSize:24,fontWeight:900,color:C.gold,marginBottom:8}}>ALL CARDS SCRATCHED!</div>
-              <div style={{fontSize:18,fontWeight:800,color:C.text}}>Total Won: {scScore} coins</div>
-              <div style={{display:"flex",gap:10,justifyContent:"center",marginTop:16}}>
-                <div data-btn="true" onClick={(e)=>{e.stopPropagation();scCleanup();startScratchPuff();setGameActive({id:"scratchpuff",name:"Scratch & Puff",emoji:"🎫",color:C.pink});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.pink}15`,border:`1px solid ${C.pink}30`,fontSize:13,fontWeight:800,color:C.pink}}>Play Again</div>
-                <div data-btn="true" onClick={(e)=>{e.stopPropagation();scCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
-              </div>
-              <div data-btn="true" onClick={(e)=>{e.stopPropagation();scCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
-            </div>)}
-            <div style={{fontSize:11,color:C.text3,fontStyle:"italic",marginTop:8}}>{commentatorText}</div>
-          </div>
-          {renderGameChatOverlay()}
-        </div>
-      );
-    }
-
-    // ═══════════════════════════════════════════════════════════════
-    // FORTUNE COOKIE -- Render
-    // ═══════════════════════════════════════════════════════════════
-    if(gameActive && gameActive.id==="fortunecookie" && fcPhase) {
-      const isHold=fcPhase==="holding";const isRead=fcPhase==="reading";const isRes=fcPhase==="result";const isComp=fcPhase==="complete";
-      return (
-        <div style={{position:"fixed",inset:0,zIndex:100,display:"flex",flexDirection:"column",touchAction:"none"}}
-          onMouseDown={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;fcHandlePuff();}} onMouseUp={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;fcHandlePuffEnd();}} onTouchStart={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;fcHandlePuff();}} onTouchEnd={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;fcHandlePuffEnd();}}>
-          <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg, #1a1408 0%, #2a1e0a 40%, #1a1408 100%)"}}/>
-          <div style={{position:"absolute",inset:0,background:`radial-gradient(ellipse at 50% 40%, ${C.orange}10, transparent 60%)`,pointerEvents:"none"}}/>
-          {confettiParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size*0.6,background:p.color,borderRadius:1,transform:`rotate(${p.rot}deg)`,zIndex:210,pointerEvents:"none",animation:"confettiFall 1.5s ease-out forwards"}}/>))}
-                      {/* V3 DEDICATED HEADER */}
-          <div style={{position:"relative",zIndex:50,flexShrink:0,background:"rgba(6,16,30,0.98)",borderBottom:"1px solid rgba(255,255,255,0.06)"}}>
-            <div style={{padding:"6px 12px 2px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-              <div style={{fontSize:8,fontWeight:600,color:"rgba(255,255,255,0.4)",letterSpacing:1}}><span style={{fontWeight:800,color:"rgba(255,255,255,0.6)"}}>{"Powered by "}<span style={{fontWeight:900,letterSpacing:2}}>MOOD LAB</span></span></div>
-              <div style={{display:"flex",gap:5,alignItems:"center"}}>
-                <div onClick={()=>{playFx("tap");setShowBlePopup(true);}} data-btn="true" style={{touchAction:"none",display:"flex",alignItems:"center",gap:3,padding:"2px 8px",borderRadius:100,cursor:"pointer",background:bleConnected?"rgba(52,211,153,0.1)":"rgba(251,146,60,0.1)",border:"1px solid "+(bleConnected?"rgba(52,211,153,0.25)":"rgba(251,146,60,0.25)")}}>
-                  <div style={{width:5,height:5,borderRadius:"50%",background:bleConnected?C.green:C.orange}}/><span style={{fontSize:8,fontWeight:700,color:bleConnected?C.green:C.orange}}>{bleConnected?"Puff":"Connect"}</span>
-                </div>
-                <div style={{display:"flex",alignItems:"center",gap:2,padding:"2px 7px",borderRadius:100,background:"rgba(255,217,61,0.06)",border:"1px solid rgba(255,217,61,0.12)"}}>
-                  <span style={{fontSize:9}}>{"\uD83E\uDE99"}</span><span style={{fontSize:10,fontWeight:800,color:C.gold,fontFamily:"'Courier New',monospace"}}>{coins.toLocaleString()}</span>
-                </div>
-              </div>
-            </div>
-            <div style={{padding:"2px 12px 2px",display:"flex",alignItems:"center",gap:6}}>
-              <div onClick={()=>{playFx("tap");fcCleanup();}} data-btn="true" style={{touchAction:"none",display:"inline-flex",alignItems:"center",gap:3,cursor:"pointer",padding:"3px 8px",borderRadius:8,background:"rgba(255,255,255,0.04)",border:"1px solid "+C.border,flexShrink:0}}>
-                <span style={{fontSize:10,color:C.text2}}>{"\u2190"}</span><span style={{fontSize:9,fontWeight:700,color:C.text2}}>Back</span>
-              </div>
-              <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
-                <span style={{fontSize:10,fontWeight:800,color:C.orange}}>{"🥠"} FORTUNE COOKIE</span>
-                <span style={{fontSize:9,fontWeight:700,color:C.gold}}>{"\uD83E\uDE99"} {fcScore}</span>
-              </div>
-            </div>
-            <div style={{padding:"2px 12px 4px",display:"flex",alignItems:"center",justifyContent:"center",gap:12}}>
-              <span style={{fontSize:9,fontWeight:700,color:C.text3}}>Cookie {fcRound+1}/5</span>
-              {fortunePlayStyle&&<span style={{fontSize:8,fontWeight:600,color:C.text3,padding:"1px 6px",borderRadius:4,background:"rgba(255,255,255,0.04)"}}>{fortunePlayStyle}</span>}
-            </div>
-          </div>
-          {/* V3 GAME AREA */}
-          <div style={{position:"relative",flex:1,overflow:"hidden"}}>
-          <div style={{display:"flex",flexDirection:"column",alignItems:"center",maxWidth:380,width:"100%",padding:"50px 16px 20px",gap:8,zIndex:10,flex:1,margin:"0 auto"}}>
-            <div style={{fontSize:18,fontWeight:900,letterSpacing:4,background:`linear-gradient(135deg, ${C.orange}, ${C.gold})`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>FORTUNE COOKIE</div>
-            <div style={{display:"flex",gap:16,marginBottom:4}}>
-              <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.gold}}>{fcScore}</div><div style={{fontSize:8,color:C.text3}}>COINS</div></div>
-              <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.text2}}>{fcRound+1}/5</div><div style={{fontSize:8,color:C.text3}}>COOKIE</div></div>
-            </div>
-            {fcPhase==="intro"&&(<div style={{textAlign:"center",animation:"fadeIn 0.5s ease"}}><div style={{fontSize:56,marginBottom:8}}>🥠</div><div style={{fontSize:20,fontWeight:900,color:C.orange,letterSpacing:3}}>FORTUNE COOKIE</div><div style={{fontSize:11,color:C.text3,marginTop:8}}>HOLD to puff and crack it open! Blinker = GOLDEN cookie!</div></div>)}
-            {isHold&&(
-              <div style={{textAlign:"center",marginTop:16}}>
-                <div style={{fontSize:fcCracking?80:72,transition:"all 0.3s",
-                  filter:fcCracking?`drop-shadow(0 0 30px ${C.orange}80)`:`drop-shadow(0 0 10px ${C.orange}30)`,
-                  animation:fcCracking?"pulse 0.3s infinite":"pulse 3s infinite",
-                  transform:fcCracking?"rotate(10deg) scale(1.1)":"rotate(0)",
-                }}>🥠</div>
-                <div style={{fontSize:14,fontWeight:800,color:C.orange,marginTop:16,animation:"pulse 1.5s infinite"}}>TAP TO CRACK 🥠</div>
-                <div style={{fontSize:10,color:C.text3,marginTop:4}}>Longer puff = bigger reveal. Blinker = 2x coins!</div>
-              </div>
-            )}
-            {(isRead||isRes)&&(
-              <div style={{textAlign:"center",animation:"fadeIn 0.5s ease",marginTop:16,maxWidth:300}}>
-                <div style={{fontSize:48,marginBottom:12,filter:fcGolden?`drop-shadow(0 0 20px ${C.gold}80)`:"none"}}>{fcGolden?"🥠":"🥠"}</div>
-                {fcGolden&&<div style={{fontSize:12,fontWeight:900,color:C.gold,letterSpacing:3,marginBottom:8,animation:"pulse 1s infinite"}}>GOLDEN COOKIE!</div>}
-                <div style={{padding:"14px 18px",borderRadius:14,background:fcGolden?`${C.gold}10`:`${C.orange}08`,border:`1px solid ${fcGolden?C.gold:C.orange}20`,marginBottom:12}}>
-                  <div style={{fontSize:13,color:C.text,fontStyle:"italic",lineHeight:1.6}}>"{fcFortune}"</div>
-                </div>
-                <div style={{fontSize:20,fontWeight:900,color:C.gold}}>+{fcCoins} Coins!</div>
-              </div>
-            )}
-            {isComp&&(<div style={{textAlign:"center",animation:"fadeIn 0.4s ease"}}>
-              <div style={{fontSize:48,marginBottom:8}}>🥠</div>
-              <div style={{fontSize:24,fontWeight:900,color:C.gold,marginBottom:8}}>ALL COOKIES CRACKED!</div>
-              <div style={{fontSize:18,fontWeight:800,color:C.text}}>Total Won: {fcScore} coins</div>
-              <div style={{display:"flex",gap:10,justifyContent:"center",marginTop:16}}>
-                <div data-btn="true" onClick={(e)=>{e.stopPropagation();fcCleanup();startFortuneCookie();setGameActive({id:"fortunecookie",name:"Fortune Cookie",emoji:"🥠",color:C.orange});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.orange}15`,border:`1px solid ${C.orange}30`,fontSize:13,fontWeight:800,color:C.orange}}>Play Again</div>
-                <div data-btn="true" onClick={(e)=>{e.stopPropagation();fcCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
-              </div>
-              <div data-btn="true" onClick={(e)=>{e.stopPropagation();fcCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
-            </div>)}
-            <div style={{fontSize:11,color:C.text3,fontStyle:"italic",marginTop:8}}>{commentatorText}</div>
-          </div>
-          {renderGameChatOverlay()}
-        </div>
-      );
-    }
-
-    // ═══════════════════════════════════════════════════════════════
-    // TREASURE MAP -- Render
-    // ═══════════════════════════════════════════════════════════════
-    if(gameActive && gameActive.id==="treasuremap" && tmPhase) {
-      const isPlay=tmPhase==="playing";const isRes=tmPhase==="result";const isComp=tmPhase==="complete";
-      return (
-        <div style={{position:"fixed",inset:0,zIndex:100,display:"flex",flexDirection:"column",touchAction:"none"}}
-          onMouseDown={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;tmHandlePuff();}} onMouseUp={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;tmHandlePuffEnd();}} onTouchStart={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;tmHandlePuff();}} onTouchEnd={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;tmHandlePuffEnd();}}>
-          <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg, #1a1408 0%, #2a1e0a 40%, #1a1408 100%)"}}/>
-          <div style={{position:"absolute",inset:0,background:`radial-gradient(ellipse at 50% 40%, ${C.gold}08, transparent 60%)`,pointerEvents:"none"}}/>
-          {confettiParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size*0.6,background:p.color,borderRadius:1,transform:`rotate(${p.rot}deg)`,zIndex:210,pointerEvents:"none",animation:"confettiFall 1.5s ease-out forwards"}}/>))}
-                      {/* V3 DEDICATED HEADER */}
-          <div style={{position:"relative",zIndex:50,flexShrink:0,background:"rgba(6,16,30,0.98)",borderBottom:"1px solid rgba(255,255,255,0.06)"}}>
-            <div style={{padding:"6px 12px 2px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-              <div style={{fontSize:8,fontWeight:600,color:"rgba(255,255,255,0.4)",letterSpacing:1}}><span style={{fontWeight:800,color:"rgba(255,255,255,0.6)"}}>{"Powered by "}<span style={{fontWeight:900,letterSpacing:2}}>MOOD LAB</span></span></div>
-              <div style={{display:"flex",gap:5,alignItems:"center"}}>
-                <div onClick={()=>{playFx("tap");setShowBlePopup(true);}} data-btn="true" style={{touchAction:"none",display:"flex",alignItems:"center",gap:3,padding:"2px 8px",borderRadius:100,cursor:"pointer",background:bleConnected?"rgba(52,211,153,0.1)":"rgba(251,146,60,0.1)",border:"1px solid "+(bleConnected?"rgba(52,211,153,0.25)":"rgba(251,146,60,0.25)")}}>
-                  <div style={{width:5,height:5,borderRadius:"50%",background:bleConnected?C.green:C.orange}}/><span style={{fontSize:8,fontWeight:700,color:bleConnected?C.green:C.orange}}>{bleConnected?"Puff":"Connect"}</span>
-                </div>
-                <div style={{display:"flex",alignItems:"center",gap:2,padding:"2px 7px",borderRadius:100,background:"rgba(255,217,61,0.06)",border:"1px solid rgba(255,217,61,0.12)"}}>
-                  <span style={{fontSize:9}}>{"\uD83E\uDE99"}</span><span style={{fontSize:10,fontWeight:800,color:C.gold,fontFamily:"'Courier New',monospace"}}>{coins.toLocaleString()}</span>
-                </div>
-              </div>
-            </div>
-            <div style={{padding:"2px 12px 2px",display:"flex",alignItems:"center",gap:6}}>
-              <div onClick={()=>{playFx("tap");tmCleanup();}} data-btn="true" style={{touchAction:"none",display:"inline-flex",alignItems:"center",gap:3,cursor:"pointer",padding:"3px 8px",borderRadius:8,background:"rgba(255,255,255,0.04)",border:"1px solid "+C.border,flexShrink:0}}>
-                <span style={{fontSize:10,color:C.text2}}>{"\u2190"}</span><span style={{fontSize:9,fontWeight:700,color:C.text2}}>Back</span>
-              </div>
-              <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
-                <span style={{fontSize:10,fontWeight:800,color:C.gold}}>{"🗺️"} TREASURE MAP</span>
-                <span style={{fontSize:9,fontWeight:700,color:C.gold}}>{"\uD83E\uDE99"} {tmScore}</span>
-              </div>
-            </div>
-            <div style={{padding:"2px 12px 4px",display:"flex",alignItems:"center",justifyContent:"center",gap:12}}>
-              <span style={{fontSize:9,fontWeight:700,color:C.gold}}>Treasure:{tmTreasures}/3</span><span style={{fontSize:9,fontWeight:700,color:C.red}}>Bombs:{tmBombs}</span>
-              {fortunePlayStyle&&<span style={{fontSize:8,fontWeight:600,color:C.text3,padding:"1px 6px",borderRadius:4,background:"rgba(255,255,255,0.04)"}}>{fortunePlayStyle}</span>}
-            </div>
-          </div>
-          {/* V3 GAME AREA */}
-          <div style={{position:"relative",flex:1,overflow:"hidden"}}>
-          <div style={{display:"flex",flexDirection:"column",alignItems:"center",maxWidth:380,width:"100%",padding:"50px 16px 20px",gap:6,zIndex:10,flex:1,margin:"0 auto"}}>
-            <div style={{fontSize:18,fontWeight:900,letterSpacing:4,background:`linear-gradient(135deg, ${C.gold}, #8B4513)`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>TREASURE MAP</div>
-            <div style={{display:"flex",gap:12,marginBottom:4}}>
-              <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.gold}}>🪙 {tmCoins}</div><div style={{fontSize:8,color:C.text3}}>FOUND</div></div>
-              <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.gold}}>💎 {tmTreasures}/3</div><div style={{fontSize:8,color:C.text3}}>TREASURE</div></div>
-              <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.red}}>💣 {tmBombs}</div><div style={{fontSize:8,color:C.text3}}>BOMBS</div></div>
-            </div>
-            {tmPhase==="intro"&&(<div style={{textAlign:"center",animation:"fadeIn 0.5s ease"}}><div style={{fontSize:48,marginBottom:8}}>🗺️</div><div style={{fontSize:20,fontWeight:900,color:C.gold,letterSpacing:3}}>TREASURE MAP</div><div style={{fontSize:11,color:C.text3,marginTop:8}}>Tap a tile, then PUFF to flip. Find 3 treasures! Avoid bombs!</div></div>)}
-            {(isPlay||isRes)&&(
-              <div style={{width:"100%",maxWidth:280}}>
-                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",gap:6,marginBottom:8}}>
-                  {tmGrid.map((tile,i)=>{
-                    const info = TM_TILE_INFO[tile]||{emoji:"?",color:C.text3};
-                    const revealed = tmRevealed[i];
-                    const isXray = tmXray && tmXrayTiles.includes(i);
-                    return (
-                      <div key={i} data-btn="true" onClick={(e)=>{e.stopPropagation();tmSelectTile(i);}} style={{
-                        width:"100%",aspectRatio:"1",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",
-                        fontSize:revealed?22:(isXray?18:16),cursor:(!revealed&&isPlay&&!tmGameOver)?"pointer":"default",
-                        background:revealed?`${info.color}15`:(tmSelected===i?`${C.gold}20`:(isXray?`${C.cyan}15`:"linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))")),
-                        border:tmSelected===i?`2px solid ${C.gold}`:`1px solid ${revealed?info.color+"40":(isXray?C.cyan+"60":C.border)}`,
-                        transition:"all 0.3s",
-                        boxShadow:tmSelected===i?`0 0 12px ${C.gold}40`:(isXray?`0 0 10px ${C.cyan}40`:"none"),
-                        animation:isXray?"pulse 0.3s infinite":"none",
-                      }}>
-                        {revealed?info.emoji:(isXray?(TM_TILE_INFO[tile]?TM_TILE_INFO[tile].emoji:"?"):"❓")}
-                      </div>
-                    );
-                  })}
-                </div>
-                {isPlay&&!tmGameOver&&tmSelected!==null&&<div style={{fontSize:13,fontWeight:800,color:C.gold,textAlign:"center",animation:"pulse 1.5s infinite"}}>TAP TO DIG 🗺️</div>}
-                {isPlay&&!tmGameOver&&tmSelected===null&&<div style={{fontSize:11,color:C.text3,textAlign:"center"}}>Tap a tile to select it</div>}
-                {isPlay&&!tmGameOver&&tmCoins>0&&(
-                  <div data-btn="true" onClick={(e)=>{e.stopPropagation();tmCashOut();}} style={{
-                    margin:"10px auto",padding:"10px 24px",borderRadius:12,cursor:"pointer",textAlign:"center",
-                    background:`${C.green}15`,border:`1px solid ${C.green}30`,fontSize:13,fontWeight:800,color:C.green,
-                    transform:`scale(${1+tmCoins/500})`,maxWidth:200,
-                  }}>CASH OUT ({tmCoins} coins)</div>
-                )}
-              </div>
-            )}
-            {isRes&&(
-              <div style={{textAlign:"center",animation:"fadeIn 0.4s ease",marginTop:8}}>
-                <div style={{fontSize:22,fontWeight:900,color:tmTreasures>=3?C.gold:C.red}}>{tmTreasures>=3?"ALL TREASURES FOUND!":"GAME OVER!"}</div>
-                <div style={{fontSize:16,fontWeight:700,color:C.text,marginTop:4}}>Coins earned: {tmScore}</div>
-                <div style={{display:"flex",gap:10,justifyContent:"center",marginTop:16}}>
-                  <div data-btn="true" onClick={(e)=>{e.stopPropagation();tmCleanup();startTreasureMap();setGameActive({id:"treasuremap",name:"Treasure Map",emoji:"🗺️",color:C.gold});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.gold}15`,border:`1px solid ${C.gold}30`,fontSize:13,fontWeight:800,color:C.gold}}>Play Again</div>
-                  <div data-btn="true" onClick={(e)=>{e.stopPropagation();tmCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
-                </div>
-                <div data-btn="true" onClick={(e)=>{e.stopPropagation();tmCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
-              </div>
-            )}
-            <div style={{fontSize:11,color:C.text3,fontStyle:"italic",marginTop:8}}>{commentatorText}</div>
-          </div>
-          {renderGameChatOverlay()}
-        </div>
-      );
-    }
-
-    // Spin & Win — delegates to renderSpin()
-    if(gameActive && gameActive.id==="spinwin" && swPhase) {
-      const sw = renderSpin();
-      if(sw) return sw;
-    }
-
     return (
     <div style={{position:"relative"}}>
       {/* Gold neon particles */}
@@ -15078,6 +13779,15 @@ export default function MoodLabArena() {
     if(duelAnimRef.current){cancelAnimationFrame(duelAnimRef.current);duelAnimRef.current=null;}
     // FK animation
     if(fkAnimRef.current){cancelAnimationFrame(fkAnimRef.current);fkAnimRef.current=null;}
+    // Missing animation frames (previously uncancelled — caused sound leaks!)
+    if(rpAnimRef.current){cancelAnimationFrame(rpAnimRef.current);rpAnimRef.current=null;}
+    if(rpsAnimRef.current){cancelAnimationFrame(rpsAnimRef.current);rpsAnimRef.current=null;}
+    if(towAnimRef.current){cancelAnimationFrame(towAnimRef.current);towAnimRef.current=null;}
+    if(pcAnimRef.current){cancelAnimationFrame(pcAnimRef.current);pcAnimRef.current=null;}
+    if(plAnimRef.current){cancelAnimationFrame(plAnimRef.current);plAnimRef.current=null;}
+    if(pdAnimRef.current){cancelAnimationFrame(pdAnimRef.current);pdAnimRef.current=null;}
+    if(vcAnimRef.current){cancelAnimationFrame(vcAnimRef.current);vcAnimRef.current=null;}
+    if(towChargeRef.current){clearInterval(towChargeRef.current);towChargeRef.current=null;}
     // Kill ALL active audio to prevent sound leaks
     try{if(sharedAudioCtx.current&&sharedAudioCtx.current.state!=="closed"){sharedAudioCtx.current.close().then(()=>{sharedAudioCtx.current=null;}).catch(()=>{});}}catch(e){}
     // Reset common state
@@ -15195,8 +13905,6 @@ export default function MoodLabArena() {
   ];
 
   const startPriceIsPuff = () => {
-    gameSoundsMuted.current = false;
-    addGameChat("Announcer","THE PRICE IS PUFF! Guess with your lungs!",C.gold);
     if(stageRole === "contestant") initStageElim();
     setPipPhase("intro");
     setPipRound(0);
@@ -15765,8 +14473,6 @@ export default function MoodLabArena() {
   ];
 
   const startSurvivalTrivia = () => {
-    gameSoundsMuted.current = false;
-    addGameChat("Announcer","SURVIVAL TRIVIA! 100 enter, 1 survives!",C.gold);
     if(stageRole === "contestant") initStageElim();
     const avatarList = [];
     const emojis = ["\uD83D\uDE24","\uD83D\uDE0E","\uD83E\uDD74","\uD83E\uDD29","\uD83D\uDE08","\uD83D\uDC7D","\uD83E\uDD16","\uD83D\uDC7B","\uD83D\uDC38","\uD83C\uDF1A","\uD83E\uDD8A","\uD83D\uDC80","\uD83E\uDDE0","\uD83D\uDC51","\uD83D\uDD25","\uD83D\uDCA8","\uD83C\uDF3F","\uD83C\uDF55","\uD83C\uDFAE","\uD83C\uDFB5"];
@@ -15783,8 +14489,6 @@ export default function MoodLabArena() {
     setStComment("");
     setStPhase("intro");
     playFx("crowd");
-gameSoundsMuted.current = false;
-    addGameChat("Announcer","SURVIVAL TRIVIA! 100 enter, 1 survives!",C.gold);
     setCommentary("100 players enter... only 1 survives!");
     setTimeout(()=>{
       setStComment("SURVIVAL TRIVIA");
@@ -16898,8 +15602,6 @@ gameSoundsMuted.current = false;
 
   
 const startSimonPuffs = () => {
-    gameSoundsMuted.current = false;
-    addGameChat("Announcer","SIMON PUFFS! Remember the pattern!",C.gold);
     if(stageRole === "contestant") initStageElim();
     setSpPhase("intro");
     setSpPattern([]);
@@ -17050,8 +15752,6 @@ const startSimonPuffs = () => {
   const PA_DANGER_ZONE = 4.5;
 
   const startPuffAuction = () => {
-    gameSoundsMuted.current = false;
-    addGameChat("Announcer","PUFF AUCTION! Bid with your lungs!",C.gold);
     if(stageRole === "contestant") initStageElim();
     setPaPhase("intro");
     setPaRound(0);
@@ -17209,82 +15909,6 @@ const startSimonPuffs = () => {
     setStageRole(null);setMcVisible(false);setStageElim(null);
   };
 
-  // ═══════════════════════════════════════════════════════════════
-  // HIGH CARD PUFF -- Engine
-  // ═══════════════════════════════════════════════════════════════
-  const HC_CARDS = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
-  const HC_SUITS = ['\u2660','\u2665','\u2666','\u2663'];
-  const hcCardValue = (card) => HC_CARDS.indexOf(card.rank);
-
-  const startHighCard = () => {
-    setHcPhase("betting");
-    setHcRound(r => r + 1);
-    setHcRevealed(false);
-    setHcBet(0);
-    const pRank = HC_CARDS[Math.floor(Math.random()*13)];
-    const pSuit = HC_SUITS[Math.floor(Math.random()*4)];
-    const oRank = HC_CARDS[Math.floor(Math.random()*13)];
-    const oSuit = HC_SUITS[Math.floor(Math.random()*4)];
-    setHcPlayerCard({rank:pRank, suit:pSuit});
-    setHcOpponentCard({rank:oRank, suit:oSuit});
-    playFx("select");
-    setCommentary("Place your bet! Higher card wins!");
-  };
-
-  const hcPlaceBet = (amount) => {
-    setHcBet(amount);
-    playFx("tap");
-  };
-
-  const hcReveal = () => {
-    setHcRevealed(true);
-    setHcPhase("reveal");
-    playFx("select");
-    const pVal = hcCardValue(hcPlayerCard);
-    const oVal = hcCardValue(hcOpponentCard);
-    const won = pVal > oVal;
-    const draw = pVal === oVal;
-
-    setTimeout(() => {
-      if(won) {
-        const winAmount = hcBet * 2;
-        setHcScore(s => s + winAmount);
-        setHcStreak(s => s + 1);
-        setCoins(c => c + winAmount);
-        playFx("win");
-        setCommentary("HIGHER! You win " + winAmount + " coins!");
-        notify("+" + winAmount + " coins! \u{1F3B4}", C.gold);
-      } else if(draw) {
-        setHcScore(s => s + hcBet);
-        setCoins(c => c + hcBet);
-        playFx("select");
-        setCommentary("DRAW! Bet returned.");
-      } else {
-        setHcStreak(0);
-        playFx("lose");
-        setCommentary("LOWER! You lose " + hcBet + " coins!");
-      }
-      setHcPhase("result");
-    }, 1500);
-  };
-
-  const hcNextRound = () => {
-    if(hcRound >= 7) {
-      setHcPhase("complete");
-      recordGameResult(hcScore > 0, Math.max(0, hcScore), hcScore > 0 ? 20 : 8);
-      return;
-    }
-    startHighCard();
-  };
-
-  const hcCleanup = () => {
-    setHcPhase(null);
-    setHcRound(0);
-    setHcScore(0);
-    setHcStreak(0);
-    setGameActive(null);
-  };
-
   const PD_DPR = typeof window !== 'undefined' ? Math.min(window.devicePixelRatio || 1, 2) : 1;
   const pdCanvasRef = useRef(null);
   const pdAnimRef = useRef(null);
@@ -17402,94 +16026,164 @@ const startSimonPuffs = () => {
     const ctx = canvas.getContext("2d"); const W = canvas.width, H = canvas.height, dpr = PD_DPR;
     ctx.clearRect(0, 0, W, H);
     const pi = pdPlayerHorse; const phase = pdPhase;
-    // Green track background
+    const now = Date.now();
+    // Dark arena background with gradient
     const bg = ctx.createLinearGradient(0, 0, 0, H);
-    bg.addColorStop(0, "#0a2810"); bg.addColorStop(0.3, "#0d3318"); bg.addColorStop(0.6, "#0f4020"); bg.addColorStop(1, "#061f0c");
+    bg.addColorStop(0, "#071a0d"); bg.addColorStop(0.3, "#0a2814"); bg.addColorStop(0.7, "#0d3318"); bg.addColorStop(1, "#051408");
     ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
-    // Stands/crowd at top
-    ctx.fillStyle = "rgba(50,40,30,0.3)"; ctx.fillRect(0, 0, W, H * 0.12);
-    for (let i = 0; i < 20; i++) { ctx.font = `${6 * dpr}px sans-serif`; ctx.fillStyle = "rgba(255,255,255,0.15)"; ctx.fillText("\uD83D\uDC64", W * 0.05 + i * W * 0.045, H * 0.08); }
-    // Track lanes
-    const trackTop = H * 0.15, trackH = H * 0.55, laneH = trackH / 6;
+    // Pick phase — clean dark bg + title only (HTML buttons handle horse selection)
+    if (phase === "pick") {
+      ctx.font = `900 ${24 * dpr}px sans-serif`; ctx.textAlign = "center"; ctx.fillStyle = "#22C55E";
+      ctx.shadowColor = "#22C55E"; ctx.shadowBlur = 15 * dpr;
+      ctx.fillText("\uD83C\uDFC7 PICK YOUR HORSE", W / 2, H * 0.25);
+      ctx.shadowBlur = 0;
+      ctx.font = `600 ${10 * dpr}px sans-serif`; ctx.fillStyle = "rgba(232,235,246,0.35)";
+      ctx.fillText("Tap a horse below to select", W / 2, H * 0.31);
+      return;
+    }
+    // Countdown phase — dark overlay, no track
+    if (phase === "countdown") {
+      ctx.font = `900 ${44 * dpr}px sans-serif`; ctx.textAlign = "center"; ctx.fillStyle = "#FFD93D";
+      ctx.shadowColor = "#FFD93D"; ctx.shadowBlur = 25 * dpr;
+      ctx.fillText("GET READY!", W / 2, H * 0.40);
+      ctx.shadowBlur = 0;
+      if (pi !== null) { ctx.font = `${60 * dpr}px sans-serif`; ctx.fillText(PD_HORSE_EMOJIS[pi], W / 2, H * 0.55); }
+      ctx.font = `700 ${14 * dpr}px sans-serif`; ctx.fillStyle = "rgba(232,235,246,0.6)";
+      ctx.fillText(PD_HORSE_NAMES[pi !== null ? pi : 0], W / 2, H * 0.64);
+      return; // STOP — don't draw track below
+    }
+    // Animated crowd stands at top
+    ctx.fillStyle = "rgba(30,25,15,0.5)"; ctx.fillRect(0, 0, W, H * 0.08);
+    for (let i = 0; i < 30; i++) {
+      const bounce = Math.sin(now / 300 + i * 0.5) * 2;
+      ctx.font = `${8 * dpr}px sans-serif`; ctx.fillStyle = `rgba(255,255,255,${0.1 + Math.sin(now/500+i)*0.05})`;
+      ctx.fillText(i % 5 === 0 ? "\uD83C\uDFC7" : "\uD83D\uDC64", W * 0.03 + i * W * 0.032, H * 0.05 + bounce * dpr);
+    }
+    // Track lanes — compact, vivid
+    const trackTop = H * 0.10, trackH = H * 0.62, laneH = trackH / 6;
+    const trackStartX = 10 * dpr, finishX = W * 0.90, trackW = finishX - trackStartX;
     for (let i = 0; i < 6; i++) {
       const y = trackTop + i * laneH; const isP = i === pi;
-      ctx.fillStyle = isP ? "rgba(0,229,255,0.04)" : (i % 2 ? "rgba(255,255,255,0.01)" : "rgba(0,0,0,0.05)");
-      ctx.fillRect(0, y, W, laneH);
-      ctx.strokeStyle = "rgba(255,255,255,0.04)"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(0, y + laneH); ctx.lineTo(W, y + laneH); ctx.stroke();
-      // Lane number
-      ctx.font = `700 ${8 * dpr}px sans-serif`; ctx.textAlign = "left";
-      ctx.fillStyle = isP ? "#00E5FF" : "rgba(232,235,246,0.25)"; ctx.fillText((i + 1) + "", 4 * dpr, y + laneH * 0.6);
-      // Horse name (left)
-      ctx.font = `600 ${7 * dpr}px sans-serif`; ctx.fillStyle = isP ? "rgba(0,229,255,0.6)" : "rgba(232,235,246,0.2)";
-      ctx.fillText(PD_HORSE_NAMES[i], 14 * dpr, y + laneH * 0.6);
-      // Finish line
-      ctx.fillStyle = "rgba(255,217,61,0.15)"; ctx.fillRect(W * 0.92, y, W * 0.08, laneH);
-      // Horse emoji (positioned by progress)
-      const pos = pdPositions[i] || 0; const horseX = 20 * dpr + (pos / 100) * (W * 0.88 - 20 * dpr);
+      // Lane background — player lane glows
+      if (isP) {
+        const lg = ctx.createLinearGradient(0, y, 0, y + laneH);
+        lg.addColorStop(0, "rgba(0,229,255,0.08)"); lg.addColorStop(0.5, "rgba(0,229,255,0.04)"); lg.addColorStop(1, "rgba(0,229,255,0.08)");
+        ctx.fillStyle = lg; ctx.fillRect(0, y, W, laneH);
+        ctx.strokeStyle = "rgba(0,229,255,0.15)"; ctx.lineWidth = 1 * dpr;
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(0, y + laneH); ctx.lineTo(W, y + laneH); ctx.stroke();
+      } else {
+        ctx.fillStyle = i % 2 ? "rgba(255,255,255,0.015)" : "rgba(0,0,0,0.06)";
+        ctx.fillRect(0, y, W, laneH);
+        ctx.strokeStyle = "rgba(255,255,255,0.03)"; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(0, y + laneH); ctx.lineTo(W, y + laneH); ctx.stroke();
+      }
+      // Finish zone highlight
+      ctx.fillStyle = "rgba(255,217,61,0.08)"; ctx.fillRect(finishX, y, W - finishX, laneH);
+      // Lane number + name
+      ctx.textAlign = "left";
+      ctx.font = `800 ${10 * dpr}px sans-serif`;
+      ctx.fillStyle = isP ? "#00E5FF" : "rgba(232,235,246,0.35)";
+      ctx.fillText((i + 1) + ".", 4 * dpr, y + laneH * 0.45);
+      ctx.font = `700 ${9 * dpr}px sans-serif`;
+      ctx.fillStyle = isP ? "rgba(0,229,255,0.8)" : "rgba(232,235,246,0.25)";
+      ctx.fillText(PD_HORSE_NAMES[i], 16 * dpr, y + laneH * 0.45);
+      if (isP) { ctx.font = `600 ${7 * dpr}px sans-serif`; ctx.fillStyle = "rgba(0,229,255,0.5)"; ctx.fillText("(YOU)", 16 * dpr, y + laneH * 0.72); }
+      // Horse progress — positioned by percentage
+      const pos = pdPositions[i] || 0;
+      const horseX = trackStartX + (pos / 100) * trackW;
       const fin = pdFinishOrder.includes(i); const pl = pdFinishOrder.indexOf(i) + 1;
-      ctx.font = `${isP ? 18 * dpr : 14 * dpr}px sans-serif`; ctx.textAlign = "center";
-      if (isP) { ctx.shadowColor = "#00E5FF"; ctx.shadowBlur = 8 * dpr; }
-      ctx.fillText(PD_HORSE_EMOJIS[i], horseX, y + laneH * 0.65);
+      const horseCy = y + laneH * 0.55;
+      // Speed trail behind horse
+      if (pos > 3) {
+        const trailLen = Math.min(pos * 0.4, 30) * dpr;
+        const trailG = ctx.createLinearGradient(horseX - trailLen, horseCy, horseX, horseCy);
+        trailG.addColorStop(0, "transparent");
+        trailG.addColorStop(1, isP ? "rgba(0,229,255,0.15)" : "rgba(34,197,94,0.08)");
+        ctx.fillStyle = trailG;
+        ctx.fillRect(horseX - trailLen, y + laneH * 0.25, trailLen, laneH * 0.5);
+      }
+      // Horse emoji — BIG and clear
+      const hSize = isP ? 28 * dpr : 22 * dpr;
+      ctx.font = `${hSize}px sans-serif`; ctx.textAlign = "center";
+      if (isP) { ctx.shadowColor = "#00E5FF"; ctx.shadowBlur = 12 * dpr; }
+      else if (fin && pl <= 3) { ctx.shadowColor = "#FFD93D"; ctx.shadowBlur = 6 * dpr; }
+      ctx.fillText(PD_HORSE_EMOJIS[i], horseX, horseCy + hSize * 0.15);
       ctx.shadowBlur = 0;
-      // Place marker if finished
-      if (fin) { ctx.font = `900 ${8 * dpr}px sans-serif`; ctx.fillStyle = pl === 1 ? "#FFD93D" : pl <= 3 ? "#22C55E" : "rgba(232,235,246,0.3)"; ctx.fillText("#" + pl, W * 0.96, y + laneH * 0.6); }
-      else { ctx.font = `600 ${7 * dpr}px sans-serif`; ctx.fillStyle = "rgba(232,235,246,0.2)"; ctx.textAlign = "right"; ctx.fillText(Math.round(pos) + "%", W - 4 * dpr, y + laneH * 0.6); }
+      // Progress % or place badge
+      ctx.textAlign = "right";
+      if (fin) {
+        const medal = pl === 1 ? "\uD83E\uDD47" : pl === 2 ? "\uD83E\uDD48" : pl === 3 ? "\uD83E\uDD49" : "";
+        ctx.font = `900 ${10 * dpr}px sans-serif`;
+        ctx.fillStyle = pl === 1 ? "#FFD93D" : pl <= 3 ? "#22C55E" : "rgba(232,235,246,0.35)";
+        ctx.fillText(medal + " #" + pl, W - 4 * dpr, y + laneH * 0.55);
+      } else {
+        ctx.font = `700 ${9 * dpr}px sans-serif`;
+        ctx.fillStyle = isP ? "rgba(0,229,255,0.7)" : "rgba(232,235,246,0.3)";
+        ctx.fillText(Math.round(pos) + "%", W - 4 * dpr, y + laneH * 0.55);
+      }
       ctx.textAlign = "center";
     }
-    // Finish line vertical
-    ctx.strokeStyle = "rgba(255,217,61,0.4)"; ctx.lineWidth = 2 * dpr; ctx.setLineDash([4 * dpr, 4 * dpr]);
-    ctx.beginPath(); ctx.moveTo(W * 0.92, trackTop); ctx.lineTo(W * 0.92, trackTop + trackH); ctx.stroke(); ctx.setLineDash([]);
-    // Stamina bar
-    const stY = trackTop + trackH + 12 * dpr, stH = 10 * dpr, stW = W * 0.7, stX = (W - stW) / 2;
+    // Finish line — animated dashes
+    const dashOffset = (now / 100) % (8 * dpr);
+    ctx.strokeStyle = "rgba(255,217,61,0.5)"; ctx.lineWidth = 2.5 * dpr;
+    ctx.setLineDash([5 * dpr, 3 * dpr]); ctx.lineDashOffset = dashOffset;
+    ctx.beginPath(); ctx.moveTo(finishX, trackTop); ctx.lineTo(finishX, trackTop + trackH); ctx.stroke();
+    ctx.setLineDash([]); ctx.lineDashOffset = 0;
+    // Stamina + Puffs bar — below track
+    const stY = trackTop + trackH + 14 * dpr, stH = 12 * dpr, stW = W * 0.75, stX = (W - stW) / 2;
     const stC = pdStamina > 60 ? "#22C55E" : pdStamina > 30 ? "#FFD93D" : "#EF4444";
-    ctx.fillStyle = "rgba(255,255,255,0.04)"; ctx.fillRect(stX, stY, stW, stH);
-    const stGrad = ctx.createLinearGradient(stX, stY, stX + stW * pdStamina / 100, stY);
-    stGrad.addColorStop(0, stC); stGrad.addColorStop(1, stC + "80");
-    ctx.fillStyle = stGrad; ctx.fillRect(stX, stY, stW * pdStamina / 100, stH);
-    ctx.font = `700 ${8 * dpr}px sans-serif`; ctx.textAlign = "left"; ctx.fillStyle = stC;
-    ctx.fillText("Stamina: " + Math.round(pdStamina) + "%", stX, stY - 3 * dpr);
-    ctx.textAlign = "right"; ctx.fillStyle = "rgba(232,235,246,0.4)"; ctx.fillText("Puffs: " + pdPuffCount, stX + stW, stY - 3 * dpr);
-    if (pdStamina <= 0) { ctx.font = `800 ${9 * dpr}px sans-serif`; ctx.textAlign = "center"; ctx.fillStyle = "#EF4444"; ctx.fillText("EXHAUSTED!", W / 2, stY + stH + 12 * dpr); }
-    // Timer
+    // Bar background
+    ctx.fillStyle = "rgba(255,255,255,0.04)";
+    ctx.beginPath(); ctx.roundRect(stX, stY, stW, stH, 6 * dpr); ctx.fill();
+    // Bar fill
+    const stFill = ctx.createLinearGradient(stX, stY, stX + stW * pdStamina / 100, stY);
+    stFill.addColorStop(0, stC); stFill.addColorStop(1, stC + "90");
+    ctx.fillStyle = stFill;
+    ctx.beginPath(); ctx.roundRect(stX, stY, stW * Math.max(0.01, pdStamina / 100), stH, 6 * dpr); ctx.fill();
+    // Labels
+    ctx.font = `800 ${9 * dpr}px sans-serif`; ctx.textAlign = "left"; ctx.fillStyle = stC;
+    ctx.fillText("\u26A1 " + Math.round(pdStamina) + "%", stX, stY - 4 * dpr);
+    ctx.textAlign = "right"; ctx.fillStyle = "rgba(232,235,246,0.5)"; ctx.fillText("Puffs: " + pdPuffCount, stX + stW, stY - 4 * dpr);
+    if (pdStamina <= 0) { ctx.font = `800 ${11 * dpr}px sans-serif`; ctx.textAlign = "center"; ctx.fillStyle = "#EF4444"; ctx.fillText("EXHAUSTED! \u26A0\uFE0F", W / 2, stY + stH + 14 * dpr); }
+    // Live position ranking — below stamina
     if (phase === "racing") {
-      ctx.font = `900 ${14 * dpr}px "Courier New", monospace`; ctx.textAlign = "center";
-      ctx.fillStyle = pdRaceTime <= 10 ? "#EF4444" : "#FFD93D"; ctx.fillText(pdRaceTime + "s", W / 2, trackTop - 4 * dpr);
-    }
-    // Pick phase
-    if (phase === "pick") {
-      ctx.font = `900 ${18 * dpr}px sans-serif`; ctx.textAlign = "center"; ctx.fillStyle = "#22C55E"; ctx.fillText("PICK YOUR HORSE", W / 2, H * 0.3);
-      PD_HORSE_NAMES.forEach((n, i) => {
-        const bx = (i % 2) * W * 0.48 + W * 0.04, by = H * 0.38 + Math.floor(i / 2) * H * 0.14, bw = W * 0.44, bh = H * 0.11;
-        ctx.fillStyle = "rgba(34,197,94,0.06)"; ctx.fillRect(bx, by, bw, bh);
-        ctx.strokeStyle = "rgba(34,197,94,0.2)"; ctx.lineWidth = 1; ctx.strokeRect(bx, by, bw, bh);
-        ctx.font = `${20 * dpr}px sans-serif`; ctx.textAlign = "center"; ctx.fillText(PD_HORSE_EMOJIS[i], bx + bw / 2, by + bh * 0.45);
-        ctx.font = `700 ${8 * dpr}px sans-serif`; ctx.fillStyle = "#E8EBF6"; ctx.fillText(n, bx + bw / 2, by + bh * 0.7);
-        const s = PD_HORSE_STATS[i]; ctx.font = `600 ${6 * dpr}px sans-serif`; ctx.fillStyle = "#00E5FF";
-        ctx.fillText("SPD:" + s.speed.toFixed(1) + " STA:" + s.stamina.toFixed(1) + " LCK:" + s.luck.toFixed(1), bx + bw / 2, by + bh * 0.88);
+      const ranked = [0,1,2,3,4,5].slice().sort((a,b) => (pdPositions[b]||0) - (pdPositions[a]||0));
+      const rankY = stY + stH + (pdStamina <= 0 ? 28 : 14) * dpr;
+      ctx.font = `700 ${8 * dpr}px sans-serif`; ctx.textAlign = "center"; ctx.fillStyle = "rgba(232,235,246,0.3)";
+      ctx.fillText("LIVE STANDINGS", W / 2, rankY);
+      ranked.forEach((idx, rank) => {
+        const rx = W * 0.08 + rank * W * 0.15; const ry2 = rankY + 14 * dpr;
+        const isP2 = idx === pi;
+        ctx.font = `${14 * dpr}px sans-serif`; ctx.fillText(PD_HORSE_EMOJIS[idx], rx, ry2);
+        ctx.font = `700 ${7 * dpr}px sans-serif`;
+        ctx.fillStyle = rank === 0 ? "#FFD93D" : rank <= 2 ? "#22C55E" : "rgba(232,235,246,0.3)";
+        ctx.fillText("#" + (rank + 1), rx, ry2 + 12 * dpr);
+        if (isP2) { ctx.fillStyle = "#00E5FF"; ctx.fillText("YOU", rx, ry2 + 20 * dpr); }
+        ctx.fillStyle = "rgba(232,235,246,0.3)";
       });
     }
-    // Countdown
-    if (phase === "countdown") {
-      ctx.font = `900 ${36 * dpr}px sans-serif`; ctx.textAlign = "center"; ctx.fillStyle = "#FFD93D"; ctx.fillText("GET READY!", W / 2, H * 0.45);
-      if (pi !== null) { ctx.font = `${40 * dpr}px sans-serif`; ctx.fillText(PD_HORSE_EMOJIS[pi], W / 2, H * 0.55); }
-    }
-    // Result
+    // Result — overlay
     if (phase === "result" && pdFinishOrder.length > 0) {
+      ctx.fillStyle = "rgba(4,10,4,0.75)"; ctx.fillRect(0, 0, W, H);
       const place = pi !== null ? pdFinishOrder.indexOf(pi) + 1 : 0;
-      ctx.font = `900 ${22 * dpr}px sans-serif`; ctx.textAlign = "center";
+      const medal = place === 1 ? "\uD83E\uDD47" : place === 2 ? "\uD83E\uDD48" : place === 3 ? "\uD83E\uDD49" : "\uD83C\uDFC7";
+      ctx.font = `${40 * dpr}px sans-serif`; ctx.textAlign = "center"; ctx.fillText(medal, W / 2, H * 0.32);
+      ctx.font = `900 ${24 * dpr}px sans-serif`;
       ctx.fillStyle = place === 1 ? "#FFD93D" : place <= 3 ? "#22C55E" : "rgba(232,235,246,0.6)";
-      ctx.fillText(place === 1 ? "WINNER!" : "#" + place + " PLACE", W / 2, H * 0.78);
-      ctx.font = `600 ${10 * dpr}px sans-serif`; ctx.fillStyle = "rgba(232,235,246,0.5)";
+      ctx.shadowColor = ctx.fillStyle; ctx.shadowBlur = 15 * dpr;
+      ctx.fillText(place === 1 ? "WINNER!" : "#" + place + " PLACE", W / 2, H * 0.40);
+      ctx.shadowBlur = 0;
+      ctx.font = `600 ${11 * dpr}px sans-serif`; ctx.fillStyle = "rgba(232,235,246,0.5)";
       pdFinishOrder.slice(0, 6).forEach((hI, pl) => {
-        const ry = H * 0.82 + pl * 10 * dpr; const isYou = hI === pi;
+        const ry = H * 0.46 + pl * 14 * dpr; const isYou = hI === pi;
         ctx.fillStyle = isYou ? "#00E5FF" : "rgba(232,235,246,0.4)"; ctx.textAlign = "center";
         ctx.fillText("#" + (pl + 1) + " " + PD_HORSE_EMOJIS[hI] + " " + PD_HORSE_NAMES[hI] + (isYou ? " (YOU)" : ""), W / 2, ry);
       });
     }
   };
   const hlPickRandom = () => { const av=HL_STATS.filter((_,i)=>!hlUsedRef.current.includes(i));if(av.length===0){hlUsedRef.current=[];return HL_STATS[Math.floor(Math.random()*HL_STATS.length)];}const pk=av[Math.floor(Math.random()*av.length)];hlUsedRef.current=[...hlUsedRef.current,HL_STATS.indexOf(pk)];return pk; };
-gameSoundsMuted.current = false;addGameChat("Announcer","HIGHER OR LOWER! Build your streak!",C.gold);
-  const startHigherLower = () => { gameSoundsMuted.current=false;addGameChat("Announcer","HIGHER OR LOWER! Build your streak!",C.gold);if(stageRole === "contestant") initStageElim(); hlUsedRef.current=[];const f=hlPickRandom();const s=hlPickRandom();setHlCurrent(f);setHlNext(s);setHlStreak(0);setHlBestStreak(0);setHlScore(0);setHlRound(1);setHlRevealing(false);setHlRevealNum(0);setHlPuffStart(null);setHlPhase("playing");setCommentary("Higher or Lower?");playFx("crowd"); };
+  const startHigherLower = () => { if(stageRole === "contestant") initStageElim(); hlUsedRef.current=[];const f=hlPickRandom();const s=hlPickRandom();setHlCurrent(f);setHlNext(s);setHlStreak(0);setHlBestStreak(0);setHlScore(0);setHlRound(1);setHlRevealing(false);setHlRevealNum(0);setHlPuffStart(null);setHlPhase("playing");setCommentary("Higher or Lower?");playFx("crowd"); };
   const hlGuess = (guess) => { if(hlPhase!=="playing"||hlRevealing||!hlNext)return;setHlRevealing(true);setHlPuffStart(null);playFx("tap");const target=hlNext.value;let step=0;const rid=setInterval(()=>{step++;setHlRevealNum(Math.round(target*(1-Math.pow(1-step/20,3))));if(step>=20){clearInterval(rid);setHlRevealNum(target);const actual=hlNext.value>hlCurrent.value?"higher":hlNext.value<hlCurrent.value?"lower":guess;const correct=guess===actual||hlNext.value===hlCurrent.value;setTimeout(()=>{if(correct){const ns=hlStreak+1;const pts=10*ns;setHlStreak(ns);if(ns===5) playFx("streak_fire");setHlBestStreak(b=>Math.max(b,ns));setHlScore(s=>s+pts);setCommentary("CORRECT! +"+pts);playFx("select");triggerFlash("goal");setHlPhase("correct");if(stageRole)showMC("correct",{points:String(pts)});elimRound(100);}else{if(hlStreak>=2) playFx("streak_break");setHlStreak(0);setCommentary("WRONG! It was "+actual.toUpperCase());playFx("whistle");triggerFlash("miss");if(stageRole)showMC("wrong");setScreenShake(true);setTimeout(()=>setScreenShake(false),400);setHlPhase("wrong");elimRound(0);}setTimeout(()=>{const nr=hlRound+1;if(nr>10){playFx(hlBestStreak>=3?"win":"lose");recordGameResult(hlBestStreak>=3,hlBestStreak>=3?50:8,hlBestStreak>=3?20:8);setHlPhase("result");setCommentary("Game over! Score: "+hlScore);if(hlBestStreak>=5)setConfettiParticles(Array.from({length:20},(_,i)=>({id:Date.now()+i,x:Math.random()*100,y:-10-Math.random()*20,size:4+Math.random()*4,color:[C.cyan,C.gold,C.green,C.pink][i%4],rot:Math.random()*360})));}else{setHlRound(nr);setHlCurrent(hlNext);setHlNext(hlPickRandom());setHlRevealing(false);setHlRevealNum(0);setHlPhase("playing");setCommentary("Round "+nr+"/10");}},1800);},600);}},40); };
   const hlHandlePuff = (isLong) => { hlGuess(isLong?"higher":"lower"); };
   const hlCleanup = () => { setHlPhase(null);setGameActive(null);setHlRevealing(false);setHlPuffStart(null);hlUsedRef.current=[];setStageRole(null);setMcVisible(false);setStageElim(null); };
@@ -18392,10 +17086,9 @@ gameSoundsMuted.current = false;addGameChat("Announcer","HIGHER OR LOWER! Build 
 
         // Drive canvas draw loop
         if(bpCanvasRef.current && bpPhase){
-          if(!bpAnimRef.current){
-            const loop=()=>{bpDrawCanvas();bpAnimRef.current=requestAnimationFrame(loop);};
-            bpAnimRef.current=requestAnimationFrame(loop);
-          }
+          if(bpAnimRef.current) cancelAnimationFrame(bpAnimRef.current);
+          {const loop=()=>{bpDrawCanvas();bpAnimRef.current=requestAnimationFrame(loop);};
+          bpAnimRef.current=requestAnimationFrame(loop);}
         }
 
         // Controls slot for chat overlay
@@ -18419,8 +17112,9 @@ gameSoundsMuted.current = false;addGameChat("Announcer","HIGHER OR LOWER! Build 
                 <div data-btn="true"
                   onMouseDown={(e)=>{e.stopPropagation();bpStartCharge();}}
                   onMouseUp={(e)=>{e.stopPropagation();bpStopCharge();}}
-                  onTouchStart={(e)=>{e.stopPropagation();bpStartCharge();}}
+                  onTouchStart={(e)=>{e.stopPropagation();e.preventDefault();bpStartCharge();}}
                   onTouchEnd={(e)=>{e.stopPropagation();bpStopCharge();}}
+                  onTouchCancel={(e)=>{e.stopPropagation();bpStopCharge();}}
                   style={{touchAction:"none",flex:1.3,padding:"12px 0",borderRadius:14,cursor:"pointer",textAlign:"center",
                     background:"linear-gradient(135deg,rgba(255,165,0,0.12),rgba(255,70,70,0.06))",border:"2px solid rgba(255,165,0,0.25)",
                     userSelect:"none",WebkitUserSelect:"none"}}>
@@ -18588,10 +17282,9 @@ gameSoundsMuted.current = false;addGameChat("Announcer","HIGHER OR LOWER! Build 
         const aliveCount=rrPlayers.filter(p=>p.alive).length;
         // Drive canvas draw loop
         if(rrCanvasRef.current && rrPhase){
-          if(!rrAnimRef.current){
-            const loop=()=>{rrDrawCanvas();rrAnimRef.current=requestAnimationFrame(loop);};
-            rrAnimRef.current=requestAnimationFrame(loop);
-          }
+          if(rrAnimRef.current) cancelAnimationFrame(rrAnimRef.current);
+          {const loop=()=>{rrDrawCanvas();rrAnimRef.current=requestAnimationFrame(loop);};
+          rrAnimRef.current=requestAnimationFrame(loop);}
         }
         // Controls slot for chat overlay
         const rrControlsSlot = (
@@ -18621,9 +17314,10 @@ gameSoundsMuted.current = false;addGameChat("Announcer","HIGHER OR LOWER! Build 
                 <div data-btn="true"
                   onMouseDown={(e)=>{e.stopPropagation();rrStartPuff();}}
                   onMouseUp={(e)=>{e.stopPropagation();rrStopPuff();}}
-                  onTouchStart={(e)=>{e.stopPropagation();rrStartPuff();}}
+                  onTouchStart={(e)=>{e.stopPropagation();e.preventDefault();rrStartPuff();}}
                   onTouchEnd={(e)=>{e.stopPropagation();rrStopPuff();}}
-                  style={{flex:1,padding:"14px 0",borderRadius:14,cursor:"pointer",textAlign:"center",
+                  onTouchCancel={(e)=>{e.stopPropagation();rrStopPuff();}}
+                  style={{touchAction:"none",flex:1,padding:"14px 0",borderRadius:14,cursor:"pointer",textAlign:"center",
                     background:"linear-gradient(135deg,rgba(0,229,255,0.12),rgba(192,132,252,0.06))",border:"2px solid rgba(0,229,255,0.2)",
                     userSelect:"none",WebkitUserSelect:"none"}}>
                   <div style={{fontSize:16,fontWeight:900,color:C.cyan,letterSpacing:1}}>PUFF PULL</div>
@@ -18909,10 +17603,9 @@ gameSoundsMuted.current = false;addGameChat("Announcer","HIGHER OR LOWER! Build 
 
         // Drive canvas draw loop
         if(rpCanvasRef.current && rpPhase){
-          if(!rpAnimRef.current){
-            const loop = () => { rpDrawCanvas(); rpAnimRef.current = requestAnimationFrame(loop); };
-            rpAnimRef.current = requestAnimationFrame(loop);
-          }
+          if(rpAnimRef.current) cancelAnimationFrame(rpAnimRef.current);
+          {const loop = () => { rpDrawCanvas(); rpAnimRef.current = requestAnimationFrame(loop); };
+          rpAnimRef.current = requestAnimationFrame(loop);}
         }
 
         // Controls slot for chat overlay -- 4 lane buttons + puff/blinker
@@ -19324,10 +18017,9 @@ gameSoundsMuted.current = false;addGameChat("Announcer","HIGHER OR LOWER! Build 
 
         // Drive canvas draw loop
         if(towCanvasRef.current && towPhase){
-          if(!towAnimRef.current){
-            const loop=()=>{towDrawCanvas();towAnimRef.current=requestAnimationFrame(loop);};
-            towAnimRef.current=requestAnimationFrame(loop);
-          }
+          if(towAnimRef.current) cancelAnimationFrame(towAnimRef.current);
+          {const loop=()=>{towDrawCanvas();towAnimRef.current=requestAnimationFrame(loop);};
+          towAnimRef.current=requestAnimationFrame(loop);}
         }
 
         // Controls slot for chat overlay — THREE-INPUT (puff game, no dry puff)
@@ -19349,8 +18041,9 @@ gameSoundsMuted.current = false;addGameChat("Announcer","HIGHER OR LOWER! Build 
                 <div data-btn="true"
                   onMouseDown={(e)=>{e.stopPropagation();towStartCharge();}}
                   onMouseUp={(e)=>{e.stopPropagation();towStopCharge();}}
-                  onTouchStart={(e)=>{e.stopPropagation();towStartCharge();}}
+                  onTouchStart={(e)=>{e.stopPropagation();e.preventDefault();towStartCharge();}}
                   onTouchEnd={(e)=>{e.stopPropagation();towStopCharge();}}
+                  onTouchCancel={(e)=>{e.stopPropagation();towStopCharge();}}
                   style={{touchAction:"none",flex:1.3,padding:"12px 0",borderRadius:14,cursor:"pointer",textAlign:"center",
                     background:"linear-gradient(135deg,rgba(255,165,0,0.12),rgba(255,70,70,0.06))",border:"2px solid rgba(255,165,0,0.25)",
                     userSelect:"none",WebkitUserSelect:"none"}}>
@@ -19489,10 +18182,9 @@ gameSoundsMuted.current = false;addGameChat("Announcer","HIGHER OR LOWER! Build 
         const pulseSpeed = hpFuse > 0.6 ? "2s" : hpFuse > 0.3 ? "0.8s" : "0.3s";
         // Drive canvas draw loop
         if(hpCanvasRef.current && hpPhase){
-          if(!hpAnimRef.current){
-            const loop = ()=>{hpDrawCanvas();hpAnimRef.current=requestAnimationFrame(loop);};
-            hpAnimRef.current=requestAnimationFrame(loop);
-          }
+          if(hpAnimRef.current) cancelAnimationFrame(hpAnimRef.current);
+          {const loop = ()=>{hpDrawCanvas();hpAnimRef.current=requestAnimationFrame(loop);};
+          hpAnimRef.current=requestAnimationFrame(loop);}
         }
         // Controls slot for chat overlay
         const hpControlsSlot = (
@@ -19521,8 +18213,9 @@ gameSoundsMuted.current = false;addGameChat("Announcer","HIGHER OR LOWER! Build 
                 <div data-btn="true"
                   onMouseDown={(e)=>{e.stopPropagation();hpStartPuff();}}
                   onMouseUp={(e)=>{e.stopPropagation();hpStopPuff();}}
-                  onTouchStart={(e)=>{e.stopPropagation();hpStartPuff();}}
+                  onTouchStart={(e)=>{e.stopPropagation();e.preventDefault();hpStartPuff();}}
                   onTouchEnd={(e)=>{e.stopPropagation();hpStopPuff();}}
+                  onTouchCancel={(e)=>{e.stopPropagation();hpStopPuff();}}
                   style={{flex:1,padding:"14px 0",borderRadius:14,cursor:"pointer",textAlign:"center",
                     background:`linear-gradient(135deg,${C.cyan}20,${C.purple}10)`,border:`2px solid ${C.cyan}30`,
                     userSelect:"none",WebkitUserSelect:"none"}}>
@@ -19690,10 +18383,9 @@ gameSoundsMuted.current = false;addGameChat("Announcer","HIGHER OR LOWER! Build 
         const isResult = hookPhase==="caught"||hookPhase==="line_break"||hookPhase==="escaped";
         // Drive canvas loop
         if(hookCanvasRef.current && hookPhase){
-          if(!hookAnimRef.current){
-            const loop = ()=>{hookDrawCanvas();hookAnimRef.current=requestAnimationFrame(loop);};
-            hookAnimRef.current=requestAnimationFrame(loop);
-          }
+          if(hookAnimRef.current) cancelAnimationFrame(hookAnimRef.current);
+          {const loop = ()=>{hookDrawCanvas();hookAnimRef.current=requestAnimationFrame(loop);};
+          hookAnimRef.current=requestAnimationFrame(loop);}
         }
         // Controls slot for chat overlay
         const hookControlsSlot = (
@@ -19924,10 +18616,9 @@ gameSoundsMuted.current = false;addGameChat("Announcer","HIGHER OR LOWER! Build 
         const youLoseFinal = rpsScore.ai >= 3;
         // Drive canvas animation loop
         if(rpsCanvasRef.current && rpsPhase){
-          if(!rpsAnimRef.current){
-            const loop = ()=>{rpsDrawCanvas();rpsAnimRef.current=requestAnimationFrame(loop);};
-            rpsAnimRef.current=requestAnimationFrame(loop);
-          }
+          if(rpsAnimRef.current) cancelAnimationFrame(rpsAnimRef.current);
+          {const loop = ()=>{rpsDrawCanvas();rpsAnimRef.current=requestAnimationFrame(loop);};
+          rpsAnimRef.current=requestAnimationFrame(loop);}
         }
         // Result overlay for final
         const rpsFinalOverlay = isFinal ? (()=>{
@@ -20140,75 +18831,126 @@ gameSoundsMuted.current = false;addGameChat("Announcer","HIGHER OR LOWER! Build 
 
       // ── Survival Trivia ──
       if(gameActive.id==="survivaltrivia" && stPhase) {
-        if(stCanvasRef.current && stPhase){
-          if(!stAnimRef.current){ const loop=()=>{stDrawCanvas();stAnimRef.current=requestAnimationFrame(loop);}; stAnimRef.current=requestAnimationFrame(loop); }
-        }
-        const stControlsSlot = (
-          <div style={{display:"flex",flexDirection:"column",gap:6,alignItems:"center",width:"100%"}}>
-            {stPhase==="question" && stAnswer===null && stQuestion && (
-              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6,width:"90%",maxWidth:360}}>
-                {stQuestion.answers.map((ans,i)=>{
-                  const isPuffHl = stPuffHighlight===i;
-                  return (
-                    <div key={i} data-btn="true" onClick={(e)=>{e.stopPropagation();stSelectAnswer(i);}}
-                      style={{touchAction:"none",padding:"10px 8px",borderRadius:12,cursor:"pointer",textAlign:"center",position:"relative",
-                        background:isPuffHl?"rgba(0,229,255,0.25)":"rgba(255,255,255,0.03)",
-                        border:"2px solid "+(isPuffHl?"rgba(0,229,255,0.6)":"rgba(255,255,255,0.08)"),
-                        transform:isPuffHl?"scale(1.04)":"scale(1)",transition:"all 0.15s"}}>
-                      <div style={{position:"absolute",top:4,left:6,fontSize:8,fontWeight:900,color:isPuffHl?C.cyan:C.text3}}>{"ABCD"[i]}</div>
-                      <div style={{fontSize:11,fontWeight:700,color:C.text,marginTop:4}}>{ans}</div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-            {(stPhase==="eliminated"||stPhase==="winner") && (
-              <div style={{display:"flex",gap:8,justifyContent:"center"}}>
-                <div data-btn="true" onClick={(e)=>{e.stopPropagation();stEndGame();startSurvivalTrivia();setGameActive({id:"survivaltrivia",name:"Survival Trivia",emoji:"\u{1F3C6}",color:C.purple});}}
-                  style={{touchAction:"none",padding:"10px 24px",borderRadius:12,cursor:"pointer",background:(stPhase==="winner"?C.gold:C.red)+"15",border:"1px solid "+(stPhase==="winner"?C.gold:C.red)+"30",fontSize:13,fontWeight:800,color:stPhase==="winner"?C.gold:C.red}}>{stPhase==="winner"?"Play Again":"Try Again"}</div>
-                <div data-btn="true" onClick={(e)=>{e.stopPropagation();stEndGame();}}
-                  style={{touchAction:"none",padding:"10px 24px",borderRadius:12,cursor:"pointer",background:C.text3+"10",border:"1px solid "+C.text3+"20",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
-              </div>
-            )}
-          </div>
-        );
+        const isIntro = stPhase==="intro";
+        const isQuestion = stPhase==="question";
+        const isReveal = stPhase==="reveal";
+        const isEliminated = stPhase==="eliminated";
+        const isWinner = stPhase==="winner";
+        const timerPct = stFinalMode ? (stTimer/12)*100 : (stTimer/15)*100;
+        const timerColor = stTimer<=3 ? C.red : stTimer<=5 ? C.orange : C.text;
         return (
-          <div style={{position:"fixed",inset:0,zIndex:100,display:"flex",flexDirection:"column",touchAction:"none",animation:screenShake?"shake 0.4s ease":"none"}}>
-            {screenFlash && <div style={{position:"absolute",inset:0,zIndex:200,pointerEvents:"none",opacity:0,background:screenFlash==="goal"?"rgba(255,50,50,0.3)":"rgba(255,50,50,0.2)",animation:"flashOverlay 0.4s ease forwards"}}/>}
-            {confettiParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size*0.6,background:p.color,borderRadius:1,transform:"rotate("+p.rot+"deg)",zIndex:210,pointerEvents:"none",animation:"confettiFall 1.5s ease-out forwards"}}/>))}
-            <div style={{position:"relative",zIndex:50,flexShrink:0,background:"rgba(6,16,30,0.98)",borderBottom:"1px solid rgba(192,132,252,0.1)"}}>
-              <div style={{padding:"6px 12px 2px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                <div style={{fontSize:8,fontWeight:600,color:"rgba(255,255,255,0.4)",letterSpacing:1}}><span style={{fontWeight:800,color:"rgba(255,255,255,0.6)"}}>{"Powered by "}<span style={{fontWeight:900,letterSpacing:2}}>MOOD LAB</span></span></div>
-                <div style={{display:"flex",gap:5,alignItems:"center"}}>
-                  <div onClick={()=>{playFx("tap");setShowBlePopup(true);}} data-btn="true" style={{touchAction:"none",display:"flex",alignItems:"center",gap:3,padding:"2px 8px",borderRadius:100,cursor:"pointer",background:bleConnected?"rgba(52,211,153,0.1)":"rgba(251,146,60,0.1)",border:"1px solid "+(bleConnected?"rgba(52,211,153,0.25)":"rgba(251,146,60,0.25)")}}>
-                    <div style={{width:5,height:5,borderRadius:"50%",background:bleConnected?C.green:C.orange}}/><span style={{fontSize:8,fontWeight:700,color:bleConnected?C.green:C.orange}}>{bleConnected?"Puff":"Connect"}</span>
+          <div style={{...overlayStyle,background:"rgba(15,0,0,0.97)"}}>
+            {overlayBack(stEndGame)}
+            <div style={{flex:1,display:"flex",flexDirection:"column",padding:16,paddingTop:56}}>
+              {renderContestantGrid()}
+              {/* Header */}
+              <div style={{textAlign:"center",marginBottom:12}}>
+                <div style={{fontSize:14,fontWeight:900,color:C.red,letterSpacing:2,textTransform:"uppercase"}}>
+                  {stFinalMode ? "\uD83D\uDC80 FINAL SHOWDOWN \uD83D\uDC80" : "\uD83D\uDC80 SURVIVAL TRIVIA \uD83D\uDC80"}
+                </div>
+                <div style={{fontSize:11,color:C.text3,marginTop:4}}>
+                  Round {stRound} | {stPlayers} alive | Streak: {stStreak}
+                </div>
+              </div>
+
+              {/* Death counter bar */}
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"6px 12px",borderRadius:8,background:"rgba(255,68,68,0.08)",border:"1px solid rgba(255,68,68,0.15)",marginBottom:12}}>
+                <div style={{fontSize:11,color:C.red,fontWeight:700}}>{100-stPlayers} eliminated</div>
+                <div style={{fontSize:11,color:C.green,fontWeight:700}}>{stPlayers} alive</div>
+              </div>
+
+              {/* Avatar grid */}
+              <div style={{display:"flex",flexWrap:"wrap",gap:2,justifyContent:"center",marginBottom:12,maxHeight:80,overflow:"hidden"}}>
+                {stAvatars.slice(0,50).map((a,i)=>(
+                  <div key={i} style={{fontSize:10,opacity:a.alive?1:0.15,filter:a.alive?"none":"grayscale(1)",transition:"all 0.5s",transform:a.isYou?"scale(1.3)":"scale(1)",textShadow:a.isYou?"0 0 6px "+C.gold:"none"}}>{a.emoji}</div>
+                ))}
+              </div>
+
+              {/* Timer */}
+              {(isQuestion) && (
+                <div style={{textAlign:"center",marginBottom:8}}>
+                  <div style={{fontSize:36,fontWeight:900,color:timerColor,fontFamily:"monospace",textShadow:stTimer<=3?"0 0 20px "+C.red:"none"}}>
+                    {stTimer}
                   </div>
-                  <div style={{display:"flex",alignItems:"center",gap:2,padding:"2px 7px",borderRadius:100,background:"rgba(255,217,61,0.06)",border:"1px solid rgba(255,217,61,0.12)"}}>
-                    <span style={{fontSize:9}}>{"\u{1FA99}"}</span><span style={{fontSize:10,fontWeight:800,color:C.gold,fontFamily:"'Courier New',monospace"}}>{coins.toLocaleString()}</span>
+                  <div style={{height:4,borderRadius:2,background:"rgba(255,255,255,0.06)",marginTop:4,overflow:"hidden"}}>
+                    <div style={{height:"100%",width:timerPct+"%",background:stTimer<=3?C.red:stTimer<=5?C.orange:C.green,borderRadius:2,transition:"width 1s linear"}}/>
                   </div>
                 </div>
-              </div>
-              <div style={{padding:"2px 12px 2px",display:"flex",alignItems:"center",gap:6}}>
-                <div onClick={()=>{playFx("tap");stEndGame();}} data-btn="true" style={{touchAction:"none",display:"inline-flex",alignItems:"center",gap:3,cursor:"pointer",padding:"3px 8px",borderRadius:8,background:"rgba(255,255,255,0.04)",border:"1px solid "+C.border,flexShrink:0}}>
-                  <span style={{fontSize:10,color:C.text2}}>{"\u2190"}</span><span style={{fontSize:9,fontWeight:700,color:C.text2}}>Back</span>
+              )}
+
+              {/* Question */}
+              {stQuestion && (isQuestion || isReveal) && (
+                <div style={{textAlign:"center",marginBottom:16}}>
+                  <div style={{fontSize:16,fontWeight:800,color:C.text,marginBottom:16,lineHeight:1.4,padding:"0 8px"}}>{stQuestion.text}</div>
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+                    {stQuestion.answers.map((ans,i)=>{
+                      const isSelected = stAnswer===i;
+                      const isCorrectAns = stCorrect===i;
+                      const isPuffHl = stPuffHighlight===i && stAnswer===null && !isReveal;
+                      const bg = isReveal ? (isCorrectAns ? "rgba(52,211,153,0.2)" : (isSelected && !isCorrectAns) ? "rgba(255,68,68,0.2)" : "rgba(255,255,255,0.03)") : isPuffHl ? "rgba(0,229,255,0.25)" : (isSelected ? "rgba(0,229,255,0.15)" : "rgba(255,255,255,0.03)");
+                      const border = isReveal ? (isCorrectAns ? "1px solid rgba(52,211,153,0.4)" : (isSelected && !isCorrectAns) ? "1px solid rgba(255,68,68,0.4)" : "1px solid rgba(255,255,255,0.06)") : isPuffHl ? "2px solid rgba(0,229,255,0.6)" : (isSelected ? "1px solid rgba(0,229,255,0.3)" : "1px solid rgba(255,255,255,0.06)");
+                      return (
+                        <div key={i} onClick={()=>isQuestion && stSelectAnswer(i)}
+                          style={{padding:"12px 10px",borderRadius:10,cursor:isQuestion?"pointer":"default",background:bg,border:border,fontSize:13,fontWeight:700,color:isReveal?(isCorrectAns?C.green:(isSelected&&!isCorrectAns)?C.red:C.text3):C.text,transition:"all 0.15s ease",transform:isPuffHl?"scale(1.04)":"scale(1)",boxShadow:isPuffHl?"0 0 16px rgba(0,229,255,0.2)":"none",position:"relative"}}>
+                          <div style={{position:"absolute",top:4,left:6,width:16,height:16,borderRadius:5,display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,fontWeight:900,color:isPuffHl?C.cyan:C.text3,background:isPuffHl?"rgba(0,229,255,0.15)":"rgba(255,255,255,0.05)"
+                          }}>{"ABCD"[i]}</div>
+                          {isReveal && isCorrectAns && "\u2713 "}{isReveal && isSelected && !isCorrectAns && "\u2717 "}{ans}
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {isQuestion && <div style={{textAlign:"center",marginTop:8}}><div style={{fontSize:8,color:C.text3,letterSpacing:1}}>Tap to answer · Puff for bonus points 💨</div></div>}
                 </div>
-                <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
-                  <span style={{fontSize:10,fontWeight:800,color:C.purple}}>{stFinalMode?"\u{1F480} FINAL SHOWDOWN":"\u{1F480} SURVIVAL TRIVIA"}</span>
-                  <span style={{fontSize:9,fontWeight:700,color:C.gold}}>Streak: {stStreak}</span>
+              )}
+
+              {/* Comment */}
+              <div style={{textAlign:"center",fontSize:13,fontWeight:700,color:stEliminated?C.red:C.gold,marginBottom:12,minHeight:20}}>{stComment}</div>
+
+              {/* Intro overlay */}
+              {isIntro && (
+                <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column"}}>
+                  <div style={{fontSize:48,marginBottom:12}}>{"\uD83D\uDC80"}</div>
+                  <div style={{fontSize:22,fontWeight:900,color:C.red}}>{stComment}</div>
+                  <div style={{fontSize:12,color:C.text3,marginTop:8}}>100 PLAYERS ENTERED</div>
                 </div>
-              </div>
-              <div style={{padding:"2px 12px 4px",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
-                <span style={{fontSize:9,fontWeight:700,color:C.text3}}>Round {stRound}</span>
-                <span style={{fontSize:9,fontWeight:700,color:C.red}}>{100-stPlayers} dead</span>
-                <span style={{fontSize:9,fontWeight:700,color:C.green}}>{stPlayers} alive</span>
-                {stTimer>0 && stPhase==="question" && <span style={{fontSize:9,fontWeight:800,color:stTimer<=3?C.red:stTimer<=5?C.orange:C.text}}>{stTimer}s</span>}
-              </div>
+              )}
+
+              {/* Eliminated screen */}
+              {isEliminated && (
+                <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column"}}>
+                  <div style={{fontSize:64,marginBottom:12}}>{"\uD83D\uDC80"}</div>
+                  <div style={{fontSize:22,fontWeight:900,color:C.red}}>YOU ARE DEAD</div>
+                  <div style={{fontSize:13,color:C.text3,marginTop:8}}>Survived {stRound} rounds | Streak: {stStreak}</div>
+                  <div style={{display:"flex",gap:10,marginTop:20}}>
+                    <div onClick={()=>{stEndGame();startSurvivalTrivia();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:C.red+"15",border:"1px solid "+C.red+"30",fontSize:13,fontWeight:800,color:C.red}}>Try Again</div>
+                    <div onClick={stEndGame} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:C.text3+"10",border:"1px solid "+C.text3+"20",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
+                  </div>
+                </div>
+              )}
+
+              {/* Winner screen */}
+              {isWinner && (
+                <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column"}}>
+                  <div style={{fontSize:64,marginBottom:12}}>{"\uD83D\uDC51"}</div>
+                  <div style={{fontSize:22,fontWeight:900,color:C.gold}}>SOLE SURVIVOR!</div>
+                  <div style={{fontSize:13,color:C.text3,marginTop:8}}>You outlasted {100-stPlayers} players | {stStreak} streak</div>
+                  <div style={{display:"flex",gap:10,marginTop:20}}>
+                    <div onClick={()=>{stEndGame();startSurvivalTrivia();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:C.gold+"15",border:"1px solid "+C.gold+"30",fontSize:13,fontWeight:800,color:C.gold}}>Play Again</div>
+                    <div onClick={stEndGame} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:C.text3+"10",border:"1px solid "+C.text3+"20",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
+                  </div>
+                  <div onClick={()=>{stEndGame();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
+                </div>
+              )}
             </div>
-            {renderContestantGrid()}
-            <div style={{position:"relative",flex:1,overflow:"hidden"}}>
-              <canvas ref={stCanvasRef} width={Math.round(420*ST_DPR)} height={Math.round(600*ST_DPR)} style={{position:"absolute",top:0,left:0,width:"100%",height:"100%"}}/>
-              {renderGameChatOverlay(stControlsSlot)}
-            </div>
+            {/* Stage Show Chat -- visible for audience always, contestant during breaks only */}
+            {stageRole && isStageBreak("survivaltrivia") && renderGameChatPanel("SURVIVAL TRIVIA")}
+            {stageRole === "contestant" && isStageBreak("survivaltrivia") && (
+              <div style={{position:"fixed",bottom:280,left:0,right:0,zIndex:290,textAlign:"center",animation:"fadeIn 0.3s ease",pointerEvents:"none"}}>
+                <span style={{padding:"6px 16px",borderRadius:100,fontSize:9,fontWeight:700,background:C.gold+"15",border:"1px solid "+C.gold+"25",color:C.gold,backdropFilter:"blur(8px)"}}>
+                  ☕ BREAK TIME — Chat with the audience!
+                </span>
+              </div>
+            )}
           </div>
         );
       }
@@ -20217,7 +18959,7 @@ gameSoundsMuted.current = false;addGameChat("Announcer","HIGHER OR LOWER! Build 
       if(gameActive.id==="puffclock" && pcPhase) {
         // Drive canvas draw loop
         if(pcCanvasRef.current && pcPhase){
-          if(!pcAnimRef.current){ const loop=()=>{pcDrawCanvas();pcAnimRef.current=requestAnimationFrame(loop);}; pcAnimRef.current=requestAnimationFrame(loop); }
+          if(pcAnimRef.current) cancelAnimationFrame(pcAnimRef.current); {const loop=()=>{pcDrawCanvas();pcAnimRef.current=requestAnimationFrame(loop);}; pcAnimRef.current=requestAnimationFrame(loop);}
         }
         const pcControlsSlot = (
           <div style={{display:"flex",flexDirection:"column",gap:6,alignItems:"center",width:"100%"}}>
@@ -20316,10 +19058,9 @@ gameSoundsMuted.current = false;addGameChat("Announcer","HIGHER OR LOWER! Build 
 
         // Drive canvas draw loop
         if(bdCanvasRef.current && bdPhase && bdPhase!=="intro" && bdPhase!=="final"){
-          if(!bdAnimRef.current){
-            const loop=()=>{bdDrawCanvas();bdAnimRef.current=requestAnimationFrame(loop);};
-            bdAnimRef.current=requestAnimationFrame(loop);
-          }
+          if(bdAnimRef.current) cancelAnimationFrame(bdAnimRef.current);
+          {const loop=()=>{bdDrawCanvas();bdAnimRef.current=requestAnimationFrame(loop);};
+          bdAnimRef.current=requestAnimationFrame(loop);}
         }
 
         // Controls slot for chat overlay -- THREE-INPUT
@@ -20341,8 +19082,9 @@ gameSoundsMuted.current = false;addGameChat("Announcer","HIGHER OR LOWER! Build 
                 <div data-btn="true"
                   onMouseDown={(e)=>{e.stopPropagation();bdStartHold();}}
                   onMouseUp={(e)=>{e.stopPropagation();bdReleaseHold();}}
-                  onTouchStart={(e)=>{e.stopPropagation();bdStartHold();}}
+                  onTouchStart={(e)=>{e.stopPropagation();e.preventDefault();bdStartHold();}}
                   onTouchEnd={(e)=>{e.stopPropagation();bdReleaseHold();}}
+                  onTouchCancel={(e)=>{e.stopPropagation();bdReleaseHold();}}
                   style={{touchAction:"none",flex:1.3,padding:"12px 0",borderRadius:14,cursor:"pointer",textAlign:"center",
                     background:"linear-gradient(135deg,rgba(192,132,252,0.12),rgba(255,77,141,0.06))",border:"2px solid rgba(192,132,252,0.25)",
                     userSelect:"none",WebkitUserSelect:"none"}}>
@@ -20352,8 +19094,9 @@ gameSoundsMuted.current = false;addGameChat("Announcer","HIGHER OR LOWER! Build 
                 <div data-btn="true"
                   onMouseDown={(e)=>{e.stopPropagation();bdStartHold();}}
                   onMouseUp={(e)=>{e.stopPropagation();bdReleaseHold();}}
-                  onTouchStart={(e)=>{e.stopPropagation();bdStartHold();}}
+                  onTouchStart={(e)=>{e.stopPropagation();e.preventDefault();bdStartHold();}}
                   onTouchEnd={(e)=>{e.stopPropagation();bdReleaseHold();}}
+                  onTouchCancel={(e)=>{e.stopPropagation();bdReleaseHold();}}
                   style={{touchAction:"none",flex:1,padding:"12px 0",borderRadius:14,cursor:"pointer",textAlign:"center",
                     background:"linear-gradient(135deg,rgba(255,50,50,0.15),rgba(200,0,0,0.08))",border:"2px solid rgba(255,50,50,0.3)",
                     animation:"countPulse 1.5s infinite",userSelect:"none",WebkitUserSelect:"none"}}>
@@ -20541,7 +19284,7 @@ gameSoundsMuted.current = false;addGameChat("Announcer","HIGHER OR LOWER! Build 
       // PUFF LIMBO -- V3 Canvas Render
       // ═══════════════════════════════════════════════════
       if(gameActive.id==="pufflimbo" && plPhase) {
-        if(plCanvasRef.current && plPhase){ if(!plAnimRef.current){ const loop=()=>{plDrawCanvas();plAnimRef.current=requestAnimationFrame(loop);}; plAnimRef.current=requestAnimationFrame(loop); } }
+        if(plCanvasRef.current && plPhase){ if(plAnimRef.current) cancelAnimationFrame(plAnimRef.current); {const loop=()=>{plDrawCanvas();plAnimRef.current=requestAnimationFrame(loop);}; plAnimRef.current=requestAnimationFrame(loop);} }
         const plControlsSlot = (
           <div style={{display:"flex",flexDirection:"column",gap:6,alignItems:"center",width:"100%"}}>
             {(plPhase==="ready"||plPhase==="puffing") && (
@@ -20622,72 +19365,169 @@ gameSoundsMuted.current = false;addGameChat("Announcer","HIGHER OR LOWER! Build 
       // SIMON PUFFS -- Render (Purple Neon Memory Stage)
       // ===============================================================
       if(gameActive.id==="simonpuffs" && spPhase) {
-        if(spCanvasRef.current && spPhase){
-          if(!spAnimRef.current){ const loop=()=>{spDrawCanvas();spAnimRef.current=requestAnimationFrame(loop);}; spAnimRef.current=requestAnimationFrame(loop); }
-        }
+        const spTypeColor = (t) => t==="short"?C.cyan:t==="medium"?C.gold:C.pink;
+        const spTypeLabel = (t) => t==="short"?"SHORT":t==="medium"?"MEDIUM":"LONG";
+        const isIntroSP = spPhase==="intro";
+        const isShowing = spPhase==="showing";
+        const isInputSP = spPhase==="input";
+        const isEliminated = spPhase==="eliminated";
+        const isFinalSP = spPhase==="final";
         const puffTypeNow = spPuffTime < 1.0 ? "short" : spPuffTime < 2.5 ? "medium" : "long";
-        const spControlsSlot = (
-          <div style={{display:"flex",flexDirection:"column",gap:6,alignItems:"center",width:"100%"}}>
-            {spPhase==="input" && (
-              <div style={{display:"flex",gap:8,width:"90%",maxWidth:360}}>
-                <div data-btn="true"
-                  onMouseDown={(e)=>{e.stopPropagation();spStartPuff();}} onMouseUp={(e)=>{e.stopPropagation();spEndPuff();}}
-                  onTouchStart={(e)=>{e.stopPropagation();spStartPuff();}} onTouchEnd={(e)=>{e.stopPropagation();spEndPuff();}}
-                  style={{touchAction:"none",flex:1,padding:"14px 0",borderRadius:14,cursor:"pointer",textAlign:"center",
-                    background:spPuffing?C.purple+"30":C.purple+"15",border:"2px solid "+(spPuffing?C.purple:C.purple+"40"),
-                    transform:spPuffing?"scale(1.05)":"scale(1)",transition:"all 0.15s",userSelect:"none",WebkitUserSelect:"none"}}>
-                  <div style={{fontSize:14,fontWeight:900,color:C.purple}}>
-                    {spPuffing?"REPEATING... "+spPuffTime.toFixed(1)+"s":"HOLD TO PUFF PATTERN"}
-                  </div>
-                  <div style={{fontSize:8,color:C.text3,marginTop:2}}>{spPlayerPattern.length}/{spPattern.length} puffs</div>
-                </div>
-              </div>
-            )}
-            {(spPhase==="eliminated"||spPhase==="final") && (
-              <div style={{display:"flex",gap:8,justifyContent:"center"}}>
-                <div data-btn="true" onClick={(e)=>{e.stopPropagation();spEndGame();startSimonPuffs();setGameActive({id:"simonpuffs",name:"Simon Puffs",emoji:"\u{1F534}",color:C.red});}}
-                  style={{touchAction:"none",padding:"10px 24px",borderRadius:12,cursor:"pointer",background:C.purple+"15",border:"1px solid "+C.purple+"30",fontSize:13,fontWeight:800,color:C.purple}}>{spPhase==="final"?"Play Again":"Try Again"}</div>
-                <div data-btn="true" onClick={(e)=>{e.stopPropagation();spEndGame();}}
-                  style={{touchAction:"none",padding:"10px 24px",borderRadius:12,cursor:"pointer",background:C.text3+"10",border:"1px solid "+C.text3+"20",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
-              </div>
-            )}
-          </div>
-        );
         return (
-          <div style={{position:"fixed",inset:0,zIndex:100,display:"flex",flexDirection:"column",touchAction:"none",animation:screenShake?"shake 0.4s ease":"none"}}>
+          <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden",touchAction:"none",background:"linear-gradient(180deg, #0a0018 0%, #1a0040 30%, #120028 60%, #050010 100%)",animation:screenShake?"shake 0.4s ease":"none"}}>
             {screenFlash && <div style={{position:"absolute",inset:0,zIndex:200,pointerEvents:"none",opacity:0,background:screenFlash==="goal"?"rgba(160,80,255,0.3)":"rgba(255,50,50,0.2)",animation:"flashOverlay 0.4s ease forwards"}}/>}
             {confettiParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size*0.6,background:p.color,borderRadius:1,transform:"rotate("+p.rot+"deg)",zIndex:210,pointerEvents:"none",animation:"confettiFall 1.5s ease-out forwards"}}/>))}
-            <div style={{position:"relative",zIndex:50,flexShrink:0,background:"rgba(6,16,30,0.98)",borderBottom:"1px solid rgba(192,132,252,0.1)"}}>
-              <div style={{padding:"6px 12px 2px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                <div style={{fontSize:8,fontWeight:600,color:"rgba(255,255,255,0.4)",letterSpacing:1}}><span style={{fontWeight:800,color:"rgba(255,255,255,0.6)"}}>{"Powered by "}<span style={{fontWeight:900,letterSpacing:2}}>MOOD LAB</span></span></div>
-                <div style={{display:"flex",gap:5,alignItems:"center"}}>
-                  <div onClick={()=>{playFx("tap");setShowBlePopup(true);}} data-btn="true" style={{touchAction:"none",display:"flex",alignItems:"center",gap:3,padding:"2px 8px",borderRadius:100,cursor:"pointer",background:bleConnected?"rgba(52,211,153,0.1)":"rgba(251,146,60,0.1)",border:"1px solid "+(bleConnected?"rgba(52,211,153,0.25)":"rgba(251,146,60,0.25)")}}>
-                    <div style={{width:5,height:5,borderRadius:"50%",background:bleConnected?C.green:C.orange}}/><span style={{fontSize:8,fontWeight:700,color:bleConnected?C.green:C.orange}}>{bleConnected?"Puff":"Connect"}</span>
+            <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse at 50% 20%, rgba(160,80,255,.15) 0%, transparent 60%)",pointerEvents:"none"}}/>
+            <div style={{position:"absolute",top:"10%",left:"20%",width:200,height:200,borderRadius:"50%",background:"radial-gradient(circle, rgba(192,132,252,.08), transparent 70%)",pointerEvents:"none",animation:"pulse 4s infinite"}}/>
+            <div style={{position:"absolute",top:"30%",right:"10%",width:150,height:150,borderRadius:"50%",background:"radial-gradient(circle, rgba(0,229,255,.06), transparent 70%)",pointerEvents:"none",animation:"pulse 3s infinite 1s"}}/>
+            {/* Stage Show Chat -- visible for audience always, contestant during breaks only */}
+            {stageRole && isStageBreak("simonpuffs") && renderGameChatPanel("SIMON PUFFS")}
+            {stageRole === "contestant" && isStageBreak("simonpuffs") && (
+              <div style={{position:"fixed",bottom:280,left:0,right:0,zIndex:290,textAlign:"center",animation:"fadeIn 0.3s ease",pointerEvents:"none"}}>
+                <span style={{padding:"6px 16px",borderRadius:100,fontSize:9,fontWeight:700,background:C.gold+"15",border:"1px solid "+C.gold+"25",color:C.gold,backdropFilter:"blur(8px)"}}>
+                  ☕ BREAK TIME — Chat with the audience!
+                </span>
+              </div>
+            )}
+            {!stageRole && renderGameChatPanel("SIMON PUFFS")}
+            {overlayBack(()=>{spEndGame();})}
+            <div style={{display:"flex",flexDirection:"column",alignItems:"center",maxWidth:380,width:"100%",padding:"50px 16px 16px",gap:8,zIndex:10,margin:"0 auto",height:"100%"}}>
+              {renderContestantGrid()}
+              <div style={{fontSize:16,fontWeight:900,letterSpacing:4,color:C.purple,textShadow:"0 0 20px rgba(192,132,252,.5)"}}>
+                {"\uD83C\uDFAD"} SIMON PUFFS
+              </div>
+              <div style={{display:"flex",gap:16,alignItems:"center"}}>
+                <div style={{textAlign:"center"}}><div style={{fontSize:9,color:C.text3,fontWeight:700}}>ROUND</div><div style={{fontSize:18,fontWeight:900,color:C.purple}}>{spRound}</div></div>
+                <div style={{textAlign:"center"}}><div style={{fontSize:9,color:C.text3,fontWeight:700}}>SCORE</div><div style={{fontSize:18,fontWeight:900,color:C.gold}}>{spScore}</div></div>
+                <div style={{textAlign:"center"}}><div style={{fontSize:9,color:C.text3,fontWeight:700}}>PLAYERS</div><div style={{fontSize:18,fontWeight:900,color:C.cyan}}>{spPlayersLeft}</div></div>
+              </div>
+              {isIntroSP && (
+                <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",animation:"fadeIn .5s ease"}}>
+                  {spIntroStep>=1 && <div style={{fontSize:28,marginBottom:8,animation:"goalBurst .6s ease both"}}>{"\uD83C\uDFAD"}</div>}
+                  {spIntroStep>=2 && <div style={{fontSize:22,fontWeight:900,color:C.purple,textShadow:"0 0 20px rgba(192,132,252,.5)",letterSpacing:4,animation:"goalBurst .6s ease both"}}>SIMON PUFFS</div>}
+                  {spIntroStep>=3 && (
+                    <div style={{display:"flex",gap:12,marginTop:16,animation:"fadeIn .5s ease both"}}>
+                      {SP_PUFF_TYPES.map((pt,i)=>(
+                        <div key={i} style={{padding:"8px 16px",borderRadius:10,background:pt.color+"15",border:"1px solid "+pt.color+"30",textAlign:"center"}}>
+                          <div style={{fontSize:12,fontWeight:800,color:pt.color}}>{pt.label}</div>
+                          <div style={{fontSize:9,color:C.text3}}>{"<"+pt.maxDur+"s"}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {spIntroStep>=4 && <div style={{fontSize:24,fontWeight:900,color:C.gold,marginTop:16,letterSpacing:4,animation:"duelCountdownPop .6s ease both"}}>GET READY!</div>}
+                </div>
+              )}
+              {(isShowing || isInputSP || spPhase==="judging") && (
+                <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",width:"100%",gap:12}}>
+                  <div style={{width:"100%",maxWidth:340}}>
+                    <div style={{fontSize:10,fontWeight:800,color:C.text3,letterSpacing:2,marginBottom:6,textAlign:"center"}}>
+                      {isShowing ? "WATCH THE PATTERN" : "YOUR TURN"}
+                    </div>
+                    <div style={{display:"flex",gap:6,justifyContent:"center",flexWrap:"wrap"}}>
+                      {spPattern.map((p,i) => {
+                        const col = spTypeColor(p.type);
+                        const active = isShowing && spCurrentShow === i;
+                        const matched = !isShowing && spPlayerPattern[i] && spPlayerPattern[i].type === p.type;
+                        const wrong = !isShowing && spPlayerPattern[i] && spPlayerPattern[i].type !== p.type;
+                        return (
+                          <div key={i} style={{width:44,height:44,borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",
+                            background:active ? col+"40" : matched ? C.green+"25" : wrong ? C.red+"25" : col+"10",
+                            border:"2px solid "+(active ? col : matched ? C.green+"60" : wrong ? C.red+"60" : col+"25"),
+                            transition:"all .2s ease",transform:active?"scale(1.15)":"scale(1)",
+                            boxShadow:active?"0 0 20px "+col+"60":"none"}}>
+                            <div style={{fontSize:10,fontWeight:900,color:active?col:matched?C.green:wrong?C.red:col+"80"}}>
+                              {isShowing && !active ? "?" : spTypeLabel(p.type)}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
-                  <div style={{display:"flex",alignItems:"center",gap:2,padding:"2px 7px",borderRadius:100,background:"rgba(255,217,61,0.06)",border:"1px solid rgba(255,217,61,0.12)"}}>
-                    <span style={{fontSize:9}}>{"\u{1FA99}"}</span><span style={{fontSize:10,fontWeight:800,color:C.gold,fontFamily:"'Courier New',monospace"}}>{coins.toLocaleString()}</span>
+                  {isInputSP && (
+                    <div style={{width:"100%",maxWidth:340,marginTop:8}}>
+                      <div style={{fontSize:10,fontWeight:800,color:C.cyan,letterSpacing:2,marginBottom:6,textAlign:"center"}}>YOUR PATTERN ({spPlayerPattern.length}/{spPattern.length})</div>
+                      <div style={{display:"flex",gap:6,justifyContent:"center",flexWrap:"wrap",minHeight:44}}>
+                        {spPlayerPattern.map((p,i) => {
+                          const col = spTypeColor(p.type);
+                          const correct = spPattern[i] && p.type === spPattern[i].type;
+                          return (
+                            <div key={i} style={{width:40,height:40,borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",
+                              background:correct?C.green+"20":C.red+"20",border:"2px solid "+(correct?C.green+"50":C.red+"50"),
+                              animation:"goalBurst .3s ease both"}}>
+                              <div style={{fontSize:9,fontWeight:900,color:correct?C.green:C.red}}>{spTypeLabel(p.type)}</div>
+                            </div>
+                          );
+                        })}
+                        {spPuffing && (
+                          <div style={{width:40,height:40,borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",
+                            background:spTypeColor(puffTypeNow)+"30",border:"2px solid "+spTypeColor(puffTypeNow),
+                            animation:"pulse .5s infinite"}}>
+                            <div style={{fontSize:9,fontWeight:900,color:spTypeColor(puffTypeNow)}}>{spPuffTime.toFixed(1)}s</div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                  {isInputSP && spPuffing && (
+                    <div style={{width:"100%",maxWidth:300,marginTop:8}}>
+                      <div style={{height:20,borderRadius:10,background:"rgba(255,255,255,.06)",overflow:"hidden",position:"relative"}}>
+                        <div style={{position:"absolute",left:0,top:0,bottom:0,width:(Math.min(spPuffTime/4,1)*100)+"%",borderRadius:10,
+                          background:"linear-gradient(90deg,"+C.cyan+","+C.gold+","+C.pink+")",transition:"width .05s linear"}}/>
+                        <div style={{position:"absolute",left:"25%",top:0,bottom:0,width:1,background:C.cyan+"40"}}/>
+                        <div style={{position:"absolute",left:"62.5%",top:0,bottom:0,width:1,background:C.gold+"40"}}/>
+                      </div>
+                      <div style={{display:"flex",justifyContent:"space-between",marginTop:2}}>
+                        <div style={{fontSize:8,color:C.cyan,fontWeight:700}}>SHORT</div>
+                        <div style={{fontSize:8,color:C.gold,fontWeight:700}}>MEDIUM</div>
+                        <div style={{fontSize:8,color:C.pink,fontWeight:700}}>LONG</div>
+                      </div>
+                    </div>
+                  )}
+                  {isInputSP && (
+                    <div
+                      onMouseDown={spStartPuff} onMouseUp={spEndPuff} onMouseLeave={spEndPuff}
+                      onTouchStart={(e)=>{e.preventDefault();spStartPuff();}} onTouchEnd={(e)=>{e.preventDefault();spEndPuff();}}
+                      style={{padding:"16px 40px",borderRadius:16,cursor:"pointer",textAlign:"center",userSelect:"none",WebkitUserSelect:"none",
+                        background:spPuffing?C.purple+"30":C.purple+"15",border:"2px solid "+(spPuffing?C.purple:C.purple+"40"),
+                        fontSize:16,fontWeight:900,color:C.purple,marginTop:8,
+                        boxShadow:spPuffing?"0 0 30px "+C.purple+"40":"none",
+                        transform:spPuffing?"scale(1.05)":"scale(1)",transition:"all .15s ease"}}>
+                      {spPuffing ? "REPEATING... "+spPuffTime.toFixed(1)+"s" : "Watch the pattern · Tap or Puff to repeat 🔴"}
+                    </div>
+                  )}
+                </div>
+              )}
+              {isEliminated && (
+                <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",animation:"fadeIn .5s ease"}}>
+                  <div style={{fontSize:48,marginBottom:8,animation:"shake .5s ease"}}>{"\uD83D\uDCA5"}</div>
+                  <div style={{fontSize:22,fontWeight:900,color:C.red,letterSpacing:4,textShadow:"0 0 20px rgba(255,50,50,.5)"}}>ELIMINATED!</div>
+                  <div style={{fontSize:13,color:C.text2,marginTop:8}}>You survived {spRound} round{spRound!==1?"s":""}</div>
+                  <div style={{fontSize:18,fontWeight:900,color:C.gold,marginTop:8}}>{spScore} points</div>
+                  <div style={{display:"flex",gap:10,marginTop:16}}>
+                    <div onClick={()=>{spEndGame();startSimonPuffs();}} style={{padding:"12px 24px",borderRadius:12,cursor:"pointer",background:C.purple+"15",border:"1px solid "+C.purple+"30",fontSize:13,fontWeight:800,color:C.purple}}>Try Again</div>
+                    <div onClick={spEndGame} style={{padding:"12px 24px",borderRadius:12,cursor:"pointer",background:C.text3+"10",border:"1px solid "+C.text3+"20",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
                   </div>
                 </div>
-              </div>
-              <div style={{padding:"2px 12px 2px",display:"flex",alignItems:"center",gap:6}}>
-                <div onClick={()=>{playFx("tap");spEndGame();}} data-btn="true" style={{touchAction:"none",display:"inline-flex",alignItems:"center",gap:3,cursor:"pointer",padding:"3px 8px",borderRadius:8,background:"rgba(255,255,255,0.04)",border:"1px solid "+C.border,flexShrink:0}}>
-                  <span style={{fontSize:10,color:C.text2}}>{"\u2190"}</span><span style={{fontSize:9,fontWeight:700,color:C.text2}}>Back</span>
+              )}
+              {isFinalSP && (
+                <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",animation:"fadeIn .5s ease"}}>
+                  <div style={{fontSize:48,marginBottom:8,animation:"countPulse 1s infinite"}}>{"\uD83C\uDFC6"}</div>
+                  <div style={{fontSize:22,fontWeight:900,color:C.gold,letterSpacing:4,textShadow:"0 0 20px rgba(255,215,0,.5)"}}>SIMON MASTER!</div>
+                  <div style={{fontSize:13,color:C.text2,marginTop:8}}>All 10 rounds completed!</div>
+                  <div style={{fontSize:24,fontWeight:900,color:C.gold,marginTop:8}}>{spScore} points</div>
+                  <div style={{display:"flex",gap:10,marginTop:16}}>
+                    <div onClick={()=>{spEndGame();startSimonPuffs();}} style={{padding:"12px 24px",borderRadius:12,cursor:"pointer",background:C.purple+"15",border:"1px solid "+C.purple+"30",fontSize:13,fontWeight:800,color:C.purple}}>Play Again</div>
+                    <div onClick={spEndGame} style={{padding:"12px 24px",borderRadius:12,cursor:"pointer",background:C.text3+"10",border:"1px solid "+C.text3+"20",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
+                  </div>
+                  <div onClick={()=>{spEndGame();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
                 </div>
-                <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
-                  <span style={{fontSize:10,fontWeight:800,color:C.purple}}>{"\u{1F534}"} SIMON PUFFS</span>
-                  <span style={{fontSize:9,fontWeight:700,color:C.gold}}>{"\u{1FA99}"} {spScore}</span>
+              )}
+              {spComment && (
+                <div style={{padding:"6px 16px",borderRadius:10,maxWidth:340,textAlign:"center",...LG.pill,marginTop:"auto"}}>
+                  <div style={{fontSize:10,fontWeight:700,color:C.text,lineHeight:1.3}}>{spComment}</div>
                 </div>
-              </div>
-              <div style={{padding:"2px 12px 4px",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
-                <span style={{fontSize:9,fontWeight:700,color:C.purple}}>Round {spRound}</span>
-                <span style={{fontSize:9,fontWeight:700,color:C.cyan}}>Players: {spPlayersLeft}</span>
-                {spPuffing && <span style={{fontSize:9,fontWeight:800,color:spPuffTime<1.0?C.cyan:spPuffTime<2.5?C.gold:C.pink}}>{spPuffTime.toFixed(1)}s</span>}
-              </div>
-            </div>
-            {renderContestantGrid()}
-            <div style={{position:"relative",flex:1,overflow:"hidden"}}>
-              <canvas ref={spCanvasRef} width={Math.round(420*SP_DPR)} height={Math.round(600*SP_DPR)} style={{position:"absolute",top:0,left:0,width:"100%",height:"100%"}}/>
-              {renderGameChatOverlay(spControlsSlot)}
+              )}
             </div>
           </div>
         );
@@ -20697,92 +19537,151 @@ gameSoundsMuted.current = false;addGameChat("Announcer","HIGHER OR LOWER! Build 
       // PUFF AUCTION -- Render (Gold Luxury Auction House)
       // ===============================================================
       if(gameActive.id==="puffauction" && paPhase) {
-        if(paCanvasRef.current && paPhase){
-          if(!paAnimRef.current){ const loop=()=>{paDrawCanvas();paAnimRef.current=requestAnimationFrame(loop);}; paAnimRef.current=requestAnimationFrame(loop); }
-        }
+        const isIntroPA = paPhase==="intro";
+        const isReveal = paPhase==="reveal";
+        const isBidding = paPhase==="bidding";
+        const isResultPA = paPhase==="result";
+        const isFinalPA = paPhase==="final";
         const dangerPct = paBidTime / PA_BLINKER_THRESHOLD;
         const inDanger = paBidTime >= PA_DANGER_ZONE;
-        const paControlsSlot = (
-          <div style={{display:"flex",flexDirection:"column",gap:6,alignItems:"center",width:"100%"}}>
-            {paPhase==="bidding" && !paDisqualified && (
-              <div style={{display:"flex",gap:8,width:"90%",maxWidth:360}}>
-                <div data-btn="true"
-                  onMouseDown={(e)=>{e.stopPropagation();paStartBid();}} onMouseUp={(e)=>{e.stopPropagation();paEndBid();}}
-                  onTouchStart={(e)=>{e.stopPropagation();paStartBid();}} onTouchEnd={(e)=>{e.stopPropagation();paEndBid();}}
-                  style={{touchAction:"none",flex:1,padding:"14px 0",borderRadius:14,cursor:"pointer",textAlign:"center",
-                    background:paHolding?(inDanger?C.red+"30":C.gold+"25"):C.gold+"15",
-                    border:"2px solid "+(paHolding?(inDanger?C.red:C.gold):C.gold+"40"),
-                    transform:paHolding?"scale(1.05)":"scale(1)",transition:"all 0.15s",userSelect:"none",WebkitUserSelect:"none"}}>
-                  <div style={{fontSize:14,fontWeight:900,color:paHolding?(inDanger?C.red:C.gold):C.gold}}>
-                    {paHolding?(inDanger?"DANGER! RELEASE!":"BIDDING... "+paBidTime.toFixed(1)+"s"):"HOLD TO BID \u{1F528}"}
-                  </div>
-                  <div style={{fontSize:8,color:C.text3,marginTop:2}}>{"Don't blinker (5s+)!"}</div>
-                </div>
-              </div>
-            )}
-            {paPhase==="bidding" && paDisqualified && (
-              <div style={{textAlign:"center",padding:"8px 16px",borderRadius:12,background:C.red+"20",border:"1px solid "+C.red+"40"}}>
-                <div style={{fontSize:14,fontWeight:900,color:C.red}}>DISQUALIFIED!</div>
-              </div>
-            )}
-            {paPhase==="final" && (
-              <div style={{display:"flex",gap:8,justifyContent:"center"}}>
-                <div data-btn="true" onClick={(e)=>{e.stopPropagation();paEndGame();startPuffAuction();setGameActive({id:"puffauction",name:"Puff Auction",emoji:"\u{1F528}",color:C.lime});}}
-                  style={{touchAction:"none",padding:"10px 24px",borderRadius:12,cursor:"pointer",background:C.gold+"15",border:"1px solid "+C.gold+"30",fontSize:13,fontWeight:800,color:C.gold}}>Play Again</div>
-                <div data-btn="true" onClick={(e)=>{e.stopPropagation();paEndGame();}}
-                  style={{touchAction:"none",padding:"10px 24px",borderRadius:12,cursor:"pointer",background:C.text3+"10",border:"1px solid "+C.text3+"20",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
-              </div>
-            )}
-          </div>
-        );
         return (
-          <div style={{position:"fixed",inset:0,zIndex:100,display:"flex",flexDirection:"column",touchAction:"none",animation:screenShake?"shake 0.4s ease":"none"}}>
+          <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden",touchAction:"none",background:"linear-gradient(180deg, #1a0f00 0%, #2a1800 25%, #1a1000 50%, #0a0800 100%)",animation:screenShake?"shake 0.4s ease":"none"}}>
             {screenFlash && <div style={{position:"absolute",inset:0,zIndex:200,pointerEvents:"none",opacity:0,background:screenFlash==="goal"?"rgba(255,215,0,0.3)":screenFlash==="blinker"?"rgba(255,0,0,0.3)":"rgba(255,50,50,0.2)",animation:"flashOverlay 0.4s ease forwards"}}/>}
             {confettiParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size*0.6,background:p.color,borderRadius:1,transform:"rotate("+p.rot+"deg)",zIndex:210,pointerEvents:"none",animation:"confettiFall 1.5s ease-out forwards"}}/>))}
-            <div style={{position:"relative",zIndex:50,flexShrink:0,background:"rgba(6,16,30,0.98)",borderBottom:"1px solid rgba(255,217,61,0.1)"}}>
-              <div style={{padding:"6px 12px 2px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                <div style={{fontSize:8,fontWeight:600,color:"rgba(255,255,255,0.4)",letterSpacing:1}}><span style={{fontWeight:800,color:"rgba(255,255,255,0.6)"}}>{"Powered by "}<span style={{fontWeight:900,letterSpacing:2}}>MOOD LAB</span></span></div>
-                <div style={{display:"flex",gap:5,alignItems:"center"}}>
-                  <div onClick={()=>{playFx("tap");setShowBlePopup(true);}} data-btn="true" style={{touchAction:"none",display:"flex",alignItems:"center",gap:3,padding:"2px 8px",borderRadius:100,cursor:"pointer",background:bleConnected?"rgba(52,211,153,0.1)":"rgba(251,146,60,0.1)",border:"1px solid "+(bleConnected?"rgba(52,211,153,0.25)":"rgba(251,146,60,0.25)")}}>
-                    <div style={{width:5,height:5,borderRadius:"50%",background:bleConnected?C.green:C.orange}}/><span style={{fontSize:8,fontWeight:700,color:bleConnected?C.green:C.orange}}>{bleConnected?"Puff":"Connect"}</span>
+            <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse at 50% 30%, rgba(255,215,0,.08) 0%, transparent 60%)",pointerEvents:"none"}}/>
+            <div style={{position:"absolute",top:"5%",left:"50%",transform:"translateX(-50%)",width:300,height:300,borderRadius:"50%",background:"radial-gradient(circle, rgba(255,215,0,.06), transparent 70%)",pointerEvents:"none"}}/>
+            {/* Stage Show Chat -- visible for audience always, contestant during breaks only */}
+            {stageRole && isStageBreak("puffauction") && renderGameChatPanel("PUFF AUCTION")}
+            {stageRole === "contestant" && isStageBreak("puffauction") && (
+              <div style={{position:"fixed",bottom:280,left:0,right:0,zIndex:290,textAlign:"center",animation:"fadeIn 0.3s ease",pointerEvents:"none"}}>
+                <span style={{padding:"6px 16px",borderRadius:100,fontSize:9,fontWeight:700,background:C.gold+"15",border:"1px solid "+C.gold+"25",color:C.gold,backdropFilter:"blur(8px)"}}>
+                  ☕ BREAK TIME — Chat with the audience!
+                </span>
+              </div>
+            )}
+            {!stageRole && renderGameChatPanel("PUFF AUCTION")}
+            {overlayBack(()=>{paEndGame();})}
+            <div style={{display:"flex",flexDirection:"column",alignItems:"center",maxWidth:380,width:"100%",padding:"50px 16px 16px",gap:8,zIndex:10,margin:"0 auto",height:"100%"}}>
+              {renderContestantGrid()}
+              <div style={{fontSize:16,fontWeight:900,letterSpacing:4,color:C.gold,textShadow:"0 0 20px rgba(255,215,0,.4)"}}>
+                {"\uD83C\uDFAF"} PUFF AUCTION
+              </div>
+              <div style={{display:"flex",gap:4}}>
+                {PA_PRIZES.map((pr,i)=>(
+                  <div key={i} style={{width:10,height:10,borderRadius:5,background:i<paRound?C.gold:i===paRound?C.gold+"80":C.text3+"30",border:"1px solid "+(i===paRound?C.gold:C.text3+"20"),boxShadow:i===paRound?"0 0 8px "+C.gold+"40":"none"}}/>
+                ))}
+              </div>
+              {isIntroPA && (
+                <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",animation:"fadeIn .5s ease"}}>
+                  {paIntroStep>=1 && <div style={{fontSize:32,marginBottom:8,animation:"goalBurst .6s ease both"}}>{"\uD83C\uDFAF"}</div>}
+                  {paIntroStep>=2 && <div style={{fontSize:22,fontWeight:900,color:C.gold,textShadow:"0 0 20px rgba(255,215,0,.5)",letterSpacing:4,animation:"goalBurst .6s ease both"}}>PUFF AUCTION</div>}
+                  {paIntroStep>=3 && (
+                    <div style={{marginTop:12,animation:"fadeIn .5s ease both",textAlign:"center"}}>
+                      <div style={{fontSize:11,color:C.text2,lineHeight:1.6}}>Longest puff wins the prize!</div>
+                      <div style={{fontSize:11,color:C.red,fontWeight:800,marginTop:4}}>But BLINKER (5s+) = DISQUALIFIED!</div>
+                      <div style={{fontSize:11,color:C.gold,marginTop:4}}>Sweet spot: 4.0 - 4.4 seconds</div>
+                    </div>
+                  )}
+                  {paIntroStep>=4 && <div style={{fontSize:24,fontWeight:900,color:C.gold,marginTop:16,letterSpacing:4,animation:"duelCountdownPop .6s ease both"}}>LET THE BIDDING BEGIN!</div>}
+                </div>
+              )}
+              {(isReveal || isBidding || isResultPA) && paPrize && (
+                <div style={{display:"flex",flexDirection:"column",alignItems:"center",marginTop:8}}>
+                  <div style={{position:"relative",width:120,height:120,display:"flex",alignItems:"center",justifyContent:"center",background:"radial-gradient(circle, "+paPrize.color+"15, transparent 70%)",borderRadius:"50%",border:"2px solid "+paPrize.color+"30",boxShadow:"0 0 40px "+paPrize.color+"15, inset 0 0 20px "+paPrize.color+"08",animation:isReveal?"goalBurst .8s ease both":"none"}}>
+                    <div style={{fontSize:48,animation:isReveal?"countPulse 1s infinite":"none"}}>{paPrize.emoji}</div>
+                    <div style={{position:"absolute",top:-30,left:"50%",transform:"translateX(-50%)",width:2,height:30,background:"linear-gradient(to bottom, "+C.gold+"40, transparent)"}}/>
                   </div>
-                  <div style={{display:"flex",alignItems:"center",gap:2,padding:"2px 7px",borderRadius:100,background:"rgba(255,217,61,0.06)",border:"1px solid rgba(255,217,61,0.12)"}}>
-                    <span style={{fontSize:9}}>{"\u{1FA99}"}</span><span style={{fontSize:10,fontWeight:800,color:C.gold,fontFamily:"'Courier New',monospace"}}>{coins.toLocaleString()}</span>
+                  <div style={{fontSize:16,fontWeight:900,color:paPrize.color,marginTop:8,letterSpacing:2}}>{paPrize.name}</div>
+                  <div style={{fontSize:11,color:C.text3}}>Round {paRound+1} of {PA_PRIZES.length}</div>
+                </div>
+              )}
+              {isBidding && (
+                <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",width:"100%",gap:12}}>
+                  <div style={{width:"100%",maxWidth:300}}>
+                    <div style={{height:28,borderRadius:14,background:"rgba(255,255,255,.06)",overflow:"hidden",position:"relative"}}>
+                      <div style={{position:"absolute",left:0,top:0,bottom:0,width:(dangerPct*100)+"%",borderRadius:14,background:"linear-gradient(90deg,"+C.cyan+","+C.gold+" 60%,"+(inDanger?C.red:C.orange)+")",transition:"width .05s linear",boxShadow:inDanger?"0 0 20px "+C.red+"60":"none"}}/>
+                      <div style={{position:"absolute",left:(PA_DANGER_ZONE/PA_BLINKER_THRESHOLD*100)+"%",top:0,bottom:0,width:2,background:C.red+"60",zIndex:2}}/>
+                      <div style={{position:"absolute",left:(PA_DANGER_ZONE/PA_BLINKER_THRESHOLD*100)+"%",top:-14,fontSize:7,color:C.red,fontWeight:800,transform:"translateX(-50%)",zIndex:3}}>DANGER</div>
+                      <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",zIndex:4}}>
+                        <span style={{fontSize:14,fontWeight:900,color:inDanger?C.red:C.text,textShadow:inDanger?"0 0 10px rgba(255,0,0,.5)":"none"}}>{paBidTime.toFixed(2)}s</span>
+                      </div>
+                    </div>
+                    <div style={{display:"flex",justifyContent:"space-between",marginTop:2}}>
+                      <div style={{fontSize:8,color:C.cyan,fontWeight:700}}>SAFE</div>
+                      <div style={{fontSize:8,color:C.gold,fontWeight:700}}>COMPETITIVE</div>
+                      <div style={{fontSize:8,color:C.red,fontWeight:700}}>BLINKER!</div>
+                    </div>
+                  </div>
+                  {paDisqualified && (
+                    <div style={{padding:"12px 24px",borderRadius:12,background:C.red+"20",border:"2px solid "+C.red,animation:"shake .5s ease",textAlign:"center"}}>
+                      <div style={{fontSize:18,fontWeight:900,color:C.red}}>DISQUALIFIED!</div>
+                      <div style={{fontSize:11,color:C.red,marginTop:4}}>You blinked! Over {PA_BLINKER_THRESHOLD}s!</div>
+                    </div>
+                  )}
+                  {!paDisqualified && (
+                    <div
+                      onMouseDown={paStartBid} onMouseUp={paEndBid} onMouseLeave={paEndBid}
+                      onTouchStart={(e)=>{e.preventDefault();paStartBid();}} onTouchEnd={(e)=>{e.preventDefault();paEndBid();}}
+                      style={{padding:"18px 48px",borderRadius:16,cursor:"pointer",textAlign:"center",userSelect:"none",WebkitUserSelect:"none",
+                        background:paHolding?(inDanger?C.red+"30":C.gold+"25"):C.gold+"15",
+                        border:"2px solid "+(paHolding?(inDanger?C.red:C.gold):C.gold+"40"),
+                        fontSize:16,fontWeight:900,color:paHolding?(inDanger?C.red:C.gold):C.gold,
+                        boxShadow:paHolding?"0 0 30px "+(inDanger?C.red:C.gold)+"40":"none",
+                        transform:paHolding?"scale(1.05)":"scale(1)",transition:"all .15s ease"}}>
+                      {paHolding ? (inDanger ? "DANGER! RELEASE!" : "BIDDING... "+paBidTime.toFixed(1)+"s") : "HOLD TO BID 🔨"}
+                    </div>
+                  )}
+                </div>
+              )}
+              {isResultPA && (
+                <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",width:"100%",gap:8,overflow:"auto"}}>
+                  {paShowGavel && <div style={{fontSize:36,animation:"duelCountdownPop .6s ease both"}}>{"\uD83D\uDD28"}</div>}
+                  <div style={{fontSize:14,fontWeight:900,color:paWinner&&paWinner.isYou?C.gold:C.text2,letterSpacing:2}}>
+                    {paWinner&&paWinner.isYou?"YOU WON!":"OUTBID!"}
+                  </div>
+                  <div style={{width:"100%",maxWidth:300}}>
+                    {paBids.slice(0,6).map((b,i)=>(
+                      <div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"6px 10px",borderRadius:8,marginBottom:3,
+                        background:b.isYou?(b.disqualified?C.red+"12":i===0?C.gold+"15":C.text3+"08"):C.text3+"06",
+                        border:"1px solid "+(b.isYou?(b.disqualified?C.red+"30":i===0?C.gold+"25":"transparent"):"transparent")}}>
+                        <div style={{fontSize:11,fontWeight:900,color:i===0&&!b.disqualified?C.gold:C.text3,width:16}}>{b.disqualified?"X":(i+1)}</div>
+                        <div style={{flex:1,fontSize:11,fontWeight:b.isYou?800:600,color:b.isYou?C.text:C.text2}}>{b.name}</div>
+                        <div style={{fontSize:11,fontWeight:800,color:b.disqualified?C.red:i===0?C.gold:C.text3}}>{b.disqualified?"DQ":b.time.toFixed(2)+"s"}</div>
+                      </div>
+                    ))}
                   </div>
                 </div>
-              </div>
-              <div style={{padding:"2px 12px 2px",display:"flex",alignItems:"center",gap:6}}>
-                <div onClick={()=>{playFx("tap");paEndGame();}} data-btn="true" style={{touchAction:"none",display:"inline-flex",alignItems:"center",gap:3,cursor:"pointer",padding:"3px 8px",borderRadius:8,background:"rgba(255,255,255,0.04)",border:"1px solid "+C.border,flexShrink:0}}>
-                  <span style={{fontSize:10,color:C.text2}}>{"\u2190"}</span><span style={{fontSize:9,fontWeight:700,color:C.text2}}>Back</span>
+              )}
+              {isFinalPA && (
+                <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",animation:"fadeIn .5s ease"}}>
+                  <div style={{fontSize:48,marginBottom:8,animation:"countPulse 1s infinite"}}>{"\uD83C\uDFAF"}</div>
+                  <div style={{fontSize:22,fontWeight:900,color:C.gold,letterSpacing:4,textShadow:"0 0 20px rgba(255,215,0,.5)"}}>AUCTION COMPLETE!</div>
+                  <div style={{fontSize:16,fontWeight:900,color:C.cyan,marginTop:12}}>Total Won: {paTotalWon} coins</div>
+                  <div style={{display:"flex",gap:10,marginTop:16}}>
+                    <div onClick={()=>{paEndGame();startPuffAuction();}} style={{padding:"12px 24px",borderRadius:12,cursor:"pointer",background:C.gold+"15",border:"1px solid "+C.gold+"30",fontSize:13,fontWeight:800,color:C.gold}}>Play Again</div>
+                    <div onClick={paEndGame} style={{padding:"12px 24px",borderRadius:12,cursor:"pointer",background:C.text3+"10",border:"1px solid "+C.text3+"20",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
+                  </div>
+                  <div onClick={()=>{paEndGame();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
                 </div>
-                <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
-                  <span style={{fontSize:10,fontWeight:800,color:C.gold}}>{"\u{1F528}"} PUFF AUCTION</span>
-                  <span style={{fontSize:9,fontWeight:700,color:C.gold}}>Won: {paTotalWon}</span>
+              )}
+              {paComment && (
+                <div style={{padding:"6px 16px",borderRadius:10,maxWidth:340,textAlign:"center",...LG.pill,marginTop:"auto"}}>
+                  <div style={{fontSize:10,fontWeight:700,color:paDisqualified?C.red:C.text,lineHeight:1.3}}>{paComment}</div>
                 </div>
-              </div>
-              <div style={{padding:"2px 12px 4px",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
-                <span style={{fontSize:9,fontWeight:700,color:C.text3}}>Round {paRound+1}/{PA_PRIZES.length}</span>
-                {paPrize && <span style={{fontSize:9,fontWeight:700,color:C.gold}}>{paPrize.emoji} {paPrize.name}</span>}
-                {paHolding && <span style={{fontSize:9,fontWeight:800,color:inDanger?C.red:C.gold}}>{paBidTime.toFixed(1)}s</span>}
-              </div>
-            </div>
-            {renderContestantGrid()}
-            <div style={{position:"relative",flex:1,overflow:"hidden"}}>
-              <canvas ref={paCanvasRef} width={Math.round(420*PA_DPR)} height={Math.round(600*PA_DPR)} style={{position:"absolute",top:0,left:0,width:"100%",height:"100%"}}/>
-              {renderGameChatOverlay(paControlsSlot)}
+              )}
             </div>
           </div>
         );
       }
 
       if(gameActive.id==="puffderby" && pdPhase) {
-        if(pdCanvasRef.current && pdPhase && pdPhase!=="pick"){ if(!pdAnimRef.current){ const loop=()=>{pdDrawCanvas();pdAnimRef.current=requestAnimationFrame(loop);}; pdAnimRef.current=requestAnimationFrame(loop); } }
+        if(pdCanvasRef.current && pdPhase && pdPhase!=="pick"){ if(pdAnimRef.current) cancelAnimationFrame(pdAnimRef.current); {const loop=()=>{pdDrawCanvas();pdAnimRef.current=requestAnimationFrame(loop);}; pdAnimRef.current=requestAnimationFrame(loop);} }
         else if(pdPhase==="pick" && pdCanvasRef.current){ pdDrawCanvas(); }
         const pdControlsSlot = (
           <div style={{display:"flex",flexDirection:"column",gap:6,alignItems:"center",width:"100%"}}>
             {pdPhase==="pick" && (
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:6,width:"90%",maxWidth:360}}>
-                {pdHorses.map((h,i)=>(
+                {PD_HORSE_NAMES.map((h,i)=>(
                   <div key={i} data-btn="true" onClick={(e)=>{e.stopPropagation();pdPickHorse(i);}}
                     style={{touchAction:"none",padding:"8px 4px",borderRadius:12,cursor:"pointer",textAlign:"center",background:"rgba(34,197,94,0.06)",border:"1px solid rgba(34,197,94,0.2)"}}>
                     <div style={{fontSize:22}}>{PD_HORSE_EMOJIS[i]}</div>
@@ -20801,14 +19700,14 @@ gameSoundsMuted.current = false;addGameChat("Announcer","HIGHER OR LOWER! Build 
                 </div>
                 <div data-btn="true"
                   onMouseDown={(e)=>{e.stopPropagation();pdPuffStart();}} onMouseUp={(e)=>{e.stopPropagation();pdPuffRelease();}}
-                  onTouchStart={(e)=>{e.stopPropagation();pdPuffStart();}} onTouchEnd={(e)=>{e.stopPropagation();pdPuffRelease();}}
+                  onTouchStart={(e)=>{e.stopPropagation();e.preventDefault();pdPuffStart();}} onTouchEnd={(e)=>{e.stopPropagation();pdPuffRelease();}} onTouchCancel={(e)=>{e.stopPropagation();pdPuffRelease();}}
                   style={{touchAction:"none",flex:1.3,padding:"12px 0",borderRadius:14,cursor:"pointer",textAlign:"center",background:"rgba(34,197,94,0.12)",border:"2px solid rgba(34,197,94,0.3)",userSelect:"none",WebkitUserSelect:"none"}}>
                   <div style={{fontSize:13,fontWeight:900,color:C.green,letterSpacing:1}}>PUFF</div>
                   <div style={{fontSize:7,color:C.text3,marginTop:2}}>+3% -stamina</div>
                 </div>
                 <div data-btn="true"
                   onMouseDown={(e)=>{e.stopPropagation();pdPuffStart();}} onMouseUp={(e)=>{e.stopPropagation();pdPuffRelease();}}
-                  onTouchStart={(e)=>{e.stopPropagation();pdPuffStart();}} onTouchEnd={(e)=>{e.stopPropagation();pdPuffRelease();}}
+                  onTouchStart={(e)=>{e.stopPropagation();e.preventDefault();pdPuffStart();}} onTouchEnd={(e)=>{e.stopPropagation();pdPuffRelease();}} onTouchCancel={(e)=>{e.stopPropagation();pdPuffRelease();}}
                   style={{touchAction:"none",flex:1,padding:"12px 0",borderRadius:14,cursor:"pointer",textAlign:"center",background:"rgba(255,50,50,0.1)",border:"2px solid rgba(255,50,50,0.25)",animation:"countPulse 1.5s infinite",userSelect:"none",WebkitUserSelect:"none"}}>
                   <div style={{fontSize:13,fontWeight:900,color:C.red,letterSpacing:1}}>BLINKER</div>
                   <div style={{fontSize:7,color:C.text3,marginTop:2}}>5s+ MEGA</div>
@@ -20867,77 +19766,874 @@ gameSoundsMuted.current = false;addGameChat("Announcer","HIGHER OR LOWER! Build 
         );
       }
       if(gameActive.id==="higherlower" && hlPhase) {
-        if(hlCanvasRef.current && hlPhase){
-          if(!hlAnimRef.current){ const loop=()=>{hlDrawCanvas();hlAnimRef.current=requestAnimationFrame(loop);}; hlAnimRef.current=requestAnimationFrame(loop); }
-        }
         const isP=hlPhase==="playing";const isC=hlPhase==="correct";const isW=hlPhase==="wrong";const isR=hlPhase==="result";
-        const hlControlsSlot = (
-          <div style={{display:"flex",flexDirection:"column",gap:6,alignItems:"center",width:"100%"}}>
-            {isP && !hlRevealing && (
-              <div style={{display:"flex",gap:8,width:"90%",maxWidth:360}}>
-                <div data-btn="true" onClick={(e)=>{e.stopPropagation();if(!hlRevealing)hlGuess("lower");}}
-                  style={{touchAction:"none",flex:1,padding:"14px 0",borderRadius:14,cursor:"pointer",textAlign:"center",background:C.red+"12",border:"2px solid "+C.red+"30",userSelect:"none",WebkitUserSelect:"none"}}>
-                  <div style={{fontSize:16}}>{"\u2B07\uFE0F"}</div>
-                  <div style={{fontSize:13,fontWeight:900,color:C.red}}>LOWER</div>
-                  <div style={{fontSize:7,color:C.text3}}>Short puff</div>
-                </div>
-                <div data-btn="true" onClick={(e)=>{e.stopPropagation();if(!hlRevealing)hlGuess("higher");}}
-                  style={{touchAction:"none",flex:1,padding:"14px 0",borderRadius:14,cursor:"pointer",textAlign:"center",background:C.green+"12",border:"2px solid "+C.green+"30",userSelect:"none",WebkitUserSelect:"none"}}>
-                  <div style={{fontSize:16}}>{"\u2B06\uFE0F"}</div>
-                  <div style={{fontSize:13,fontWeight:900,color:C.green}}>HIGHER</div>
-                  <div style={{fontSize:7,color:C.text3}}>Long puff</div>
-                </div>
-              </div>
-            )}
-            {(isC||isW) && <div style={{textAlign:"center"}}><div style={{fontSize:18,fontWeight:900,color:isC?C.green:C.red}}>{isC?"CORRECT! +"+10*hlStreak:"WRONG!"}</div></div>}
-            {isR && (
-              <div style={{display:"flex",gap:8,justifyContent:"center"}}>
-                <div data-btn="true" onClick={(e)=>{e.stopPropagation();hlCleanup();startHigherLower();setGameActive({id:"higherlower",name:"Higher or Lower",emoji:"\u{1F4CA}",color:C.cyan});}}
-                  style={{touchAction:"none",padding:"10px 24px",borderRadius:12,cursor:"pointer",background:C.cyan+"15",border:"1px solid "+C.cyan+"30",fontSize:13,fontWeight:800,color:C.cyan}}>Play Again</div>
-                <div data-btn="true" onClick={(e)=>{e.stopPropagation();hlCleanup();}}
-                  style={{touchAction:"none",padding:"10px 24px",borderRadius:12,cursor:"pointer",background:C.text3+"10",border:"1px solid "+C.text3+"20",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
-              </div>
-            )}
-          </div>
-        );
+        const sf=hlStreak>=3?(hlStreak>=7?3:hlStreak>=5?2:1):0;const se=sf>=3?"\uD83C\uDF0B":sf>=2?"\uD83D\uDD25\uD83D\uDD25":sf>=1?"\uD83D\uDD25":"";
         return (
-          <div style={{position:"fixed",inset:0,zIndex:100,display:"flex",flexDirection:"column",touchAction:"none",animation:screenShake?"shake 0.4s ease":"none"}}
-            onMouseDown={(e)=>{if(e.target.closest("[data-back],[data-btn]"))return;if(isP&&!hlRevealing)setHlPuffStart(Date.now());}}
-            onMouseUp={(e)=>{if(e.target.closest("[data-back],[data-btn]"))return;if(isP&&!hlRevealing&&hlPuffStart){hlHandlePuff(Date.now()-hlPuffStart>1500);setHlPuffStart(null);}}}
-            onTouchStart={(e)=>{if(e.target.closest("[data-back],[data-btn]"))return;if(isP&&!hlRevealing)setHlPuffStart(Date.now());}}
-            onTouchEnd={(e)=>{if(e.target.closest("[data-back],[data-btn]"))return;if(isP&&!hlRevealing&&hlPuffStart){hlHandlePuff(Date.now()-hlPuffStart>1500);setHlPuffStart(null);}}}>
+          <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden",touchAction:"none",display:"flex",flexDirection:"column",animation:screenShake?"shake 0.4s ease":"none"}}
+            onMouseDown={(e)=>{if(e.target.closest("[data-back]")||e.target.closest("[data-hl-btn],[data-btn]"))return;if(isP&&!hlRevealing)setHlPuffStart(Date.now());}}
+            onMouseUp={(e)=>{if(e.target.closest("[data-back]")||e.target.closest("[data-hl-btn],[data-btn]"))return;if(isP&&!hlRevealing&&hlPuffStart){hlHandlePuff(Date.now()-hlPuffStart>1500);setHlPuffStart(null);}}}
+            onTouchStart={(e)=>{if(e.target.closest("[data-back]")||e.target.closest("[data-hl-btn],[data-btn]"))return;e.preventDefault();if(isP&&!hlRevealing)setHlPuffStart(Date.now());}}
+            onTouchEnd={(e)=>{if(e.target.closest("[data-back]")||e.target.closest("[data-hl-btn],[data-btn]"))return;e.preventDefault();if(isP&&!hlRevealing&&hlPuffStart){hlHandlePuff(Date.now()-hlPuffStart>1500);setHlPuffStart(null);}}}>
+            <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg, #060d1e 0%, #0a1832 20%, #0c2040 40%, #081830 65%, #040e1a 100%)",zIndex:0}}/>
+            <div style={{position:"absolute",top:"15%",left:"25%",width:200,height:200,borderRadius:"50%",background:"radial-gradient(circle, "+C.cyan+"12 0%, transparent 70%)",pointerEvents:"none",zIndex:1}}/>
+            <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse at 50% 40%, transparent 25%, rgba(0,0,0,0.5) 100%)",pointerEvents:"none",zIndex:2}}/>
             {screenFlash&&<div style={{position:"absolute",inset:0,zIndex:200,pointerEvents:"none",opacity:0,background:screenFlash==="goal"?"rgba(0,255,100,0.25)":"rgba(255,50,50,0.25)",animation:"flashOverlay 0.4s ease forwards"}}/>}
             {confettiParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size*0.6,background:p.color,borderRadius:1,transform:"rotate("+p.rot+"deg)",zIndex:210,pointerEvents:"none",animation:"confettiFall 1.5s ease-out forwards"}}/>))}
-            <div style={{position:"relative",zIndex:50,flexShrink:0,background:"rgba(6,16,30,0.98)",borderBottom:"1px solid rgba(0,229,255,0.1)"}}>
-              <div style={{padding:"6px 12px 2px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                <div style={{fontSize:8,fontWeight:600,color:"rgba(255,255,255,0.4)",letterSpacing:1}}><span style={{fontWeight:800,color:"rgba(255,255,255,0.6)"}}>{"Powered by "}<span style={{fontWeight:900,letterSpacing:2}}>MOOD LAB</span></span></div>
-                <div style={{display:"flex",gap:5,alignItems:"center"}}>
-                  <div onClick={()=>{playFx("tap");setShowBlePopup(true);}} data-btn="true" style={{touchAction:"none",display:"flex",alignItems:"center",gap:3,padding:"2px 8px",borderRadius:100,cursor:"pointer",background:bleConnected?"rgba(52,211,153,0.1)":"rgba(251,146,60,0.1)",border:"1px solid "+(bleConnected?"rgba(52,211,153,0.25)":"rgba(251,146,60,0.25)")}}>
-                    <div style={{width:5,height:5,borderRadius:"50%",background:bleConnected?C.green:C.orange}}/><span style={{fontSize:8,fontWeight:700,color:bleConnected?C.green:C.orange}}>{bleConnected?"Puff":"Connect"}</span>
-                  </div>
-                  <div style={{display:"flex",alignItems:"center",gap:2,padding:"2px 7px",borderRadius:100,background:"rgba(255,217,61,0.06)",border:"1px solid rgba(255,217,61,0.12)"}}>
-                    <span style={{fontSize:9}}>{"\u{1FA99}"}</span><span style={{fontSize:10,fontWeight:800,color:C.gold,fontFamily:"'Courier New',monospace"}}>{coins.toLocaleString()}</span>
-                  </div>
-                </div>
+            {overlayBack(hlCleanup)}
+            {/* Stage Show Chat -- visible for audience always, contestant during breaks only */}
+            {stageRole && isStageBreak("higherlower") && renderGameChatPanel("HIGHER OR LOWER")}
+            {stageRole === "contestant" && isStageBreak("higherlower") && (
+              <div style={{position:"fixed",bottom:280,left:0,right:0,zIndex:290,textAlign:"center",animation:"fadeIn 0.3s ease",pointerEvents:"none"}}>
+                <span style={{padding:"6px 16px",borderRadius:100,fontSize:9,fontWeight:700,background:C.gold+"15",border:"1px solid "+C.gold+"25",color:C.gold,backdropFilter:"blur(8px)"}}>
+                  ☕ BREAK TIME — Chat with the audience!
+                </span>
               </div>
-              <div style={{padding:"2px 12px 2px",display:"flex",alignItems:"center",gap:6}}>
-                <div onClick={()=>{playFx("tap");hlCleanup();}} data-btn="true" style={{touchAction:"none",display:"inline-flex",alignItems:"center",gap:3,cursor:"pointer",padding:"3px 8px",borderRadius:8,background:"rgba(255,255,255,0.04)",border:"1px solid "+C.border,flexShrink:0}}>
-                  <span style={{fontSize:10,color:C.text2}}>{"\u2190"}</span><span style={{fontSize:9,fontWeight:700,color:C.text2}}>Back</span>
-                </div>
-                <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
-                  <span style={{fontSize:10,fontWeight:800,color:C.cyan}}>{"\u{1F4CA}"} HIGHER OR LOWER</span>
-                  <span style={{fontSize:9,fontWeight:700,color:C.gold}}>Score: {hlScore}</span>
-                </div>
-              </div>
-              <div style={{padding:"2px 12px 4px",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
-                <span style={{fontSize:9,fontWeight:700,color:C.text3}}>Round {Math.min(hlRound,10)}/10</span>
-                <span style={{fontSize:9,fontWeight:700,color:hlStreak>=5?C.red:hlStreak>=3?C.gold:C.cyan}}>Streak: {hlStreak}{hlStreak>=5?"\u{1F525}":hlStreak>=3?"\u{1F525}":""}</span>
-              </div>
+            )}
+            {!stageRole && renderGameChatPanel("HIGHER OR LOWER")}
+            <div style={{display:"flex",flexDirection:"column",alignItems:"center",maxWidth:380,width:"100%",padding:"50px 16px 20px",gap:6,zIndex:10,flex:1,overflowY:"auto",margin:"0 auto"}}>
+              {renderContestantGrid()}
+              <div style={{textAlign:"center",marginBottom:4}}><div style={{fontSize:18,fontWeight:900,letterSpacing:3,background:"linear-gradient(135deg, "+C.cyan+", "+C.purple+")",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>{isR?"FINAL SCORE":"HIGHER OR LOWER"}</div><div style={{fontSize:9,color:C.text3}}>Round {Math.min(hlRound,10)}/10 | Score: {hlScore} | Streak: {hlStreak} {se}</div></div>
+              <div style={{display:"flex",alignItems:"center",gap:8,width:"90%",maxWidth:280,marginBottom:8}}><div style={{fontSize:10,fontWeight:800,color:C.cyan,minWidth:20}}>{hlScore}</div><div style={{flex:1,height:4,borderRadius:2,background:"rgba(255,255,255,0.06)",overflow:"hidden"}}><div style={{height:"100%",width:Math.min(100,hlStreak*10)+"%",background:"linear-gradient(90deg,"+C.cyan+","+C.gold+(hlStreak>=5?","+C.red:"")+")",borderRadius:2,transition:"width 0.3s"}}/></div><div style={{fontSize:10,fontWeight:800,color:hlStreak>=5?C.red:hlStreak>=3?C.gold:C.text3}}>x{hlStreak}</div></div>
+              {!isR&&hlCurrent&&hlNext&&(<div style={{display:"flex",gap:10,width:"100%",justifyContent:"center",animation:"fadeIn 0.3s ease"}}><div style={{flex:1,maxWidth:160,padding:"16px 10px",borderRadius:16,textAlign:"center",background:"linear-gradient(135deg, "+C.cyan+"15, "+C.cyan+"05)",border:"1px solid "+C.cyan+"30"}}><div style={{fontSize:8,fontWeight:700,color:C.text3,textTransform:"uppercase",marginBottom:8}}>Current</div><div style={{fontSize:10,color:C.text2,marginBottom:10,minHeight:36,display:"flex",alignItems:"center",justifyContent:"center"}}>{hlCurrent.topic}</div><div style={{fontSize:28,fontWeight:900,color:C.cyan,textShadow:"0 0 20px "+C.cyan+"40"}}>{hlCurrent.display}</div></div><div style={{flex:1,maxWidth:160,padding:"16px 10px",borderRadius:16,textAlign:"center",background:hlRevealing?"linear-gradient(135deg, "+((isC||isW)?(isC?C.green:C.red):C.gold)+"15, "+((isC||isW)?(isC?C.green:C.red):C.gold)+"05)":"linear-gradient(135deg, "+C.purple+"15, "+C.purple+"05)",border:"1px solid "+(hlRevealing?(isC?C.green:isW?C.red:C.gold):C.purple)+"30",transition:"all 0.3s"}}><div style={{fontSize:8,fontWeight:700,color:C.text3,textTransform:"uppercase",marginBottom:8}}>Next</div><div style={{fontSize:10,color:C.text2,marginBottom:10,minHeight:36,display:"flex",alignItems:"center",justifyContent:"center"}}>{hlNext.topic}</div>{hlRevealing?<div style={{fontSize:28,fontWeight:900,color:isC?C.green:isW?C.red:C.gold,animation:"countPulse 0.5s ease"}}>{hlNext.display}</div>:<div style={{fontSize:28,fontWeight:900,color:C.purple,animation:"pulse 1.5s infinite"}}>?</div>}</div></div>)}
+              {!isR&&!hlRevealing&&isP&&<div style={{fontSize:16,fontWeight:900,color:C.gold,margin:"8px 0",animation:"pulse 1.5s infinite"}}>VS</div>}
+              {isC&&<div style={{textAlign:"center",marginTop:8}}><div style={{fontSize:24,fontWeight:900,color:C.green}}>CORRECT!</div><div style={{fontSize:12,fontWeight:700,color:C.green}}>+{10*hlStreak} pts</div></div>}
+              {isW&&<div style={{textAlign:"center",marginTop:8}}><div style={{fontSize:24,fontWeight:900,color:C.red}}>WRONG!</div><div style={{fontSize:11,color:C.red}}>Streak broken!</div></div>}
+              {isP&&!hlRevealing&&(<div style={{textAlign:"center",marginTop:8,width:"100%"}}><div style={{fontSize:10,color:C.text3,marginBottom:8}}>{hlPuffStart?<span style={{color:C.gold,fontWeight:700,animation:"pulse 0.5s infinite"}}>Hold for HIGHER...</span>:<span>Tap HIGHER or LOWER · or Puff (short=lower, long=higher)</span>}</div><div style={{display:"flex",gap:10,justifyContent:"center"}}><div data-hl-btn="1" onClick={(e)=>{e.stopPropagation();if(!hlRevealing)hlGuess("lower");}} style={{flex:1,maxWidth:130,padding:"12px 8px",borderRadius:12,cursor:"pointer",textAlign:"center",background:C.red+"12",border:"1px solid "+C.red+"30"}}><div style={{fontSize:20,marginBottom:2}}>{"\u2B07\uFE0F"}</div><div style={{fontSize:12,fontWeight:800,color:C.red}}>LOWER</div><div style={{fontSize:8,color:C.text3}}>Short puff</div></div><div data-hl-btn="1" onClick={(e)=>{e.stopPropagation();if(!hlRevealing)hlGuess("higher");}} style={{flex:1,maxWidth:130,padding:"12px 8px",borderRadius:12,cursor:"pointer",textAlign:"center",background:C.green+"12",border:"1px solid "+C.green+"30"}}><div style={{fontSize:20,marginBottom:2}}>{"\u2B06\uFE0F"}</div><div style={{fontSize:12,fontWeight:800,color:C.green}}>HIGHER</div><div style={{fontSize:8,color:C.text3}}>Long puff</div></div></div></div>)}
+              {isR&&(<div style={{textAlign:"center"}}><div style={{fontSize:48,marginBottom:8}}>{hlBestStreak>=7?"\uD83C\uDFC6":hlBestStreak>=5?"\uD83D\uDD25":hlBestStreak>=3?"\u2B50":"\uD83D\uDCCA"}</div><div style={{fontSize:26,fontWeight:900,color:hlScore>=100?C.gold:C.cyan,marginBottom:4}}>GAME OVER</div><div style={{fontSize:18,fontWeight:800,color:C.text,marginBottom:4}}>Score: {hlScore}</div><div style={{fontSize:13,color:C.text2,marginBottom:4}}>Best Streak: {hlBestStreak} {hlBestStreak>=5?"\uD83D\uDD25":""}</div><div style={{fontSize:14,fontWeight:700,color:C.gold,marginBottom:12}}>+{Math.max(10,Math.floor(hlScore/2))} coins</div><div style={{fontSize:11,color:C.text2,fontStyle:"italic",marginBottom:12}}>{commentatorText}</div>{(()=>{const won=hlBestStreak>=3;const base=Math.max(10,Math.floor(hlScore/2));return(<div style={{padding:10,borderRadius:12,background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.06)",marginTop:10,marginBottom:8}}><div style={{fontSize:9,color:C.text3,letterSpacing:1,marginBottom:6}}>GAME REWARD</div><div style={{display:"flex",justifyContent:"space-between",fontSize:13,fontWeight:800}}><span style={{color:C.text}}>Earned</span><span style={{color:C.gold}}>+{base} 🪙</span></div>{!bleConnected && <div style={{display:"flex",justifyContent:"space-between",fontSize:10,color:C.orange,marginTop:4}}><span>Without device</span><span>70%</span></div>}</div>);})()}<div style={{display:"flex",gap:10,justifyContent:"center"}}><div onClick={(e)=>{e.stopPropagation();hlCleanup();startHigherLower();setGameActive({id:"higherlower",name:"Higher or Lower",emoji:"\uD83D\uDCCA",color:C.cyan});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:C.cyan+"15",border:"1px solid "+C.cyan+"30",fontSize:13,fontWeight:800,color:C.cyan}}>Play Again</div><div onClick={(e)=>{e.stopPropagation();hlCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:C.text3+"10",border:"1px solid "+C.text3+"20",fontSize:13,fontWeight:800,color:C.text3}}>Done</div></div><div onClick={()=>{hlCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div></div>)}
             </div>
-            {renderContestantGrid()}
-            <div style={{position:"relative",flex:1,overflow:"hidden"}}>
-              <canvas ref={hlCanvasRef} width={Math.round(420*HL_DPR)} height={Math.round(600*HL_DPR)} style={{position:"absolute",top:0,left:0,width:"100%",height:"100%"}}/>
-              {renderGameChatOverlay(hlControlsSlot)}
+          </div>
+        );
+      }
+
+      // ═══════════════════════════════════════════════════════════════
+      // CRYSTAL BALL -- Render
+      // ═══════════════════════════════════════════════════════════════
+      if(gameActive.id==="crystalball" && cbPhase) {
+        const isQ=cbPhase==="question";const isR=cbPhase==="reveal";const isRes=cbPhase==="result";const isComp=cbPhase==="complete";
+        return (
+          <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden",touchAction:"none",display:"flex",flexDirection:"column",animation:screenShake?"shake 0.4s ease":"none"}}
+            onMouseDown={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;cbHandlePuff();}} onMouseUp={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;cbHandlePuffEnd();}} onTouchStart={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;cbHandlePuff();}} onTouchEnd={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;cbHandlePuffEnd();}}>
+            <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg, #0a0520 0%, #1a0838 30%, #0d0625 60%, #06031a 100%)"}}/>
+            <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse at 50% 30%, rgba(147,51,234,0.15), transparent 60%)",pointerEvents:"none"}}/>
+            {[...Array(15)].map((_,i)=>(<div key={"cbp"+i} style={{position:"absolute",left:`${(i*19+7)%100}%`,top:`${(i*23+5)%100}%`,width:2+i%3,height:2+i%3,borderRadius:"50%",background:i%2?"#9333EA":"#FFD700",opacity:0.1+Math.random()*0.2,animation:`pulse ${2+i%3}s infinite ${i*0.2}s`,pointerEvents:"none"}}/>))}
+            {screenFlash&&<div style={{position:"absolute",inset:0,zIndex:200,pointerEvents:"none",opacity:0,background:"rgba(147,51,234,0.3)",animation:"flashOverlay 0.4s ease forwards"}}/>}
+            {confettiParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size*0.6,background:p.color,borderRadius:1,transform:`rotate(${p.rot}deg)`,zIndex:210,pointerEvents:"none",animation:"confettiFall 1.5s ease-out forwards"}}/>))}
+            {overlayBack(cbCleanup)}
+            {renderGameChatPanel("CRYSTAL BALL")}
+            <div style={{display:"flex",flexDirection:"column",alignItems:"center",maxWidth:380,width:"100%",padding:"50px 16px 20px",gap:8,zIndex:10,flex:1,margin:"0 auto"}}>
+              <div style={{fontSize:18,fontWeight:900,letterSpacing:4,background:"linear-gradient(135deg, #9333EA, #FFD700)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>CRYSTAL BALL</div>
+              <div style={{display:"flex",gap:16,marginBottom:4}}>
+                <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.gold}}>{cbScore}</div><div style={{fontSize:8,color:C.text3}}>SCORE</div></div>
+                <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:"#F97316"}}>{cbStreak}🔥</div><div style={{fontSize:8,color:C.text3}}>STREAK</div></div>
+                <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.text2}}>{cbRound+1}/5</div><div style={{fontSize:8,color:C.text3}}>ROUND</div></div>
+              </div>
+
+              {cbPhase==="intro"&&(<div style={{textAlign:"center",animation:"fadeIn 0.5s ease"}}><div style={{fontSize:64,marginBottom:12,animation:"gentleFloat 2s infinite",filter:"drop-shadow(0 0 20px rgba(147,51,234,0.6))"}}>🔮</div><div style={{fontSize:20,fontWeight:900,color:"#9333EA",letterSpacing:3}}>THE ORACLE AWAITS</div><div style={{fontSize:11,color:C.text3,marginTop:8}}>Short puff = NO | Long puff = YES | Blinker = CERTAIN (3x/−2x)</div></div>)}
+
+              {isQ&&cbQuestion&&(<div style={{textAlign:"center",width:"100%",animation:"fadeIn 0.4s ease"}}>
+                <div style={{fontSize:48,marginBottom:12,animation:cbPuffing?"countPulse 0.5s infinite":"gentleFloat 2s infinite",filter:cbPuffing?"drop-shadow(0 0 30px rgba(255,215,0,0.8))":"drop-shadow(0 0 15px rgba(147,51,234,0.5))"}}>🔮</div>
+                <div style={{padding:"2px 10px",borderRadius:6,background:"rgba(147,51,234,0.12)",display:"inline-block",marginBottom:8}}><span style={{fontSize:9,fontWeight:700,color:"#9333EA"}}>{cbQuestion.cat.toUpperCase()} {cbQuestion.emoji}</span></div>
+                <div style={{fontSize:16,fontWeight:800,color:C.text,lineHeight:1.4,maxWidth:300,margin:"0 auto",marginBottom:16}}>{cbQuestion.q}</div>
+                <div style={{display:"flex",gap:12,justifyContent:"center",marginBottom:12}}>
+                  <div style={{padding:"10px 24px",borderRadius:12,background:"rgba(239,68,68,0.10)",border:"1px solid rgba(239,68,68,0.25)"}}><div style={{fontSize:14,fontWeight:800,color:C.red}}>NO</div><div style={{fontSize:8,color:C.text3}}>Short (&lt;1.5s)</div></div>
+                  <div style={{padding:"10px 24px",borderRadius:12,background:"rgba(34,197,94,0.10)",border:"1px solid rgba(34,197,94,0.25)"}}><div style={{fontSize:14,fontWeight:800,color:C.green}}>YES</div><div style={{fontSize:8,color:C.text3}}>Long (&gt;1.5s)</div></div>
+                  <div style={{padding:"10px 24px",borderRadius:12,background:"rgba(255,215,0,0.10)",border:"1px solid rgba(255,215,0,0.25)"}}><div style={{fontSize:14,fontWeight:800,color:C.gold}}>CERTAIN</div><div style={{fontSize:8,color:C.text3}}>Blinker (&gt;3s)</div></div>
+                </div>
+                {cbPuffing&&<div style={{fontSize:13,fontWeight:800,color:C.gold,animation:"pulse 0.5s infinite"}}>CHANNELING... hold for YES or Blinker! 🔮</div>}
+                {!cbPuffing&&<div style={{fontSize:11,color:C.text3}}>PUFF FOR PREDICTION 🔮</div>}
+              </div>)}
+
+              {isR&&(<div style={{textAlign:"center",animation:"fadeIn 0.4s ease"}}><div style={{fontSize:56,marginBottom:12,animation:"countPulse 0.8s infinite",filter:"drop-shadow(0 0 25px rgba(147,51,234,0.7))"}}>🔮</div><div style={{fontSize:20,fontWeight:900,color:cbAnswer==="certain"?C.gold:cbAnswer==="yes"?C.green:C.red,marginBottom:4}}>{cbAnswer==="certain"?"ABSOLUTELY CERTAIN!":cbAnswer==="yes"?"YES":"NO"}</div><div style={{fontSize:12,color:C.text3}}>The Crystal Ball is revealing...</div></div>)}
+
+              {isRes&&(<div style={{textAlign:"center",animation:"fadeIn 0.4s ease"}}>
+                <div style={{fontSize:48,marginBottom:8}}>{cbResult==="correct"?"✅":"❌"}</div>
+                <div style={{fontSize:24,fontWeight:900,color:cbResult==="correct"?C.green:C.red,marginBottom:4}}>{cbResult==="correct"?"CORRECT!":"WRONG!"}</div>
+                {cbResult==="correct"&&cbAnswer==="certain"&&<div style={{fontSize:14,fontWeight:800,color:C.gold,marginBottom:4}}>BLINKER BONUS! 3x coins! +150</div>}
+                {cbResult==="correct"&&cbAnswer!=="certain"&&<div style={{fontSize:14,fontWeight:800,color:C.green,marginBottom:4}}>+50 coins!</div>}
+                {cbResult==="wrong"&&cbAnswer==="certain"&&<div style={{fontSize:14,fontWeight:800,color:C.red,marginBottom:4}}>Blinker penalty! -100 coins</div>}
+                <div style={{fontSize:11,color:C.text2,fontStyle:"italic",marginBottom:12}}>{commentatorText}</div>
+                <div data-btn="true" onClick={(e)=>{e.stopPropagation();cbNextRound();}} style={{padding:"10px 28px",borderRadius:12,cursor:"pointer",background:"rgba(147,51,234,0.15)",border:"1px solid rgba(147,51,234,0.30)",fontSize:13,fontWeight:800,color:"#9333EA",display:"inline-block"}}>Next Prediction</div>
+              </div>)}
+
+              {isComp&&(<div style={{textAlign:"center",animation:"fadeIn 0.4s ease"}}>
+                <div style={{fontSize:48,marginBottom:8}}>🔮</div>
+                <div style={{fontSize:24,fontWeight:900,color:C.gold,marginBottom:4}}>ORACLE SESSION COMPLETE</div>
+                <div style={{fontSize:18,fontWeight:800,color:C.text,marginBottom:4}}>Score: {cbScore}</div>
+                <div style={{fontSize:13,color:"#F97316"}}>Best Streak: {cbStreak} 🔥</div>
+                <div style={{fontSize:14,fontWeight:700,color:C.lime,marginTop:8}}>+{cbScore} coins earned</div>
+                <div style={{display:"flex",gap:10,justifyContent:"center",marginTop:16}}>
+                  <div data-btn="true" onClick={(e)=>{e.stopPropagation();cbCleanup();startCrystalBall();setGameActive({id:"crystalball",name:"Crystal Ball",emoji:"🔮",color:"#9333EA"});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(147,51,234,0.15)",border:"1px solid rgba(147,51,234,0.30)",fontSize:13,fontWeight:800,color:"#9333EA"}}>Play Again</div>
+                  <div data-btn="true" onClick={(e)=>{e.stopPropagation();cbCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
+                </div>
+                <div data-btn="true" onClick={(e)=>{e.stopPropagation();cbCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
+              </div>)}
+            </div>
+          </div>
+        );
+      }
+
+      // ═══════════════════════════════════════════════════════════════
+      // STRAIN BATTLE -- Render
+      // ═══════════════════════════════════════════════════════════════
+      if(gameActive.id==="strainbattle" && sbPhase) {
+        const isM=sbPhase==="matchup";const isR=sbPhase==="results";const isComp=sbPhase==="complete";
+        return (
+          <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden",touchAction:"none",display:"flex",flexDirection:"column"}}
+            onMouseDown={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;sbHandlePuff();}} onMouseUp={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;sbHandlePuffEnd();}} onTouchStart={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;sbHandlePuff();}} onTouchEnd={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;sbHandlePuffEnd();}}>
+            <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg, #061a0d 0%, #0a2818 30%, #0d3318 60%, #061a0d 100%)"}}/>
+            <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse at 50% 30%, rgba(34,197,94,0.12), transparent 60%)",pointerEvents:"none"}}/>
+            {confettiParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size*0.6,background:p.color,borderRadius:1,transform:`rotate(${p.rot}deg)`,zIndex:210,pointerEvents:"none",animation:"confettiFall 1.5s ease-out forwards"}}/>))}
+            {overlayBack(sbCleanup)}
+            {renderGameChatPanel("STRAIN BATTLE")}
+            <div style={{display:"flex",flexDirection:"column",alignItems:"center",maxWidth:380,width:"100%",padding:"50px 16px 20px",gap:8,zIndex:10,flex:1,margin:"0 auto",overflowY:"auto"}}>
+              <div style={{fontSize:18,fontWeight:900,letterSpacing:4,background:"linear-gradient(135deg, #22C55E, #FFD700)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>STRAIN BATTLE</div>
+              <div style={{display:"flex",gap:16,marginBottom:4}}>
+                <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.gold}}>{sbScore}</div><div style={{fontSize:8,color:C.text3}}>SCORE</div></div>
+                <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.text2}}>{sbRound+1}/5</div><div style={{fontSize:8,color:C.text3}}>ROUND</div></div>
+              </div>
+
+              {sbPhase==="intro"&&(<div style={{textAlign:"center",animation:"fadeIn 0.5s ease"}}><div style={{fontSize:48,marginBottom:8}}>🌿</div><div style={{fontSize:20,fontWeight:900,color:"#22C55E",letterSpacing:3}}>STRAIN BATTLE</div><div style={{fontSize:11,color:C.text3,marginTop:8}}>Short puff = Left strain | Long puff = Right strain</div></div>)}
+
+              {isM&&sbMatchup&&(<div style={{width:"100%",animation:"fadeIn 0.4s ease"}}>
+                <div style={{display:"flex",gap:8,alignItems:"stretch"}}>
+                  {sbMatchup.map((strain,si)=>(
+                    <div key={si} style={{flex:1,padding:"14px 8px",borderRadius:16,textAlign:"center",background:si===0?"rgba(34,197,94,0.06)":"rgba(255,215,0,0.06)",border:`1px solid ${si===0?"rgba(34,197,94,0.20)":"rgba(255,215,0,0.20)"}`}}>
+                      <div style={{fontSize:32,marginBottom:4}}>{strain.emoji}</div>
+                      <div style={{fontSize:13,fontWeight:800,color:C.text,marginBottom:4}}>{strain.name}</div>
+                      <div style={{fontSize:9,fontWeight:700,color:strain.type==="Sativa"?C.green:strain.type==="Indica"?"#9333EA":C.gold,marginBottom:4,padding:"2px 6px",borderRadius:4,background:"rgba(255,255,255,0.04)",display:"inline-block"}}>{strain.type}</div>
+                      <div style={{width:"100%",height:6,borderRadius:3,background:"rgba(255,255,255,0.06)",marginBottom:4,overflow:"hidden"}}><div style={{width:`${(strain.thc/30)*100}%`,height:"100%",borderRadius:3,background:"linear-gradient(90deg, #22C55E, #FFD700)"}}/></div>
+                      <div style={{fontSize:9,fontWeight:700,color:C.gold}}>THC: {strain.thc}%</div>
+                      <div style={{fontSize:8,color:C.text3,marginTop:4}}>{strain.effects}</div>
+                      <div style={{fontSize:8,color:C.text3,marginTop:2}}>Flavor: {strain.flavor}</div>
+                    </div>
+                  ))}
+                </div>
+                <div style={{textAlign:"center",marginTop:12}}>
+                  <div style={{fontSize:11,color:C.text3}}>TAP TO VOTE 🌿 · Short puff = <span style={{color:"#22C55E",fontWeight:700}}>{sbMatchup[0].name}</span> | Long puff = <span style={{color:C.gold,fontWeight:700}}>{sbMatchup[1].name}</span></div>
+                </div>
+              </div>)}
+
+              {isR&&sbMatchup&&(<div style={{width:"100%",textAlign:"center",animation:"fadeIn 0.4s ease"}}>
+                <div style={{fontSize:14,fontWeight:800,color:C.text,marginBottom:8}}>You voted: <span style={{color:sbVote==="left"?"#22C55E":C.gold}}>{sbVote==="left"?sbMatchup[0].name:sbMatchup[1].name}</span></div>
+                <div style={{display:"flex",gap:8,alignItems:"center",marginBottom:12}}>
+                  <div style={{flex:1,textAlign:"center"}}><div style={{fontSize:24,fontWeight:900,color:"#22C55E"}}>{sbResults.left}%</div><div style={{fontSize:10,color:C.text3}}>{sbMatchup[0].name}</div></div>
+                  <div style={{flex:2}}>
+                    <div style={{width:"100%",height:12,borderRadius:6,background:"rgba(255,255,255,0.06)",overflow:"hidden",display:"flex"}}>
+                      <div style={{width:`${sbResults.left}%`,height:"100%",background:"linear-gradient(90deg, #22C55E, #22C55EAA)",transition:"width 1s"}}/>
+                      <div style={{width:`${sbResults.right}%`,height:"100%",background:"linear-gradient(90deg, #FFD700AA, #FFD700)",transition:"width 1s"}}/>
+                    </div>
+                  </div>
+                  <div style={{flex:1,textAlign:"center"}}><div style={{fontSize:24,fontWeight:900,color:C.gold}}>{sbResults.right}%</div><div style={{fontSize:10,color:C.text3}}>{sbMatchup[1].name}</div></div>
+                </div>
+                <div style={{fontSize:11,color:C.text2,fontStyle:"italic",marginBottom:12}}>{commentatorText}</div>
+                <div data-btn="true" onClick={(e)=>{e.stopPropagation();sbNextRound();}} style={{padding:"10px 28px",borderRadius:12,cursor:"pointer",background:"rgba(34,197,94,0.15)",border:"1px solid rgba(34,197,94,0.30)",fontSize:13,fontWeight:800,color:"#22C55E",display:"inline-block"}}>Next Matchup</div>
+              </div>)}
+
+              {isComp&&(<div style={{textAlign:"center",animation:"fadeIn 0.4s ease"}}>
+                <div style={{fontSize:48,marginBottom:8}}>🌿</div>
+                <div style={{fontSize:24,fontWeight:900,color:"#22C55E",marginBottom:4}}>BATTLE COMPLETE!</div>
+                <div style={{fontSize:18,fontWeight:800,color:C.text,marginBottom:4}}>Score: {sbScore}</div>
+                <div style={{fontSize:14,fontWeight:700,color:C.lime,marginTop:4}}>+{sbScore} coins earned</div>
+                <div style={{display:"flex",gap:10,justifyContent:"center",marginTop:16}}>
+                  <div data-btn="true" onClick={(e)=>{e.stopPropagation();sbCleanup();startStrainBattle();setGameActive({id:"strainbattle",name:"Strain Battle",emoji:"🌿",color:"#22C55E"});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(34,197,94,0.15)",border:"1px solid rgba(34,197,94,0.30)",fontSize:13,fontWeight:800,color:"#22C55E"}}>Play Again</div>
+                  <div data-btn="true" onClick={(e)=>{e.stopPropagation();sbCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
+                </div>
+                <div data-btn="true" onClick={(e)=>{e.stopPropagation();sbCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
+              </div>)}
+            </div>
+          </div>
+        );
+      }
+
+      // ═══════════════════════════════════════════════════════════════
+      // MATCH PREDICTOR -- Render
+      // ═══════════════════════════════════════════════════════════════
+      if(gameActive.id==="matchpredictor" && mpPhase) {
+        const isMt=mpPhase==="match";const isPr=mpPhase==="prediction";const isRes=mpPhase==="result";const isComp=mpPhase==="complete";
+        return (
+          <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden",touchAction:"none",display:"flex",flexDirection:"column"}}
+            onMouseDown={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;mpHandlePuff();}} onMouseUp={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;mpHandlePuffEnd();}} onTouchStart={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;mpHandlePuff();}} onTouchEnd={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;mpHandlePuffEnd();}}>
+            <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg, #061020 0%, #0c1a38 30%, #102240 60%, #081830 100%)"}}/>
+            <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse at 50% 30%, rgba(59,130,246,0.12), transparent 60%)",pointerEvents:"none"}}/>
+            <div style={{position:"absolute",bottom:0,left:0,right:0,height:"15%",background:"linear-gradient(180deg, transparent, rgba(34,197,94,0.08))",pointerEvents:"none"}}/>
+            {confettiParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size*0.6,background:p.color,borderRadius:1,transform:`rotate(${p.rot}deg)`,zIndex:210,pointerEvents:"none",animation:"confettiFall 1.5s ease-out forwards"}}/>))}
+            {overlayBack(mpCleanup)}
+            {renderGameChatPanel("MATCH PREDICTOR")}
+            <div style={{display:"flex",flexDirection:"column",alignItems:"center",maxWidth:380,width:"100%",padding:"50px 16px 20px",gap:8,zIndex:10,flex:1,margin:"0 auto"}}>
+              <div style={{fontSize:18,fontWeight:900,letterSpacing:4,background:"linear-gradient(135deg, #3B82F6, #22C55E)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>MATCH PREDICTOR</div>
+              <div style={{display:"flex",gap:16,marginBottom:4}}>
+                <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.gold}}>{mpScore}</div><div style={{fontSize:8,color:C.text3}}>SCORE</div></div>
+                <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.text2}}>{mpRound+1}/5</div><div style={{fontSize:8,color:C.text3}}>MATCH</div></div>
+              </div>
+
+              {mpPhase==="intro"&&(<div style={{textAlign:"center",animation:"fadeIn 0.5s ease"}}><div style={{fontSize:48,marginBottom:8}}>📊</div><div style={{fontSize:20,fontWeight:900,color:"#3B82F6",letterSpacing:3}}>MATCH PREDICTOR</div><div style={{fontSize:11,color:C.text3,marginTop:8}}>Short = Home Win | Medium = Draw | Long = Away Win</div></div>)}
+
+              {isMt&&mpMatch&&(<div style={{width:"100%",textAlign:"center",animation:"fadeIn 0.4s ease"}}>
+                <div style={{padding:"2px 10px",borderRadius:6,background:"rgba(59,130,246,0.12)",display:"inline-block",marginBottom:8}}><span style={{fontSize:9,fontWeight:700,color:"#3B82F6"}}>Group {mpMatch.group} | {mpMatch.time}</span></div>
+                <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:12,marginBottom:12}}>
+                  <div style={{flex:1,textAlign:"center"}}><div style={{fontSize:22,fontWeight:800,color:C.text}}>{mpMatch.home}</div></div>
+                  <div style={{fontSize:14,fontWeight:900,color:C.text3}}>VS</div>
+                  <div style={{flex:1,textAlign:"center"}}><div style={{fontSize:22,fontWeight:800,color:C.text}}>{mpMatch.away}</div></div>
+                </div>
+                <div style={{fontSize:10,color:C.text3,marginBottom:8}}>Prediction pool:</div>
+                <div style={{display:"flex",gap:4,marginBottom:8}}>
+                  {["Home","Draw","Away"].map((o,j)=>(<div key={j} style={{flex:1,padding:"6px",borderRadius:8,textAlign:"center",background:"rgba(59,130,246,0.06)",border:"1px solid rgba(59,130,246,0.15)"}}>
+                    <div style={{fontSize:10,fontWeight:600,color:C.text2}}>{o}</div>
+                    <div style={{fontSize:14,fontWeight:800,color:"#3B82F6"}}>{mpMatch.pool[j]}%</div>
+                  </div>))}
+                </div>
+                <div style={{display:"flex",gap:8,justifyContent:"center",marginBottom:8}}>
+                  <div style={{padding:"8px 16px",borderRadius:10,background:"rgba(59,130,246,0.10)",border:"1px solid rgba(59,130,246,0.25)"}}><div style={{fontSize:11,fontWeight:700,color:"#3B82F6"}}>Home Win</div><div style={{fontSize:8,color:C.text3}}>Short (&lt;1s)</div></div>
+                  <div style={{padding:"8px 16px",borderRadius:10,background:"rgba(255,215,0,0.10)",border:"1px solid rgba(255,215,0,0.25)"}}><div style={{fontSize:11,fontWeight:700,color:C.gold}}>Draw</div><div style={{fontSize:8,color:C.text3}}>Medium (1-2.5s)</div></div>
+                  <div style={{padding:"8px 16px",borderRadius:10,background:"rgba(239,68,68,0.10)",border:"1px solid rgba(239,68,68,0.25)"}}><div style={{fontSize:11,fontWeight:700,color:C.red}}>Away Win</div><div style={{fontSize:8,color:C.text3}}>Long (&gt;2.5s)</div></div>
+                </div>
+                <div style={{fontSize:11,color:C.text3}}>TAP TO PREDICT 📊</div>
+              </div>)}
+
+              {isPr&&(<div style={{textAlign:"center",animation:"fadeIn 0.4s ease"}}><div style={{fontSize:48,marginBottom:8}}>📊</div><div style={{fontSize:20,fontWeight:900,color:mpPrediction==="home"?"#3B82F6":mpPrediction==="draw"?C.gold:C.red}}>{mpPrediction==="home"?"HOME WIN":mpPrediction==="draw"?"DRAW":"AWAY WIN"}</div><div style={{fontSize:12,color:C.text3,marginTop:4}}>Waiting for result...</div></div>)}
+
+              {isRes&&(<div style={{textAlign:"center",animation:"fadeIn 0.4s ease"}}>
+                <div style={{fontSize:48,marginBottom:8}}>{mpResults[mpResults.length-1]?.correct?"✅":"❌"}</div>
+                <div style={{fontSize:24,fontWeight:900,color:mpResults[mpResults.length-1]?.correct?C.green:C.red}}>{mpResults[mpResults.length-1]?.correct?"CORRECT!":"WRONG!"}</div>
+                {mpResults[mpResults.length-1]?.correct&&<div style={{fontSize:14,fontWeight:700,color:C.green,marginBottom:4}}>+100 coins!</div>}
+                <div style={{fontSize:11,color:C.text2,fontStyle:"italic",marginBottom:12}}>{commentatorText}</div>
+                <div data-btn="true" onClick={(e)=>{e.stopPropagation();mpNextRound();}} style={{padding:"10px 28px",borderRadius:12,cursor:"pointer",background:"rgba(59,130,246,0.15)",border:"1px solid rgba(59,130,246,0.30)",fontSize:13,fontWeight:800,color:"#3B82F6",display:"inline-block"}}>Next Match</div>
+              </div>)}
+
+              {isComp&&(<div style={{textAlign:"center",animation:"fadeIn 0.4s ease"}}>
+                <div style={{fontSize:48,marginBottom:8}}>📊</div>
+                <div style={{fontSize:24,fontWeight:900,color:C.gold,marginBottom:4}}>ALL MATCHES PREDICTED</div>
+                <div style={{fontSize:18,fontWeight:800,color:C.text,marginBottom:4}}>Score: {mpScore}</div>
+                <div style={{fontSize:13,color:C.green}}>Correct: {mpResults.filter(r=>r.correct).length}/5</div>
+                <div style={{fontSize:14,fontWeight:700,color:C.lime,marginTop:4}}>+{mpScore} coins earned</div>
+                <div style={{display:"flex",gap:10,justifyContent:"center",marginTop:16}}>
+                  <div data-btn="true" onClick={(e)=>{e.stopPropagation();mpCleanup();startMatchPredictor();setGameActive({id:"matchpredictor",name:"Match Predictor",emoji:"📊",color:"#3B82F6"});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(59,130,246,0.15)",border:"1px solid rgba(59,130,246,0.30)",fontSize:13,fontWeight:800,color:"#3B82F6"}}>Play Again</div>
+                  <div data-btn="true" onClick={(e)=>{e.stopPropagation();mpCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
+                </div>
+                <div data-btn="true" onClick={(e)=>{e.stopPropagation();mpCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
+              </div>)}
+            </div>
+          </div>
+        );
+      }
+
+      // ═══════════════════════════════════════════════════════════════
+      // DAILY PICKS -- Render
+      // ═══════════════════════════════════════════════════════════════
+      if(gameActive.id==="dailypicks" && dpPhase) {
+        const catColors = {morning:"#F97316",afternoon:"#3B82F6",night:"#9333EA"};
+        const catEmojis = {morning:"🌅",afternoon:"☀️",night:"🌙"};
+        const isP=dpPhase==="pick";const isRev=dpPhase==="reveal";const isSum=dpPhase==="summary";
+        const currentQ = dpPicks[dpCurrentPick];
+        const mult = dpStreak >= 30 ? 10 : dpStreak >= 14 ? 5 : dpStreak >= 7 ? 3 : 1;
+        return (
+          <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden",touchAction:"none",display:"flex",flexDirection:"column"}}
+            onMouseDown={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;dpHandlePuff();}} onMouseUp={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;dpHandlePuffEnd();}} onTouchStart={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;dpHandlePuff();}} onTouchEnd={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;dpHandlePuffEnd();}}>
+            <div style={{position:"absolute",inset:0,background:`linear-gradient(180deg, #1a0a04 0%, ${dpCurrentPick===0?"#2a1005":dpCurrentPick===1?"#0a1830":"#1a0830"} 50%, #0a0618 100%)`}}/>
+            <div style={{position:"absolute",inset:0,background:`radial-gradient(ellipse at 50% 30%, ${catColors[currentQ?.cat||"morning"]}15, transparent 60%)`,pointerEvents:"none"}}/>
+            {confettiParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size*0.6,background:p.color,borderRadius:1,transform:`rotate(${p.rot}deg)`,zIndex:210,pointerEvents:"none",animation:"confettiFall 1.5s ease-out forwards"}}/>))}
+            {overlayBack(dpCleanup)}
+            {renderGameChatPanel("DAILY PICKS")}
+            <div style={{display:"flex",flexDirection:"column",alignItems:"center",maxWidth:380,width:"100%",padding:"50px 16px 20px",gap:8,zIndex:10,flex:1,margin:"0 auto",overflowY:"auto"}}>
+              <div style={{fontSize:18,fontWeight:900,letterSpacing:4,background:"linear-gradient(135deg, #F97316, #9333EA)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>DAILY PICKS</div>
+              <div style={{display:"flex",gap:16,marginBottom:4}}>
+                <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:"#F97316"}}>{dpStreak}🔥</div><div style={{fontSize:8,color:C.text3}}>STREAK</div></div>
+                <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.gold}}>{mult}x</div><div style={{fontSize:8,color:C.text3}}>MULTIPLIER</div></div>
+                <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.text2}}>{dpCurrentPick+1}/3</div><div style={{fontSize:8,color:C.text3}}>PICK</div></div>
+              </div>
+              {/* Progress dots */}
+              <div style={{display:"flex",gap:8,marginBottom:8}}>
+                {[0,1,2].map(i=>(<div key={i} style={{width:10,height:10,borderRadius:"50%",background:i<dpCurrentPick?C.green:i===dpCurrentPick?catColors[dpPicks[i]?.cat||"morning"]:C.text3+"30",boxShadow:i===dpCurrentPick?`0 0 8px ${catColors[dpPicks[i]?.cat||"morning"]}60`:"none",transition:"all 0.3s"}}/>))}
+              </div>
+
+              {dpPhase==="intro"&&(<div style={{textAlign:"center",animation:"fadeIn 0.5s ease"}}><div style={{fontSize:48,marginBottom:8}}>📅</div><div style={{fontSize:20,fontWeight:900,color:"#F97316",letterSpacing:3}}>DAILY PICKS</div><div style={{fontSize:11,color:C.text3,marginTop:8}}>3 predictions | Build your streak | Earn multipliers</div><div style={{fontSize:9,color:C.gold,marginTop:4}}>7-day = 3x | 14-day = 5x | 30-day = 10x</div></div>)}
+
+              {isP&&currentQ&&(<div style={{width:"100%",textAlign:"center",animation:"fadeIn 0.4s ease"}}>
+                <div style={{fontSize:36,marginBottom:8}}>{catEmojis[currentQ.cat]}</div>
+                <div style={{padding:"2px 10px",borderRadius:6,background:`${catColors[currentQ.cat]}15`,display:"inline-block",marginBottom:8}}><span style={{fontSize:9,fontWeight:700,color:catColors[currentQ.cat]}}>{currentQ.cat.toUpperCase()} PICK</span></div>
+                <div style={{fontSize:16,fontWeight:800,color:C.text,lineHeight:1.4,maxWidth:300,margin:"0 auto",marginBottom:16}}>{currentQ.q}</div>
+                {currentQ.type==="yn"?(
+                  <div style={{display:"flex",gap:12,justifyContent:"center"}}>
+                    <div style={{padding:"10px 24px",borderRadius:12,background:"rgba(239,68,68,0.10)",border:"1px solid rgba(239,68,68,0.25)"}}><div style={{fontSize:14,fontWeight:800,color:C.red}}>NO</div><div style={{fontSize:8,color:C.text3}}>Short puff</div></div>
+                    <div style={{padding:"10px 24px",borderRadius:12,background:"rgba(34,197,94,0.10)",border:"1px solid rgba(34,197,94,0.25)"}}><div style={{fontSize:14,fontWeight:800,color:C.green}}>YES</div><div style={{fontSize:8,color:C.text3}}>Long puff</div></div>
+                  </div>
+                ):(
+                  <div style={{display:"flex",gap:12,justifyContent:"center"}}>
+                    <div style={{padding:"10px 24px",borderRadius:12,background:`${catColors[currentQ.cat]}10`,border:`1px solid ${catColors[currentQ.cat]}25`}}><div style={{fontSize:14,fontWeight:800,color:catColors[currentQ.cat]}}>{currentQ.a}</div><div style={{fontSize:8,color:C.text3}}>Short puff</div></div>
+                    <div style={{padding:"10px 24px",borderRadius:12,background:`${catColors[currentQ.cat]}10`,border:`1px solid ${catColors[currentQ.cat]}25`}}><div style={{fontSize:14,fontWeight:800,color:catColors[currentQ.cat]}}>{currentQ.b}</div><div style={{fontSize:8,color:C.text3}}>Long puff</div></div>
+                  </div>
+                )}
+                <div style={{fontSize:11,color:C.text3,marginTop:12}}>TAP TO PICK 📅</div>
+              </div>)}
+
+              {isRev&&(<div style={{textAlign:"center",animation:"fadeIn 0.4s ease"}}>
+                <div style={{fontSize:36,marginBottom:8}}>{dpResults.length>0&&dpResults[dpResults.length-1].correct?"✅":"❌"}</div>
+                <div style={{fontSize:20,fontWeight:900,color:dpResults.length>0&&dpResults[dpResults.length-1].correct?C.green:C.red}}>{dpResults.length>0&&dpResults[dpResults.length-1].correct?"CORRECT!":"WRONG!"}</div>
+                <div style={{fontSize:13,color:C.text2,marginTop:4}}>You picked: <span style={{fontWeight:700,color:C.text}}>{dpAnswer}</span></div>
+                {dpResults.length>0&&dpResults[dpResults.length-1].correct&&<div style={{fontSize:14,fontWeight:700,color:C.gold,marginTop:4}}>+{dpResults[dpResults.length-1].pts} coins{mult>1?" ("+mult+"x multiplier!)":""}</div>}
+                <div style={{fontSize:11,color:C.text2,fontStyle:"italic",marginTop:8}}>{commentatorText}</div>
+              </div>)}
+
+              {isSum&&(<div style={{textAlign:"center",animation:"fadeIn 0.4s ease"}}>
+                <div style={{fontSize:48,marginBottom:8}}>📅</div>
+                <div style={{fontSize:24,fontWeight:900,color:C.gold,marginBottom:8}}>DAILY PICKS COMPLETE</div>
+                {dpResults.map((r,i)=>(
+                  <div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 12px",borderRadius:10,marginBottom:4,background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.06)"}}>
+                    <span style={{fontSize:16}}>{catEmojis[r.question.cat]}</span>
+                    <span style={{fontSize:11,color:C.text,flex:1,textAlign:"left"}}>{r.question.q.substring(0,35)}...</span>
+                    <span style={{fontSize:11,fontWeight:700,color:r.correct?C.green:C.red}}>{r.correct?"✅":"❌"}</span>
+                    {r.pts>0&&<span style={{fontSize:9,fontWeight:700,color:C.gold}}>+{r.pts}</span>}
+                  </div>
+                ))}
+                <div style={{fontSize:14,fontWeight:700,color:"#F97316",marginTop:8}}>Current Streak: {dpStreak} 🔥</div>
+                <div style={{fontSize:12,color:C.gold,marginTop:4}}>Total earned: +{dpResults.reduce((a,r)=>a+r.pts,0)} coins</div>
+                <div style={{display:"flex",gap:10,justifyContent:"center",marginTop:16}}>
+                  <div data-btn="true" onClick={(e)=>{e.stopPropagation();dpCleanup();startDailyPicks();setGameActive({id:"dailypicks",name:"Daily Picks",emoji:"📅",color:"#F97316"});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(249,115,22,0.15)",border:"1px solid rgba(249,115,22,0.30)",fontSize:13,fontWeight:800,color:"#F97316"}}>Play Again</div>
+                  <div data-btn="true" onClick={(e)=>{e.stopPropagation();dpCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
+                </div>
+                <div data-btn="true" onClick={(e)=>{e.stopPropagation();dpCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
+              </div>)}
+            </div>
+          </div>
+        );
+      }
+
+      // ═══════════════════════════════════════════════════════════════
+      // PUFF SLOTS -- Render
+      // ═══════════════════════════════════════════════════════════════
+      if(gameActive.id==="puffslots" && slotsPhase) {
+        const isReady=slotsPhase==="ready";const isSpin=slotsPhase==="spinning";const isRes=slotsPhase==="result";const isComp=slotsPhase==="complete";
+        return (
+          <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden",touchAction:"none",display:"flex",flexDirection:"column"}}
+            onMouseDown={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;slotsHandlePuff();}} onMouseUp={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;slotsHandlePuffEnd();}} onTouchStart={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;slotsHandlePuff();}} onTouchEnd={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;slotsHandlePuffEnd();}}>
+            <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg, #0a0a1a 0%, #1a0a2e 40%, #0d0d20 100%)"}}/>
+            <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse at 50% 40%, rgba(255,215,0,0.08), transparent 60%)",pointerEvents:"none"}}/>
+            {confettiParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size*0.6,background:p.color,borderRadius:1,transform:`rotate(${p.rot}deg)`,zIndex:210,pointerEvents:"none",animation:"confettiFall 1.5s ease-out forwards"}}/>))}
+            {overlayBack(slotsCleanup)}
+            {renderGameChatPanel("PUFF SLOTS")}
+            <div style={{display:"flex",flexDirection:"column",alignItems:"center",maxWidth:380,width:"100%",padding:"50px 16px 20px",gap:8,zIndex:10,flex:1,margin:"0 auto"}}>
+              <div style={{fontSize:18,fontWeight:900,letterSpacing:4,background:"linear-gradient(135deg, #FFD700, #FF6B00)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>PUFF SLOTS</div>
+              <div style={{display:"flex",gap:16,marginBottom:4}}>
+                <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.gold}}>{slotsScore}</div><div style={{fontSize:8,color:C.text3}}>COINS</div></div>
+                <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.text2}}>{slotsRound+1}/8</div><div style={{fontSize:8,color:C.text3}}>SPIN</div></div>
+                {slotsBonusRound&&<div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.purple}}>2x</div><div style={{fontSize:8,color:C.text3}}>BONUS</div></div>}
+              </div>
+              {slotsPhase==="intro"&&(<div style={{textAlign:"center",animation:"fadeIn 0.5s ease"}}><div style={{fontSize:48,marginBottom:8}}>🎰</div><div style={{fontSize:20,fontWeight:900,color:"#FFD700",letterSpacing:3}}>PUFF SLOTS</div><div style={{fontSize:11,color:C.text3,marginTop:8}}>Hold to spin! Blinker (4.5s+) = BONUS ROUND</div></div>)}
+              {(isReady||isSpin||isRes)&&(<div style={{width:"100%",textAlign:"center"}}>
+                <div style={{padding:20,borderRadius:20,border:"3px solid #FFD70050",background:"linear-gradient(180deg, rgba(255,215,0,0.08), rgba(0,0,0,0.4))",boxShadow:"0 0 40px rgba(255,215,0,0.15), inset 0 0 30px rgba(255,215,0,0.05)",margin:"0 auto",maxWidth:300}}>
+                  <div style={{fontSize:12,fontWeight:800,color:C.gold,marginBottom:12,letterSpacing:3}}>CASINO ROYALE</div>
+                  <div style={{display:"flex",justifyContent:"center",gap:8,marginBottom:16}}>
+                    {slotsReels.map((sym,i)=>(
+                      <div key={i} style={{width:70,height:80,borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",fontSize:40,
+                        background:"linear-gradient(180deg, rgba(0,0,0,0.6), rgba(20,10,30,0.8))",border:"2px solid rgba(255,215,0,0.3)",
+                        boxShadow:sym!=="❓"?"0 0 15px rgba(255,215,0,0.2)":"none",
+                        animation:isSpin?`pulse 0.3s infinite ${i*0.1}s`:"none",transition:"all 0.3s"}}>
+                        {sym}
+                      </div>
+                    ))}
+                  </div>
+                  {isRes&&slotsWin>0&&(<div style={{fontSize:24,fontWeight:900,color:C.gold,animation:"pulse 1s infinite",marginBottom:8}}>WIN +{slotsWin}{slotsBonusRound?" (2x BONUS!)":""}</div>)}
+                  {isRes&&slotsWin===0&&(<div style={{fontSize:16,fontWeight:700,color:C.text3,marginBottom:8}}>No match</div>)}
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:4,marginTop:8}}>
+                    {SLOTS_SYMBOLS.map(s=>(<div key={s} style={{fontSize:8,color:C.text3,padding:"2px 4px",borderRadius:4,background:"rgba(255,255,255,0.03)"}}>{s}{s}{s} = {SLOTS_PAYOUTS[s]}</div>))}
+                  </div>
+                </div>
+                {isReady&&(<div style={{marginTop:16,fontSize:14,fontWeight:800,color:C.gold,animation:"pulse 1.5s infinite"}}>PUFF TO SPIN 🎰</div>)}
+                {isSpin&&(<div style={{marginTop:16,fontSize:14,fontWeight:800,color:C.cyan,animation:"pulse 0.5s infinite"}}>SPINNING... RELEASE TO STOP</div>)}
+              </div>)}
+              {slotsHistory.length>0&&(<div style={{display:"flex",gap:4,flexWrap:"wrap",justifyContent:"center",marginTop:8}}>
+                {slotsHistory.map((h,i)=>(<div key={i} style={{fontSize:10,padding:"2px 6px",borderRadius:6,background:h.win>0?"rgba(34,197,94,0.10)":"rgba(255,255,255,0.03)",border:h.win>0?"1px solid rgba(34,197,94,0.20)":"1px solid rgba(255,255,255,0.06)",color:h.win>0?C.green:C.text3}}>{h.reels.join("")}{h.win>0?" +"+h.win:""}</div>))}
+              </div>)}
+              {isComp&&(<div style={{textAlign:"center",animation:"fadeIn 0.4s ease"}}>
+                <div style={{fontSize:48,marginBottom:8}}>🎰</div>
+                <div style={{fontSize:24,fontWeight:900,color:C.gold,marginBottom:8}}>ALL SPINS COMPLETE</div>
+                <div style={{fontSize:18,fontWeight:800,color:C.text}}>Total Won: {slotsScore} coins</div>
+                <div style={{display:"flex",gap:10,justifyContent:"center",marginTop:16}}>
+                  <div data-btn="true" onClick={(e)=>{e.stopPropagation();slotsCleanup();startPuffSlots();setGameActive({id:"puffslots",name:"Puff Slots",emoji:"🎰",color:"#FFD700"});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,215,0,0.15)",border:"1px solid rgba(255,215,0,0.30)",fontSize:13,fontWeight:800,color:"#FFD700"}}>Play Again</div>
+                  <div data-btn="true" onClick={(e)=>{e.stopPropagation();slotsCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
+                </div>
+                <div data-btn="true" onClick={(e)=>{e.stopPropagation();slotsCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
+              </div>)}
+              <div style={{fontSize:11,color:C.text3,fontStyle:"italic",marginTop:8}}>{commentatorText}</div>
+            </div>
+          </div>
+        );
+      }
+
+      // ═══════════════════════════════════════════════════════════════
+      // PUFF BLACKJACK -- Render
+      // ═══════════════════════════════════════════════════════════════
+      if(gameActive.id==="puffblackjack" && bjPhase) {
+        const renderCard = (c,hidden) => (
+          <div style={{width:48,height:68,borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",
+            background:hidden?"linear-gradient(135deg, #1a3a5c, #0a1a30)":"linear-gradient(180deg, #fafafa, #e0e0e0)",
+            border:hidden?"2px solid #2a5a8c":"2px solid #ccc",boxShadow:"0 2px 8px rgba(0,0,0,0.3)",fontSize:hidden?20:12,fontWeight:800,
+            color:hidden?"#4a8abf":(c.suit==="♥️"||c.suit==="♦️")?"#dc2626":"#1a1a1a"}}>
+            {hidden?"🂠":c.display}
+          </div>
+        );
+        const isPlayerTurn=bjPhase==="player_turn";const isDealerTurn=bjPhase==="dealer_turn";const isResult=bjPhase==="result";const isComp=bjPhase==="complete";
+        return (
+          <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden",touchAction:"none",display:"flex",flexDirection:"column"}}
+            onMouseDown={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;bjHandlePuff();}} onMouseUp={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;bjHandlePuffEnd();}} onTouchStart={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;bjHandlePuff();}} onTouchEnd={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;bjHandlePuffEnd();}}>
+            <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg, #0a1e0a 0%, #0d3d0d 40%, #0a2a0a 100%)"}}/>
+            <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse at 50% 50%, rgba(34,197,94,0.06), transparent 60%)",pointerEvents:"none"}}/>
+            {confettiParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size*0.6,background:p.color,borderRadius:1,transform:`rotate(${p.rot}deg)`,zIndex:210,pointerEvents:"none",animation:"confettiFall 1.5s ease-out forwards"}}/>))}
+            {overlayBack(bjCleanup)}
+            {renderGameChatPanel("PUFF BLACKJACK")}
+            <div style={{display:"flex",flexDirection:"column",alignItems:"center",maxWidth:380,width:"100%",padding:"50px 16px 20px",gap:8,zIndex:10,flex:1,margin:"0 auto"}}>
+              <div style={{fontSize:18,fontWeight:900,letterSpacing:4,background:"linear-gradient(135deg, #22C55E, #10B981)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>PUFF BLACKJACK</div>
+              <div style={{display:"flex",gap:16,marginBottom:4}}>
+                <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.gold}}>{bjScore}</div><div style={{fontSize:8,color:C.text3}}>COINS</div></div>
+                <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.text2}}>{bjRound+1}/7</div><div style={{fontSize:8,color:C.text3}}>HAND</div></div>
+                <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.cyan}}>Bet:{bjBet}</div><div style={{fontSize:8,color:C.text3}}>WAGER</div></div>
+              </div>
+              <div style={{fontSize:9,color:C.gold,fontWeight:700,marginBottom:4,textAlign:"center"}}>Win up to: {Math.round(bjBet * 2.5 * (getCoinMultiplier?.() || 1))} 🪙 ({(2.5 * (getCoinMultiplier?.() || 1)).toFixed(1)}x)</div>
+              {bjPhase==="intro"&&(<div style={{textAlign:"center",animation:"fadeIn 0.5s ease"}}><div style={{fontSize:48,marginBottom:8}}>🃏</div><div style={{fontSize:20,fontWeight:900,color:"#22C55E",letterSpacing:3}}>BLACKJACK</div><div style={{fontSize:11,color:C.text3,marginTop:8}}>Short puff = HIT | Long puff = STAND | Blinker = DOUBLE DOWN</div></div>)}
+              {(bjPhase==="dealing"||isPlayerTurn||isDealerTurn||isResult)&&(<div style={{width:"100%"}}>
+                <div style={{textAlign:"center",marginBottom:16}}>
+                  <div style={{fontSize:10,fontWeight:700,color:C.text3,marginBottom:4}}>DEALER {(isDealerTurn||isResult)?"("+bjDealerTotal+")":""}</div>
+                  <div style={{display:"flex",justifyContent:"center",gap:6}}>
+                    {bjDealerHand.map((c,i)=>(<div key={i}>{renderCard(c,i===1&&bjPhase==="dealing"||i===1&&isPlayerTurn)}</div>))}
+                  </div>
+                </div>
+                <div style={{textAlign:"center",margin:"8px 0",fontSize:12,fontWeight:800,color:C.gold}}>
+                  {isResult&&bjResult==="win"?"YOU WIN!":isResult&&bjResult==="blackjack"?"BLACKJACK!":isResult&&bjResult==="lose"?"DEALER WINS":isResult&&bjResult==="bust"?"BUST!":isResult&&bjResult==="push"?"PUSH":"VS"}
+                </div>
+                <div style={{textAlign:"center",marginBottom:12}}>
+                  <div style={{fontSize:10,fontWeight:700,color:C.cyan,marginBottom:4}}>YOU ({bjPlayerTotal})</div>
+                  <div style={{display:"flex",justifyContent:"center",gap:6}}>
+                    {bjPlayerHand.map((c,i)=>(<div key={i}>{renderCard(c,false)}</div>))}
+                  </div>
+                </div>
+                {isPlayerTurn&&(<div style={{textAlign:"center",marginTop:8}}>
+                  <div style={{display:"flex",gap:8,justifyContent:"center"}}>
+                    <div style={{padding:"6px 14px",borderRadius:8,background:"rgba(34,197,94,0.10)",border:"1px solid rgba(34,197,94,0.20)"}}><div style={{fontSize:11,fontWeight:700,color:C.green}}>HIT</div><div style={{fontSize:7,color:C.text3}}>&lt;1.5s</div></div>
+                    <div style={{padding:"6px 14px",borderRadius:8,background:"rgba(239,68,68,0.10)",border:"1px solid rgba(239,68,68,0.20)"}}><div style={{fontSize:11,fontWeight:700,color:C.red}}>STAND</div><div style={{fontSize:7,color:C.text3}}>&gt;1.5s</div></div>
+                    <div style={{padding:"6px 14px",borderRadius:8,background:"rgba(147,51,234,0.10)",border:"1px solid rgba(147,51,234,0.20)"}}><div style={{fontSize:11,fontWeight:700,color:C.purple}}>DOUBLE</div><div style={{fontSize:7,color:C.text3}}>4.5s+</div></div>
+                  </div>
+                  <div style={{fontSize:12,fontWeight:700,color:C.gold,marginTop:10,animation:"pulse 1.5s infinite"}}>TAP: Hit/Stand · PUFF: Double Down 🃏</div>
+                </div>)}
+                {isResult&&(<div style={{textAlign:"center",marginTop:8}}>
+                  <div style={{fontSize:16,fontWeight:800,color:bjResult==="win"||bjResult==="blackjack"?C.gold:bjResult==="push"?C.cyan:C.red}}>
+                    {bjResult==="win"||bjResult==="blackjack"?"+"+bjBet*(bjResult==="blackjack"?2.5:2)+" coins":bjResult==="push"?"Bet returned":"-"+bjBet+" coins"}
+                  </div>
+                </div>)}
+              </div>)}
+              {isComp&&(<div style={{textAlign:"center",animation:"fadeIn 0.4s ease"}}>
+                <div style={{fontSize:48,marginBottom:8}}>🃏</div>
+                <div style={{fontSize:24,fontWeight:900,color:C.gold,marginBottom:8}}>SESSION COMPLETE</div>
+                <div style={{fontSize:18,fontWeight:800,color:C.text}}>Total Won: {bjScore} coins</div>
+                <div style={{display:"flex",gap:10,justifyContent:"center",marginTop:16}}>
+                  <div data-btn="true" onClick={(e)=>{e.stopPropagation();bjCleanup();startPuffBlackjack();setGameActive({id:"puffblackjack",name:"Puff Blackjack",emoji:"🃏",color:"#22C55E"});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(34,197,94,0.15)",border:"1px solid rgba(34,197,94,0.30)",fontSize:13,fontWeight:800,color:"#22C55E"}}>Play Again</div>
+                  <div data-btn="true" onClick={(e)=>{e.stopPropagation();bjCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
+                </div>
+                <div data-btn="true" onClick={(e)=>{e.stopPropagation();bjCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
+              </div>)}
+              <div style={{fontSize:11,color:C.text3,fontStyle:"italic",marginTop:8}}>{commentatorText}</div>
+            </div>
+          </div>
+        );
+      }
+
+      // ═══════════════════════════════════════════════════════════════
+      // COIN FLIP -- Render
+      // ═══════════════════════════════════════════════════════════════
+      if(gameActive.id==="coinflip" && cfPhase) {
+        const isBet=cfPhase==="betting";const isPuff=cfPhase==="puffing";const isFlip=cfPhase==="flipping";const isRes=cfPhase==="result";const isComp=cfPhase==="complete";
+        return (
+          <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden",touchAction:"none",display:"flex",flexDirection:"column"}}
+            onMouseDown={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;cfHandlePuff();}} onMouseUp={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;cfHandlePuffEnd();}} onTouchStart={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;cfHandlePuff();}} onTouchEnd={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;cfHandlePuffEnd();}}>
+            <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg, #1a1500 0%, #2a1f00 40%, #0a0800 100%)"}}/>
+            <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse at 50% 40%, rgba(245,158,11,0.10), transparent 60%)",pointerEvents:"none"}}/>
+            {confettiParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size*0.6,background:p.color,borderRadius:1,transform:`rotate(${p.rot}deg)`,zIndex:210,pointerEvents:"none",animation:"confettiFall 1.5s ease-out forwards"}}/>))}
+            {overlayBack(cfCleanup)}
+            {renderGameChatPanel("COIN FLIP")}
+            <div style={{display:"flex",flexDirection:"column",alignItems:"center",maxWidth:380,width:"100%",padding:"50px 16px 20px",gap:8,zIndex:10,flex:1,margin:"0 auto"}}>
+              <div style={{fontSize:18,fontWeight:900,letterSpacing:4,background:"linear-gradient(135deg, #F59E0B, #D97706)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>COIN FLIP</div>
+              <div style={{display:"flex",gap:16,marginBottom:4}}>
+                <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.gold}}>{cfScore}</div><div style={{fontSize:8,color:C.text3}}>COINS</div></div>
+                <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.text2}}>{cfRound+1}/8</div><div style={{fontSize:8,color:C.text3}}>FLIP</div></div>
+                <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.orange}}>{cfStreak}</div><div style={{fontSize:8,color:C.text3}}>STREAK</div></div>
+              </div>
+              {cfPhase==="intro"&&(<div style={{textAlign:"center",animation:"fadeIn 0.5s ease"}}><div style={{fontSize:48,marginBottom:8}}>🪙</div><div style={{fontSize:20,fontWeight:900,color:"#F59E0B",letterSpacing:3}}>COIN FLIP</div><div style={{fontSize:11,color:C.text3,marginTop:8}}>Pick a side, puff your confidence, win big!</div></div>)}
+              {isBet&&(<div style={{textAlign:"center",animation:"fadeIn 0.4s ease"}}>
+                <div style={{fontSize:60,marginBottom:12}}>🪙</div>
+                <div style={{fontSize:16,fontWeight:800,color:C.text,marginBottom:16}}>Pick your side!</div>
+                <div style={{display:"flex",gap:16,justifyContent:"center"}}>
+                  <div data-btn="true" onClick={(e)=>{e.stopPropagation();cfPickSide("heads");}} style={{padding:"16px 28px",borderRadius:16,cursor:"pointer",background:"rgba(245,158,11,0.10)",border:"2px solid rgba(245,158,11,0.30)",textAlign:"center"}}>
+                    <div style={{fontSize:28,marginBottom:4}}>👑</div>
+                    <div style={{fontSize:14,fontWeight:800,color:"#F59E0B"}}>HEADS</div>
+                  </div>
+                  <div data-btn="true" onClick={(e)=>{e.stopPropagation();cfPickSide("tails");}} style={{padding:"16px 28px",borderRadius:16,cursor:"pointer",background:"rgba(168,85,247,0.10)",border:"2px solid rgba(168,85,247,0.30)",textAlign:"center"}}>
+                    <div style={{fontSize:28,marginBottom:4}}>🌿</div>
+                    <div style={{fontSize:14,fontWeight:800,color:"#A855F7"}}>TAILS</div>
+                  </div>
+                </div>
+              </div>)}
+              {isPuff&&(<div style={{textAlign:"center",animation:"fadeIn 0.4s ease"}}>
+                <div style={{fontSize:48,marginBottom:8}}>{cfChoice==="heads"?"👑":"🌿"}</div>
+                <div style={{fontSize:16,fontWeight:800,color:C.text,marginBottom:8}}>You picked: {cfChoice.toUpperCase()}</div>
+                <div style={{display:"flex",gap:6,justifyContent:"center",flexWrap:"wrap",marginBottom:12}}>
+                  <div style={{padding:"4px 10px",borderRadius:8,background:"rgba(34,197,94,0.10)",border:"1px solid rgba(34,197,94,0.20)"}}><div style={{fontSize:9,fontWeight:700,color:C.green}}>TAP: 1x</div></div>
+                  <div style={{padding:"4px 10px",borderRadius:8,background:"rgba(59,130,246,0.10)",border:"1px solid rgba(59,130,246,0.20)"}}><div style={{fontSize:9,fontWeight:700,color:C.blue}}>SHORT: 1.5x</div></div>
+                  <div style={{padding:"4px 10px",borderRadius:8,background:"rgba(245,158,11,0.10)",border:"1px solid rgba(245,158,11,0.20)"}}><div style={{fontSize:9,fontWeight:700,color:"#F59E0B"}}>MED: 2x</div></div>
+                  <div style={{padding:"4px 10px",borderRadius:8,background:"rgba(239,68,68,0.10)",border:"1px solid rgba(239,68,68,0.20)"}}><div style={{fontSize:9,fontWeight:700,color:C.red}}>LONG: 3x</div></div>
+                  <div style={{padding:"4px 10px",borderRadius:8,background:"rgba(147,51,234,0.10)",border:"1px solid rgba(147,51,234,0.20)"}}><div style={{fontSize:9,fontWeight:700,color:C.purple}}>BLINKER: 5x</div></div>
+                </div>
+                <div style={{fontSize:14,fontWeight:800,color:C.gold,animation:"pulse 1.5s infinite"}}>PUFF TO FLIP 🪙</div>
+                {cfPuffing&&<div style={{fontSize:12,fontWeight:700,color:C.cyan,marginTop:8,animation:"pulse 0.5s infinite"}}>FLIPPING...</div>}
+              </div>)}
+              {(isFlip||isRes)&&(<div style={{textAlign:"center"}}>
+                <div style={{fontSize:72,marginBottom:12,transition:"all 0.5s",animation:isFlip?"spin 1.5s linear":"none"}}>
+                  {isFlip?"🪙":cfResult==="heads"?"👑":"🌿"}
+                </div>
+                {isRes&&(<div>
+                  <div style={{fontSize:22,fontWeight:900,color:cfResult===cfChoice?C.gold:C.red,marginBottom:4}}>{cfResult===cfChoice?"YOU WIN!":"YOU LOSE!"}</div>
+                  <div style={{fontSize:14,color:C.text2}}>It was {cfResult.toUpperCase()}{cfPuffConfidence>1?" at "+cfPuffConfidence+"x":""}</div>
+                  {cfResult===cfChoice&&<div style={{fontSize:16,fontWeight:800,color:C.gold,marginTop:4}}>+{Math.floor(cfBet*cfPuffConfidence)} coins!</div>}
+                  {cfResult!==cfChoice&&cfPuffConfidence>=5&&<div style={{fontSize:12,fontWeight:700,color:C.red,marginTop:4}}>Blinker penalty: -{cfBet*2}</div>}
+                </div>)}
+              </div>)}
+              {isComp&&(<div style={{textAlign:"center",animation:"fadeIn 0.4s ease"}}>
+                <div style={{fontSize:48,marginBottom:8}}>🪙</div>
+                <div style={{fontSize:24,fontWeight:900,color:C.gold,marginBottom:8}}>ALL FLIPS COMPLETE</div>
+                <div style={{fontSize:18,fontWeight:800,color:C.text}}>Total Won: {cfScore} coins</div>
+                <div style={{fontSize:13,color:C.orange,marginTop:4}}>Best Streak: {cfStreak}</div>
+                <div style={{display:"flex",gap:10,justifyContent:"center",marginTop:16}}>
+                  <div data-btn="true" onClick={(e)=>{e.stopPropagation();cfCleanup();startCoinFlip();setGameActive({id:"coinflip",name:"Coin Flip",emoji:"🪙",color:"#F59E0B"});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(245,158,11,0.15)",border:"1px solid rgba(245,158,11,0.30)",fontSize:13,fontWeight:800,color:"#F59E0B"}}>Play Again</div>
+                  <div data-btn="true" onClick={(e)=>{e.stopPropagation();cfCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
+                </div>
+                <div data-btn="true" onClick={(e)=>{e.stopPropagation();cfCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
+              </div>)}
+              <div style={{fontSize:11,color:C.text3,fontStyle:"italic",marginTop:8}}>{commentatorText}</div>
+            </div>
+          </div>
+        );
+      }
+
+      // ═══════════════════════════════════════════════════════════════
+      // CRAPS & CLOUDS -- Render
+      // ═══════════════════════════════════════════════════════════════
+      if(gameActive.id==="crapsnclouds" && crapsPhase) {
+        const DICE_FACES = {1:"⚀",2:"⚁",3:"⚂",4:"⚃",5:"⚄",6:"⚅"};
+        const isRoll=crapsPhase==="rolling";const isRes=crapsPhase==="result";const isComp=crapsPhase==="complete";
+        return (
+          <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden",touchAction:"none",display:"flex",flexDirection:"column"}}
+            onMouseDown={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;crapsHandlePuff();}} onMouseUp={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;crapsHandlePuffEnd();}} onTouchStart={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;crapsHandlePuff();}} onTouchEnd={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;crapsHandlePuffEnd();}}>
+            <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg, #0a1e0a 0%, #1a3a1a 40%, #0d2a0d 100%)"}}/>
+            <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse at 50% 40%, rgba(239,68,68,0.06), transparent 60%)",pointerEvents:"none"}}/>
+            {confettiParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size*0.6,background:p.color,borderRadius:1,transform:`rotate(${p.rot}deg)`,zIndex:210,pointerEvents:"none",animation:"confettiFall 1.5s ease-out forwards"}}/>))}
+            {overlayBack(crapsCleanup)}
+            {renderGameChatPanel("CRAPS & CLOUDS")}
+            <div style={{display:"flex",flexDirection:"column",alignItems:"center",maxWidth:380,width:"100%",padding:"50px 16px 20px",gap:8,zIndex:10,flex:1,margin:"0 auto"}}>
+              <div style={{fontSize:18,fontWeight:900,letterSpacing:4,background:"linear-gradient(135deg, #EF4444, #DC2626)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>CRAPS & CLOUDS</div>
+              <div style={{display:"flex",gap:16,marginBottom:4}}>
+                <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.gold}}>{crapsScore}</div><div style={{fontSize:8,color:C.text3}}>COINS</div></div>
+                <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.text2}}>{crapsRound+1}/8</div><div style={{fontSize:8,color:C.text3}}>ROLL</div></div>
+                {crapsPoint&&<div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.cyan}}>Point:{crapsPoint}</div><div style={{fontSize:8,color:C.text3}}>TARGET</div></div>}
+                {crapsHotDice&&<div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.red}}>HOT</div><div style={{fontSize:8,color:C.text3}}>+50%</div></div>}
+              </div>
+              {crapsPhase==="intro"&&(<div style={{textAlign:"center",animation:"fadeIn 0.5s ease"}}><div style={{fontSize:48,marginBottom:8}}>🎲</div><div style={{fontSize:20,fontWeight:900,color:"#EF4444",letterSpacing:3}}>CRAPS & CLOUDS</div><div style={{fontSize:11,color:C.text3,marginTop:8}}>Puff duration controls your roll! Blinker = HOT DICE!</div></div>)}
+              {(isRoll||isRes)&&(<div style={{width:"100%",textAlign:"center"}}>
+                <div style={{padding:20,borderRadius:20,border:"3px solid rgba(239,68,68,0.30)",background:"linear-gradient(180deg, rgba(34,100,34,0.3), rgba(10,40,10,0.5))",boxShadow:"0 0 30px rgba(239,68,68,0.10)",margin:"0 auto",maxWidth:300}}>
+                  <div style={{fontSize:11,fontWeight:800,color:crapsPoint?C.cyan:C.gold,marginBottom:12,letterSpacing:2}}>{crapsPoint?"POINT PHASE: Hit "+crapsPoint+" to WIN!":"COME-OUT ROLL"}</div>
+                  <div style={{display:"flex",justifyContent:"center",gap:16,marginBottom:16}}>
+                    {crapsDice.map((d,i)=>(
+                      <div key={i} style={{width:64,height:64,borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",fontSize:36,
+                        background:"linear-gradient(135deg, #fafafa, #e8e8e8)",border:"2px solid #ccc",boxShadow:"0 4px 12px rgba(0,0,0,0.3)",
+                        color:"#1a1a1a",fontWeight:900,
+                        animation:crapsRolling?`pulse 0.2s infinite ${i*0.1}s`:"none",transition:"all 0.3s"}}>
+                        {DICE_FACES[d]||d}
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{fontSize:20,fontWeight:900,color:C.text}}>Total: {crapsDice[0]+crapsDice[1]}</div>
+                  {crapsHotDice&&<div style={{fontSize:12,fontWeight:700,color:C.red,marginTop:4,animation:"pulse 1s infinite"}}>HOT DICE ACTIVE! +50% payout</div>}
+                  {isRes&&(<div style={{marginTop:12}}>
+                    <div style={{fontSize:22,fontWeight:900,color:crapsResult==="win"?C.gold:C.red}}>{crapsResult==="win"?"YOU WIN!":"CRAPS OUT!"}</div>
+                    {crapsResult==="win"&&<div style={{fontSize:14,fontWeight:700,color:C.gold}}>+{crapsHotDice?Math.floor(crapsBet*1.5):crapsBet} coins</div>}
+                  </div>)}
+                </div>
+                {isRoll&&!crapsRolling&&(<div style={{marginTop:12}}>
+                  <div style={{display:"flex",gap:4,justifyContent:"center",flexWrap:"wrap"}}>
+                    <div style={{padding:"3px 8px",borderRadius:6,background:"rgba(255,255,255,0.04)",fontSize:8,color:C.text3}}>Tap:2-3</div>
+                    <div style={{padding:"3px 8px",borderRadius:6,background:"rgba(255,255,255,0.04)",fontSize:8,color:C.text3}}>Short:4-5</div>
+                    <div style={{padding:"3px 8px",borderRadius:6,background:"rgba(34,197,94,0.10)",fontSize:8,color:C.green}}>Med:6-8</div>
+                    <div style={{padding:"3px 8px",borderRadius:6,background:"rgba(255,255,255,0.04)",fontSize:8,color:C.text3}}>Long:9-10</div>
+                    <div style={{padding:"3px 8px",borderRadius:6,background:"rgba(255,255,255,0.04)",fontSize:8,color:C.text3}}>Max:11-12</div>
+                  </div>
+                  <div style={{fontSize:14,fontWeight:800,color:C.gold,marginTop:10,animation:"pulse 1.5s infinite"}}>PUFF TO ROLL 🎲</div>
+                </div>)}
+                {isRoll&&crapsRolling&&(<div style={{marginTop:12,fontSize:14,fontWeight:800,color:C.cyan,animation:"pulse 0.5s infinite"}}>ROLLING... RELEASE!</div>)}
+              </div>)}
+              {isComp&&(<div style={{textAlign:"center",animation:"fadeIn 0.4s ease"}}>
+                <div style={{fontSize:48,marginBottom:8}}>🎲</div>
+                <div style={{fontSize:24,fontWeight:900,color:C.gold,marginBottom:8}}>ALL ROLLS COMPLETE</div>
+                <div style={{fontSize:18,fontWeight:800,color:C.text}}>Total Won: {crapsScore} coins</div>
+                <div style={{display:"flex",gap:10,justifyContent:"center",marginTop:16}}>
+                  <div data-btn="true" onClick={(e)=>{e.stopPropagation();crapsCleanup();startCrapsNClouds();setGameActive({id:"crapsnclouds",name:"Craps & Clouds",emoji:"🎲",color:"#EF4444"});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(239,68,68,0.15)",border:"1px solid rgba(239,68,68,0.30)",fontSize:13,fontWeight:800,color:"#EF4444"}}>Play Again</div>
+                  <div data-btn="true" onClick={(e)=>{e.stopPropagation();crapsCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
+                </div>
+                <div data-btn="true" onClick={(e)=>{e.stopPropagation();crapsCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
+              </div>)}
+              <div style={{fontSize:11,color:C.text3,fontStyle:"italic",marginTop:8}}>{commentatorText}</div>
+            </div>
+          </div>
+        );
+      }
+
+      // ═══════════════════════════════════════════════════════════════
+      // MYSTERY BOX -- Render
+      // ═══════════════════════════════════════════════════════════════
+      if(gameActive.id==="mysterybox" && mbPhase) {
+        const isPick=mbPhase==="pick";const isPuff=mbPhase==="puffing";const isReveal=mbPhase==="reveal";const isComp=mbPhase==="complete";
+        const rarityGlow = mbPrize ? (mbPrize.rarity==="legendary"?C.gold:mbPrize.rarity==="rare"?C.purple:C.cyan) : C.gold;
+        return (
+          <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden",touchAction:"none",display:"flex",flexDirection:"column"}}
+            onMouseDown={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;mbHandlePuff();}} onMouseUp={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;mbHandlePuffEnd();}} onTouchStart={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;mbHandlePuff();}} onTouchEnd={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;mbHandlePuffEnd();}}>
+            <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg, #0a0a1a 0%, #1a1028 40%, #0d0d1a 100%)"}}/>
+            <div style={{position:"absolute",inset:0,background:`radial-gradient(ellipse at 50% 40%, ${C.gold}08, transparent 60%)`,pointerEvents:"none"}}/>
+            {confettiParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size*0.6,background:p.color,borderRadius:1,transform:`rotate(${p.rot}deg)`,zIndex:210,pointerEvents:"none",animation:"confettiFall 1.5s ease-out forwards"}}/>))}
+            {overlayBack(mbCleanup)}
+            {renderGameChatPanel("MYSTERY BOX")}
+            <div style={{display:"flex",flexDirection:"column",alignItems:"center",maxWidth:380,width:"100%",padding:"50px 16px 20px",gap:8,zIndex:10,flex:1,margin:"0 auto"}}>
+              <div style={{fontSize:18,fontWeight:900,letterSpacing:4,background:`linear-gradient(135deg, ${C.gold}, ${C.purple})`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>MYSTERY BOX</div>
+              <div style={{display:"flex",gap:16,marginBottom:8}}>
+                <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.gold}}>{mbScore}</div><div style={{fontSize:8,color:C.text3}}>COINS</div></div>
+                <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.text2}}>{mbRound+1}/5</div><div style={{fontSize:8,color:C.text3}}>ROUND</div></div>
+              </div>
+              {mbPhase==="intro"&&(<div style={{textAlign:"center",animation:"fadeIn 0.5s ease"}}><div style={{fontSize:56,marginBottom:8}}>🎁</div><div style={{fontSize:20,fontWeight:900,color:C.gold,letterSpacing:3}}>MYSTERY BOX</div><div style={{fontSize:11,color:C.text3,marginTop:8}}>Pick a box. Puff to reveal. Blinker = rarity upgrade!</div></div>)}
+              {(isPick||isPuff)&&(
+                <div style={{display:"flex",gap:20,justifyContent:"center",marginTop:16}}>
+                  {mbBoxes.map((box,i)=>(
+                    <div key={i} data-btn="true" onClick={(e)=>{e.stopPropagation();mbPickBox(i);}} style={{
+                      width:90,height:90,borderRadius:16,display:"flex",alignItems:"center",justifyContent:"center",cursor:isPick?"pointer":"default",
+                      fontSize:mbPicked===i?44:40,
+                      background:mbPicked===i?`${C.gold}20`:"rgba(255,255,255,0.04)",
+                      border:mbPicked===i?`2px solid ${C.gold}`:`1px solid ${C.border}`,
+                      transition:"all 0.3s",transform:mbPicked===i?"scale(1.1)":"scale(1)",
+                      boxShadow:mbPicked===i?`0 0 30px ${C.gold}40`:"0 0 10px rgba(255,215,0,0.08)",
+                      animation:isPick?`pulse 2s infinite ${i*0.3}s`:(mbPicked===i&&isPuff?"pulse 0.5s infinite":"none"),
+                    }}>
+                      🎁
+                    </div>
+                  ))}
+                </div>
+              )}
+              {isPuff&&<div style={{fontSize:14,fontWeight:800,color:C.gold,marginTop:16,animation:"pulse 1.5s infinite"}}>TAP TO OPEN 🎁</div>}
+              {isReveal&&mbPrize&&(
+                <div style={{textAlign:"center",animation:"fadeIn 0.4s ease",marginTop:12}}>
+                  <div style={{fontSize:64,marginBottom:8,filter:`drop-shadow(0 0 20px ${rarityGlow}60)`,animation:"pulse 1s infinite"}}>{mbPrize.emoji}</div>
+                  <div style={{fontSize:22,fontWeight:900,color:rarityGlow}}>{mbPrize.name}</div>
+                  {mbPrize.value>0&&<div style={{fontSize:16,fontWeight:700,color:C.gold,marginTop:4}}>+{mbPrize.value} coins</div>}
+                  <div style={{fontSize:10,fontWeight:700,color:rarityGlow,marginTop:4,textTransform:"uppercase",letterSpacing:2}}>{mbPrize.rarity}</div>
+                </div>
+              )}
+              {isComp&&(<div style={{textAlign:"center",animation:"fadeIn 0.4s ease"}}>
+                <div style={{fontSize:48,marginBottom:8}}>🎁</div>
+                <div style={{fontSize:24,fontWeight:900,color:C.gold,marginBottom:8}}>ALL BOXES OPENED!</div>
+                <div style={{fontSize:18,fontWeight:800,color:C.text}}>Total Won: {mbScore} coins</div>
+                <div style={{display:"flex",gap:10,justifyContent:"center",marginTop:16}}>
+                  <div data-btn="true" onClick={(e)=>{e.stopPropagation();mbCleanup();startMysteryBox();setGameActive({id:"mysterybox",name:"Mystery Box",emoji:"🎁",color:C.gold});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.gold}15`,border:`1px solid ${C.gold}30`,fontSize:13,fontWeight:800,color:C.gold}}>Play Again</div>
+                  <div data-btn="true" onClick={(e)=>{e.stopPropagation();mbCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
+                </div>
+                <div data-btn="true" onClick={(e)=>{e.stopPropagation();mbCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
+              </div>)}
+              <div style={{fontSize:11,color:C.text3,fontStyle:"italic",marginTop:8}}>{commentatorText}</div>
+            </div>
+          </div>
+        );
+      }
+
+      // ═══════════════════════════════════════════════════════════════
+      // SCRATCH & PUFF -- Render
+      // ═══════════════════════════════════════════════════════════════
+      if(gameActive.id==="scratchpuff" && scPhase) {
+        const isScratch=scPhase==="scratching";const isRes=scPhase==="result";const isComp=scPhase==="complete";
+        return (
+          <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden",touchAction:"none",display:"flex",flexDirection:"column"}}
+            onMouseDown={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;scHandlePuff();}} onMouseUp={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;scHandlePuffEnd();}} onTouchStart={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;scHandlePuff();}} onTouchEnd={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;scHandlePuffEnd();}}>
+
+            <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg, #1a0a1a 0%, #2a1535 40%, #1a0a1a 100%)"}}/>
+            <div style={{position:"absolute",inset:0,background:`radial-gradient(ellipse at 50% 40%, ${C.pink}08, transparent 60%)`,pointerEvents:"none"}}/>
+            {confettiParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size*0.6,background:p.color,borderRadius:1,transform:`rotate(${p.rot}deg)`,zIndex:210,pointerEvents:"none",animation:"confettiFall 1.5s ease-out forwards"}}/>))}
+            {overlayBack(scCleanup)}
+            {renderGameChatPanel("SCRATCH & PUFF")}
+            <div style={{display:"flex",flexDirection:"column",alignItems:"center",maxWidth:380,width:"100%",padding:"50px 16px 20px",gap:8,zIndex:10,flex:1,margin:"0 auto"}}>
+              <div style={{fontSize:18,fontWeight:900,letterSpacing:4,background:`linear-gradient(135deg, ${C.pink}, ${C.gold})`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>SCRATCH & PUFF</div>
+              <div style={{display:"flex",gap:16,marginBottom:4}}>
+                <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.gold}}>{scScore}</div><div style={{fontSize:8,color:C.text3}}>COINS</div></div>
+                <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.text2}}>{scRound+1}/3</div><div style={{fontSize:8,color:C.text3}}>CARD</div></div>
+                <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.cyan}}>{scRevealed.filter(Boolean).length}/6</div><div style={{fontSize:8,color:C.text3}}>SCRATCHED</div></div>
+              </div>
+              {scPhase==="intro"&&(<div style={{textAlign:"center",animation:"fadeIn 0.5s ease"}}><div style={{fontSize:56,marginBottom:8}}>🎫</div><div style={{fontSize:20,fontWeight:900,color:C.pink,letterSpacing:3}}>SCRATCH & PUFF</div><div style={{fontSize:11,color:C.text3,marginTop:8}}>Tap an area, then PUFF to scratch. Match 3 to win!</div></div>)}
+              {(isScratch||isRes)&&(
+                <div style={{padding:16,borderRadius:20,border:`3px solid ${C.gold}30`,background:"linear-gradient(135deg, rgba(255,215,0,0.05), rgba(255,105,180,0.05))",boxShadow:`0 0 30px ${C.gold}10`,margin:"8px auto",maxWidth:300}}>
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10}}>
+                    {scCard.map((sym,i)=>(
+                      <div key={i} data-btn="true" onClick={(e)=>{e.stopPropagation();scSelectArea(i);}} style={{
+                        width:72,height:72,borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",
+                        fontSize:scRevealed[i]?30:20,cursor:(!scRevealed[i]&&isScratch)?"pointer":"default",
+                        background:scRevealed[i]?"rgba(255,255,255,0.06)":(scCurrentIdx===i?"rgba(255,215,0,0.15)":"linear-gradient(135deg, rgba(192,192,192,0.25), rgba(169,169,169,0.15))"),
+                        border:scCurrentIdx===i?`2px solid ${C.gold}`:`1px solid ${scRevealed[i]?C.pink+"40":C.text3+"30"}`,
+                        transition:"all 0.3s",
+                        boxShadow:scCurrentIdx===i?`0 0 12px ${C.gold}40`:"none",
+                      }}>
+                        {scRevealed[i]?sym:(scCurrentIdx===i?"💨":"?")}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {isScratch&&scCurrentIdx!==null&&<div style={{fontSize:14,fontWeight:800,color:C.pink,marginTop:8,animation:"pulse 1.5s infinite"}}>SWIPE TO SCRATCH 🎫</div>}
+              {isScratch&&scCurrentIdx===null&&<div style={{fontSize:12,color:C.text3,marginTop:8}}>Tap an area to select it</div>}
+              {isRes&&scPrize&&(
+                <div style={{textAlign:"center",animation:"fadeIn 0.4s ease",marginTop:8}}>
+                  <div style={{fontSize:22,fontWeight:900,color:C.gold}}>WINNER! {scPrize.symbol} x3</div>
+                  <div style={{fontSize:16,fontWeight:700,color:C.gold}}>+{scPrize.amount} coins</div>
+                </div>
+              )}
+              {isRes&&!scPrize&&<div style={{fontSize:16,fontWeight:800,color:C.red,marginTop:8}}>No Match</div>}
+              {isComp&&(<div style={{textAlign:"center",animation:"fadeIn 0.4s ease"}}>
+                <div style={{fontSize:48,marginBottom:8}}>🎫</div>
+                <div style={{fontSize:24,fontWeight:900,color:C.gold,marginBottom:8}}>ALL CARDS SCRATCHED!</div>
+                <div style={{fontSize:18,fontWeight:800,color:C.text}}>Total Won: {scScore} coins</div>
+                <div style={{display:"flex",gap:10,justifyContent:"center",marginTop:16}}>
+                  <div data-btn="true" onClick={(e)=>{e.stopPropagation();scCleanup();startScratchPuff();setGameActive({id:"scratchpuff",name:"Scratch & Puff",emoji:"🎫",color:C.pink});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.pink}15`,border:`1px solid ${C.pink}30`,fontSize:13,fontWeight:800,color:C.pink}}>Play Again</div>
+                  <div data-btn="true" onClick={(e)=>{e.stopPropagation();scCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
+                </div>
+                <div data-btn="true" onClick={(e)=>{e.stopPropagation();scCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
+              </div>)}
+              <div style={{fontSize:11,color:C.text3,fontStyle:"italic",marginTop:8}}>{commentatorText}</div>
+            </div>
+          </div>
+        );
+      }
+
+      // ═══════════════════════════════════════════════════════════════
+      // FORTUNE COOKIE -- Render
+      // ═══════════════════════════════════════════════════════════════
+      if(gameActive.id==="fortunecookie" && fcPhase) {
+        const isHold=fcPhase==="holding";const isRead=fcPhase==="reading";const isRes=fcPhase==="result";const isComp=fcPhase==="complete";
+        return (
+          <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden",touchAction:"none",display:"flex",flexDirection:"column"}}
+            onMouseDown={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;fcHandlePuff();}} onMouseUp={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;fcHandlePuffEnd();}} onTouchStart={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;fcHandlePuff();}} onTouchEnd={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;fcHandlePuffEnd();}}>
+            <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg, #1a1408 0%, #2a1e0a 40%, #1a1408 100%)"}}/>
+            <div style={{position:"absolute",inset:0,background:`radial-gradient(ellipse at 50% 40%, ${C.orange}10, transparent 60%)`,pointerEvents:"none"}}/>
+            {confettiParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size*0.6,background:p.color,borderRadius:1,transform:`rotate(${p.rot}deg)`,zIndex:210,pointerEvents:"none",animation:"confettiFall 1.5s ease-out forwards"}}/>))}
+            {overlayBack(fcCleanup)}
+            {renderGameChatPanel("FORTUNE COOKIE")}
+            <div style={{display:"flex",flexDirection:"column",alignItems:"center",maxWidth:380,width:"100%",padding:"50px 16px 20px",gap:8,zIndex:10,flex:1,margin:"0 auto"}}>
+              <div style={{fontSize:18,fontWeight:900,letterSpacing:4,background:`linear-gradient(135deg, ${C.orange}, ${C.gold})`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>FORTUNE COOKIE</div>
+              <div style={{display:"flex",gap:16,marginBottom:4}}>
+                <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.gold}}>{fcScore}</div><div style={{fontSize:8,color:C.text3}}>COINS</div></div>
+                <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.text2}}>{fcRound+1}/5</div><div style={{fontSize:8,color:C.text3}}>COOKIE</div></div>
+              </div>
+              {fcPhase==="intro"&&(<div style={{textAlign:"center",animation:"fadeIn 0.5s ease"}}><div style={{fontSize:56,marginBottom:8}}>🥠</div><div style={{fontSize:20,fontWeight:900,color:C.orange,letterSpacing:3}}>FORTUNE COOKIE</div><div style={{fontSize:11,color:C.text3,marginTop:8}}>HOLD to puff and crack it open! Blinker = GOLDEN cookie!</div></div>)}
+              {isHold&&(
+                <div style={{textAlign:"center",marginTop:16}}>
+                  <div style={{fontSize:fcCracking?80:72,transition:"all 0.3s",
+                    filter:fcCracking?`drop-shadow(0 0 30px ${C.orange}80)`:`drop-shadow(0 0 10px ${C.orange}30)`,
+                    animation:fcCracking?"pulse 0.3s infinite":"pulse 3s infinite",
+                    transform:fcCracking?"rotate(10deg) scale(1.1)":"rotate(0)",
+                  }}>🥠</div>
+                  <div style={{fontSize:14,fontWeight:800,color:C.orange,marginTop:16,animation:"pulse 1.5s infinite"}}>TAP TO CRACK 🥠</div>
+                  <div style={{fontSize:10,color:C.text3,marginTop:4}}>Longer puff = bigger reveal. Blinker = 2x coins!</div>
+                </div>
+              )}
+              {(isRead||isRes)&&(
+                <div style={{textAlign:"center",animation:"fadeIn 0.5s ease",marginTop:16,maxWidth:300}}>
+                  <div style={{fontSize:48,marginBottom:12,filter:fcGolden?`drop-shadow(0 0 20px ${C.gold}80)`:"none"}}>{fcGolden?"🥠":"🥠"}</div>
+                  {fcGolden&&<div style={{fontSize:12,fontWeight:900,color:C.gold,letterSpacing:3,marginBottom:8,animation:"pulse 1s infinite"}}>GOLDEN COOKIE!</div>}
+                  <div style={{padding:"14px 18px",borderRadius:14,background:fcGolden?`${C.gold}10`:`${C.orange}08`,border:`1px solid ${fcGolden?C.gold:C.orange}20`,marginBottom:12}}>
+                    <div style={{fontSize:13,color:C.text,fontStyle:"italic",lineHeight:1.6}}>"{fcFortune}"</div>
+                  </div>
+                  <div style={{fontSize:20,fontWeight:900,color:C.gold}}>+{fcCoins} Coins!</div>
+                </div>
+              )}
+              {isComp&&(<div style={{textAlign:"center",animation:"fadeIn 0.4s ease"}}>
+                <div style={{fontSize:48,marginBottom:8}}>🥠</div>
+                <div style={{fontSize:24,fontWeight:900,color:C.gold,marginBottom:8}}>ALL COOKIES CRACKED!</div>
+                <div style={{fontSize:18,fontWeight:800,color:C.text}}>Total Won: {fcScore} coins</div>
+                <div style={{display:"flex",gap:10,justifyContent:"center",marginTop:16}}>
+                  <div data-btn="true" onClick={(e)=>{e.stopPropagation();fcCleanup();startFortuneCookie();setGameActive({id:"fortunecookie",name:"Fortune Cookie",emoji:"🥠",color:C.orange});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.orange}15`,border:`1px solid ${C.orange}30`,fontSize:13,fontWeight:800,color:C.orange}}>Play Again</div>
+                  <div data-btn="true" onClick={(e)=>{e.stopPropagation();fcCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
+                </div>
+                <div data-btn="true" onClick={(e)=>{e.stopPropagation();fcCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
+              </div>)}
+              <div style={{fontSize:11,color:C.text3,fontStyle:"italic",marginTop:8}}>{commentatorText}</div>
+            </div>
+          </div>
+        );
+      }
+
+      // ═══════════════════════════════════════════════════════════════
+      // TREASURE MAP -- Render
+      // ═══════════════════════════════════════════════════════════════
+      if(gameActive.id==="treasuremap" && tmPhase) {
+        const isPlay=tmPhase==="playing";const isRes=tmPhase==="result";const isComp=tmPhase==="complete";
+        return (
+          <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden",touchAction:"none",display:"flex",flexDirection:"column"}}
+            onMouseDown={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;tmHandlePuff();}} onMouseUp={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;tmHandlePuffEnd();}} onTouchStart={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;tmHandlePuff();}} onTouchEnd={(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;tmHandlePuffEnd();}}>
+            <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg, #1a1408 0%, #2a1e0a 40%, #1a1408 100%)"}}/>
+            <div style={{position:"absolute",inset:0,background:`radial-gradient(ellipse at 50% 40%, ${C.gold}08, transparent 60%)`,pointerEvents:"none"}}/>
+            {confettiParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size*0.6,background:p.color,borderRadius:1,transform:`rotate(${p.rot}deg)`,zIndex:210,pointerEvents:"none",animation:"confettiFall 1.5s ease-out forwards"}}/>))}
+            {overlayBack(tmCleanup)}
+            {renderGameChatPanel("TREASURE MAP")}
+            <div style={{display:"flex",flexDirection:"column",alignItems:"center",maxWidth:380,width:"100%",padding:"50px 16px 20px",gap:6,zIndex:10,flex:1,margin:"0 auto"}}>
+              <div style={{fontSize:18,fontWeight:900,letterSpacing:4,background:`linear-gradient(135deg, ${C.gold}, #8B4513)`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>TREASURE MAP</div>
+              <div style={{display:"flex",gap:12,marginBottom:4}}>
+                <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.gold}}>🪙 {tmCoins}</div><div style={{fontSize:8,color:C.text3}}>FOUND</div></div>
+                <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.gold}}>💎 {tmTreasures}/3</div><div style={{fontSize:8,color:C.text3}}>TREASURE</div></div>
+                <div style={{textAlign:"center"}}><div style={{fontSize:14,fontWeight:900,color:C.red}}>💣 {tmBombs}</div><div style={{fontSize:8,color:C.text3}}>BOMBS</div></div>
+              </div>
+              {tmPhase==="intro"&&(<div style={{textAlign:"center",animation:"fadeIn 0.5s ease"}}><div style={{fontSize:48,marginBottom:8}}>🗺️</div><div style={{fontSize:20,fontWeight:900,color:C.gold,letterSpacing:3}}>TREASURE MAP</div><div style={{fontSize:11,color:C.text3,marginTop:8}}>Tap a tile, then PUFF to flip. Find 3 treasures! Avoid bombs!</div></div>)}
+              {(isPlay||isRes)&&(
+                <div style={{width:"100%",maxWidth:280}}>
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",gap:6,marginBottom:8}}>
+                    {tmGrid.map((tile,i)=>{
+                      const info = TM_TILE_INFO[tile]||{emoji:"?",color:C.text3};
+                      const revealed = tmRevealed[i];
+                      const isXray = tmXray && tmXrayTiles.includes(i);
+                      return (
+                        <div key={i} data-btn="true" onClick={(e)=>{e.stopPropagation();tmSelectTile(i);}} style={{
+                          width:"100%",aspectRatio:"1",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",
+                          fontSize:revealed?22:(isXray?18:16),cursor:(!revealed&&isPlay&&!tmGameOver)?"pointer":"default",
+                          background:revealed?`${info.color}15`:(tmSelected===i?`${C.gold}20`:(isXray?`${C.cyan}15`:"linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))")),
+                          border:tmSelected===i?`2px solid ${C.gold}`:`1px solid ${revealed?info.color+"40":(isXray?C.cyan+"60":C.border)}`,
+                          transition:"all 0.3s",
+                          boxShadow:tmSelected===i?`0 0 12px ${C.gold}40`:(isXray?`0 0 10px ${C.cyan}40`:"none"),
+                          animation:isXray?"pulse 0.3s infinite":"none",
+                        }}>
+                          {revealed?info.emoji:(isXray?(TM_TILE_INFO[tile]?TM_TILE_INFO[tile].emoji:"?"):"❓")}
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {isPlay&&!tmGameOver&&tmSelected!==null&&<div style={{fontSize:13,fontWeight:800,color:C.gold,textAlign:"center",animation:"pulse 1.5s infinite"}}>TAP TO DIG 🗺️</div>}
+                  {isPlay&&!tmGameOver&&tmSelected===null&&<div style={{fontSize:11,color:C.text3,textAlign:"center"}}>Tap a tile to select it</div>}
+                  {isPlay&&!tmGameOver&&tmCoins>0&&(
+                    <div data-btn="true" onClick={(e)=>{e.stopPropagation();tmCashOut();}} style={{
+                      margin:"10px auto",padding:"10px 24px",borderRadius:12,cursor:"pointer",textAlign:"center",
+                      background:`${C.green}15`,border:`1px solid ${C.green}30`,fontSize:13,fontWeight:800,color:C.green,
+                      transform:`scale(${1+tmCoins/500})`,maxWidth:200,
+                    }}>CASH OUT ({tmCoins} coins)</div>
+                  )}
+                </div>
+              )}
+              {isRes&&(
+                <div style={{textAlign:"center",animation:"fadeIn 0.4s ease",marginTop:8}}>
+                  <div style={{fontSize:22,fontWeight:900,color:tmTreasures>=3?C.gold:C.red}}>{tmTreasures>=3?"ALL TREASURES FOUND!":"GAME OVER!"}</div>
+                  <div style={{fontSize:16,fontWeight:700,color:C.text,marginTop:4}}>Coins earned: {tmScore}</div>
+                  <div style={{display:"flex",gap:10,justifyContent:"center",marginTop:16}}>
+                    <div data-btn="true" onClick={(e)=>{e.stopPropagation();tmCleanup();startTreasureMap();setGameActive({id:"treasuremap",name:"Treasure Map",emoji:"🗺️",color:C.gold});}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:`${C.gold}15`,border:`1px solid ${C.gold}30`,fontSize:13,fontWeight:800,color:C.gold}}>Play Again</div>
+                    <div data-btn="true" onClick={(e)=>{e.stopPropagation();tmCleanup();}} style={{padding:"10px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.10)",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
+                  </div>
+                  <div data-btn="true" onClick={(e)=>{e.stopPropagation();tmCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
+                </div>
+              )}
+              <div style={{fontSize:11,color:C.text3,fontStyle:"italic",marginTop:8}}>{commentatorText}</div>
             </div>
           </div>
         );
@@ -20946,80 +20642,188 @@ gameSoundsMuted.current = false;addGameChat("Announcer","HIGHER OR LOWER! Build 
     // ═══════════════════════════════════════════════════════════════
     // PRICE IS PUFF — Render (Gold/Green Price is Right Theme)
     // ═══════════════════════════════════════════════════════════════
-      if(gameActive.id==="pricepuff" && pipPhase) {
-        if(pipCanvasRef.current && pipPhase){
-          if(!pipAnimRef.current){ const loop=()=>{pipDrawCanvas();pipAnimRef.current=requestAnimationFrame(loop);}; pipAnimRef.current=requestAnimationFrame(loop); }
-        }
-        const guessPct = Math.min(pipGuess/200, 1);
-        const pipControlsSlot = (
-          <div style={{display:"flex",flexDirection:"column",gap:6,alignItems:"center",width:"100%"}}>
-            {pipPhase==="guessing" && (
-              <div style={{display:"flex",gap:8,width:"90%",maxWidth:360}}>
-                <div data-btn="true"
-                  onMouseDown={(e)=>{e.stopPropagation();pipStartPuff();}} onMouseUp={(e)=>{e.stopPropagation();pipStopPuff();}}
-                  onTouchStart={(e)=>{e.stopPropagation();pipStartPuff();}} onTouchEnd={(e)=>{e.stopPropagation();pipStopPuff();}}
-                  style={{touchAction:"none",flex:1,padding:"14px 0",borderRadius:14,cursor:"pointer",textAlign:"center",
-                    background:pipPuffing?"rgba(76,175,80,0.25)":"rgba(76,175,80,0.08)",border:"2px solid "+(pipPuffing?C.lime:C.lime+"30"),
-                    transform:pipPuffing?"scale(1.05)":"scale(1)",transition:"all 0.15s",userSelect:"none",WebkitUserSelect:"none"}}>
-                  <div style={{fontSize:14,fontWeight:900,color:C.lime}}>{pipPuffing?"$"+pipGuess+" SETTING...":"HOLD TO SET PRICE"}</div>
-                  <div style={{fontSize:8,color:C.text3,marginTop:2}}>{"$"+PIP_PRICE_PER_SEC+"/sec"}</div>
-                </div>
-              </div>
-            )}
-            {pipPhase==="reveal" && (
-              <div style={{textAlign:"center",padding:"6px 16px"}}>
-                <div style={{fontSize:11,fontWeight:700,color:pipComment.includes("WINNER")||pipComment.includes("JACKPOT")?C.green:C.red}}>{pipComment}</div>
-              </div>
-            )}
-            {pipPhase==="result" && (
-              <div style={{display:"flex",gap:8,justifyContent:"center"}}>
-                <div data-btn="true" onClick={(e)=>{e.stopPropagation();pipCleanup();startPriceIsPuff();setGameActive({id:"pricepuff",name:"Price is Puff",emoji:"\u{1F3F7}\u{FE0F}",color:C.lime});}}
-                  style={{touchAction:"none",padding:"10px 24px",borderRadius:12,cursor:"pointer",background:C.lime+"15",border:"1px solid "+C.lime+"30",fontSize:13,fontWeight:800,color:C.lime}}>Play Again</div>
-                <div data-btn="true" onClick={(e)=>{e.stopPropagation();pipCleanup();setGameActive(null);setStageRole(null);setMcVisible(false);setStageElim(null);}}
-                  style={{touchAction:"none",padding:"10px 24px",borderRadius:12,cursor:"pointer",background:C.text3+"10",border:"1px solid "+C.text3+"20",fontSize:13,fontWeight:800,color:C.text3}}>Done</div>
-              </div>
-            )}
-          </div>
-        );
-        return (
-          <div style={{position:"fixed",inset:0,zIndex:100,display:"flex",flexDirection:"column",touchAction:"none",animation:screenShake?"shake 0.4s ease":"none"}}>
-            {screenFlash && <div style={{position:"absolute",inset:0,zIndex:200,pointerEvents:"none",opacity:0,background:screenFlash==="goal"?"rgba(0,255,100,0.25)":"rgba(255,50,50,0.2)",animation:"flashOverlay 0.4s ease forwards"}}/>}
-            {confettiParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size*0.6,background:p.color,borderRadius:1,transform:"rotate("+p.rot+"deg)",zIndex:210,pointerEvents:"none",animation:"confettiFall 1.5s ease-out forwards"}}/>))}
-            <div style={{position:"relative",zIndex:50,flexShrink:0,background:"rgba(6,16,30,0.98)",borderBottom:"1px solid rgba(127,255,0,0.1)"}}>
-              <div style={{padding:"6px 12px 2px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                <div style={{fontSize:8,fontWeight:600,color:"rgba(255,255,255,0.4)",letterSpacing:1}}><span style={{fontWeight:800,color:"rgba(255,255,255,0.6)"}}>{"Powered by "}<span style={{fontWeight:900,letterSpacing:2}}>MOOD LAB</span></span></div>
-                <div style={{display:"flex",gap:5,alignItems:"center"}}>
-                  <div onClick={()=>{playFx("tap");setShowBlePopup(true);}} data-btn="true" style={{touchAction:"none",display:"flex",alignItems:"center",gap:3,padding:"2px 8px",borderRadius:100,cursor:"pointer",background:bleConnected?"rgba(52,211,153,0.1)":"rgba(251,146,60,0.1)",border:"1px solid "+(bleConnected?"rgba(52,211,153,0.25)":"rgba(251,146,60,0.25)")}}>
-                    <div style={{width:5,height:5,borderRadius:"50%",background:bleConnected?C.green:C.orange}}/><span style={{fontSize:8,fontWeight:700,color:bleConnected?C.green:C.orange}}>{bleConnected?"Puff":"Connect"}</span>
-                  </div>
-                  <div style={{display:"flex",alignItems:"center",gap:2,padding:"2px 7px",borderRadius:100,background:"rgba(255,217,61,0.06)",border:"1px solid rgba(255,217,61,0.12)"}}>
-                    <span style={{fontSize:9}}>{"\u{1FA99}"}</span><span style={{fontSize:10,fontWeight:800,color:C.gold,fontFamily:"'Courier New',monospace"}}>{coins.toLocaleString()}</span>
-                  </div>
-                </div>
-              </div>
-              <div style={{padding:"2px 12px 2px",display:"flex",alignItems:"center",gap:6}}>
-                <div onClick={()=>{playFx("tap");pipCleanup();setGameActive(null);setStageRole(null);setMcVisible(false);setStageElim(null);}} data-btn="true" style={{touchAction:"none",display:"inline-flex",alignItems:"center",gap:3,cursor:"pointer",padding:"3px 8px",borderRadius:8,background:"rgba(255,255,255,0.04)",border:"1px solid "+C.border,flexShrink:0}}>
-                  <span style={{fontSize:10,color:C.text2}}>{"\u2190"}</span><span style={{fontSize:9,fontWeight:700,color:C.text2}}>Back</span>
-                </div>
-                <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
-                  <span style={{fontSize:10,fontWeight:800,color:C.lime}}>{"\u{1F3F7}\u{FE0F}"} PRICE IS PUFF</span>
-                  <span style={{fontSize:9,fontWeight:700,color:C.gold}}>{"\u{1FA99}"} {pipScore}</span>
-                </div>
-              </div>
-              <div style={{padding:"2px 12px 4px",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
-                <span style={{fontSize:9,fontWeight:700,color:C.text3}}>Round {pipRound+1}/{PIP_ROUNDS}</span>
-                {pipProduct && <span style={{fontSize:9,fontWeight:700,color:C.lime}}>{pipProduct.emoji} {pipProduct.name}</span>}
-                {pipPuffing && <span style={{fontSize:9,fontWeight:800,color:C.lime,animation:"pulse 0.5s infinite"}}>${pipGuess}</span>}
-              </div>
-            </div>
+    if(gameActive.id==="pricepuff" && pipPhase) {
+      const isIntroP = pipPhase==="intro";
+      const isProduct = pipPhase==="product";
+      const isGuessing = pipPhase==="guessing";
+      const isReveal = pipPhase==="reveal";
+      const isResultP = pipPhase==="result";
+      const guessPct = Math.min(pipGuess/200, 1);
+      return (
+        <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:100,overflow:"hidden",touchAction:"none",background:"linear-gradient(180deg, #0a1a0a 0%, #1a2e0a 25%, #0a1a0a 50%, #081408 100%)",animation:screenShake?"shake 0.4s ease":"none"}}
+          onMouseDown={isGuessing?(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;pipStartPuff();}:undefined} onMouseUp={(isGuessing||pipPuffing)?(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;pipStopPuff();}:undefined}
+          onTouchStart={isGuessing?(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;pipStartPuff();}:undefined} onTouchEnd={(isGuessing||pipPuffing)?(e)=>{if(e.target.closest('[data-back],[data-btn]'))return;pipStopPuff();}:undefined}>
+          {screenFlash && <div style={{position:"absolute",inset:0,zIndex:200,pointerEvents:"none",opacity:0,background:screenFlash==="goal"?"rgba(255,215,0,0.3)":"rgba(255,50,50,0.2)",animation:"flashOverlay 0.4s ease forwards"}}/>}
+          {confettiParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size*0.6,background:p.color,borderRadius:1,transform:`rotate(${p.rot}deg)`,zIndex:210,pointerEvents:"none",animation:"confettiFall 1.5s ease-out forwards"}}/>))}
+          <div style={{position:"absolute",inset:0,background:"radial-gradient(ellipse at 50% 30%, rgba(76,175,80,.10) 0%, transparent 60%)",pointerEvents:"none"}}/>
+          <div style={{position:"absolute",top:"5%",left:"50%",transform:"translateX(-50%)",width:300,height:300,borderRadius:"50%",background:"radial-gradient(circle, rgba(255,215,0,.06), transparent 70%)",pointerEvents:"none"}}/>
+          {stageRole && renderGameChatPanel("PRICE IS PUFF")}
+          {overlayBack(pipCleanup)}
+          <div style={{display:"flex",flexDirection:"column",alignItems:"center",maxWidth:380,width:"100%",padding:"50px 16px 20px",gap:8,zIndex:10,flex:1,margin:"0 auto",overflowY:"auto"}}>
             {renderContestantGrid()}
-            <div style={{position:"relative",flex:1,overflow:"hidden"}}>
-              <canvas ref={pipCanvasRef} width={Math.round(420*PIP_DPR)} height={Math.round(600*PIP_DPR)} style={{position:"absolute",top:0,left:0,width:"100%",height:"100%"}}/>
-              {renderGameChatOverlay(pipControlsSlot)}
-            </div>
+            {/* Title */}
+            <div style={{fontSize:20,fontWeight:900,letterSpacing:4,background:"linear-gradient(135deg, #FFD700, #4CAF50, #FFD700)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",textAlign:"center"}}>THE PRICE IS PUFF</div>
+            {/* Round tracker */}
+            {!isIntroP && !isResultP && (
+              <div style={{display:"flex",gap:8,marginBottom:4}}>
+                {Array.from({length:PIP_ROUNDS}).map((_,i)=>(
+                  <div key={i} style={{width:24,height:24,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:900,
+                    background:i<pipRound?`${C.green}30`:(i===pipRound?`${C.gold}30`:"rgba(255,255,255,0.06)"),
+                    border:`2px solid ${i<pipRound?C.green:(i===pipRound?C.gold:C.border)}`,
+                    color:i<=pipRound?C.gold:C.text3,
+                  }}>{i<pipRound?"✓":(i+1)}</div>
+                ))}
+              </div>
+            )}
+            {/* Score */}
+            {!isIntroP && <div style={{textAlign:"center"}}><span style={{fontSize:14,fontWeight:900,color:C.gold}}>🪙 {pipScore}</span><span style={{fontSize:9,color:C.text3,marginLeft:6}}>coins</span></div>}
+
+            {/* INTRO */}
+            {isIntroP && (
+              <div style={{textAlign:"center",animation:"fadeIn 0.5s ease",display:"flex",flexDirection:"column",alignItems:"center",gap:12,marginTop:20}}>
+                <div style={{fontSize:64,animation:"bounce 1s infinite"}}>{pipIntroStep>=1?"💰":"🎬"}</div>
+                {pipIntroStep>=1 && <div style={{fontSize:16,fontWeight:900,color:C.gold,letterSpacing:3,animation:"fadeIn 0.3s ease"}}>THE PRICE IS PUFF!</div>}
+                {pipIntroStep>=2 && <div style={{fontSize:11,color:C.text2,animation:"fadeIn 0.3s ease"}}>Guess the price by how long you PUFF!</div>}
+                {pipIntroStep>=3 && <div style={{fontSize:10,color:C.lime,animation:"fadeIn 0.3s ease"}}>Longer puff = higher price guess</div>}
+                {pipIntroStep>=4 && <div style={{fontSize:11,fontWeight:700,color:C.gold,animation:"fadeIn 0.3s ease"}}>Closest without going over WINS! 🏆</div>}
+              </div>
+            )}
+
+            {/* PRODUCT SHOWN */}
+            {isProduct && pipProduct && (
+              <div style={{textAlign:"center",animation:"fadeIn 0.5s ease",display:"flex",flexDirection:"column",alignItems:"center",gap:8,marginTop:10}}>
+                <div style={{padding:"20px 30px",borderRadius:20,background:"linear-gradient(135deg, rgba(255,215,0,0.08), rgba(76,175,80,0.06))",border:"2px solid "+C.gold+"30",boxShadow:"0 0 30px rgba(255,215,0,0.1)",minWidth:200}}>
+                  <div style={{fontSize:60,marginBottom:8}}>{pipProduct.emoji}</div>
+                  <div style={{fontSize:16,fontWeight:900,color:"#fff",marginBottom:4}}>{pipProduct.name}</div>
+                  <div style={{fontSize:10,fontWeight:700,color:C.gold,letterSpacing:2,textTransform:"uppercase"}}>{pipProduct.category}</div>
+                </div>
+                <div style={{fontSize:12,color:C.text3,animation:"pulse 1.5s infinite"}}>Get ready to guess...</div>
+              </div>
+            )}
+
+            {/* GUESSING (PUFF PHASE) */}
+            {isGuessing && pipProduct && (
+              <div style={{textAlign:"center",display:"flex",flexDirection:"column",alignItems:"center",gap:8,width:"100%"}}>
+                <div style={{padding:"12px 20px",borderRadius:16,background:"rgba(255,215,0,0.06)",border:"1px solid "+C.gold+"20",minWidth:180}}>
+                  <div style={{fontSize:36}}>{pipProduct.emoji}</div>
+                  <div style={{fontSize:13,fontWeight:800,color:"#fff"}}>{pipProduct.name}</div>
+                  <div style={{fontSize:9,color:C.gold,letterSpacing:1}}>{pipProduct.category}</div>
+                </div>
+                {/* Price meter */}
+                <div style={{width:"100%",maxWidth:300,marginTop:8}}>
+                  <div style={{fontSize:36,fontWeight:900,color:pipPuffing?C.lime:C.gold,fontFamily:"monospace",textAlign:"center",textShadow:pipPuffing?"0 0 20px "+C.lime:"none",transition:"all 0.1s"}}>
+                    ${pipGuess}
+                  </div>
+                  <div style={{height:12,borderRadius:6,overflow:"hidden",background:"rgba(255,255,255,0.06)",border:"1px solid "+C.border,marginTop:4}}>
+                    <div style={{width:`${guessPct*100}%`,height:"100%",borderRadius:6,transition:"width 0.05s linear",
+                      background:guessPct>0.8?`linear-gradient(90deg, ${C.green}, ${C.red})`:`linear-gradient(90deg, ${C.green}, ${C.gold})`,
+                      boxShadow:`0 0 8px ${guessPct>0.8?C.red:C.green}`,
+                    }}/>
+                  </div>
+                  <div style={{display:"flex",justifyContent:"space-between",marginTop:2}}>
+                    <span style={{fontSize:7,color:C.text3}}>$0</span>
+                    <span style={{fontSize:7,color:C.text3}}>$100</span>
+                    <span style={{fontSize:7,color:C.text3}}>$200</span>
+                  </div>
+                </div>
+                {/* Puff instruction */}
+                <div style={{marginTop:12,padding:"16px 24px",borderRadius:16,cursor:"pointer",
+                  background:pipPuffing?"linear-gradient(135deg, rgba(76,175,80,0.3), rgba(255,215,0,0.2))":"linear-gradient(135deg, rgba(76,175,80,0.1), rgba(255,215,0,0.05))",
+                  border:`2px solid ${pipPuffing?C.lime:C.gold+"40"}`,
+                  boxShadow:pipPuffing?`0 0 30px ${C.lime}40`:"none",
+                  animation:pipPuffing?"none":"pulse 2s infinite",
+                }}>
+                  <div style={{fontSize:24}}>{pipPuffing?"💨":"👆"}</div>
+                  <div style={{fontSize:12,fontWeight:800,color:pipPuffing?C.lime:C.gold,marginTop:4}}>
+                    {pipPuffing?"SETTING PRICE... Release to lock in! 💰":"HOLD TO SET PRICE 💰"}
+                  </div>
+                  <div style={{fontSize:9,color:C.text3,marginTop:2}}>
+                    {pipPuffing?`$${PIP_PRICE_PER_SEC}/sec`:"Longer puff = higher price"}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* REVEAL */}
+            {isReveal && pipProduct && (
+              <div style={{textAlign:"center",display:"flex",flexDirection:"column",alignItems:"center",gap:10,width:"100%",animation:"fadeIn 0.5s ease"}}>
+                <div style={{padding:"12px 20px",borderRadius:16,background:"rgba(255,215,0,0.06)",border:"1px solid "+C.gold+"20"}}>
+                  <div style={{fontSize:28}}>{pipProduct.emoji}</div>
+                  <div style={{fontSize:12,fontWeight:800,color:"#fff"}}>{pipProduct.name}</div>
+                </div>
+                {/* Real price vs your guess */}
+                <div style={{display:"flex",gap:16,alignItems:"center",justifyContent:"center"}}>
+                  <div style={{textAlign:"center"}}>
+                    <div style={{fontSize:9,color:C.text3,fontWeight:700}}>YOUR GUESS</div>
+                    <div style={{fontSize:24,fontWeight:900,color:pipGuess>pipProduct.price?C.red:C.lime,fontFamily:"monospace"}}>${pipGuess}</div>
+                  </div>
+                  <div style={{fontSize:20,color:C.text3}}>vs</div>
+                  <div style={{textAlign:"center"}}>
+                    <div style={{fontSize:9,color:C.text3,fontWeight:700}}>REAL PRICE</div>
+                    <div style={{fontSize:24,fontWeight:900,color:C.gold,fontFamily:"monospace"}}>${pipProduct.price}</div>
+                  </div>
+                </div>
+                {/* AI guesses */}
+                <div style={{width:"100%",maxWidth:280,marginTop:4}}>
+                  <div style={{fontSize:9,fontWeight:700,color:C.text3,marginBottom:6,letterSpacing:1}}>AI OPPONENTS</div>
+                  {pipAiGuesses.map((ai,i)=>(
+                    <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"6px 10px",borderRadius:8,marginBottom:4,
+                      background:ai.guess<=pipProduct.price&&(pipGuess>pipProduct.price||ai.guess>pipGuess)?"rgba(76,175,80,0.08)":"rgba(255,255,255,0.03)",
+                      border:`1px solid ${ai.guess>pipProduct.price?C.red+"25":C.green+"15"}`,
+                    }}>
+                      <span style={{fontSize:11}}>{ai.emoji} {ai.name}</span>
+                      <span style={{fontSize:13,fontWeight:800,fontFamily:"monospace",color:ai.guess>pipProduct.price?C.red:C.lime}}>${ai.guess}</span>
+                      {ai.guess>pipProduct.price && <span style={{fontSize:9,color:C.red}}>OVER</span>}
+                    </div>
+                  ))}
+                </div>
+                {/* Result comment */}
+                <div style={{padding:"10px 16px",borderRadius:12,background:pipComment.includes("WINNER")||pipComment.includes("JACKPOT")?"rgba(76,175,80,0.12)":"rgba(255,50,50,0.08)",
+                  border:`1px solid ${pipComment.includes("WINNER")||pipComment.includes("JACKPOT")?C.green+"30":C.red+"20"}`,marginTop:4}}>
+                  <div style={{fontSize:13,fontWeight:800,color:pipComment.includes("WINNER")||pipComment.includes("JACKPOT")?C.lime:C.red}}>{pipComment}</div>
+                </div>
+              </div>
+            )}
+
+            {/* FINAL RESULT */}
+            {isResultP && (
+              <div style={{textAlign:"center",display:"flex",flexDirection:"column",alignItems:"center",gap:10,width:"100%",animation:"fadeIn 0.5s ease",marginTop:8}}>
+                <div style={{fontSize:48,marginBottom:4}}>{pipScore>=75?"🏆":pipScore>=50?"🥈":"🎮"}</div>
+                <div style={{fontSize:18,fontWeight:900,color:C.gold}}>SHOW COMPLETE!</div>
+                <div style={{fontSize:24,fontWeight:900,color:C.lime}}>🪙 {pipScore} coins</div>
+                <div style={{fontSize:11,color:C.text2,marginBottom:8}}>
+                  {pipScore>=100?"PRICE MASTER! You know your stuff!":pipScore>=50?"Great show! Good eye for prices!":"Keep practicing those prices!"}
+                </div>
+                {/* Round breakdown */}
+                <div style={{width:"100%",maxWidth:300}}>
+                  <div style={{fontSize:9,fontWeight:700,color:C.text3,letterSpacing:1,marginBottom:6}}>ROUND BREAKDOWN</div>
+                  {pipResults.map((r,i)=>(
+                    <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"6px 10px",borderRadius:8,marginBottom:3,
+                      background:r.winner==="You"?"rgba(76,175,80,0.08)":"rgba(255,255,255,0.03)",
+                      border:`1px solid ${r.winner==="You"?C.green+"20":C.border}`,
+                    }}>
+                      <span style={{fontSize:10}}>{r.product.emoji}</span>
+                      <span style={{fontSize:9,color:C.text2,flex:1,marginLeft:6,textAlign:"left"}}>{r.product.name}</span>
+                      <span style={{fontSize:9,fontFamily:"monospace",color:r.over?C.red:C.text2,marginRight:6}}>${r.guess}</span>
+                      <span style={{fontSize:9,fontFamily:"monospace",color:C.gold,marginRight:6}}>${r.realPrice}</span>
+                      <span style={{fontSize:9,fontWeight:800,color:r.winner==="You"?C.lime:(r.exact?C.gold:C.text3)}}>
+                        {r.exact?"🎰":r.winner==="You"?"🏆":r.over?"📈":"❌"}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                {/* Play again / Exit */}
+                <div style={{display:"flex",gap:12,marginTop:12}}>
+                  <div onClick={()=>{pipCleanup();startPriceIsPuff();}} style={{padding:"12px 24px",borderRadius:12,cursor:"pointer",background:C.green+"15",border:"1px solid "+C.green+"30",fontSize:13,fontWeight:800,color:C.green}}>Play Again</div>
+                  <div onClick={()=>{pipCleanup();setGameActive(null);}} style={{padding:"12px 24px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.05)",border:"1px solid "+C.border,fontSize:13,fontWeight:800,color:C.text3}}>Exit</div>
+                </div>
+                <div data-btn="true" onClick={(e)=>{e.stopPropagation();pipCleanup();setTab("me");setZone(null);setSelectedGame(null);setGameActive(null);}} style={{padding:"8px 0",borderRadius:10,textAlign:"center",cursor:"pointer",background:`${C.purple}10`,border:`1px solid ${C.purple}20`,fontSize:11,fontWeight:700,color:C.purple,marginTop:8}}>👤 My Progress</div>
+              </div>
+            )}
           </div>
-        );
-      }
+        </div>
+      );
+    }
 
 
 
@@ -21402,6 +21206,11 @@ gameSoundsMuted.current = false;addGameChat("Announcer","HIGHER OR LOWER! Build 
               {renderGameChatOverlay()}
           </div>
         );
+      }
+      // Spin & Win — delegates to renderSpin()
+      if(gameActive.id==="spinwin" && swPhase) {
+        const sw = renderSpin();
+        if(sw) return sw;
       }
 
       // ═══════════════════════════════════════════════════════════════
@@ -22247,7 +22056,6 @@ gameSoundsMuted.current = false;addGameChat("Announcer","HIGHER OR LOWER! Build 
 
                 // Fortune games
                 if(gid==="puffderby") { setGameActive({id:gid,name:gName,emoji:gEmoji,color:gCol}); startPuffDerby(); setSelectedGame(null); return; }
-                if(gid==="highcard") { setGameActive({id:gid,name:gName,emoji:gEmoji,color:gCol}); startHighCard(); setSelectedGame(null); return; }
                 if(["crystalball","strainbattle","matchpredictor","dailypicks","puffslots","coinflip","puffblackjack","crapsnclouds","mysterybox","scratchpuff","fortunecookie","treasuremap"].includes(gid)) {
                   setGameActive({id:gid,name:gName,emoji:gEmoji,color:gCol});
                   const starters = {crystalball:startCrystalBall,strainbattle:startStrainBattle,matchpredictor:startMatchPredictor,dailypicks:startDailyPicks,puffslots:startPuffSlots,coinflip:startCoinFlip,puffblackjack:startPuffBlackjack,crapsnclouds:startCrapsNClouds,mysterybox:startMysteryBox,scratchpuff:startScratchPuff,fortunecookie:startFortuneCookie,treasuremap:startTreasureMap};
@@ -22269,9 +22077,15 @@ gameSoundsMuted.current = false;addGameChat("Announcer","HIGHER OR LOWER! Build 
                 if(gid==="puffpong") { setGameActive({id:gid,name:gName,emoji:gEmoji,color:gCol}); startPuffPong(); setSelectedGame(null); return; }
                 if(gid==="russian") { setGameActive({id:gid,name:gName,emoji:gEmoji,color:gCol}); startRussianRoulette(); setSelectedGame(null); return; }
                 // Stage games
-                if(["vibecheck","higherlower","pricepuff","survivaltrivia","simonpuffs","puffauction"].includes(gid)) {
+                if(gid==="vibecheck") {
+                  setStageRole("contestant");
+                  vcStartGame();
+                  setSelectedGame(null);
+                  return;
+                }
+                if(["higherlower","pricepuff","survivaltrivia","simonpuffs","puffauction"].includes(gid)) {
                   setGameActive({id:gid,name:gName,emoji:gEmoji,color:gCol});
-                  const stageStarters = {vibecheck:vcStartGame,higherlower:startHigherLower,survivaltrivia:startSurvivalTrivia,simonpuffs:startSimonPuffs,puffauction:startPuffAuction,pricepuff:startPriceIsPuff};
+                  const stageStarters = {higherlower:startHigherLower,survivaltrivia:startSurvivalTrivia,simonpuffs:startSimonPuffs,puffauction:startPuffAuction,pricepuff:startPriceIsPuff};
                   if(stageStarters[gid]) stageStarters[gid]();
                   setSelectedGame(null);
                   return;
@@ -23340,385 +23154,6 @@ gameSoundsMuted.current = false;addGameChat("Announcer","HIGHER OR LOWER! Build 
     return null;
   };
 
-
-  // ═══ V3 CANVAS DRAW FUNCTIONS FOR ALL 6 STAGE SHOWS ═══
-
-  // ── Survival Trivia Canvas ──
-  const stDrawCanvas = () => {
-    const cv = stCanvasRef.current; if(!cv) return;
-    const ctx = cv.getContext("2d"); const W = cv.width, H = cv.height, dpr = ST_DPR;
-    ctx.clearRect(0,0,W,H);
-    const bgG = ctx.createLinearGradient(0,0,0,H);
-    bgG.addColorStop(0,"#0a0000"); bgG.addColorStop(0.4,"#1a0505"); bgG.addColorStop(1,"#050000");
-    ctx.fillStyle = bgG; ctx.fillRect(0,0,W,H);
-    const t = Date.now()*0.001;
-    // Arena glow
-    const g = ctx.createRadialGradient(W/2,H*0.3,0,W/2,H*0.3,H*0.4);
-    g.addColorStop(0,"rgba(255,68,68,0.08)"); g.addColorStop(1,"transparent");
-    ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
-    // Elimination counter
-    ctx.fillStyle = "#FF4444"; ctx.font = `bold ${10*dpr}px sans-serif`; ctx.textAlign = "center";
-    ctx.fillText((100-stPlayers)+" ELIMINATED", W/2, H*0.08);
-    // Avatar grid (simplified)
-    const cols = 10, size = 12*dpr, gap = 2*dpr;
-    const gridW = cols*(size+gap), startX = (W-gridW)/2;
-    stAvatars.slice(0,50).forEach((a,i)=>{
-      const col = i%cols, row = Math.floor(i/cols);
-      const ax = startX + col*(size+gap), ay = H*0.12 + row*(size+gap);
-      ctx.globalAlpha = a.alive?1:0.15;
-      ctx.fillStyle = a.isYou?"#FFD93D":a.alive?"#A8A3D0":"#FF4444";
-      ctx.beginPath(); ctx.arc(ax+size/2, ay+size/2, size/2-1, 0, Math.PI*2); ctx.fill();
-      if(a.isYou){ ctx.strokeStyle = "#FFD93D"; ctx.lineWidth = 2*dpr; ctx.stroke(); }
-    });
-    ctx.globalAlpha = 1;
-    // Timer bar
-    if(stPhase==="question" && stTimer>0){
-      const maxT = stFinalMode?12:15;
-      const pct = stTimer/maxT;
-      const barY = H*0.55, barH = 6*dpr;
-      ctx.fillStyle = "rgba(255,255,255,0.05)"; ctx.beginPath(); ctx.roundRect(W*0.1,barY,W*0.8,barH,3*dpr); ctx.fill();
-      ctx.fillStyle = stTimer<=3?"#FF4444":stTimer<=5?"#FB923C":"#34D399";
-      ctx.beginPath(); ctx.roundRect(W*0.1,barY,W*0.8*pct,barH,3*dpr); ctx.fill();
-      ctx.fillStyle = stTimer<=3?"#FF4444":"#F0EEFF"; ctx.font = `bold ${28*dpr}px monospace`; ctx.textAlign = "center";
-      ctx.fillText(String(stTimer), W/2, H*0.50);
-    }
-    // Question text
-    if(stQuestion && (stPhase==="question"||stPhase==="reveal")){
-      ctx.fillStyle = "#F0EEFF"; ctx.font = `bold ${13*dpr}px sans-serif`; ctx.textAlign = "center";
-      const words = stQuestion.text.split(" "); let line = "", lineY = H*0.63;
-      for(const w of words){ const test=line+w+" "; if(ctx.measureText(test).width>W*0.85){ctx.fillText(line.trim(),W/2,lineY);lineY+=16*dpr;line=w+" ";}else line=test; }
-      ctx.fillText(line.trim(),W/2,lineY);
-    }
-    // Phase overlays
-    if(stPhase==="intro"){
-      ctx.font = `${36*dpr}px sans-serif`; ctx.textAlign = "center"; ctx.fillText("\u{1F480}",W/2,H*0.35);
-      ctx.fillStyle = "#FF4444"; ctx.font = `bold ${20*dpr}px sans-serif`; ctx.fillText("SURVIVAL TRIVIA",W/2,H*0.45);
-      ctx.fillStyle = "#A8A3D0"; ctx.font = `${12*dpr}px sans-serif`; ctx.fillText(stComment,W/2,H*0.52);
-    }
-    if(stPhase==="eliminated"){
-      ctx.font = `${50*dpr}px sans-serif`; ctx.textAlign = "center"; ctx.fillText("\u{1F480}",W/2,H*0.30);
-      ctx.fillStyle = "#FF4444"; ctx.font = `bold ${22*dpr}px sans-serif`; ctx.fillText("YOU ARE DEAD",W/2,H*0.42);
-      ctx.fillStyle = "#A8A3D0"; ctx.font = `${12*dpr}px sans-serif`; ctx.fillText("Survived "+stRound+" rounds | Streak: "+stStreak,W/2,H*0.48);
-    }
-    if(stPhase==="winner"){
-      ctx.font = `${50*dpr}px sans-serif`; ctx.textAlign = "center"; ctx.fillText("\u{1F451}",W/2,H*0.30);
-      ctx.fillStyle = "#FFD93D"; ctx.font = `bold ${22*dpr}px sans-serif`; ctx.fillText("SOLE SURVIVOR!",W/2,H*0.42);
-      ctx.fillStyle = "#A8A3D0"; ctx.font = `${12*dpr}px sans-serif`; ctx.fillText("Outlasted "+(100-stPlayers)+" players",W/2,H*0.48);
-    }
-    // Comment
-    if(stComment && stPhase!=="intro"){
-      ctx.fillStyle = stEliminated?"#FF4444":"#FFD93D"; ctx.font = `bold ${11*dpr}px sans-serif`; ctx.textAlign = "center";
-      ctx.fillText(stComment, W/2, H*0.92);
-    }
-  };
-
-  // ── Simon Puffs Canvas ──
-  const spDrawCanvas = () => {
-    const cv = spCanvasRef.current; if(!cv) return;
-    const ctx = cv.getContext("2d"); const W = cv.width, H = cv.height, dpr = SP_DPR;
-    ctx.clearRect(0,0,W,H);
-    const bgG = ctx.createLinearGradient(0,0,0,H);
-    bgG.addColorStop(0,"#0a0018"); bgG.addColorStop(0.3,"#1a0040"); bgG.addColorStop(1,"#050010");
-    ctx.fillStyle = bgG; ctx.fillRect(0,0,W,H);
-    const t = Date.now()*0.001;
-    // Ambient orbs
-    for(let i=0;i<3;i++){
-      const ox = W*(0.2+i*0.3)+Math.sin(t+i)*15*dpr;
-      const oy = H*(0.15+i*0.2)+Math.cos(t*0.7+i)*10*dpr;
-      const g = ctx.createRadialGradient(ox,oy,0,ox,oy,60*dpr);
-      g.addColorStop(0,["rgba(192,132,252,0.08)","rgba(0,229,255,0.06)","rgba(255,77,141,0.06)"][i]);
-      g.addColorStop(1,"transparent"); ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
-    }
-    // Simon board (4 colored circles in a cross pattern)
-    const colors = ["#00E5FF","#FFD93D","#FF4D8D","#34D399"];
-    const labels = ["SHORT","MEDIUM","LONG","BLINKER"];
-    const cx = W/2, cy = H*0.35, r = 36*dpr, spacing = 90*dpr;
-    const positions = [[cx-spacing/2,cy-spacing/2],[cx+spacing/2,cy-spacing/2],[cx-spacing/2,cy+spacing/2],[cx+spacing/2,cy+spacing/2]];
-    positions.forEach(([px,py],i)=>{
-      const isActive = spShowingPattern && spCurrentShow>=0 && spPattern[spCurrentShow] &&
-        ((i===0&&spPattern[spCurrentShow].type==="short")||(i===1&&spPattern[spCurrentShow].type==="medium")||(i===2&&spPattern[spCurrentShow].type==="long"));
-      ctx.fillStyle = isActive?colors[i]+"80":colors[i]+"20";
-      ctx.beginPath(); ctx.arc(px,py,r,0,Math.PI*2); ctx.fill();
-      ctx.strokeStyle = isActive?colors[i]:colors[i]+"40"; ctx.lineWidth = 2*dpr; ctx.stroke();
-      if(isActive){ ctx.shadowColor=colors[i]; ctx.shadowBlur=20*dpr; ctx.beginPath(); ctx.arc(px,py,r,0,Math.PI*2); ctx.fill(); ctx.shadowBlur=0; }
-      ctx.fillStyle = isActive?colors[i]:"#A8A3D0"; ctx.font = `bold ${8*dpr}px sans-serif`; ctx.textAlign = "center";
-      ctx.fillText(labels[i], px, py+r+12*dpr);
-    });
-    // Pattern display
-    if(spPattern.length>0){
-      const patY = H*0.62;
-      ctx.fillStyle = "#6E6A95"; ctx.font = `bold ${9*dpr}px sans-serif`; ctx.textAlign = "center";
-      ctx.fillText(spShowingPattern?"WATCH THE PATTERN":"YOUR TURN", W/2, patY-12*dpr);
-      const pw = 28*dpr, pg = 4*dpr;
-      const totalW = spPattern.length*(pw+pg)-pg;
-      spPattern.forEach((p,i)=>{
-        const px = W/2-totalW/2+i*(pw+pg);
-        const col = p.type==="short"?"#00E5FF":p.type==="medium"?"#FFD93D":"#FF4D8D";
-        const matched = !spShowingPattern && spPlayerPattern[i] && spPlayerPattern[i].type===p.type;
-        const wrong = !spShowingPattern && spPlayerPattern[i] && spPlayerPattern[i].type!==p.type;
-        ctx.fillStyle = matched?"rgba(52,211,153,0.3)":wrong?"rgba(255,68,68,0.3)":col+"15";
-        ctx.beginPath(); ctx.roundRect(px,patY,pw,pw,6*dpr); ctx.fill();
-        ctx.strokeStyle = matched?"#34D399":wrong?"#FF4444":col+"40"; ctx.lineWidth = 1.5*dpr; ctx.stroke();
-      });
-    }
-    // Puff meter during input
-    if(spPuffing && spPhase==="input"){
-      const mY = H*0.78, mH = 16*dpr;
-      ctx.fillStyle = "rgba(255,255,255,0.05)"; ctx.beginPath(); ctx.roundRect(W*0.1,mY,W*0.8,mH,8*dpr); ctx.fill();
-      const pct = Math.min(spPuffTime/4,1);
-      ctx.fillStyle = spPuffTime<1.0?"#00E5FF":spPuffTime<2.5?"#FFD93D":"#FF4D8D";
-      ctx.beginPath(); ctx.roundRect(W*0.1,mY,W*0.8*pct,mH,8*dpr); ctx.fill();
-    }
-    // Phase overlays
-    if(spPhase==="intro"){
-      ctx.font = `${36*dpr}px sans-serif`; ctx.textAlign = "center"; ctx.fillText("\u{1F3AD}",W/2,H*0.25);
-      ctx.fillStyle = "#C084FC"; ctx.font = `bold ${22*dpr}px sans-serif`; ctx.fillText("SIMON PUFFS",W/2,H*0.35);
-      if(spIntroStep>=3){
-        ctx.fillStyle = "#A8A3D0"; ctx.font = `${11*dpr}px sans-serif`;
-        ctx.fillText("SHORT < 1.2s | MEDIUM < 3s | LONG 3s+",W/2,H*0.42);
-      }
-    }
-    if(spPhase==="eliminated"){
-      ctx.font = `${40*dpr}px sans-serif`; ctx.textAlign = "center"; ctx.fillText("\u{1F4A5}",W/2,H*0.30);
-      ctx.fillStyle = "#FF4444"; ctx.font = `bold ${20*dpr}px sans-serif`; ctx.fillText("ELIMINATED!",W/2,H*0.42);
-      ctx.fillStyle = "#A8A3D0"; ctx.font = `${12*dpr}px sans-serif`; ctx.fillText("Survived "+spRound+" rounds | "+spScore+" pts",W/2,H*0.48);
-    }
-    if(spPhase==="final"){
-      ctx.font = `${40*dpr}px sans-serif`; ctx.textAlign = "center"; ctx.fillText("\u{1F3C6}",W/2,H*0.30);
-      ctx.fillStyle = "#FFD93D"; ctx.font = `bold ${20*dpr}px sans-serif`; ctx.fillText("SIMON MASTER!",W/2,H*0.42);
-      ctx.fillStyle = "#A8A3D0"; ctx.font = `${12*dpr}px sans-serif`; ctx.fillText("All 10 rounds | "+spScore+" pts",W/2,H*0.48);
-    }
-    if(spComment){ ctx.fillStyle = "#F0EEFF"; ctx.font = `bold ${10*dpr}px sans-serif`; ctx.textAlign = "center"; ctx.fillText(spComment,W/2,H*0.92); }
-  };
-
-  // ── Puff Auction Canvas ──
-  const paDrawCanvas = () => {
-    const cv = paCanvasRef.current; if(!cv) return;
-    const ctx = cv.getContext("2d"); const W = cv.width, H = cv.height, dpr = PA_DPR;
-    ctx.clearRect(0,0,W,H);
-    const bgG = ctx.createLinearGradient(0,0,0,H);
-    bgG.addColorStop(0,"#1a0f00"); bgG.addColorStop(0.3,"#2a1800"); bgG.addColorStop(1,"#0a0800");
-    ctx.fillStyle = bgG; ctx.fillRect(0,0,W,H);
-    const t = Date.now()*0.001;
-    // Gold glow
-    const g = ctx.createRadialGradient(W/2,H*0.25,0,W/2,H*0.25,H*0.3);
-    g.addColorStop(0,"rgba(255,215,0,0.06)"); g.addColorStop(1,"transparent");
-    ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
-    // Prize display
-    if(paPrize && (paPhase==="reveal"||paPhase==="bidding"||paPhase==="result")){
-      ctx.font = `${48*dpr}px sans-serif`; ctx.textAlign = "center"; ctx.fillText(paPrize.emoji,W/2,H*0.22);
-      ctx.fillStyle = "#FFD93D"; ctx.font = `bold ${16*dpr}px sans-serif`; ctx.fillText(paPrize.name,W/2,H*0.30);
-      ctx.fillStyle = "#A8A3D0"; ctx.font = `${10*dpr}px sans-serif`; ctx.fillText("Round "+(paRound+1)+" of "+PA_PRIZES.length,W/2,H*0.35);
-    }
-    // Bid meter
-    if(paPhase==="bidding"){
-      const dangerPct = paBidTime/PA_BLINKER_THRESHOLD;
-      const mY = H*0.42, mH = 24*dpr;
-      ctx.fillStyle = "rgba(255,255,255,0.05)"; ctx.beginPath(); ctx.roundRect(W*0.1,mY,W*0.8,mH,12*dpr); ctx.fill();
-      ctx.fillStyle = paBidTime>=PA_DANGER_ZONE?"#FF4444":paBidTime>3?"#FB923C":"#00E5FF";
-      ctx.beginPath(); ctx.roundRect(W*0.1,mY,W*0.8*Math.min(dangerPct,1),mH,12*dpr); ctx.fill();
-      // Danger line
-      const dangerX = W*0.1+W*0.8*(PA_DANGER_ZONE/PA_BLINKER_THRESHOLD);
-      ctx.strokeStyle = "#FF444480"; ctx.lineWidth = 2*dpr;
-      ctx.beginPath(); ctx.moveTo(dangerX,mY-4*dpr); ctx.lineTo(dangerX,mY+mH+4*dpr); ctx.stroke();
-      ctx.fillStyle = "#FF4444"; ctx.font = `bold ${7*dpr}px sans-serif`; ctx.textAlign = "center";
-      ctx.fillText("DANGER",dangerX,mY-6*dpr);
-      // Time display
-      ctx.fillStyle = paBidTime>=PA_DANGER_ZONE?"#FF4444":"#F0EEFF"; ctx.font = `bold ${20*dpr}px monospace`;
-      ctx.fillText(paBidTime.toFixed(2)+"s",W/2,mY+mH/2+7*dpr);
-    }
-    // Bid results
-    if(paPhase==="result" && paBids.length>0){
-      const startY = H*0.42;
-      paBids.slice(0,6).forEach((b,i)=>{
-        const by = startY + i*24*dpr;
-        ctx.fillStyle = b.isYou?(b.disqualified?"rgba(255,68,68,0.15)":"rgba(255,215,0,0.1)"):"rgba(255,255,255,0.03)";
-        ctx.beginPath(); ctx.roundRect(W*0.1,by,W*0.8,20*dpr,6*dpr); ctx.fill();
-        ctx.fillStyle = i===0&&!b.disqualified?"#FFD93D":"#A8A3D0"; ctx.font = `bold ${10*dpr}px sans-serif`; ctx.textAlign = "left";
-        ctx.fillText((b.disqualified?"X":(i+1))+". "+b.name,W*0.12,by+14*dpr);
-        ctx.textAlign = "right"; ctx.fillStyle = b.disqualified?"#FF4444":"#FFD93D";
-        ctx.fillText(b.disqualified?"DQ":b.time.toFixed(2)+"s",W*0.88,by+14*dpr);
-      });
-    }
-    // Gavel animation
-    if(paShowGavel){
-      const gAngle = Math.sin(t*8)*0.3;
-      ctx.save(); ctx.translate(W/2,H*0.38); ctx.rotate(gAngle);
-      ctx.font = `${30*dpr}px sans-serif`; ctx.textAlign = "center"; ctx.fillText("\u{1F528}",0,0);
-      ctx.restore();
-    }
-    // Phase overlays
-    if(paPhase==="intro"){
-      ctx.font = `${36*dpr}px sans-serif`; ctx.textAlign = "center"; ctx.fillText("\u{1F3AF}",W/2,H*0.25);
-      ctx.fillStyle = "#FFD93D"; ctx.font = `bold ${22*dpr}px sans-serif`; ctx.fillText("PUFF AUCTION",W/2,H*0.35);
-      if(paIntroStep>=3){ ctx.fillStyle = "#FF4444"; ctx.font = `bold ${11*dpr}px sans-serif`; ctx.fillText("BLINKER (5s+) = DISQUALIFIED!",W/2,H*0.42); }
-    }
-    if(paPhase==="final"){
-      ctx.font = `${40*dpr}px sans-serif`; ctx.textAlign = "center"; ctx.fillText("\u{1F3AF}",W/2,H*0.25);
-      ctx.fillStyle = "#FFD93D"; ctx.font = `bold ${22*dpr}px sans-serif`; ctx.fillText("AUCTION COMPLETE!",W/2,H*0.38);
-      ctx.fillStyle = "#00E5FF"; ctx.font = `bold ${16*dpr}px sans-serif`; ctx.fillText("Total Won: "+paTotalWon,W/2,H*0.46);
-    }
-    if(paComment){ ctx.fillStyle = paDisqualified?"#FF4444":"#F0EEFF"; ctx.font = `bold ${10*dpr}px sans-serif`; ctx.textAlign = "center"; ctx.fillText(paComment,W/2,H*0.92); }
-  };
-
-  // ── Higher or Lower Canvas ──
-  const hlDrawCanvas = () => {
-    const cv = hlCanvasRef.current; if(!cv) return;
-    const ctx = cv.getContext("2d"); const W = cv.width, H = cv.height, dpr = HL_DPR;
-    ctx.clearRect(0,0,W,H);
-    const bgG = ctx.createLinearGradient(0,0,0,H);
-    bgG.addColorStop(0,"#060d1e"); bgG.addColorStop(0.3,"#0a1832"); bgG.addColorStop(1,"#040e1a");
-    ctx.fillStyle = bgG; ctx.fillRect(0,0,W,H);
-    // Ambient glow
-    const g = ctx.createRadialGradient(W*0.35,H*0.3,0,W*0.35,H*0.3,H*0.3);
-    g.addColorStop(0,"rgba(0,229,255,0.06)"); g.addColorStop(1,"transparent");
-    ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
-    // Two cards side by side
-    if(hlCurrent && hlNext && hlPhase!=="result"){
-      const cw = W*0.4, ch = H*0.45, gap = W*0.04;
-      const lx = W/2-cw-gap/2, rx = W/2+gap/2, cy = H*0.08;
-      // Current card
-      ctx.fillStyle = "rgba(0,229,255,0.06)"; ctx.beginPath(); ctx.roundRect(lx,cy,cw,ch,12*dpr); ctx.fill();
-      ctx.strokeStyle = "rgba(0,229,255,0.25)"; ctx.lineWidth = 1.5*dpr; ctx.stroke();
-      ctx.fillStyle = "#6E6A95"; ctx.font = `bold ${8*dpr}px sans-serif`; ctx.textAlign = "center";
-      ctx.fillText("CURRENT",lx+cw/2,cy+16*dpr);
-      ctx.fillStyle = "#A8A3D0"; ctx.font = `${9*dpr}px sans-serif`;
-      const cWords = hlCurrent.topic.split(" "); let cLine="", cLineY=cy+32*dpr;
-      for(const w of cWords){const t2=cLine+w+" ";if(ctx.measureText(t2).width>cw-12*dpr){ctx.fillText(cLine.trim(),lx+cw/2,cLineY);cLineY+=12*dpr;cLine=w+" ";}else cLine=t2;}
-      ctx.fillText(cLine.trim(),lx+cw/2,cLineY);
-      ctx.fillStyle = "#00E5FF"; ctx.font = `bold ${24*dpr}px sans-serif`;
-      ctx.fillText(hlCurrent.display,lx+cw/2,cy+ch-20*dpr);
-      // Next card
-      const isC = hlPhase==="correct", isW2 = hlPhase==="wrong";
-      ctx.fillStyle = hlRevealing?(isC?"rgba(52,211,153,0.08)":isW2?"rgba(255,68,68,0.08)":"rgba(255,217,61,0.06)"):"rgba(192,132,252,0.06)";
-      ctx.beginPath(); ctx.roundRect(rx,cy,cw,ch,12*dpr); ctx.fill();
-      ctx.strokeStyle = hlRevealing?(isC?"#34D399":isW2?"#FF4444":"#FFD93D")+"50":"rgba(192,132,252,0.25)"; ctx.lineWidth = 1.5*dpr; ctx.stroke();
-      ctx.fillStyle = "#6E6A95"; ctx.font = `bold ${8*dpr}px sans-serif`; ctx.textAlign = "center";
-      ctx.fillText("NEXT",rx+cw/2,cy+16*dpr);
-      ctx.fillStyle = "#A8A3D0"; ctx.font = `${9*dpr}px sans-serif`;
-      const nWords = hlNext.topic.split(" "); let nLine="", nLineY=cy+32*dpr;
-      for(const w of nWords){const t2=nLine+w+" ";if(ctx.measureText(t2).width>cw-12*dpr){ctx.fillText(nLine.trim(),rx+cw/2,nLineY);nLineY+=12*dpr;nLine=w+" ";}else nLine=t2;}
-      ctx.fillText(nLine.trim(),rx+cw/2,nLineY);
-      if(hlRevealing){
-        ctx.fillStyle = isC?"#34D399":isW2?"#FF4444":"#FFD93D"; ctx.font = `bold ${24*dpr}px sans-serif`;
-        ctx.fillText(hlNext.display,rx+cw/2,cy+ch-20*dpr);
-      } else {
-        ctx.fillStyle = "#C084FC"; ctx.font = `bold ${28*dpr}px sans-serif`;
-        ctx.fillText("?",rx+cw/2,cy+ch-20*dpr);
-      }
-      // VS
-      if(!hlRevealing){
-        ctx.fillStyle = "#FFD93D"; ctx.font = `bold ${16*dpr}px sans-serif`; ctx.textAlign = "center";
-        ctx.fillText("VS",W/2,cy+ch/2+4*dpr);
-      }
-    }
-    // Streak display
-    const streakY = H*0.58;
-    ctx.fillStyle = "#A8A3D0"; ctx.font = `bold ${10*dpr}px sans-serif`; ctx.textAlign = "center";
-    ctx.fillText("STREAK: "+hlStreak+(hlStreak>=5?" \u{1F525}":hlStreak>=3?" \u{1F525}":""),W/2,streakY);
-    // Score bar
-    const barY = streakY+12*dpr, barH = 4*dpr;
-    ctx.fillStyle = "rgba(255,255,255,0.06)"; ctx.beginPath(); ctx.roundRect(W*0.15,barY,W*0.7,barH,2*dpr); ctx.fill();
-    ctx.fillStyle = hlStreak>=5?"#FF4444":hlStreak>=3?"#FFD93D":"#00E5FF";
-    ctx.beginPath(); ctx.roundRect(W*0.15,barY,W*0.7*Math.min(hlStreak/10,1),barH,2*dpr); ctx.fill();
-    // Result phase
-    if(hlPhase==="result"){
-      ctx.font = `${40*dpr}px sans-serif`; ctx.textAlign = "center";
-      ctx.fillText(hlBestStreak>=7?"\u{1F3C6}":hlBestStreak>=5?"\u{1F525}":"\u{1F4CA}",W/2,H*0.20);
-      ctx.fillStyle = hlScore>=100?"#FFD93D":"#00E5FF"; ctx.font = `bold ${24*dpr}px sans-serif`;
-      ctx.fillText("GAME OVER",W/2,H*0.32);
-      ctx.fillStyle = "#F0EEFF"; ctx.font = `bold ${18*dpr}px sans-serif`;
-      ctx.fillText("Score: "+hlScore,W/2,H*0.40);
-      ctx.fillStyle = "#A8A3D0"; ctx.font = `${13*dpr}px sans-serif`;
-      ctx.fillText("Best Streak: "+hlBestStreak,W/2,H*0.46);
-      ctx.fillStyle = "#FFD93D"; ctx.font = `bold ${14*dpr}px sans-serif`;
-      ctx.fillText("+"+Math.max(10,Math.floor(hlScore/2))+" coins",W/2,H*0.54);
-    }
-    if(commentatorText){ ctx.fillStyle = "#A8A3D0"; ctx.font = `italic ${10*dpr}px sans-serif`; ctx.textAlign = "center"; ctx.fillText(commentatorText,W/2,H*0.92); }
-  };
-
-  // ── Price is Puff Canvas ──
-  const pipDrawCanvas = () => {
-    const cv = pipCanvasRef.current; if(!cv) return;
-    const ctx = cv.getContext("2d"); const W = cv.width, H = cv.height, dpr = PIP_DPR;
-    ctx.clearRect(0,0,W,H);
-    const bgG = ctx.createLinearGradient(0,0,0,H);
-    bgG.addColorStop(0,"#0a1a0a"); bgG.addColorStop(0.3,"#1a2e0a"); bgG.addColorStop(1,"#081408");
-    ctx.fillStyle = bgG; ctx.fillRect(0,0,W,H);
-    // Gold/green glow
-    const g = ctx.createRadialGradient(W/2,H*0.2,0,W/2,H*0.2,H*0.3);
-    g.addColorStop(0,"rgba(255,215,0,0.06)"); g.addColorStop(1,"transparent");
-    ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
-    // Product showcase
-    if(pipProduct && (pipPhase==="product"||pipPhase==="guessing"||pipPhase==="reveal")){
-      ctx.font = `${50*dpr}px sans-serif`; ctx.textAlign = "center"; ctx.fillText(pipProduct.emoji,W/2,H*0.18);
-      ctx.fillStyle = "#F0EEFF"; ctx.font = `bold ${14*dpr}px sans-serif`; ctx.fillText(pipProduct.name,W/2,H*0.26);
-      ctx.fillStyle = "#FFD93D"; ctx.font = `bold ${9*dpr}px sans-serif`; ctx.fillText(pipProduct.category,W/2,H*0.30);
-    }
-    // Price meter during guessing
-    if(pipPhase==="guessing"){
-      const mY = H*0.36;
-      ctx.fillStyle = pipPuffing?"#7FFF00":"#FFD93D"; ctx.font = `bold ${32*dpr}px monospace`; ctx.textAlign = "center";
-      ctx.fillText("$"+pipGuess,W/2,mY);
-      const barY = mY+10*dpr, barH = 10*dpr, pct = Math.min(pipGuess/200,1);
-      ctx.fillStyle = "rgba(255,255,255,0.05)"; ctx.beginPath(); ctx.roundRect(W*0.1,barY,W*0.8,barH,5*dpr); ctx.fill();
-      ctx.fillStyle = pct>0.8?"#FF4444":"#34D399";
-      ctx.beginPath(); ctx.roundRect(W*0.1,barY,W*0.8*pct,barH,5*dpr); ctx.fill();
-    }
-    // Reveal: your guess vs real price
-    if(pipPhase==="reveal" && pipProduct){
-      const ryBase = H*0.38;
-      ctx.fillStyle = "#6E6A95"; ctx.font = `bold ${8*dpr}px sans-serif`; ctx.textAlign = "center";
-      ctx.fillText("YOUR GUESS",W*0.3,ryBase); ctx.fillText("REAL PRICE",W*0.7,ryBase);
-      ctx.fillStyle = pipGuess>pipProduct.price?"#FF4444":"#7FFF00"; ctx.font = `bold ${22*dpr}px monospace`;
-      ctx.fillText("$"+pipGuess,W*0.3,ryBase+22*dpr);
-      ctx.fillStyle = "#FFD93D"; ctx.fillText("$"+pipProduct.price,W*0.7,ryBase+22*dpr);
-      ctx.fillStyle = "#6E6A95"; ctx.font = `${16*dpr}px sans-serif`; ctx.fillText("vs",W/2,ryBase+18*dpr);
-      // AI guesses
-      if(pipAiGuesses.length>0){
-        const aiY = ryBase+44*dpr;
-        ctx.fillStyle = "#6E6A95"; ctx.font = `bold ${8*dpr}px sans-serif`; ctx.fillText("AI OPPONENTS",W/2,aiY);
-        pipAiGuesses.forEach((ai,i)=>{
-          const ay = aiY+14*dpr+i*18*dpr;
-          ctx.fillStyle = ai.guess>pipProduct.price?"#FF444440":"#34D39920";
-          ctx.beginPath(); ctx.roundRect(W*0.15,ay,W*0.7,16*dpr,4*dpr); ctx.fill();
-          ctx.fillStyle = "#A8A3D0"; ctx.font = `${10*dpr}px sans-serif`; ctx.textAlign = "left";
-          ctx.fillText(ai.emoji+" "+ai.name,W*0.18,ay+12*dpr);
-          ctx.textAlign = "right"; ctx.fillStyle = ai.guess>pipProduct.price?"#FF4444":"#7FFF00";
-          ctx.fillText("$"+ai.guess+(ai.guess>pipProduct.price?" OVER":""),W*0.82,ay+12*dpr);
-        });
-      }
-    }
-    // Result
-    if(pipPhase==="result"){
-      ctx.font = `${40*dpr}px sans-serif`; ctx.textAlign = "center"; ctx.fillText("\u{1F4B0}",W/2,H*0.20);
-      ctx.fillStyle = "#FFD93D"; ctx.font = `bold ${22*dpr}px sans-serif`; ctx.fillText("SHOW OVER!",W/2,H*0.32);
-      ctx.fillStyle = "#F0EEFF"; ctx.font = `bold ${16*dpr}px sans-serif`; ctx.fillText("Score: "+pipScore+" coins",W/2,H*0.40);
-      if(pipResults.length>0){
-        const ry = H*0.48;
-        pipResults.forEach((r,i)=>{
-          const rry = ry+i*20*dpr;
-          ctx.fillStyle = r.winner==="You"?"#34D39920":"#FF444415";
-          ctx.beginPath(); ctx.roundRect(W*0.1,rry,W*0.8,18*dpr,4*dpr); ctx.fill();
-          ctx.fillStyle = "#A8A3D0"; ctx.font = `${9*dpr}px sans-serif`; ctx.textAlign = "left";
-          ctx.fillText(r.product.emoji+" "+r.product.name,W*0.12,rry+13*dpr);
-          ctx.textAlign = "right"; ctx.fillStyle = r.winner==="You"?"#34D399":"#FF4444";
-          ctx.fillText("$"+r.guess+(r.over?" OVER":" ok")+" (real $"+r.realPrice+")",W*0.88,rry+13*dpr);
-        });
-      }
-    }
-    // Intro
-    if(pipPhase==="intro"){
-      const pulse = 0.9+Math.sin(Date.now()*0.003)*0.1;
-      ctx.font = `${Math.round(50*dpr*pulse)}px sans-serif`; ctx.textAlign = "center"; ctx.fillText("\u{1F4B0}",W/2,H*0.22);
-      ctx.fillStyle = "#FFD93D"; ctx.font = `bold ${22*dpr}px sans-serif`; ctx.fillText("THE PRICE IS PUFF!",W/2,H*0.35);
-      if(pipIntroStep>=2){ ctx.fillStyle = "#A8A3D0"; ctx.font = `${11*dpr}px sans-serif`; ctx.fillText("Puff duration = price guess!",W/2,H*0.42); }
-      if(pipIntroStep>=4){ ctx.fillStyle = "#FFD93D"; ctx.font = `bold ${11*dpr}px sans-serif`; ctx.fillText("Closest without going over WINS!",W/2,H*0.48); }
-    }
-    if(pipComment && pipPhase!=="reveal"){ ctx.fillStyle = "#F0EEFF"; ctx.font = `bold ${10*dpr}px sans-serif`; ctx.textAlign = "center"; ctx.fillText(pipComment,W/2,H*0.92); }
-  };
-
-  // ── Vibe Check Canvas (already has vcDrawCanvas above) ──
   // Vibe Check V3 - Canvas Game Show
   const vcDrawCanvas = () => {
     const cv = vcCanvasRef.current; if(!cv) return;
@@ -23940,13 +23375,13 @@ gameSoundsMuted.current = false;addGameChat("Announcer","HIGHER OR LOWER! Build 
 
   const renderVibeCheck = () => {
     if(!showVibeCheck) return null;
-    // V3 Canvas loop
-    if(vcCanvasRef.current && vcPhase){ if(!vcAnimRef.current){ const loop=()=>{vcDrawCanvas();vcAnimRef.current=requestAnimationFrame(loop);}; vcAnimRef.current=requestAnimationFrame(loop); } }
     // Drive V3 canvas loop
     if(vcCanvasRef.current && vcPhase){
-      if(!vcAnimRef.current){ const loop=()=>{vcDrawCanvas();vcAnimRef.current=requestAnimationFrame(loop);}; vcAnimRef.current=requestAnimationFrame(loop); }
+      if(vcAnimRef.current) cancelAnimationFrame(vcAnimRef.current); {const loop=()=>{vcDrawCanvas();vcAnimRef.current=requestAnimationFrame(loop);}; vcAnimRef.current=requestAnimationFrame(loop);}
     }
     const q = VC_QUESTIONS_V2[vcRound] || VC_QUESTIONS_V2[0];
+    const timerColor = vcTimer<=3 ? C.red : vcTimer<=5 ? C.orange : C.cyan;
+    const timerPct = vcTimer / 15;
     const optColors = [C.cyan, C.orange, C.green, C.pink];
     const vcControlsSlot = (
       <div style={{display:"flex",flexDirection:"column",gap:6,alignItems:"center",width:"100%"}}>
@@ -23980,7 +23415,7 @@ gameSoundsMuted.current = false;addGameChat("Announcer","HIGHER OR LOWER! Build 
       </div>
     );
     return (
-      <div style={{position:"fixed",inset:0,zIndex:100,display:"flex",flexDirection:"column",touchAction:"none",animation:screenShake?"shake 0.4s ease":"none"}}>
+      <div style={{position:"fixed",inset:0,zIndex:100,display:"flex",flexDirection:"column",touchAction:"none",background:"#06101E",animation:screenShake?"shake 0.4s ease":"none"}}>
         {screenFlash && <div style={{position:"absolute",inset:0,zIndex:200,pointerEvents:"none",opacity:0,background:screenFlash==="goal"?"rgba(0,255,100,0.25)":"rgba(255,50,50,0.2)",animation:"flashOverlay 0.4s ease forwards"}}/>}
         {confettiParticles.map(p=>(<div key={p.id} style={{position:"absolute",left:p.x+"%",top:p.y+"%",width:p.size,height:p.size*0.6,background:p.color,borderRadius:1,transform:"rotate("+p.rot+"deg)",zIndex:210,pointerEvents:"none",animation:"confettiFall 1.5s ease-out forwards"}}/>))}
 
@@ -23991,7 +23426,7 @@ gameSoundsMuted.current = false;addGameChat("Announcer","HIGHER OR LOWER! Build 
               <div style={{width:6,height:6,borderRadius:"50%",background:C.red,animation:"pulse 1.5s infinite"}}/>
               <span style={{fontSize:9,fontWeight:900,color:C.red}}>LIVE</span>
             </div>
-            <span style={{fontSize:10,color:C.text3}}>👁 {nowViewers.toLocaleString()}</span>
+            <span style={{fontSize:10,color:C.text3}}>👁 {(1247 + Math.floor(tick % 100)).toLocaleString()}</span>
           </div>
           <div style={{display:"flex",gap:10}}>
             <span style={{fontSize:11,color:C.gold,fontWeight:700}}>🪙 {vcScore}</span>
@@ -24215,31 +23650,17 @@ gameSoundsMuted.current = false;addGameChat("Announcer","HIGHER OR LOWER! Build 
     }).join(", ");
 
     return (
-      <div style={{position:"fixed",inset:0,zIndex:100,display:"flex",flexDirection:"column",touchAction:"none"}}>
+      <div style={overlayStyle}>
         {swShowBust && <div style={{position:"absolute",inset:0,background:"rgba(255,0,0,0.25)",zIndex:5,animation:"fadeIn 0.1s ease",pointerEvents:"none"}} />}
         {swShowJackpot && <div style={{position:"absolute",inset:0,background:"rgba(255,217,61,0.15)",zIndex:5,animation:"fadeIn 0.1s ease",pointerEvents:"none"}} />}
-        {/* V3 Header */}
-        <div style={{position:"relative",zIndex:50,flexShrink:0,background:"rgba(6,16,30,0.98)",borderBottom:"1px solid rgba(0,229,255,0.06)"}}>
-          <div style={{padding:"6px 12px 2px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-            <div style={{fontSize:8,fontWeight:600,color:"rgba(255,255,255,0.4)"}}><span style={{fontWeight:800,color:"rgba(255,255,255,0.6)"}}>{"Powered by "}<span style={{fontWeight:900,letterSpacing:2}}>MOOD LAB</span></span></div>
-            <div style={{display:"flex",gap:5,alignItems:"center"}}>
-              <div style={{display:"flex",alignItems:"center",gap:2,padding:"2px 7px",borderRadius:100,background:"rgba(255,217,61,0.06)",border:"1px solid rgba(255,217,61,0.12)"}}>
-                <span style={{fontSize:9}}>🪙</span><span style={{fontSize:10,fontWeight:800,color:"#FFD93D",fontFamily:"'Courier New',monospace"}}>{coins.toLocaleString()}</span>
-              </div>
-            </div>
-          </div>
-          <div style={{padding:"2px 12px 4px",display:"flex",alignItems:"center",gap:6}}>
-            <div onClick={()=>{playFx("tap");setSelectedGame(null);setSwPhase(null);if(swTickRef.current)clearInterval(swTickRef.current);setGameActive(null);}} data-btn="true" style={{display:"inline-flex",alignItems:"center",gap:3,cursor:"pointer",padding:"3px 8px",borderRadius:8,background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.06)"}}>
-              <span style={{fontSize:10,color:"#B8B4D9"}}>←</span>
-              <span style={{fontSize:9,fontWeight:700,color:"#B8B4D9"}}>Fortune</span>
-            </div>
-            <span style={{fontSize:10,fontWeight:800,color:"#fff"}}>{swBonusRound ? "🌟 BONUS ROUND" : "🎰 Spin & Win"}</span>
-            <span style={{fontSize:9,fontWeight:700,color:C.gold,marginLeft:"auto"}}>🪙 {swTotalWon}</span>
-          </div>
+
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 20px",borderBottom:"1px solid " + C.border}}>
+          <div onClick={() => { setSelectedGame(null); setSwPhase(null); if(swTickRef.current) clearInterval(swTickRef.current); }} style={{fontSize:12,color:C.text3,cursor:"pointer",fontWeight:700}}>{"<"} Back</div>
+          <div style={{fontSize:10,fontWeight:800,color:C.gold,letterSpacing:2}}>{swBonusRound ? "🌟 BONUS ROUND 🌟" : "🎰 SPIN & WIN"}</div>
+          <div style={{fontSize:11,fontWeight:800,color:C.cyan}}>{"🪙"} {swTotalWon}</div>
         </div>
-        {/* V3 Game Area */}
-        <div style={{position:"relative",flex:1,overflow:"auto",background:"#06101E"}}>
-        <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"20px 20px",animation:swShowJackpot?"shake 0.5s ease":"none"}}>
+
+        <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"0 20px",animation:swShowJackpot?"shake 0.5s ease":"none"}}>
 
           {swPhase === "intro" && (
             <div style={{textAlign:"center",animation:"fadeIn 0.5s ease"}}>
@@ -24330,95 +23751,82 @@ gameSoundsMuted.current = false;addGameChat("Announcer","HIGHER OR LOWER! Build 
               <div style={{fontSize:11,color:C.text3,marginBottom:24}}>{swBonusRound ? "Bonus round completed!" : (swTotalWon > 300 ? "So close to the bonus round!" : "Spin again for another shot!")}</div>
               <div style={{display:"flex",gap:12,justifyContent:"center"}}>
                 <div onClick={() => swStartGame()} style={{padding:"12px 28px",borderRadius:12,cursor:"pointer",background:C.gold + "15",border:"1px solid " + C.gold + "30",color:C.gold,fontSize:13,fontWeight:800}}>{"🔄"} Play Again</div>
-                <div onClick={() => { setSelectedGame(null); setSwPhase(null); setGameActive(null); }} style={{padding:"12px 28px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid " + C.border,color:C.text3,fontSize:13,fontWeight:800}}>Exit</div>
+                <div onClick={() => { setSelectedGame(null); setSwPhase(null); }} style={{padding:"12px 28px",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid " + C.border,color:C.text3,fontSize:13,fontWeight:800}}>Exit</div>
               </div>
             </div>
           )}
-        </div>
-        {renderGameChatOverlay()}
         </div>
       </div>
     );
   };
 
   // Puff Lock-In
-  // ═══ BLE DEVICE CONNECT POPUP ═══
+  // ═══ BLE DEVICE HUB — Multi-Device Connect Popup ═══
   const renderBlePopup = () => {
     if(!showBlePopup) return null;
-    const devices = [
-      {name:"Cali Clear S2",model:"CC S2",battery:"87%",emoji:"📱",connected:bleConnected},
-      {name:"Cali Clear S1",model:"CC S1",battery:"--",emoji:"📱",connected:false},
-    ];
+    const SLOT_COLORS = ["#00E5FF","#60A5FA","#FFD93D","#FF6B8A"];
+    const SLOT_LABELS = ["P1","P2","P3","P4"];
+    const connectedCount = bleDevices.filter(d=>d.connected).length;
     return (
-      <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:260,display:"flex",alignItems:"center",justifyContent:"center"}}>
-        <div onClick={()=>setShowBlePopup(false)} style={{position:"absolute",inset:0,background:"rgba(5,5,16,0.85)",backdropFilter:"blur(10px)"}}/>
-        <div style={{position:"relative",width:"88%",maxWidth:340,
-          background:`radial-gradient(ellipse at 50% 20%, rgba(0,229,255,0.06) 0%, transparent 50%), linear-gradient(180deg, #06101E 0%, #0c1a38 50%, #102240 100%)`,
-          borderRadius:22,border:`1px solid ${C.border2}`,padding:"20px 18px",animation:"fadeIn 0.3s ease",
-        }}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
-            <div>
-              <div style={{fontSize:14,fontWeight:900,color:C.text}}>Connect Device</div>
-              <div style={{fontSize:9,color:C.text3,marginTop:2}}>{deviceActivated ? "Connect for 100% rewards" : "Connect to activate your Arena"}</div>
-            </div>
-            <div onClick={()=>setShowBlePopup(false)} style={{width:28,height:28,borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",background:`rgba(255,255,255,0.06)`,border:`1px solid ${C.border}`,fontSize:12,color:C.text3}}>✕</div>
+      <div style={{position:"fixed",inset:0,zIndex:500,display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(0,0,0,0.7)",backdropFilter:"blur(12px)"}}>
+        <div style={{width:"90%",maxWidth:380,borderRadius:20,padding:20,background:"rgba(6,16,30,0.95)",border:"1px solid rgba(255,255,255,0.08)",boxShadow:"0 20px 60px rgba(0,0,0,0.5)"}}>
+          {/* Header */}
+          <div style={{textAlign:"center",marginBottom:16}}>
+            <div style={{fontSize:22,fontWeight:900,letterSpacing:2,background:"linear-gradient(135deg, #00E5FF, #C084FC)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>DEVICE HUB</div>
+            <div style={{fontSize:10,color:"rgba(232,235,246,0.4)",marginTop:4}}>Connect up to 4 Cali Clear devices</div>
           </div>
 
-          {/* Status */}
-          <div style={{padding:"8px 12px",borderRadius:10,marginBottom:12,display:"flex",alignItems:"center",gap:8,
-            background:bleConnected?`${C.green}08`:`${C.orange}06`,border:`1px solid ${bleConnected?C.green+"20":C.orange+"15"}`,
-          }}>
-            <div style={{width:8,height:8,borderRadius:"50%",background:bleConnected?C.green:C.orange,animation:bleConnected?"":"pulse 1.5s infinite"}}/>
-            <div style={{fontSize:10,fontWeight:700,color:bleConnected?C.green:C.orange}}>{bleConnected?"Connected":"Not Connected"}</div>
-          </div>
+          {/* 4 Device Slots */}
+          {[0,1,2,3].map(slot => {
+            const dev = bleDevices.find(d => d.slot === slot);
+            const isConnected = dev && dev.connected;
+            const playerName = partyPlayerNames[slot] || ("Player " + (slot+1));
+            const color = SLOT_COLORS[slot];
+            return (
+              <div key={slot} style={{padding:"10px 14px",borderRadius:14,marginBottom:8,
+                background:isConnected ? color+"10" : "rgba(255,255,255,0.02)",
+                border:"1px solid "+(isConnected ? color+"30" : "rgba(255,255,255,0.05)"),
+                display:"flex",alignItems:"center",gap:10}}>
+                {/* Status dot */}
+                <div style={{width:10,height:10,borderRadius:"50%",background:isConnected?color:"rgba(255,255,255,0.15)",
+                  boxShadow:isConnected?"0 0 8px "+color+"60":"none",flexShrink:0}}/>
+                {/* Info */}
+                <div style={{flex:1}}>
+                  <div style={{display:"flex",alignItems:"center",gap:6}}>
+                    <span style={{fontSize:11,fontWeight:800,color:isConnected?color:"rgba(232,235,246,0.4)"}}>{SLOT_LABELS[slot]}</span>
+                    <span style={{fontSize:11,fontWeight:600,color:isConnected?"rgba(232,235,246,0.8)":"rgba(232,235,246,0.3)"}}>
+                      {isConnected ? playerName : "Empty"}
+                    </span>
+                  </div>
+                  {isConnected && (
+                    <div style={{fontSize:8,color:"rgba(232,235,246,0.3)",marginTop:2}}>{dev.deviceName || "Cali Clear"}</div>
+                  )}
+                </div>
+                {/* Action button */}
+                {isConnected ? (
+                  <div data-btn="true" onClick={()=>disconnectBleSlot(slot)} style={{touchAction:"none",padding:"6px 12px",borderRadius:8,cursor:"pointer",background:"rgba(255,50,50,0.1)",border:"1px solid rgba(255,50,50,0.2)",fontSize:9,fontWeight:700,color:"#FF6B6B"}}>Disconnect</div>
+                ) : (
+                  <div data-btn="true" onClick={()=>{if(!bleScanning)connectBleSlot(slot);}} style={{touchAction:"none",padding:"6px 12px",borderRadius:8,cursor:"pointer",background:color+"12",border:"1px solid "+color+"25",fontSize:9,fontWeight:700,color:color}}>
+                    {bleScanning ? "Scanning..." : "Connect"}
+                  </div>
+                )}
+              </div>
+            );
+          })}
 
-          {/* Device list */}
-          <div style={{fontSize:8,fontWeight:700,color:C.text3,letterSpacing:1,marginBottom:6}}>DEVICES</div>
-          {devices.map((d,i)=>(
-            <div key={i} onClick={()=>{
-              if(!d.connected){
-                playFx("select");
-                connectBle();
-              } else {
-                disconnectBle();
+          {/* Summary */}
+          <div style={{textAlign:"center",marginTop:12,padding:"8px 0",borderRadius:10,background:"rgba(255,255,255,0.02)"}}>
+            <div style={{fontSize:10,color:"rgba(232,235,246,0.5)"}}>
+              {connectedCount === 0
+                ? "No devices connected \u2014 tap Connect to start"
+                : connectedCount + " device" + (connectedCount>1?"s":"") + " connected \u2014 " + connectedCount + " player" + (connectedCount>1?"s":"")
               }
-            }} style={{
-              display:"flex",alignItems:"center",gap:10,padding:"10px 12px",borderRadius:12,marginBottom:6,cursor:"pointer",
-              background:d.connected?`${C.green}08`:`rgba(255,255,255,0.02)`,border:`1px solid ${d.connected?C.green+"20":C.border}`,
-            }}>
-              <div style={{width:36,height:36,borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",background:`${C.cyan}10`,border:`1px solid ${C.cyan}15`,fontSize:18}}>{d.emoji}</div>
-              <div style={{flex:1}}>
-                <div style={{fontSize:11,fontWeight:700,color:d.connected?C.green:C.text}}>{d.name}</div>
-                <div style={{fontSize:8,color:C.text3}}>{d.model} · Battery: {d.battery}</div>
-              </div>
-              {d.connected ? (
-                <div style={{fontSize:8,fontWeight:700,color:C.green,padding:"3px 8px",borderRadius:6,background:`${C.green}12`}}>✓ Active</div>
-              ) : (
-                <div style={{fontSize:8,fontWeight:700,color:C.cyan,padding:"3px 8px",borderRadius:6,background:`${C.cyan}10`,border:`1px solid ${C.cyan}20`}}>Connect</div>
-              )}
             </div>
-          ))}
+            <div style={{fontSize:8,color:"rgba(232,235,246,0.25)",marginTop:2}}>Each person holds their own Cali Clear as a controller</div>
+          </div>
 
-          {/* Scan / Disconnect buttons */}
-          {!bleConnected ? (
-            <div onClick={()=>{playFx("tap");connectBle();}} style={{
-              padding:"10px 0",borderRadius:12,textAlign:"center",cursor:"pointer",marginTop:6,
-              background:bleScanning?`${C.cyan}12`:`rgba(255,255,255,0.03)`,border:`1px solid ${bleScanning?C.cyan+"30":C.border}`,
-            }}>
-              <div style={{fontSize:11,fontWeight:700,color:bleScanning?C.cyan:C.text2}}>
-                {bleScanning?"🔄 Scanning...":"🔍 Scan for Devices"}
-              </div>
-            </div>
-          ) : (
-            <div onClick={()=>{playFx("tap");disconnectBle();notify("Device disconnected",C.orange);}} style={{
-              padding:"10px 0",borderRadius:12,textAlign:"center",cursor:"pointer",marginTop:6,
-              background:`${C.red}08`,border:`1px solid ${C.red}20`,
-            }}>
-              <div style={{fontSize:11,fontWeight:700,color:C.red}}>
-                Disconnect Device
-              </div>
-            </div>
-          )}
+          {/* Close button */}
+          <div data-btn="true" onClick={()=>setShowBlePopup(false)} style={{touchAction:"none",textAlign:"center",marginTop:12,padding:"10px 0",borderRadius:12,cursor:"pointer",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.08)",fontSize:12,fontWeight:700,color:"rgba(232,235,246,0.6)"}}>Close</div>
         </div>
       </div>
     );
