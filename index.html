@@ -41,7 +41,7 @@
         );
         const transformed = Babel.transform(code, {
           presets: ['react'],
-          filename: 'moodlab-arena-v6.jsx',
+          filename: 'moodlab-arena-v7.jsx',
         }).code;
         const fn = new Function('React', 'ReactDOM', transformed + '\nreturn MoodLabArena;');
         const App = fn(React, ReactDOM);
