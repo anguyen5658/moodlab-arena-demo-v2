@@ -2,7 +2,7 @@
 
 Write comprehensive tests for: $ARGUMENTS
 
-Use Playwright to:
+Use Playwright MCP and headless Chrome to:
 
 1. Navigate to localhost:8000 (monolith version) and take a full-page screenshot
 2. Navigate to localhost:8100 (refactored) and take a full-page screenshot
