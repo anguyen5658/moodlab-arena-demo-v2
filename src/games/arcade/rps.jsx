@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { C } from '../../constants/colors.js';
 import { useApp } from '../../context/AppContext.jsx';
+import GameHeader from '../../components/GameHeader.jsx';
 import UniversalPuffBar from '../../components/UniversalPuffBar.jsx';
 import GameChatOverlay from '../../components/GameChatOverlay.jsx';
 
@@ -615,35 +616,18 @@ export default function RPSGame() {
         <div key={p.id} style={{ position: 'absolute', left: p.x + '%', top: p.y + '%', width: p.size, height: p.size * 0.6, background: p.color, borderRadius: 1, transform: `rotate(${p.rot}deg)`, zIndex: 210, pointerEvents: 'none', animation: 'confettiFall 1.5s ease-out forwards' }} />
       ))}
 
-      {/* Header */}
-      <div style={{ position: 'relative', zIndex: 50, flexShrink: 0, background: 'rgba(6,16,30,0.98)', borderBottom: '1px solid rgba(192,132,252,0.12)' }}>
-        {/* Row 1: brand + BLE + coins */}
-        <div style={{ padding: '6px 12px 2px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ fontSize: 8, fontWeight: 600, color: 'rgba(255,255,255,0.4)', letterSpacing: 1 }}><span style={{ fontWeight: 900, letterSpacing: 2 }}>MOOD LAB</span></div>
-          <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
-            <div onClick={() => { playFx('tap'); setShowBlePopup(true); }} data-btn="true" style={{ display: 'flex', alignItems: 'center', gap: 3, padding: '2px 8px', borderRadius: 100, cursor: 'pointer', touchAction: 'none', background: bleConnected ? 'rgba(52,211,153,0.1)' : 'rgba(251,146,60,0.1)', border: `1px solid ${bleConnected ? 'rgba(52,211,153,0.25)' : 'rgba(251,146,60,0.25)'}` }}>
-              <div style={{ width: 5, height: 5, borderRadius: '50%', background: bleConnected ? C.green : C.orange }} />
-              <span style={{ fontSize: 8, fontWeight: 700, color: bleConnected ? C.green : C.orange }}>{bleConnected ? 'Puff' : 'Connect'}</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 2, padding: '2px 7px', borderRadius: 100, background: 'rgba(255,217,61,0.06)', border: '1px solid rgba(255,217,61,0.12)' }}>
-              <span style={{ fontSize: 9 }}>🪙</span><span style={{ fontSize: 10, fontWeight: 800, color: C.gold, fontFamily: 'monospace' }}>{coins.toLocaleString()}</span>
-            </div>
-          </div>
-        </div>
-        {/* Row 2: back + title + score */}
-        <div style={{ padding: '2px 12px 2px', display: 'flex', alignItems: 'center', gap: 6 }}>
-          <div onClick={exitGame} data-btn="true" style={{ display: 'inline-flex', alignItems: 'center', gap: 3, cursor: 'pointer', padding: '3px 8px', borderRadius: 8, touchAction: 'none', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', flexShrink: 0 }}>
-            <span style={{ fontSize: 10, color: C.text2 }}>←</span>
-            <span style={{ fontSize: 9, fontWeight: 700, color: C.text2 }}>Back</span>
-          </div>
+      <GameHeader
+        backTo={exitGame}
+        backLabel="Back"
+        accent={C.purple}
+        mid={
           <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
             <span style={{ fontSize: 10, fontWeight: 800, color: C.purple }}>🥊 PUFF DOJO</span>
             <span style={{ fontSize: 9, fontWeight: 700, color: C.cyan }}>You: {score.you}</span>
             <span style={{ fontSize: 9, fontWeight: 700, color: C.red }}>AI: {score.ai}</span>
           </div>
-        </div>
-        {/* Row 3: round indicators */}
-        <div style={{ padding: '2px 12px 4px' }}>
+        }
+        row3={
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 4 }}>
             <span style={{ fontSize: 8, color: C.text3, marginRight: 4 }}>First to 3</span>
             {[0, 1, 2, 3, 4].map(i => {
@@ -657,8 +641,8 @@ export default function RPSGame() {
             })}
             {streak >= 2 && <span style={{ fontSize: 8, fontWeight: 800, color: C.green, marginLeft: 4 }}>x{streak}</span>}
           </div>
-        </div>
-      </div>
+        }
+      />
 
       {/* Game area */}
       <div style={{ position: 'relative', flex: 1, overflow: 'hidden' }}

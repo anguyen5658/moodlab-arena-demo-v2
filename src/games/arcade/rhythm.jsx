@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { C } from '../../constants/colors.js';
 import { useApp } from '../../context/AppContext.jsx';
+import GameHeader from '../../components/GameHeader.jsx';
 
 const RP_LANES = ['🎸', '🥁', '🎹', '🎷'];
 const RP_LANE_COLORS = [C.red, '#00E5FF', C.gold, C.purple];
@@ -346,29 +347,27 @@ export default function RhythmPuff() {
       {blinker && <div style={{ position: 'absolute', inset: 0, zIndex: 195, pointerEvents: 'none', background: 'radial-gradient(circle,rgba(255,0,200,0.15),rgba(200,50,255,0.08))', animation: 'pulse 0.5s infinite' }} />}
 
       {/* Header */}
-      <div style={{ position: 'relative', zIndex: 50, flexShrink: 0, background: 'rgba(6,16,30,0.98)', borderBottom: `1px solid ${blinker ? 'rgba(255,50,200,0.2)' : 'rgba(160,50,220,0.15)'}` }}>
-        <div style={{ padding: '6px 12px 2px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontSize: 8, fontWeight: 800, color: 'rgba(255,255,255,0.6)', letterSpacing: 1 }}>Powered by <span style={{ letterSpacing: 2 }}>MOOD LAB</span></span>
-        </div>
-        <div style={{ padding: '2px 12px 2px', display: 'flex', alignItems: 'center', gap: 6 }}>
-          <div data-back="true" onClick={() => { cleanup(); navigate('/arcade'); }} style={{ display: 'inline-flex', alignItems: 'center', gap: 3, cursor: 'pointer', padding: '3px 8px', borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: `1px solid ${C.border}`, flexShrink: 0 }}>
-            <span style={{ fontSize: 10, color: C.text2 }}>←</span>
-            <span style={{ fontSize: 9, fontWeight: 700, color: C.text2 }}>Back</span>
-          </div>
+      <GameHeader
+        backTo={() => { cleanup(); navigate('/arcade'); }}
+        backLabel="Arcade"
+        accent={blinker ? '#FF32C8' : C.purple}
+        mid={
           <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
             <span style={{ fontSize: 10, fontWeight: 800, color: blinker ? C.pink : C.purple }}>🎵 RHYTHM PUFF</span>
             <span style={{ fontSize: 9, fontWeight: 700, color: C.gold }}>{score.toLocaleString()}pts</span>
           </div>
-        </div>
-        <div style={{ padding: '2px 12px 4px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-          <span style={{ fontSize: 10, fontWeight: 800, color: combo >= 10 ? C.orange : combo >= 5 ? C.gold : C.text, animation: combo >= 10 ? 'countPulse 0.5s infinite' : 'none' }}>
-            {isPlaying ? `${combo}x Combo ${comboFire}` : isIntro ? 'Get Ready...' : 'Game Over'}
-          </span>
-          {mult > 1 && <span style={{ fontSize: 8, fontWeight: 900, color: C.cyan, animation: 'countPulse 0.5s infinite' }}>x{mult} MULT</span>}
-          {isPlaying && <span style={{ fontSize: 9, fontWeight: 700, color: misses >= 12 ? C.red : misses >= 8 ? C.orange : C.text3 }}>{misses}/15 miss</span>}
-          {blinker && <span style={{ fontSize: 8, fontWeight: 900, color: C.pink, animation: 'countPulse 0.3s infinite' }}>FEVER</span>}
-        </div>
-      </div>
+        }
+        row3={
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+            <span style={{ fontSize: 10, fontWeight: 800, color: combo >= 10 ? C.orange : combo >= 5 ? C.gold : C.text, animation: combo >= 10 ? 'countPulse 0.5s infinite' : 'none' }}>
+              {isPlaying ? `${combo}x Combo ${comboFire}` : isIntro ? 'Get Ready...' : 'Game Over'}
+            </span>
+            {mult > 1 && <span style={{ fontSize: 8, fontWeight: 900, color: C.cyan, animation: 'countPulse 0.5s infinite' }}>x{mult} MULT</span>}
+            {isPlaying && <span style={{ fontSize: 9, fontWeight: 700, color: misses >= 12 ? C.red : misses >= 8 ? C.orange : C.text3 }}>{misses}/15 miss</span>}
+            {blinker && <span style={{ fontSize: 8, fontWeight: 900, color: C.pink, animation: 'countPulse 0.3s infinite' }}>FEVER</span>}
+          </div>
+        }
+      />
 
       {/* Game area */}
       <div style={{ position: 'relative', flex: 1, overflow: 'hidden' }}>

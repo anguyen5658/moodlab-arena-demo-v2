@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { C } from '../../constants/colors.js';
 import { useApp } from '../../context/AppContext.jsx';
+import GameHeader from '../../components/GameHeader.jsx';
 
 const PL_DPR = typeof window !== 'undefined' ? Math.min(window.devicePixelRatio || 1, 2) : 1;
 const PL_TARGETS = [1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 5.0];
@@ -350,29 +351,30 @@ export default function PuffLimbo() {
       ))}
 
       {/* Header */}
-      <div style={{ position: 'relative', zIndex: 50, flexShrink: 0, background: 'rgba(6,16,30,0.98)', borderBottom: `1px solid ${dangerZone ? 'rgba(239,68,68,0.15)' : 'rgba(249,115,22,0.1)'}` }}>
-        <div style={{ padding: '6px 12px 2px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div data-back="true" onClick={() => { if (guardRef.current) guardRef.current.v = false; if (plPuffInterval.current) clearInterval(plPuffInterval.current); navigate('/arcade'); }} style={{ display: 'inline-flex', alignItems: 'center', gap: 3, cursor: 'pointer', padding: '3px 8px', borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', touchAction: 'none' }}>
-            <span style={{ fontSize: 10, color: C.text2 }}>←</span>
-            <span style={{ fontSize: 9, fontWeight: 700, color: C.text2 }}>Back</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      <GameHeader
+        backTo={() => { if (guardRef.current) guardRef.current.v = false; if (plPuffInterval.current) clearInterval(plPuffInterval.current); navigate('/arcade'); }}
+        backLabel="Arcade"
+        accent={C.orange}
+        mid={
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
             <span style={{ fontSize: 10, fontWeight: 800, color: dangerZone ? C.red : C.orange }}>🎪 PUFF LIMBO</span>
             <span style={{ fontSize: 9, fontWeight: 700, color: C.gold }}>R{plRound + 1}/8</span>
             <span style={{ fontSize: 9, fontWeight: 700, color: C.text3 }}>{plPlayers} alive</span>
           </div>
-        </div>
-        <div style={{ padding: '2px 12px 4px', textAlign: 'center' }}>
-          <span style={{ fontSize: 10, fontWeight: 800, color: plPhase === 'puffing' ? (plPuffTime >= plTarget ? C.green : C.orange) : plPhase === 'eliminated' ? C.red : plPhase === 'champion' ? C.gold : C.text3 }}>
-            {plPhase === 'intro' ? 'Entering arena...' :
-              plPhase === 'ready' ? `Target: ${plTarget.toFixed(1)}s ±0.3s` :
-              plPhase === 'puffing' ? (plPuffTime >= plTarget ? 'RELEASE! TARGET REACHED' : `Holding... ${plPuffTime.toFixed(1)}s`) :
-              plPhase === 'result' ? 'SURVIVED!' :
-              plPhase === 'eliminated' ? 'ELIMINATED!' :
-              plPhase === 'champion' ? 'CHAMPION!' : commentary}
-          </span>
-        </div>
-      </div>
+        }
+        row3={
+          <div style={{ textAlign: 'center' }}>
+            <span style={{ fontSize: 10, fontWeight: 800, color: plPhase === 'puffing' ? (plPuffTime >= plTarget ? C.green : C.orange) : plPhase === 'eliminated' ? C.red : plPhase === 'champion' ? C.gold : C.text3 }}>
+              {plPhase === 'intro' ? 'Entering arena...' :
+                plPhase === 'ready' ? `Target: ${plTarget.toFixed(1)}s ±0.3s` :
+                plPhase === 'puffing' ? (plPuffTime >= plTarget ? 'RELEASE! TARGET REACHED' : `Holding... ${plPuffTime.toFixed(1)}s`) :
+                plPhase === 'result' ? 'SURVIVED!' :
+                plPhase === 'eliminated' ? 'ELIMINATED!' :
+                plPhase === 'champion' ? 'CHAMPION!' : commentary}
+            </span>
+          </div>
+        }
+      />
 
       {/* Canvas */}
       <div style={{ position: 'relative', flex: 1, overflow: 'hidden' }}>

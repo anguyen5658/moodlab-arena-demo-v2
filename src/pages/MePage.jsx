@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { C, GLASS_CARD } from '../constants/colors.js';
 import { LOYALTY_TIERS, LOYALTY_BADGES, DAILY_CHALLENGES, SHOP_ITEMS } from '../constants/loyalty.js';
 import { useApp } from '../context/AppContext.jsx';
+import AppHeader from '../components/AppHeader.jsx';
 
 export default function MePage() {
   const {
@@ -33,6 +34,7 @@ export default function MePage() {
 
   return (
     <div style={{ height: '100%', overflowY: 'auto', background: C.bg, paddingBottom: 100 }}>
+      <AppHeader />
       <div style={{ padding: '12px 14px', position: 'relative' }}>
         {/* Profile header */}
         <div style={{ padding: 20, borderRadius: 22, marginBottom: 16, position: 'relative', overflow: 'hidden', background: `linear-gradient(145deg, rgba(10,14,28,1), ${tier.color}10, rgba(10,14,28,1))`, border: `1px solid ${tier.color}30`, boxShadow: `0 0 40px ${tier.color}12` }}>

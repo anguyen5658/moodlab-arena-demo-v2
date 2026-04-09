@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { C } from '../../constants/colors.js';
 import { useApp } from '../../context/AppContext.jsx';
+import GameHeader from '../../components/GameHeader.jsx';
 
 const TOW_COMMENTS_PULL = ['PULL! 💪', 'Keep going! 🔥', 'More power! ⚡', 'HARDER! 😤', 'HEAVE! 🏋️', "Don't stop! 🫁", 'GRIP IT! 🤜', 'YANK IT! 💥'];
 const TOW_COMMENTS_WIN = ['CHAMPIONS! The crowd goes INSANE! 🏆🎉', 'They FELL in the MUD! 😂🛁', 'DOMINANT! Your team is unstoppable! 💪', '30 puffs in 10 seconds! Your lungs are ELITE 🏆'];
@@ -402,33 +403,28 @@ export default function TugOfWar() {
         <div key={p.id} style={{ position: 'absolute', left: p.x + '%', top: p.y + '%', width: p.size, height: p.size * 0.6, background: p.color, borderRadius: 1, transform: `rotate(${p.rot}deg)`, zIndex: 210, pointerEvents: 'none', animation: 'confettiFall 1.5s ease-out forwards' }} />
       ))}
 
-      {/* Header */}
-      <div style={{ position: 'relative', zIndex: 50, flexShrink: 0, background: 'rgba(6,16,30,0.98)', borderBottom: `1px solid ${isSuddenDeath ? 'rgba(255,50,50,0.2)' : 'rgba(96,165,250,0.1)'}` }}>
-        <div style={{ padding: '6px 12px 2px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ fontSize: 8, fontWeight: 600, color: 'rgba(255,255,255,0.4)', letterSpacing: 1 }}>
-            <span style={{ fontWeight: 800, color: 'rgba(255,255,255,0.6)' }}>Powered by <span style={{ fontWeight: 900, letterSpacing: 2 }}>MOOD LAB</span></span>
-          </div>
-        </div>
-        <div style={{ padding: '2px 12px 2px', display: 'flex', alignItems: 'center', gap: 6 }}>
-          <div data-back="true" onClick={() => { cleanup(); navigate('/arcade'); }} style={{ display: 'inline-flex', alignItems: 'center', gap: 3, cursor: 'pointer', padding: '3px 8px', borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: `1px solid ${C.border}`, flexShrink: 0 }}>
-            <span style={{ fontSize: 10, color: C.text2 }}>←</span>
-            <span style={{ fontSize: 9, fontWeight: 700, color: C.text2 }}>Back</span>
-          </div>
+      <GameHeader
+        backTo={() => { cleanup(); navigate('/arcade'); }}
+        backLabel="Arcade"
+        accent={isSuddenDeath ? C.red : '#60A5FA'}
+        mid={
           <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
             <span style={{ fontSize: 10, fontWeight: 800, color: isSuddenDeath ? C.red : C.blue }}>💪 TUG OF WAR</span>
             <span style={{ fontSize: 9, fontWeight: 700, color: C.cyan }}>You:{puffs}</span>
             <span style={{ fontSize: 9, fontWeight: 700, color: C.red }}>AI:{aiPuffs}</span>
           </div>
-        </div>
-        <div style={{ padding: '2px 12px 4px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-          <span style={{ fontSize: 10, fontWeight: 800, color: timerDanger ? C.red : C.gold, animation: timerDanger ? 'countPulse 0.5s infinite' : 'none' }}>
-            {isPlaying ? (timer + 's') : phase === 'intro' ? 'Preparing...' : 'Game Over'}
-          </span>
-          {isPlaying && <span style={{ fontSize: 9, fontWeight: 700, color: youWinning ? C.cyan : C.red }}>Rope: {Math.round(position)}%</span>}
-          {surge && <span style={{ fontSize: 8, fontWeight: 900, color: C.orange, animation: 'countPulse 0.5s infinite' }}>3x SURGE</span>}
-          {isSuddenDeath && <span style={{ fontSize: 8, fontWeight: 900, color: C.red, animation: 'countPulse 0.3s infinite' }}>SUDDEN DEATH</span>}
-        </div>
-      </div>
+        }
+        row3={
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+            <span style={{ fontSize: 10, fontWeight: 800, color: timerDanger ? C.red : C.gold, animation: timerDanger ? 'countPulse 0.5s infinite' : 'none' }}>
+              {isPlaying ? (timer + 's') : phase === 'intro' ? 'Preparing...' : 'Game Over'}
+            </span>
+            {isPlaying && <span style={{ fontSize: 9, fontWeight: 700, color: youWinning ? C.cyan : C.red }}>Rope: {Math.round(position)}%</span>}
+            {surge && <span style={{ fontSize: 8, fontWeight: 900, color: C.orange, animation: 'countPulse 0.5s infinite' }}>3x SURGE</span>}
+            {isSuddenDeath && <span style={{ fontSize: 8, fontWeight: 900, color: C.red, animation: 'countPulse 0.3s infinite' }}>SUDDEN DEATH</span>}
+          </div>
+        }
+      />
 
       {/* Game area */}
       <div style={{ position: 'relative', flex: 1, overflow: 'hidden' }}>

@@ -11,6 +11,9 @@ html, body {
   overflow: hidden;
   height: 100%;
   width: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 input::placeholder { color: #6E6A95; }
 input[type=number]::-webkit-inner-spin-button,

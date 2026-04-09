@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { C } from '../../constants/colors.js';
 import { useApp } from '../../context/AppContext.jsx';
+import GameHeader from '../../components/GameHeader.jsx';
 
 const BD_DPR = typeof window !== 'undefined' ? Math.min(window.devicePixelRatio || 1, 2) : 1;
 const BD_SONGS = [
@@ -610,25 +611,26 @@ export default function BeatDrop() {
       {confettiParticles.map(p => <div key={p.id} style={{ position: 'absolute', left: p.x + '%', top: p.y + '%', width: p.size, height: p.size * 0.6, background: p.color, borderRadius: 1, transform: `rotate(${p.rot}deg)`, zIndex: 210, pointerEvents: 'none', animation: 'confettiFall 1.5s ease-out forwards' }} />)}
 
       {/* Header */}
-      <div style={{ position: 'relative', zIndex: 50, flexShrink: 0, background: 'rgba(6,16,30,0.98)', borderBottom: '1px solid rgba(255,77,141,0.1)' }}>
-        <div style={{ padding: '4px 12px 2px', display: 'flex', alignItems: 'center', gap: 6 }}>
-          <div data-back="true" onClick={() => { cleanup(); navigate('/arcade'); }} style={{ display: 'inline-flex', alignItems: 'center', gap: 3, cursor: 'pointer', padding: '3px 8px', borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: `1px solid rgba(255,255,255,0.1)`, flexShrink: 0 }}>
-            <span style={{ fontSize: 10, color: C.text2 }}>←</span>
-            <span style={{ fontSize: 9, fontWeight: 700, color: C.text2 }}>Back</span>
-          </div>
+      <GameHeader
+        backTo={() => { cleanup(); navigate('/arcade'); }}
+        backLabel="Arcade"
+        accent="#FF4D8D"
+        mid={
           <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
             <span style={{ fontSize: 10, fontWeight: 800, color: C.pink }}>🎧 BEAT DROP</span>
             <span style={{ fontSize: 9, fontWeight: 700, color: C.gold }}>{yourScore}pts</span>
             <span style={{ fontSize: 9, fontWeight: 700, color: C.text3 }}>#{yourRank}</span>
           </div>
-        </div>
-        <div style={{ padding: '2px 12px 4px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-          <span style={{ fontSize: 10, fontWeight: 800, color: C.pink }}>Round {round + 1}/4</span>
-          <span style={{ fontSize: 9, fontWeight: 700, color: song.color || C.purple }}>{song.name}</span>
-          {isBuilding && <span style={{ fontSize: 8, fontWeight: 700, color: beatIntensity > 0.8 ? C.gold : C.purple, animation: beatIntensity > 0.7 ? 'countPulse 0.5s infinite' : 'none' }}>{Math.round(beatIntensity * 100)}%</span>}
-          {isDropped && <span style={{ fontSize: 8, fontWeight: 900, color: C.gold, animation: 'countPulse 0.3s infinite' }}>DROP!</span>}
-        </div>
-      </div>
+        }
+        row3={
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+            <span style={{ fontSize: 10, fontWeight: 800, color: C.pink }}>Round {round + 1}/4</span>
+            <span style={{ fontSize: 9, fontWeight: 700, color: song.color || C.purple }}>{song.name}</span>
+            {isBuilding && <span style={{ fontSize: 8, fontWeight: 700, color: beatIntensity > 0.8 ? C.gold : C.purple, animation: beatIntensity > 0.7 ? 'countPulse 0.5s infinite' : 'none' }}>{Math.round(beatIntensity * 100)}%</span>}
+            {isDropped && <span style={{ fontSize: 8, fontWeight: 900, color: C.gold, animation: 'countPulse 0.3s infinite' }}>DROP!</span>}
+          </div>
+        }
+      />
 
       {/* Game area */}
       <div style={{ position: 'relative', flex: 1, overflow: 'hidden' }}>

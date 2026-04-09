@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { C } from '../../constants/colors.js';
 import { useApp } from '../../context/AppContext.jsx';
+import GameHeader from '../../components/GameHeader.jsx';
 
 const HOOK_FISH = [
   { name: 'Blue Snap', emoji: '🐟', rarity: 'common', pts: 10, resistance: 0.8, instability: 0.3, tensionRate: 1.0, escapeRate: 0.8, color: C.cyan },
@@ -432,50 +433,49 @@ export default function Hooked() {
       ))}
 
       {/* Header */}
-      <div style={{ position: 'relative', zIndex: 50, flexShrink: 0, background: 'rgba(6,16,30,0.98)', borderBottom: '1px solid rgba(0,150,255,0.1)' }}>
-        <div style={{ padding: '6px 12px 2px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontSize: 8, fontWeight: 800, color: 'rgba(255,255,255,0.6)', letterSpacing: 1 }}>Powered by MOOD LAB</span>
-        </div>
-        <div style={{ padding: '2px 12px 2px', display: 'flex', alignItems: 'center', gap: 6 }}>
-          <div data-back="true" onClick={() => { cleanup(); navigate('/arcade'); }} style={{ display: 'inline-flex', alignItems: 'center', gap: 3, cursor: 'pointer', padding: '3px 8px', borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: `1px solid ${C.border}`, flexShrink: 0 }}>
-            <span style={{ fontSize: 10, color: C.text2 }}>←</span><span style={{ fontSize: 9, fontWeight: 700, color: C.text2 }}>Back</span>
-          </div>
+      <GameHeader
+        backTo={() => { cleanup(); navigate('/arcade'); }}
+        backLabel="Arcade"
+        accent={C.cyan}
+        mid={
           <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
             <span style={{ fontSize: 10, fontWeight: 800, color: C.cyan }}>🎣 HOOKED</span>
             <span style={{ fontSize: 9, fontWeight: 700, color: C.text3 }}>{catches}/5 caught</span>
             <span style={{ fontSize: 9, fontWeight: 700, color: snaps >= 2 ? C.red : C.text3 }}>{snaps}/3 snaps</span>
           </div>
-        </div>
-        <div style={{ padding: '2px 12px 4px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
-            <span style={{ fontSize: 9, fontWeight: 800, color: C.gold }}>{score} pts</span>
-            {combo > 0 && <span style={{ fontSize: 9, fontWeight: 800, color: C.green }}>COMBO x{combo}</span>}
-            <span style={{ fontSize: 8, color: C.text3 }}>Best: {bestScore}</span>
+        }
+        row3={
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
+              <span style={{ fontSize: 9, fontWeight: 800, color: C.gold }}>{score} pts</span>
+              {combo > 0 && <span style={{ fontSize: 9, fontWeight: 800, color: C.green }}>COMBO x{combo}</span>}
+              <span style={{ fontSize: 8, color: C.text3 }}>Best: {bestScore}</span>
+            </div>
+            {isReeling && (
+              <>
+                <div style={{ marginBottom: 2 }}>
+                  <div style={{ height: 5, borderRadius: 3, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
+                    <div style={{ width: catchProgress + '%', height: '100%', borderRadius: 3, transition: 'width 0.05s', background: `linear-gradient(90deg,${C.green}80,${C.green})` }} />
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 1 }}>
+                    <span style={{ fontSize: 7, color: C.green }}>Catch</span>
+                    <span style={{ fontSize: 7, fontWeight: 700, color: catchProgress > 80 ? C.green : C.text3 }}>{Math.round(catchProgress)}%</span>
+                  </div>
+                </div>
+                <div>
+                  <div style={{ height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
+                    <div style={{ width: lineTension + '%', height: '100%', borderRadius: 2, transition: 'width 0.05s', background: lineTension > 70 ? `linear-gradient(90deg,${C.orange},${C.red})` : `linear-gradient(90deg,${C.gold}80,${C.orange})` }} />
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 1 }}>
+                    <span style={{ fontSize: 7, color: lineTension > 70 ? C.red : C.orange }}>Tension</span>
+                    <span style={{ fontSize: 7, fontWeight: 700, color: lineTension > 70 ? C.red : C.text3 }}>{Math.round(lineTension)}%{critTension ? ' DANGER!' : ''}</span>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
-          {isReeling && (
-            <>
-              <div style={{ marginBottom: 2 }}>
-                <div style={{ height: 5, borderRadius: 3, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
-                  <div style={{ width: catchProgress + '%', height: '100%', borderRadius: 3, transition: 'width 0.05s', background: `linear-gradient(90deg,${C.green}80,${C.green})` }} />
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 1 }}>
-                  <span style={{ fontSize: 7, color: C.green }}>Catch</span>
-                  <span style={{ fontSize: 7, fontWeight: 700, color: catchProgress > 80 ? C.green : C.text3 }}>{Math.round(catchProgress)}%</span>
-                </div>
-              </div>
-              <div>
-                <div style={{ height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
-                  <div style={{ width: lineTension + '%', height: '100%', borderRadius: 2, transition: 'width 0.05s', background: lineTension > 70 ? `linear-gradient(90deg,${C.orange},${C.red})` : `linear-gradient(90deg,${C.gold}80,${C.orange})` }} />
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 1 }}>
-                  <span style={{ fontSize: 7, color: lineTension > 70 ? C.red : C.orange }}>Tension</span>
-                  <span style={{ fontSize: 7, fontWeight: 700, color: lineTension > 70 ? C.red : C.text3 }}>{Math.round(lineTension)}%{critTension ? ' DANGER!' : ''}</span>
-                </div>
-              </div>
-            </>
-          )}
-        </div>
-      </div>
+        }
+      />
 
       {/* Game area */}
       <div style={{ position: 'relative', flex: 1, overflow: 'hidden' }}>

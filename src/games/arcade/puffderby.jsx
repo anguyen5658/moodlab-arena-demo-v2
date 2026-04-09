@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { C } from '../../constants/colors.js';
 import { useApp } from '../../context/AppContext.jsx';
+import GameHeader from '../../components/GameHeader.jsx';
 
 const PD_DPR = typeof window !== 'undefined' ? Math.min(window.devicePixelRatio || 1, 2) : 1;
 const PD_HORSE_EMOJIS = ['🐎', '🏇', '🦄', '🐴', '🎠', '🦒'];
@@ -401,23 +402,24 @@ export default function PuffDerby() {
       {confettiParticles.map(p => <div key={p.id} style={{ position: 'absolute', left: p.x + '%', top: p.y + '%', width: p.size, height: p.size * 0.6, background: p.color, borderRadius: 1, transform: `rotate(${p.rot}deg)`, zIndex: 210, pointerEvents: 'none', animation: 'confettiFall 1.5s ease-out forwards' }} />)}
 
       {/* Header */}
-      <div style={{ position: 'relative', zIndex: 50, flexShrink: 0, background: 'rgba(6,16,30,0.98)', borderBottom: '1px solid rgba(34,197,94,0.1)' }}>
-        <div style={{ padding: '4px 12px 2px', display: 'flex', alignItems: 'center', gap: 6 }}>
-          <div data-back="true" onClick={() => { cleanup(); navigate('/arcade'); }} style={{ display: 'inline-flex', alignItems: 'center', gap: 3, cursor: 'pointer', padding: '3px 8px', borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', flexShrink: 0 }}>
-            <span style={{ fontSize: 10, color: C.text2 }}>←</span>
-            <span style={{ fontSize: 9, fontWeight: 700, color: C.text2 }}>Back</span>
-          </div>
+      <GameHeader
+        backTo={() => { cleanup(); navigate('/arcade'); }}
+        backLabel="Arcade"
+        accent={C.green}
+        mid={
           <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
             <span style={{ fontSize: 10, fontWeight: 800, color: C.green }}>🏇 PUFF DERBY</span>
             {phase === 'racing' && <span style={{ fontSize: 9, fontWeight: 700, color: raceTime <= 10 ? C.red : C.gold }}>{raceTime}s</span>}
             {playerHorse !== null && <span style={{ fontSize: 9, fontWeight: 700, color: C.cyan }}>{PD_HORSE_EMOJIS[playerHorse]}</span>}
           </div>
-        </div>
-        <div style={{ padding: '2px 12px 4px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-          <span style={{ fontSize: 10, fontWeight: 800, color: phase === 'racing' ? C.green : phase === 'result' ? (finishOrder.indexOf(playerHorse) === 0 ? C.gold : C.text3) : C.text3 }}>{statusText}</span>
-          {phase === 'racing' && <span style={{ fontSize: 9, color: stamina > 60 ? C.green : stamina > 30 ? C.gold : C.red, fontWeight: 700 }}>STA:{stamina}%</span>}
-        </div>
-      </div>
+        }
+        row3={
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+            <span style={{ fontSize: 10, fontWeight: 800, color: phase === 'racing' ? C.green : phase === 'result' ? (finishOrder.indexOf(playerHorse) === 0 ? C.gold : C.text3) : C.text3 }}>{statusText}</span>
+            {phase === 'racing' && <span style={{ fontSize: 9, color: stamina > 60 ? C.green : stamina > 30 ? C.gold : C.red, fontWeight: 700 }}>STA:{stamina}%</span>}
+          </div>
+        }
+      />
 
       {/* Game area */}
       <div style={{ position: 'relative', flex: 1, overflow: 'hidden' }}>

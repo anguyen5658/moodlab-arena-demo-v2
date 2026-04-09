@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { C } from '../../constants/colors.js';
 import { useApp } from '../../context/AppContext.jsx';
+import GameHeader from '../../components/GameHeader.jsx';
 
 const PP_WIN_SCORE = 5;
 const PP_PADDLE_H = 0.22;
@@ -370,17 +371,11 @@ export default function PuffPong() {
       ))}
 
       {/* Header */}
-      <div style={{ position: 'relative', zIndex: 50, flexShrink: 0, background: 'rgba(6,16,30,0.98)', borderBottom: '1px solid rgba(0,229,255,0.08)' }}>
-        <div style={{ padding: '6px 12px 2px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ fontSize: 8, fontWeight: 600, color: 'rgba(255,255,255,0.4)', letterSpacing: 1 }}>
-            <span style={{ fontWeight: 800, color: 'rgba(255,255,255,0.6)' }}>Powered by <span style={{ fontWeight: 900, letterSpacing: 2 }}>MOOD LAB</span></span>
-          </div>
-        </div>
-        <div style={{ padding: '2px 12px 2px', display: 'flex', alignItems: 'center', gap: 6 }}>
-          <div data-back="true" onClick={() => { cleanup(); navigate('/arcade'); }} style={{ display: 'inline-flex', alignItems: 'center', gap: 3, cursor: 'pointer', padding: '3px 8px', borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: `1px solid ${C.border}`, flexShrink: 0 }}>
-            <span style={{ fontSize: 10, color: C.text2 }}>←</span>
-            <span style={{ fontSize: 9, fontWeight: 700, color: C.text2 }}>Back</span>
-          </div>
+      <GameHeader
+        backTo={() => { cleanup(); navigate('/arcade'); }}
+        backLabel="Arcade"
+        accent={C.cyan}
+        mid={
           <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
             <span style={{ fontSize: 9, fontWeight: 700, color: C.cyan, letterSpacing: 1 }}>YOU</span>
             <span style={{ fontSize: 20, fontWeight: 900, color: C.cyan, fontFamily: 'monospace', textShadow: `0 0 10px ${C.cyan}60` }}>{score.you}</span>
@@ -388,32 +383,23 @@ export default function PuffPong() {
             <span style={{ fontSize: 20, fontWeight: 900, color: '#FF5A5A', fontFamily: 'monospace', textShadow: '0 0 10px rgba(255,90,90,0.4)' }}>{score.ai}</span>
             <span style={{ fontSize: 9, fontWeight: 700, color: '#FF5A5A', letterSpacing: 1 }}>AI</span>
           </div>
-          {rally >= 3 && (
-            <div style={{ padding: '2px 6px', borderRadius: 6, background: rally >= 20 ? 'rgba(255,217,61,0.12)' : rally >= 10 ? 'rgba(251,146,60,0.1)' : 'rgba(0,229,255,0.08)', border: `1px solid ${rally >= 20 ? C.gold + '30' : rally >= 10 ? C.orange + '25' : C.cyan + '20'}` }}>
-              <span style={{ fontSize: 8, fontWeight: 900, color: rally >= 20 ? C.gold : rally >= 10 ? C.orange : C.cyan }}>{rally}x</span>
-            </div>
-          )}
-        </div>
-        {phase === 'playing' && (
-          <div style={{ padding: '2px 12px 4px', display: 'flex', alignItems: 'center', gap: 6 }}>
+        }
+        badge={rally >= 3 ? (
+          <div style={{ padding: '2px 6px', borderRadius: 6, background: rally >= 20 ? 'rgba(255,217,61,0.12)' : rally >= 10 ? 'rgba(251,146,60,0.1)' : 'rgba(0,229,255,0.08)', border: `1px solid ${rally >= 20 ? C.gold + '30' : rally >= 10 ? C.orange + '25' : C.cyan + '20'}` }}>
+            <span style={{ fontSize: 8, fontWeight: 900, color: rally >= 20 ? C.gold : rally >= 10 ? C.orange : C.cyan }}>{rally}x</span>
+          </div>
+        ) : null}
+        row3={phase === 'playing' ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <span style={{ fontSize: 7, color: C.text3, fontWeight: 700, letterSpacing: 1 }}>SPEED</span>
             <div style={{ width: 60, height: 3, borderRadius: 2, background: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
-              <div style={{ width: `${ppBSP * 100}%`, height: '100%', borderRadius: 2, background: ppBSP > 0.7 ? '#FF5A5A' : ppBSP > 0.4 ? C.orange : C.cyan, transition: 'width 0.15s' }} />
+              <div style={{ width: Math.min(100, speed) + '%', height: '100%', borderRadius: 2, background: speed > 250 ? `linear-gradient(90deg,${C.gold},${C.orange})` : `linear-gradient(90deg,${C.cyan},${C.cyan}80)` }} />
             </div>
-            <div style={{ flex: 1 }} />
-            {power > 5 && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                <span style={{ fontSize: 7, fontWeight: 700, color: power >= 80 ? C.gold : power >= 40 ? '#7FFF00' : C.cyan, letterSpacing: 1 }}>{power >= 80 ? 'SMASH' : power >= 40 ? 'POWER' : 'CHARGE'}</span>
-                <div style={{ width: 40, height: 3, borderRadius: 2, background: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
-                  <div style={{ width: `${power}%`, height: '100%', borderRadius: 2, background: power >= 80 ? C.gold : power >= 40 ? '#7FFF00' : C.cyan, transition: 'width 0.05s' }} />
-                </div>
-                <span style={{ fontSize: 7, fontWeight: 900, color: power >= 80 ? C.gold : power >= 40 ? '#7FFF00' : C.cyan, fontFamily: 'monospace' }}>{Math.round(power)}%</span>
-              </div>
-            )}
-            {smash && <span style={{ fontSize: 9, fontWeight: 900, color: C.gold, animation: 'pulse 0.3s infinite' }}>SMASH!</span>}
+            <span style={{ fontSize: 7, fontWeight: 700, color: speed > 250 ? C.gold : C.text3 }}>{Math.round(speed)}</span>
+            {smash && <span style={{ fontSize: 7, fontWeight: 900, color: C.gold, animation: 'countPulse 0.5s infinite' }}>SMASH!</span>}
           </div>
-        )}
-      </div>
+        ) : null}
+      />
 
       {/* Game area */}
       <div

@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { C } from '../../constants/colors.js';
 import { useApp } from '../../context/AppContext.jsx';
+import GameHeader from '../../components/GameHeader.jsx';
 
 // ── Constants ──────────────────────────────────────────────────────────────
 const ROOF_W = 860, ROOF_H = 1000;
@@ -322,39 +323,27 @@ export default function RooftopPuff() {
       {/* Background */}
       <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, #050515 0%, #0a0a25 30%, #151025 60%, #0a0a20 100%)', zIndex: 0 }} />
 
-      {/* Header */}
-      <div style={{ position: 'relative', zIndex: 50, flexShrink: 0, background: 'rgba(6,16,30,0.98)', borderBottom: '1px solid rgba(0,229,255,0.06)' }}>
-        {/* Row 1 */}
-        <div style={{ padding: '6px 12px 2px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ fontSize: 8, fontWeight: 800, color: 'rgba(255,255,255,0.5)', letterSpacing: 2 }}>MOOD LAB</div>
-        </div>
-        {/* Row 2: Back + stats */}
-        <div style={{ padding: '3px 12px 2px', display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div data-btn="true" onClick={() => { if (isPlaying) { cleanup(); setPhase('modeselect'); setSelectedMode(null); setLobbyTab('play'); } else { cleanup(); navigate('/arcade'); } }} style={{ display: 'inline-flex', alignItems: 'center', gap: 3, cursor: 'pointer', padding: '3px 8px', borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: `1px solid ${C.border}`, flexShrink: 0 }}>
-            <span style={{ fontSize: 10, color: C.text2 }}>←</span>
-            <span style={{ fontSize: 9, fontWeight: 700, color: C.text2 }}>{isPlaying ? 'Lobby' : 'Arcade'}</span>
+      <GameHeader
+        backTo={() => { if (isPlaying) { cleanup(); setPhase('modeselect'); setSelectedMode(null); setLobbyTab('play'); } else { cleanup(); navigate('/arcade'); } }}
+        backLabel={isPlaying ? 'Lobby' : 'Arcade'}
+        accent={ROOF_GC}
+        mid={isPlaying ? (
+          <div style={{ display: 'flex', gap: 6, alignItems: 'center', flex: 1, justifyContent: 'center' }}>
+            <span style={{ fontSize: 8, fontWeight: 700, color: '#fff' }}>🏃 {dist}m</span>
+            <span style={{ fontSize: 8, fontWeight: 700, color: C.gold }}>🪙 {coins2}</span>
+            {mode !== 'solo' && <span style={{ fontSize: 8, fontWeight: 800, color: place === 1 ? C.gold : place === 2 ? '#C0C0C0' : '#CD7F32' }}>#{place}</span>}
           </div>
-          {isPlaying && (
-            <div style={{ display: 'flex', gap: 6, alignItems: 'center', flex: 1, justifyContent: 'center' }}>
-              <span style={{ fontSize: 8, fontWeight: 700, color: '#fff' }}>🏃 {dist}m</span>
-              <span style={{ fontSize: 8, fontWeight: 700, color: C.gold }}>🪙 {coins2}</span>
-              {mode !== 'solo' && <span style={{ fontSize: 8, fontWeight: 800, color: place === 1 ? C.gold : place === 2 ? '#C0C0C0' : '#CD7F32' }}>#{place}</span>}
+        ) : null}
+        row3={isPlaying ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{ fontSize: 7, fontWeight: 800, color: fuel > 50 ? ROOF_GC : fuel > 20 ? '#F59E0B' : '#EF4444', flexShrink: 0 }}>⚡</span>
+            <div style={{ flex: 1, height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
+              <div style={{ height: '100%', width: fuel + '%', borderRadius: 2, background: fuel > 50 ? `linear-gradient(90deg, ${ROOF_GC}, #66FFCC)` : fuel > 20 ? 'linear-gradient(90deg, #F59E0B, #FBBF24)' : 'linear-gradient(90deg, #EF4444, #F87171)', transition: 'width 0.15s' }} />
             </div>
-          )}
-        </div>
-        {/* Row 3: Fuel bar */}
-        {isPlaying && (
-          <div style={{ padding: '0 12px 4px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ fontSize: 7, fontWeight: 800, color: fuel > 50 ? ROOF_GC : fuel > 20 ? '#F59E0B' : '#EF4444', flexShrink: 0 }}>⚡</span>
-              <div style={{ flex: 1, height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
-                <div style={{ height: '100%', width: fuel + '%', borderRadius: 2, background: fuel > 50 ? `linear-gradient(90deg, ${ROOF_GC}, #66FFCC)` : fuel > 20 ? 'linear-gradient(90deg, #F59E0B, #FBBF24)' : 'linear-gradient(90deg, #EF4444, #F87171)', transition: 'width 0.15s' }} />
-              </div>
-              <span style={{ fontSize: 7, fontWeight: 700, color: '#888' }}>{fuel}%</span>
-            </div>
+            <span style={{ fontSize: 7, fontWeight: 700, color: '#888' }}>{fuel}%</span>
           </div>
-        )}
-      </div>
+        ) : null}
+      />
 
       {/* Game Area */}
       <div style={{ position: 'relative', flex: 1, overflow: 'hidden' }}

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { C, GLASS_CARD } from '../constants/colors.js';
 import { LIVE_STREAMS, LIVE_CATEGORIES, LIVE_CREATORS } from '../constants/live.js';
 import { useApp } from '../context/AppContext.jsx';
+import AppHeader from '../components/AppHeader.jsx';
 
 const STREAMS = LIVE_STREAMS || [
   { id:1,  host:'CloudChaser99', avatar:'🐉', viewers:1247,  puffs:3420, category:'World Cup',   title:'🇧🇷 Brazil vs Argentina LIVE | WC2026 Watchparty!', badge:'vip' },
@@ -116,7 +117,8 @@ export default function LivePage() {
   // Explore view
   return (
     <div style={{ height: '100%', overflowY: 'auto', background: C.bg, paddingBottom: 100 }}>
-      {/* Header */}
+      <AppHeader />
+      {/* Live page header */}
       <div style={{ position: 'relative', zIndex: 1, padding: '8px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>

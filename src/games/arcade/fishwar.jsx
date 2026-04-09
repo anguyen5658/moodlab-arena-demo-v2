@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { C } from '../../constants/colors.js';
 import { useApp } from '../../context/AppContext.jsx';
+import GameHeader from '../../components/GameHeader.jsx';
 
 const FW_W = 860, FW_H = 1000;
 const FW_DPR = typeof window !== 'undefined' ? Math.min(window.devicePixelRatio || 1, 2) : 1;
@@ -608,41 +609,35 @@ export default function FishWar() {
       {confettiParticles.map(p => <div key={p.id} style={{ position: 'absolute', left: p.x + '%', top: p.y + '%', width: p.size, height: p.size * 0.6, background: p.color, borderRadius: 1, transform: `rotate(${p.rot}deg)`, zIndex: 210, pointerEvents: 'none', animation: 'confettiFall 1.5s ease-out forwards' }} />)}
 
       {/* Header */}
-      <div style={{ position: 'relative', zIndex: 50, flexShrink: 0, background: 'rgba(6,16,30,0.98)', borderBottom: '1px solid rgba(59,130,246,0.08)' }}>
-        <div style={{ padding: '6px 12px 2px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ fontSize: 8, fontWeight: 600, color: 'rgba(255,255,255,0.4)', letterSpacing: 1 }}><span style={{ fontWeight: 800, color: 'rgba(255,255,255,0.6)' }}>Powered by <span style={{ fontWeight: 900, letterSpacing: 2 }}>MOOD LAB</span></span></div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 2, padding: '2px 7px', borderRadius: 100, background: 'rgba(255,217,61,0.06)', border: '1px solid rgba(255,217,61,0.12)' }}>
-            <span style={{ fontSize: 9 }}>🪙</span><span style={{ fontSize: 10, fontWeight: 800, color: C.gold, fontFamily: "'Courier New',monospace" }}>FISH WAR</span>
+      <GameHeader
+        backTo={() => { if (rafRef.current) cancelAnimationFrame(rafRef.current); navigate('/arcade'); }}
+        backLabel="Arcade"
+        accent="#3B82F6"
+        mid={phase === 'playing' ? (
+          <div style={{ display: 'flex', gap: 4, alignItems: 'center', flex: 1, justifyContent: 'center' }}>
+            <span style={{ fontSize: 10 }}>{fwForm.emoji || '🐟'}</span>
+            <span style={{ fontSize: 8, fontWeight: 800, color: fwForm.col }}>{fwForm.name}</span>
+            <span style={{ fontSize: 8, fontWeight: 700, color: C.cyan, padding: '1px 5px', borderRadius: 4, background: 'rgba(0,229,255,0.08)' }}>LV{level}</span>
+            <span style={{ fontSize: 8, fontWeight: 700, color: '#FFD700' }}>🪙{score}</span>
           </div>
-        </div>
-        <div style={{ padding: '3px 12px 4px', display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div data-back="true" onClick={(e) => { e.stopPropagation(); if (rafRef.current) cancelAnimationFrame(rafRef.current); navigate('/arcade'); }}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 4, cursor: 'pointer', padding: '3px 8px', borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: `1px solid ${C.border}`, flexShrink: 0 }}>
-            <span style={{ fontSize: 10, color: C.text2 }}>←</span>
-            <span style={{ fontSize: 9, fontWeight: 700, color: C.text2 }}>Arcade</span>
-          </div>
-          {phase === 'playing' && (<>
-            <div style={{ display: 'flex', gap: 4, alignItems: 'center', flex: 1, justifyContent: 'center' }}>
-              <span style={{ fontSize: 10 }}>{fwForm.emoji || '🐟'}</span>
-              <span style={{ fontSize: 8, fontWeight: 800, color: fwForm.col }}>{fwForm.name}</span>
-              <span style={{ fontSize: 8, fontWeight: 700, color: C.cyan, padding: '1px 5px', borderRadius: 4, background: 'rgba(0,229,255,0.08)' }}>LV{level}</span>
-              <span style={{ fontSize: 8, fontWeight: 700, color: '#FFD700' }}>🪙{score}</span>
-            </div>
-            {puffStreak > 0 && <span style={{ fontSize: 8, fontWeight: 900, color: C.gold, padding: '2px 6px', borderRadius: 6, background: 'rgba(255,100,0,0.15)', border: '1px solid rgba(255,150,0,0.25)', flexShrink: 0 }}>🔥{puffStreak}x</span>}
-          </>)}
-        </div>
-        {phase === 'playing' && (
-          <div style={{ padding: '0 12px 4px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ fontSize: 7, fontWeight: 800, color: fuel > 50 ? C.cyan : fuel > 20 ? '#F59E0B' : '#EF4444', flexShrink: 0 }}>⚡</span>
-              <div style={{ flex: 1, height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
-                <div style={{ height: '100%', width: fuel + '%', borderRadius: 2, background: fuel > 50 ? 'linear-gradient(90deg, #00E5FF, #0090FF)' : fuel > 20 ? 'linear-gradient(90deg, #F59E0B, #FF9800)' : 'linear-gradient(90deg, #EF4444, #FF1744)', transition: 'width 0.15s' }} />
-              </div>
-              <span style={{ fontSize: 7, fontWeight: 700, color: 'rgba(255,255,255,0.5)', flexShrink: 0 }}>{fuel}%</span>
-            </div>
+        ) : (
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <span style={{ fontSize: 10, fontWeight: 800, color: '#3B82F6' }}>🐟 FISH WAR</span>
           </div>
         )}
-      </div>
+        badge={puffStreak > 0 ? (
+          <span style={{ fontSize: 8, fontWeight: 900, color: C.gold, padding: '2px 6px', borderRadius: 6, background: 'rgba(255,100,0,0.15)', border: '1px solid rgba(255,150,0,0.25)' }}>🔥{puffStreak}x</span>
+        ) : null}
+        row3={phase === 'playing' ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{ fontSize: 7, fontWeight: 800, color: fuel > 50 ? C.cyan : fuel > 20 ? '#F59E0B' : '#EF4444', flexShrink: 0 }}>⚡</span>
+            <div style={{ flex: 1, height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
+              <div style={{ height: '100%', width: fuel + '%', borderRadius: 2, background: fuel > 50 ? 'linear-gradient(90deg, #00E5FF, #0090FF)' : fuel > 20 ? 'linear-gradient(90deg, #F59E0B, #FF9800)' : 'linear-gradient(90deg, #EF4444, #FF1744)', transition: 'width 0.15s' }} />
+            </div>
+            <span style={{ fontSize: 7, fontWeight: 700, color: 'rgba(255,255,255,0.5)', flexShrink: 0 }}>{fuel}%</span>
+          </div>
+        ) : null}
+      />
 
       {/* Game area */}
       <div style={{ position: 'relative', flex: 1, overflow: 'hidden' }}>

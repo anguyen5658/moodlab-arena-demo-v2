@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { C } from '../../constants/colors.js';
 import { useApp } from '../../context/AppContext.jsx';
+import GameHeader from '../../components/GameHeader.jsx';
 import UniversalPuffBar from '../../components/UniversalPuffBar.jsx';
 import GameChatOverlay from '../../components/GameChatOverlay.jsx';
 
@@ -584,25 +585,11 @@ export default function WildWestGame() {
       onTouchStart={(e) => { if (e.target.closest('[data-back],[data-btn]')) return; if (['staredown', 'countdown', 'draw'].includes(phase)) shoot(); }}
       onTouchEnd={(e) => { if (e.target.closest('[data-back],[data-btn]')) return; if (phase === 'puffing') releasePuff(); }}>
 
-      {/* Header */}
-      <div style={{ position: 'relative', zIndex: 50, flexShrink: 0, background: 'rgba(6,16,30,0.98)', borderBottom: '1px solid rgba(255,165,0,0.08)' }}>
-        <div style={{ padding: '6px 12px 2px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ fontSize: 8, fontWeight: 900, color: 'rgba(255,255,255,0.6)', letterSpacing: 2 }}>MOOD LAB</div>
-          <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
-            <div onClick={() => { playFx('tap'); setShowBlePopup(true); }} data-btn="true" style={{ display: 'flex', alignItems: 'center', gap: 3, padding: '2px 8px', borderRadius: 100, cursor: 'pointer', touchAction: 'none', background: bleConnected ? 'rgba(52,211,153,0.1)' : 'rgba(251,146,60,0.1)', border: `1px solid ${bleConnected ? 'rgba(52,211,153,0.25)' : 'rgba(251,146,60,0.25)'}` }}>
-              <div style={{ width: 5, height: 5, borderRadius: '50%', background: bleConnected ? C.green : C.orange }} />
-              <span style={{ fontSize: 8, fontWeight: 700, color: bleConnected ? C.green : C.orange }}>{bleConnected ? 'Puff' : 'Connect'}</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 2, padding: '2px 7px', borderRadius: 100, background: 'rgba(255,217,61,0.06)', border: '1px solid rgba(255,217,61,0.12)' }}>
-              <span style={{ fontSize: 9 }}>🪙</span><span style={{ fontSize: 10, fontWeight: 800, color: C.gold, fontFamily: 'monospace' }}>{coins.toLocaleString()}</span>
-            </div>
-          </div>
-        </div>
-        <div style={{ padding: '2px 12px 2px', display: 'flex', alignItems: 'center', gap: 6 }}>
-          <div onClick={exitGame} data-btn="true" style={{ display: 'inline-flex', alignItems: 'center', gap: 3, cursor: 'pointer', padding: '3px 8px', borderRadius: 8, touchAction: 'none', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', flexShrink: 0 }}>
-            <span style={{ fontSize: 10, color: C.text2 }}>←</span>
-            <span style={{ fontSize: 9, fontWeight: 700, color: C.text2 }}>Back</span>
-          </div>
+      <GameHeader
+        backTo={exitGame}
+        backLabel="Back"
+        accent="rgba(255,165,0,0.08)"
+        mid={
           <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
             <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
               {[0, 1, 2, 3, 4].map(i => {
@@ -622,11 +609,13 @@ export default function WildWestGame() {
               <span style={{ fontSize: 14, fontWeight: 900, color: C.orange }}>{score.ai}</span>
             </div>
           </div>
-        </div>
-        <div style={{ padding: '2px 12px 4px', textAlign: 'center' }}>
-          <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: 3, textTransform: 'uppercase', color: phase === 'draw' ? C.red : phase === 'staredown' ? C.gold : (phase === 'result' || phase === 'round_result') ? (result?.win ? C.green : C.red) : C.text3 }}>{phaseLabel}</span>
-        </div>
-      </div>
+        }
+        row3={
+          <div style={{ textAlign: 'center' }}>
+            <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: 3, textTransform: 'uppercase', color: phase === 'draw' ? C.red : phase === 'staredown' ? C.gold : (phase === 'result' || phase === 'round_result') ? (result?.win ? C.green : C.red) : C.text3 }}>{phaseLabel}</span>
+          </div>
+        }
+      />
 
       {/* Game area */}
       <div style={{ position: 'relative', flex: 1, overflow: 'hidden' }}>

@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { C } from '../../constants/colors.js';
 import { useApp } from '../../context/AppContext.jsx';
+import GameHeader from '../../components/GameHeader.jsx';
 
 // ── Constants ──────────────────────────────────────────────────────────────
 const TW_W = 860, TW_H = 600;
@@ -576,30 +577,27 @@ export default function TankWar() {
       {confettiParticles.map(p => <div key={p.id} style={{ position: 'absolute', left: p.x + '%', top: p.y + '%', width: p.size, height: p.size * 0.6, background: p.color, borderRadius: 1, transform: `rotate(${p.rot}deg)`, zIndex: 210, pointerEvents: 'none', animation: 'confettiFall 1.5s ease-out forwards' }} />)}
 
       {/* Header */}
-      <div style={{ position: 'relative', zIndex: 50, flexShrink: 0, background: 'rgba(6,16,30,0.98)', borderBottom: '1px solid rgba(0,229,255,0.06)' }}>
-        <div style={{ padding: '6px 12px 2px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ fontSize: 8, fontWeight: 800, color: 'rgba(255,255,255,0.5)', letterSpacing: 2 }}>MOOD LAB</div>
-          <div style={{ fontSize: 14, fontWeight: 900, color: '#4CAF50' }}>🔫 TANK WAR</div>
-        </div>
-        <div style={{ padding: '2px 12px 2px', display: 'flex', alignItems: 'center', gap: 6 }}>
-          <div data-btn="true" onClick={() => { playFx('tap'); if (isGameplay) { cleanup(); setPhase('modeselect'); setSelectedMode(null); setLobbyTab('battle'); } else { cleanup(); navigate('/arcade'); } }} style={{ display: 'inline-flex', alignItems: 'center', gap: 3, cursor: 'pointer', padding: '3px 8px', borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: `1px solid ${C.border}`, flexShrink: 0 }}>
-            <span style={{ fontSize: 10, color: C.text2 }}>←</span>
-            <span style={{ fontSize: 9, fontWeight: 700, color: C.text2 }}>{isGameplay ? 'Lobby' : 'Arcade'}</span>
+      <GameHeader
+        backTo={() => { playFx('tap'); if (isGameplay) { cleanup(); setPhase('modeselect'); setSelectedMode(null); setLobbyTab('battle'); } else { cleanup(); navigate('/arcade'); } }}
+        backLabel={isGameplay ? 'Lobby' : 'Arcade'}
+        accent="#4CAF50"
+        mid={isGameplay ? (
+          <div style={{ display: 'flex', gap: 4, alignItems: 'center', flex: 1, justifyContent: 'center', overflow: 'hidden' }}>
+            {tanks.filter(t => t.alive).map(t => (
+              <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: 3, padding: '2px 6px', borderRadius: 6, background: tanks[turnIdx] === t ? 'rgba(255,255,255,0.06)' : 'transparent', border: `1px solid ${tanks[turnIdx] === t ? t.color + '50' : 'transparent'}` }}>
+                <div style={{ width: 5, height: 5, borderRadius: '50%', background: t.color }} />
+                <span style={{ fontSize: 7, fontWeight: 700, color: tanks[turnIdx] === t ? t.color : '#999' }}>{t.name}</span>
+                <span style={{ fontSize: 6, color: '#777' }}>{t.hp}</span>
+              </div>
+            ))}
           </div>
-          {isGameplay && (
-            <div style={{ display: 'flex', gap: 4, alignItems: 'center', flex: 1, justifyContent: 'center', overflow: 'hidden' }}>
-              {tanks.filter(t => t.alive).map(t => (
-                <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: 3, padding: '2px 6px', borderRadius: 6, background: tanks[turnIdx] === t ? 'rgba(255,255,255,0.06)' : 'transparent', border: `1px solid ${tanks[turnIdx] === t ? t.color + '50' : 'transparent'}` }}>
-                  <div style={{ width: 5, height: 5, borderRadius: '50%', background: t.color }} />
-                  <span style={{ fontSize: 7, fontWeight: 700, color: tanks[turnIdx] === t ? t.color : '#999' }}>{t.name}</span>
-                  <span style={{ fontSize: 6, color: '#777' }}>{t.hp}</span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-        {isGameplay && (
-          <div style={{ padding: '2px 12px 4px', display: 'flex', alignItems: 'center', gap: 6 }}>
+        ) : (
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <span style={{ fontSize: 10, fontWeight: 800, color: '#4CAF50' }}>🔫 TANK WAR</span>
+          </div>
+        )}
+        row3={isGameplay ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <span style={{ fontSize: 8, fontWeight: 700, color: 'rgba(200,220,255,0.6)' }}>{wind > 0 ? '→' : wind < 0 ? '←' : '•'} {Math.abs(wind).toFixed(1)}m/s</span>
             {isPlayerTurn && <span style={{ fontSize: 8, fontWeight: 900, color: timer <= 5 ? '#FF5A5A' : C.gold, fontFamily: "'Courier New',monospace" }}>⏱{timer}s</span>}
             <div style={{ flex: 1 }} />
@@ -614,8 +612,8 @@ export default function TankWar() {
               </div>
             )}
           </div>
-        )}
-      </div>
+        ) : null}
+      />
 
       {/* Game Area */}
       <div style={{ position: 'relative', flex: 1, overflow: 'hidden' }}>

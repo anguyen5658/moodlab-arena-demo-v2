@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { C } from '../../constants/colors.js';
 import { useApp } from '../../context/AppContext.jsx';
+import GameHeader from '../../components/GameHeader.jsx';
 
 const BP_DPR = typeof window !== 'undefined' ? Math.min(window.devicePixelRatio || 1, 2) : 1;
 const BP_AI_PLAYERS = [
@@ -450,24 +451,25 @@ export default function BalloonPop() {
       <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg,#060818,#0c1030,#141850,#080c20)', zIndex: 0 }} />
 
       {/* Header */}
-      <div style={{ position: 'relative', zIndex: 50, flexShrink: 0, background: 'rgba(6,16,30,0.98)', borderBottom: `1px solid ${dangerZone ? 'rgba(255,50,50,0.15)' : 'rgba(255,77,141,0.1)'}` }}>
-        <div style={{ padding: '6px 12px 2px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div data-back="true" onClick={() => { if (guardRef.current) guardRef.current.v = false; if (bpChargeInterval.current) clearInterval(bpChargeInterval.current); navigate('/arcade'); }} style={{ display: 'inline-flex', alignItems: 'center', gap: 3, cursor: 'pointer', padding: '3px 8px', borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)' }}>
-            <span style={{ fontSize: 10, color: C.text2 }}>←</span>
-            <span style={{ fontSize: 9, fontWeight: 700, color: C.text2 }}>Back</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      <GameHeader
+        backTo={() => { if (guardRef.current) guardRef.current.v = false; if (bpChargeInterval.current) clearInterval(bpChargeInterval.current); navigate('/arcade'); }}
+        backLabel="Arcade"
+        accent="#FF4D8D"
+        mid={
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
             <span style={{ fontSize: 10, fontWeight: 800, color: dangerZone ? C.red : C.pink }}>🎈 BALLOON POP</span>
             <span style={{ fontSize: 9, fontWeight: 700, color: C.text3 }}>{aliveCount}/8 alive</span>
             <span style={{ fontSize: 9, fontWeight: 700, color: C.gold }}>Round {bpRound + 1}</span>
           </div>
-        </div>
-        <div style={{ padding: '2px 12px 4px', textAlign: 'center' }}>
-          <span style={{ fontSize: 10, fontWeight: 800, color: curP ? (curP.isYou ? C.cyan : C.orange) : C.text3 }}>
-            {bpPhase === 'intro' ? 'Preparing...' : bpPhase === 'result' ? 'Game Over' : bpPhase === 'popped' ? 'POP!' : curP ? (curP.isYou ? 'YOUR TURN' : curP.name + '\'s turn') : '...'}
-          </span>
-        </div>
-      </div>
+        }
+        row3={
+          <div style={{ textAlign: 'center' }}>
+            <span style={{ fontSize: 10, fontWeight: 800, color: curP ? (curP.isYou ? C.cyan : C.orange) : C.text3 }}>
+              {bpPhase === 'intro' ? 'Preparing...' : bpPhase === 'result' ? 'Game Over' : bpPhase === 'popped' ? 'POP!' : curP ? (curP.isYou ? 'YOUR TURN' : curP.name + "'s turn") : '...'}
+            </span>
+          </div>
+        }
+      />
 
       {/* Canvas */}
       <div style={{ position: 'relative', flex: 1, overflow: 'hidden' }}>
