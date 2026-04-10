@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react'
 import { useLocation } from 'react-router-dom'
-import { C, TICKER_ITEMS, LOYALTY_TIERS } from '../../constants'
+import { C, TICKER_ITEMS, LOYALTY_TIERS, Z } from '../../constants'
 import { usePlayerContext } from '../../context/PlayerContext'
 import { useBLEContext } from '../../context/BLEContext'
 import { useGameContext } from '../../context/GameContext'
@@ -98,6 +98,8 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
 
   const isArena = location.pathname.startsWith('/arena')
   const isHub = location.pathname === '/arena'
+  const isZoneIntro = isArena && location.pathname.endsWith('/intro')
+  const isFullscreenArena = isHub || isZoneIntro
   const tab = location.pathname.startsWith('/control') ? 'control' : location.pathname.startsWith('/live') ? 'live' : location.pathname.startsWith('/me') ? 'me' : 'arena'
   const zone = isArena && !isHub ? location.pathname.replace('/arena/', '') : null
 
@@ -108,15 +110,15 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
   const TICKER_DOUBLED = TICKER_ITEMS.concat(TICKER_ITEMS)
 
   return (
-    <div style={{ maxWidth: 430, margin: "0 auto", height: "100vh", background: (isHub) ? "transparent" : C.bg, fontFamily: "'Segoe UI','SF Pro Display',system-ui,sans-serif", position: "relative", overflow: "hidden", color: C.text, display: "flex", flexDirection: "column" }}>
+    <div style={{ maxWidth: 430, margin: "0 auto", height: "100vh", background: isFullscreenArena ? "transparent" : C.bg, fontFamily: "'Segoe UI','SF Pro Display',system-ui,sans-serif", position: "relative", overflow: "hidden", color: C.text, display: "flex", flexDirection: "column" }}>
       <style>{CSS_KEYFRAMES}</style>
 
       {/* Background mesh */}
-      {(!isHub) && <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, pointerEvents: "none", zIndex: 0, background: `radial-gradient(ellipse 60% 40% at 20% 10%, ${C.cyan}04, transparent 50%), radial-gradient(ellipse 50% 40% at 80% 90%, ${C.purple}04, transparent 50%), radial-gradient(ellipse 40% 30% at 50% 50%, ${C.gold}02, transparent 60%)` }} />}
-      {(!isHub) && <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, pointerEvents: "none", zIndex: 1, opacity: 0.03, backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")` }} />}
+      {!isFullscreenArena && <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, pointerEvents: "none", zIndex: 0, background: `radial-gradient(ellipse 60% 40% at 20% 10%, ${C.cyan}04, transparent 50%), radial-gradient(ellipse 50% 40% at 80% 90%, ${C.purple}04, transparent 50%), radial-gradient(ellipse 40% 30% at 50% 50%, ${C.gold}02, transparent 60%)` }} />}
+      {!isFullscreenArena && <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, pointerEvents: "none", zIndex: 1, opacity: 0.03, backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")` }} />}
 
-      {/* Atmosphere particles (non-hub) */}
-      {!isHub && (
+      {/* Atmosphere particles (non-fullscreen) */}
+      {!isFullscreenArena && (
         <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 1 }}>
           {particles.map(p => (
             <div key={p.id} style={{ position: "absolute", width: p.s, height: p.s, borderRadius: "50%", background: p.color, opacity: p.o, left: `${p.x}%`, bottom: `${(game.tick * 2 + p.id * 37) % 140 - 20}%`, transition: "bottom 1s linear" }} />
@@ -208,17 +210,17 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
         </div>
       )}
 
-      {/* Tab title bar (hide on arena hub, me, live) */}
-      {tab !== 'arena' && tab !== 'me' && tab !== 'live' && (
+      {/* Tab title bar (show on zone pages and control; hide on hub, me, live, zone intros) */}
+      {(tab !== 'arena' || (zone && !isZoneIntro)) && tab !== 'me' && tab !== 'live' && (
         <div style={{ padding: "6px 14px 10px", position: "relative", zIndex: 5 }}>
           <div style={{ fontSize: 20, fontWeight: 900, letterSpacing: -0.5 }}>
-            {tab === 'control' ? 'Control' : zone ? (zone.charAt(0).toUpperCase() + zone.slice(1)) : 'Arena'}
+            {tab === 'control' ? 'Control' : tab === 'arena' && zone ? ((Z as any)[zone.replace('/intro', '')]?.name || 'Arena') : 'Arena'}
           </div>
         </div>
       )}
 
       {/* Content area */}
-      <div style={{ position: "relative", zIndex: 5, flex: 1, overflow: isHub ? "hidden" : "auto", paddingBottom: isHub ? 0 : 80 }}>
+      <div style={{ position: "relative", zIndex: 5, flex: 1, overflow: isFullscreenArena ? "hidden" : "auto", paddingBottom: isFullscreenArena ? 0 : 80 }}>
         {children}
       </div>
 

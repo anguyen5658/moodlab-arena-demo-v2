@@ -42,7 +42,7 @@ export default function App() {
                     <Route path="/control" element={<ControlTab />} />
                     <Route path="/live" element={<LiveTab />} />
                     <Route path="/me" element={<MeTab />} />
-                    <Route path="*" element={<Navigate to="/arena" replace />} />
+                    {/* <Route path="*" element={<Navigate to="/arena" replace />} /> */}
                   </Routes>
                 </AppShell>
               </UIProvider>

@@ -1,6 +1,6 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
-import { C, Z, ARENA_IMAGES, ARENA_VIDEOS, GLASS_CARD, PLAY_GAMES } from '../../constants'
+import { C, Z, ARENA_IMAGES, ARENA_VIDEOS, GLASS_CARD, GLASS_CLEAR, PLAY_GAMES } from '../../constants'
 import { useGameContext } from '../../context/GameContext'
 import { useAudioContext } from '../../context/AudioContext'
 
@@ -166,7 +166,7 @@ export const ZoneIntro: React.FC<ZoneIntroProps> = ({ zoneKey }) => {
   }
 
   return (
-    <div style={{ position: "fixed", inset: 0, overflow: "hidden" }}>
+    <div style={{ position: "fixed", inset: 0, zIndex: 50, overflow: "hidden" }}>
       {/* Background video */}
       <div style={{ position: "absolute", inset: 0, zIndex: 0 }}>
         <video autoPlay loop muted playsInline poster={(ARENA_IMAGES as any)[zoneKey]} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center" }}>
