@@ -1,4 +1,5 @@
 import React from 'react'
+import { useLocation } from 'react-router-dom'
 import { C, GAME_CONFIG, GAME_TOURNAMENTS, LG } from '../../constants'
 import { useGameContext } from '../../context/GameContext'
 import { usePlayerContext } from '../../context/PlayerContext'
@@ -10,6 +11,7 @@ export const GameOverlay: React.FC = () => {
   const player = usePlayerContext()
   const ble = useBLEContext()
   const audio = useAudioContext()
+  const location = useLocation()
 
   if (!game.selectedGame || game.gameActive) return null
 
@@ -40,7 +42,15 @@ export const GameOverlay: React.FC = () => {
   const streak: number = (playerProfile as any).streak || 0
   const streakBonus: string | null = streak >= 3 ? `+${streak * 2}%` : null
 
-  const zoneName = "Arena"
+  // Derive zone from current pathname (matches monolith zoneName logic)
+  const pathMatch = location.pathname.match(/^\/arena\/([^/]+)/)
+  const zone = pathMatch ? pathMatch[1] : null
+  const zoneName = zone === "arcade" ? "Arcade"
+    : zone === "stage" ? "Stage"
+    : zone === "oracle" ? "Fortune"
+    : zone === "wall" ? "Hall of Fame"
+    : zone === "worldcup" ? "World Cup"
+    : "Arena"
 
   const closeOverlay = () => { setSelectedGame(null); setShowHowToPlay(false) }
 
