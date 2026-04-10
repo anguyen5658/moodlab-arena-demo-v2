@@ -6,8 +6,11 @@ Use Playwright MCP and headless Chrome to:
 2. Navigate to localhost:8100 (refactored) and take a full-page screenshot
 3. Compare them visually — note any layout, color, or spacing differences
 4. Run the following user flows on BOTH and confirm identical behavior:
-   - click on Arcade link at the middle left position
-   - user should be taken to the Arcade landing screen
+   - From home screen, click on Arcade link at the middle left position. User should be taken to the Arcade zone landing screen
+   - From home screen, click on Wall link next to Arcard. User should be taken to the Wall zone landing screen
+   - From home screen, click on Stage link at the middle right position. User should be taken to the Stage zone landing screen
+   - From home screen, click on Fortune lon the left of Stage. User should be taken to the Fortune zone landing screen
+   - From home screen, click on World Cup link at center. User should be taken to the World Cup zone landing screen
 5. Report: PASS if identical, DIFF with details in the report if not.
 
 ## Rules:
