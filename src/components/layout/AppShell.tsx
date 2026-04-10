@@ -7,6 +7,7 @@ import { useGameContext } from '../../context/GameContext'
 import { useAudioContext } from '../../context/AudioContext'
 import { BLEPopup } from '../overlays/BLEPopup'
 import { GameOverlay } from '../overlays/GameOverlay'
+import { GameOverlayRouter } from '../../routes/games/GameOverlayRouter'
 import { BottomNav } from './BottomNav'
 
 const CSS_KEYFRAMES = `
@@ -224,8 +225,11 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
         {children}
       </div>
 
-      {/* Game overlay (start screen + active game) */}
+      {/* Game start screen */}
       <GameOverlay />
+
+      {/* Active game dispatcher */}
+      <GameOverlayRouter />
 
       {/* BLE Popup */}
       <BLEPopup />

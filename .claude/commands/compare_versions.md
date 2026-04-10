@@ -15,5 +15,5 @@ Use Playwright MCP and headless Chrome to:
 
 ## Rules:
 
-- Save the screenshots in .playwright-mcp/screenshots. Put them in the folder named $ARGUMENTS (usually the Phase number).
+- Save the screenshots in the folder test/screenshots. Put them in the folder named $ARGUMENTS (usually the Phase number).
 - Put the report of the comparison in the same folder along with the screenshots.
