@@ -23,6 +23,20 @@ import { PuffAuctionGame } from './stage/PuffAuctionGame'
 import { PriceIsPuffGame } from './stage/PriceIsPuffGame'
 import { SurvivalTriviaGame } from './stage/SurvivalTriviaGame'
 import { VibeCheckGame } from './stage/VibeCheckGame'
+import { CrystalBallGame } from './oracle/CrystalBallGame'
+import { CoinFlipGame } from './oracle/CoinFlipGame'
+import { PuffSlotsGame } from './oracle/PuffSlotsGame'
+import { StrainBattleGame } from './oracle/StrainBattleGame'
+import { MatchPredictorGame } from './oracle/MatchPredictorGame'
+import {
+  DailyPicksGame,
+  PuffBlackjackGame,
+  CrapsNCloudsGame,
+  MysteryBoxGame,
+  ScratchPuffGame,
+  FortuneCookieGame,
+  TreasureMapGame,
+} from './oracle/RemainingOracleGames'
 
 export const GameOverlayRouter: React.FC = () => {
   const game = useGameContext()
@@ -55,6 +69,18 @@ export const GameOverlayRouter: React.FC = () => {
     case 'pricepuff': return <PriceIsPuffGame />
     case 'survivaltrivia': return <SurvivalTriviaGame />
     case 'vibecheck': return <VibeCheckGame />
+    case 'crystalball': return <CrystalBallGame />
+    case 'coinflip': return <CoinFlipGame />
+    case 'puffslots': return <PuffSlotsGame />
+    case 'strainbattle': return <StrainBattleGame />
+    case 'matchpredictor': return <MatchPredictorGame />
+    case 'dailypicks': return <DailyPicksGame />
+    case 'puffblackjack': return <PuffBlackjackGame />
+    case 'crapsnclouds': return <CrapsNCloudsGame />
+    case 'mysterybox': return <MysteryBoxGame />
+    case 'scratchpuff': return <ScratchPuffGame />
+    case 'fortunecookie': return <FortuneCookieGame />
+    case 'treasuremap': return <TreasureMapGame />
     default: return null
   }
 }
