@@ -35,6 +35,8 @@ export const GameOverlayRouter: React.FC = () => {
     case 'hooked': return <HookedGame />
     case 'beatdrop': return <BeatDropGame />
     case 'finalkick': return <FinalKickGame />
+    case 'finalkick2': return <FinalKickGame />
+    case 'finalkick3': return <FinalKickGame />
     default: return null
   }
 }
