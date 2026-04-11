@@ -17,6 +17,12 @@ import { FinalKickGame } from './arcade/FinalKickGame'
 import { TankWarGame } from './arcade/TankWarGame'
 import { FishWarGame } from './arcade/FishWarGame'
 import { RooftopPuffGame } from './arcade/RooftopPuffGame'
+import { HigherLowerGame } from './stage/HigherLowerGame'
+import { SimonPuffsGame } from './stage/SimonPuffsGame'
+import { PuffAuctionGame } from './stage/PuffAuctionGame'
+import { PriceIsPuffGame } from './stage/PriceIsPuffGame'
+import { SurvivalTriviaGame } from './stage/SurvivalTriviaGame'
+import { VibeCheckGame } from './stage/VibeCheckGame'
 
 export const GameOverlayRouter: React.FC = () => {
   const game = useGameContext()
@@ -43,6 +49,12 @@ export const GameOverlayRouter: React.FC = () => {
     case 'tankwar': return <TankWarGame />
     case 'fishwar': return <FishWarGame />
     case 'rooftoppuff': return <RooftopPuffGame />
+    case 'higherlower': return <HigherLowerGame />
+    case 'simonpuffs': return <SimonPuffsGame />
+    case 'puffauction': return <PuffAuctionGame />
+    case 'pricepuff': return <PriceIsPuffGame />
+    case 'survivaltrivia': return <SurvivalTriviaGame />
+    case 'vibecheck': return <VibeCheckGame />
     default: return null
   }
 }
