@@ -14,6 +14,9 @@ import { RhythmPuffGame } from './arcade/RhythmPuffGame'
 import { HookedGame } from './arcade/HookedGame'
 import { BeatDropGame } from './arcade/BeatDropGame'
 import { FinalKickGame } from './arcade/FinalKickGame'
+import { TankWarGame } from './arcade/TankWarGame'
+import { FishWarGame } from './arcade/FishWarGame'
+import { RooftopPuffGame } from './arcade/RooftopPuffGame'
 
 export const GameOverlayRouter: React.FC = () => {
   const game = useGameContext()
@@ -37,6 +40,9 @@ export const GameOverlayRouter: React.FC = () => {
     case 'finalkick': return <FinalKickGame />
     case 'finalkick2': return <FinalKickGame />
     case 'finalkick3': return <FinalKickGame />
+    case 'tankwar': return <TankWarGame />
+    case 'fishwar': return <FishWarGame />
+    case 'rooftoppuff': return <RooftopPuffGame />
     default: return null
   }
 }
