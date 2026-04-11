@@ -13,6 +13,7 @@ import { TugOfWarGame } from './arcade/TugOfWarGame'
 import { RhythmPuffGame } from './arcade/RhythmPuffGame'
 import { HookedGame } from './arcade/HookedGame'
 import { BeatDropGame } from './arcade/BeatDropGame'
+import { FinalKickGame } from './arcade/FinalKickGame'
 
 export const GameOverlayRouter: React.FC = () => {
   const game = useGameContext()
@@ -33,6 +34,7 @@ export const GameOverlayRouter: React.FC = () => {
     case 'rhythm': return <RhythmPuffGame />
     case 'hooked': return <HookedGame />
     case 'beatdrop': return <BeatDropGame />
+    case 'finalkick': return <FinalKickGame />
     default: return null
   }
 }
