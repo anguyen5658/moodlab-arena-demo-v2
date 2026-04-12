@@ -121,7 +121,8 @@ export const TankWarGame: React.FC = () => {
   const twCanvasRef = useRef<HTMLCanvasElement | null>(null)
   const twTerrainRef = useRef<number[] | null>(null)
   const twBulletRef = useRef<Bullet | null>(null)
-  const twRafRef = useRef<number | null>(null)
+  const twDrawRafRef = useRef<number | null>(null)
+  const twBulletRafRef = useRef<number | null>(null)
   const twPowerIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const twPuffStartRef = useRef<number>(0)
   const twTanksRef = useRef<Tank[]>([])
@@ -451,9 +452,9 @@ export const TankWarGame: React.FC = () => {
         return
       }
       twDrawRef.current()
-      twRafRef.current = requestAnimationFrame(bAnim)
+      twBulletRafRef.current = requestAnimationFrame(bAnim)
     }
-    twRafRef.current = requestAnimationFrame(bAnim)
+    twBulletRafRef.current = requestAnimationFrame(bAnim)
   }, [audio, triggerShake])
   useEffect(() => { twBossAtkRef.current = twBossAtk }, [twBossAtk])
 
@@ -619,9 +620,9 @@ export const TankWarGame: React.FC = () => {
         return
       }
       twDrawRef.current()
-      twRafRef.current = requestAnimationFrame(anim)
+      twBulletRafRef.current = requestAnimationFrame(anim)
     }
-    twRafRef.current = requestAnimationFrame(anim)
+    twBulletRafRef.current = requestAnimationFrame(anim)
   }, [twCalcDmg, twWind, audio, twAddChat])
   useEffect(() => { twFireShotRef.current = twFireShot }, [twFireShot])
 
@@ -646,7 +647,10 @@ export const TankWarGame: React.FC = () => {
   }, [])
 
   const twReleaseCharge = useCallback(() => {
-    if (!twCharging.current || twPhaseRef.current !== 'power') return
+    // Don't gate on twPhaseRef — it's synced via useEffect AFTER React commit,
+    // so a fast press+release race-windows it. twCharging.current is the source
+    // of truth (set synchronously in start/release).
+    if (!twCharging.current) return
     twCharging.current = false
     if (twPowerIntervalRef.current) { clearInterval(twPowerIntervalRef.current); twPowerIntervalRef.current = null }
     setTwPuffStreak(0)
@@ -734,7 +738,7 @@ export const TankWarGame: React.FC = () => {
   }, [twAction])
 
   const twReleaseHeal = useCallback(() => {
-    if (!twCharging.current || twPhaseRef.current !== 'heal_charging') return
+    if (!twCharging.current) return
     twCharging.current = false
     if (twPowerIntervalRef.current) { clearInterval(twPowerIntervalRef.current); twPowerIntervalRef.current = null }
     const ss = twSweetSpot.current
@@ -818,7 +822,8 @@ export const TankWarGame: React.FC = () => {
   // ── Cleanup ──
   const twCleanup = useCallback(() => {
     audio.gameSoundsMuted.current = true
-    if (twRafRef.current) { cancelAnimationFrame(twRafRef.current); twRafRef.current = null }
+    if (twDrawRafRef.current) { cancelAnimationFrame(twDrawRafRef.current); twDrawRafRef.current = null }
+    if (twBulletRafRef.current) { cancelAnimationFrame(twBulletRafRef.current); twBulletRafRef.current = null }
     if (twPowerIntervalRef.current) { clearInterval(twPowerIntervalRef.current); twPowerIntervalRef.current = null }
     if (twTimerRef.current) { clearInterval(twTimerRef.current); twTimerRef.current = null }
     twBulletRef.current = null
@@ -1108,15 +1113,18 @@ export const TankWarGame: React.FC = () => {
   }, [])
 
   // ── Animation loop (Rule 4) ──
+  // CRITICAL: uses twDrawRafRef (NOT shared with bullet flight) — bullet
+  // animations live in twBulletRafRef so a phase-change re-render of this
+  // effect doesn't accidentally cancel an in-flight bullet's RAF.
   useEffect(() => {
     if (!twPhase || twPhase === 'intro' || twPhase === 'modeselect' || twPhase === 'complete') return
-    if (twRafRef.current) cancelAnimationFrame(twRafRef.current)
+    if (twDrawRafRef.current) cancelAnimationFrame(twDrawRafRef.current)
     const loop = () => {
       twDraw()
-      twRafRef.current = requestAnimationFrame(loop)
+      twDrawRafRef.current = requestAnimationFrame(loop)
     }
-    twRafRef.current = requestAnimationFrame(loop)
-    return () => { if (twRafRef.current) { cancelAnimationFrame(twRafRef.current); twRafRef.current = null } }
+    twDrawRafRef.current = requestAnimationFrame(loop)
+    return () => { if (twDrawRafRef.current) { cancelAnimationFrame(twDrawRafRef.current); twDrawRafRef.current = null } }
   }, [twDraw, twPhase])
 
   // ── BLE registration ──
