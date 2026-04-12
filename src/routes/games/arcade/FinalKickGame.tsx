@@ -467,8 +467,25 @@ export const FinalKickGame: React.FC = () => {
   }, [audio, game])
 
   const kickEndGame = useCallback(() => {
+    const ga = game.gameActive as any
+    const isWc = ga?.wcMode
     const won = score.you > score.ai
     const tied = score.you === score.ai
+
+    if (isWc) {
+      // WC mode: defer to tournament progression (handled externally via wcFinishGroupMatch/wcFinishKnockoutMatch)
+      const myS = score.you
+      const aiS = score.ai
+      const isKnockout = ga?.wcKnockout
+      const matchIdx = ga?.wcMatchIdx
+      exitGame()
+      // Fire tournament callback via a custom event (picked up by WorldCupZone)
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('wc-match-end', { detail: { isKnockout, matchIdx, myScore: myS, aiScore: aiS } }))
+      }, 300)
+      return
+    }
+
     const baseReward = won ? (isFK2 ? 100 : 80) : tied ? (isFK2 ? 15 : 12) : (isFK2 ? 15 : 12)
     player.notify(won ? `⚽ YOU WIN! +${baseReward} coins!` : tied ? `🤝 Draw! +${baseReward} coins` : `😢 +${baseReward} coins`, won ? C.green : tied ? C.gold : C.red)
     audio.playFx(won ? 'win' : 'lose')

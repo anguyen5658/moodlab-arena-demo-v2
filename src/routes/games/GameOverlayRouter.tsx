@@ -1,6 +1,7 @@
 import React from 'react'
 import { useGameContext } from '../../context/GameContext'
 import { GameChatOverlay } from '../../components/shared/GameChatOverlay'
+import { SpinWinOverlay } from '../../components/overlays/SpinWinOverlay'
 import { PuffDerbyGame } from './arcade/PuffDerbyGame'
 import { WildWestGame } from './arcade/WildWestGame'
 import { PuffClockGame } from './arcade/PuffClockGame'
@@ -78,6 +79,7 @@ const dispatchGame = (id: string): React.ReactNode => {
     case 'scratchpuff': return <ScratchPuffGame />
     case 'fortunecookie': return <FortuneCookieGame />
     case 'treasuremap': return <TreasureMapGame />
+    case 'spinwin': return <SpinWinOverlay onDismiss={() => {}} />
     default: return null
   }
 }

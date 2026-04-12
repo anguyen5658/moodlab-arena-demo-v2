@@ -1,10 +1,11 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { C, PLAY_GAMES, ORACLE_WC_MATCHES, ORACLE_WC_SPECIALS } from '../../constants'
+import { C, PLAY_GAMES, ORACLE_WC_MATCHES, ORACLE_WC_SPECIALS, WC_TEAMS } from '../../constants'
 import { useGameContext } from '../../context/GameContext'
 import { usePlayerContext } from '../../context/PlayerContext'
 import { useAudioContext } from '../../context/AudioContext'
 import { ZoneHeader } from './ZoneHeader'
+import { useWcTournament } from '../../hooks/useWcTournament'
 
 const wcFeedItems = [
   "🇧🇷 Brazil vs 🇩🇪 Germany tonight!",
@@ -68,6 +69,18 @@ export const WorldCupZone: React.FC = () => {
             <div style={{ width: 6, height: 6, borderRadius: "50%", background: C.green, animation: "pulse 1.5s infinite" }} />
             <span style={{ fontSize: 10, fontWeight: 700, color: C.green }}>2,847 FANS ONLINE</span>
           </div>
+        </div>
+      </div>
+
+      {/* PLAY TOURNAMENT CTA */}
+      <div style={{ padding: "0 14px", marginBottom: 12 }}>
+        <div onClick={() => { audio.playFx('crowd'); game.setWcPhase('team_select') }}
+          style={{ padding: '14px 0', borderRadius: 14, cursor: 'pointer', textAlign: 'center',
+            background: `linear-gradient(135deg, ${C.gold}20, ${C.gold}08)`,
+            border: `2px solid ${C.gold}50`, fontSize: 16, fontWeight: 900, color: C.gold,
+            boxShadow: `0 0 20px ${C.gold}30`, touchAction: 'none',
+          }}>
+          ⚽ PLAY TOURNAMENT
         </div>
       </div>
 
@@ -275,6 +288,199 @@ export const WorldCupZone: React.FC = () => {
         )}
       </div>
       <div style={{ height: 80 }} />
+
+      {/* ═══ TOURNAMENT FLOW OVERLAY ═══ */}
+      {wcPhase && <WcTournamentOverlay />}
     </div>
   )
+}
+
+// ── Tournament flow overlay ──
+const WcTournamentOverlay: React.FC = () => {
+  const game = useGameContext()
+  const player = usePlayerContext()
+  const audio = useAudioContext()
+  const wc = useWcTournament()
+  const { wcPhase, wcTeam, wcTournament, wcDrawAnim, wcGroupResult, wcFinalResult, wcMatchday } = game
+
+  // Listen for match-end events from FinalKickGame
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const { isKnockout, matchIdx, myScore, aiScore } = (e as CustomEvent).detail
+      if (isKnockout) wc.finishKnockoutMatch(myScore, aiScore)
+      else wc.finishGroupMatch(matchIdx, myScore, aiScore)
+    }
+    window.addEventListener('wc-match-end', handler)
+    return () => window.removeEventListener('wc-match-end', handler)
+  }, [wc])
+
+  // ── Team Select ──
+  if (wcPhase === 'team_select') {
+    return (
+      <div style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(4,8,18,0.95)', backdropFilter: 'blur(16px)', overflowY: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: 20 }}>
+        <div style={{ fontSize: 10, fontWeight: 800, color: C.gold, letterSpacing: 4, marginBottom: 8 }}>FIFA WORLD CUP 2026</div>
+        <div style={{ fontSize: 20, fontWeight: 900, color: '#fff', marginBottom: 4 }}>Choose Your Team</div>
+        <div style={{ fontSize: 10, color: C.text3, marginBottom: 16 }}>48 nations compete. Pick wisely.</div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, width: '100%', maxWidth: 380 }}>
+          {(WC_TEAMS as any[]).map((t: any) => (
+            <div key={t.id} onClick={() => wc.selectTeam(t)}
+              style={{ padding: '10px 4px', borderRadius: 10, cursor: 'pointer', textAlign: 'center', touchAction: 'none',
+                background: wcTeam?.id === t.id ? `${C.gold}25` : 'rgba(255,255,255,0.03)',
+                border: `2px solid ${wcTeam?.id === t.id ? C.gold : 'rgba(255,255,255,0.06)'}`,
+                boxShadow: wcTeam?.id === t.id ? `0 0 12px ${C.gold}40` : 'none',
+              }}>
+              <div style={{ fontSize: 28 }}>{t.flag}</div>
+              <div style={{ fontSize: 8, fontWeight: 700, color: wcTeam?.id === t.id ? C.gold : C.text2, marginTop: 2 }}>{t.name}</div>
+            </div>
+          ))}
+        </div>
+        {wcTeam && (
+          <div style={{ marginTop: 16, display: 'flex', gap: 10 }}>
+            <div onClick={() => wc.confirmTeam()} style={{ padding: '14px 28px', borderRadius: 14, cursor: 'pointer', background: `${C.gold}20`, border: `2px solid ${C.gold}50`, fontSize: 15, fontWeight: 900, color: C.gold, touchAction: 'none' }}>
+              ENTER TOURNAMENT as {wcTeam.flag}
+            </div>
+          </div>
+        )}
+        <div onClick={() => game.setWcPhase(null)} style={{ marginTop: 12, padding: '8px 20px', borderRadius: 10, cursor: 'pointer', fontSize: 11, color: C.text3, touchAction: 'none' }}>Cancel</div>
+      </div>
+    )
+  }
+
+  // ── Group Draw Animation ──
+  if (wcPhase === 'group_draw' && wcDrawAnim) {
+    return (
+      <div style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(4,8,18,0.95)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ fontSize: 48, marginBottom: 16 }}>⚽</div>
+        <div style={{ fontSize: 22, fontWeight: 900, color: C.gold, letterSpacing: 4 }}>GROUP DRAW</div>
+        <div style={{ fontSize: 12, color: C.text3, marginTop: 8 }}>Drawing your opponents...</div>
+      </div>
+    )
+  }
+
+  // ── Group Stage ──
+  if (wcPhase === 'group_stage' && wcTournament) {
+    const { groupTeams, standings, groupMatches } = wcTournament
+    const sorted = [...standings].sort((a: any, b: any) => {
+      if (b.pts !== a.pts) return b.pts - a.pts
+      return (b.gf - b.ga) - (a.gf - a.ga)
+    })
+    return (
+      <div style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(4,8,18,0.95)', backdropFilter: 'blur(16px)', overflowY: 'auto', padding: 20 }}>
+        <div style={{ textAlign: 'center', marginBottom: 12 }}>
+          <div style={{ fontSize: 10, fontWeight: 800, color: C.gold, letterSpacing: 4 }}>GROUP STAGE</div>
+          <div style={{ fontSize: 14, fontWeight: 900, color: '#fff', marginTop: 4 }}>Your Group: {wcTeam?.flag} {wcTeam?.name}</div>
+        </div>
+        {/* Standings */}
+        <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 12, padding: 10, marginBottom: 14, border: '1px solid rgba(255,255,255,0.06)' }}>
+          <div style={{ fontSize: 8, color: C.text3, letterSpacing: 2, marginBottom: 6 }}>STANDINGS</div>
+          {sorted.map((s: any, i: number) => {
+            const isYou = s.team.id === wcTeam?.id
+            return (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 6px', marginBottom: 2, borderRadius: 6,
+                background: isYou ? `${C.gold}12` : 'transparent', border: isYou ? `1px solid ${C.gold}25` : '1px solid transparent' }}>
+                <span style={{ fontSize: 10, fontWeight: 900, color: i < 2 ? C.green : C.text3, width: 14 }}>{i + 1}</span>
+                <span style={{ fontSize: 16 }}>{s.team.flag}</span>
+                <span style={{ fontSize: 10, fontWeight: 700, color: isYou ? C.gold : C.text, flex: 1 }}>{s.team.name}</span>
+                <span style={{ fontSize: 9, color: C.text3, width: 20 }}>{s.played}</span>
+                <span style={{ fontSize: 9, color: C.green, width: 14 }}>{s.won}</span>
+                <span style={{ fontSize: 9, color: C.text3, width: 14 }}>{s.drawn}</span>
+                <span style={{ fontSize: 9, color: C.red, width: 14 }}>{s.lost}</span>
+                <span style={{ fontSize: 9, color: C.text3, width: 24 }}>{s.gf - s.ga >= 0 ? '+' : ''}{s.gf - s.ga}</span>
+                <span style={{ fontSize: 10, fontWeight: 900, color: C.gold, width: 18 }}>{s.pts}</span>
+              </div>
+            )
+          })}
+          <div style={{ display: 'flex', gap: 8, marginTop: 4, fontSize: 7, color: C.text3 }}>
+            <span>P=Played</span><span style={{ color: C.green }}>W</span><span>D</span><span style={{ color: C.red }}>L</span><span>GD</span><span style={{ color: C.gold }}>Pts</span>
+          </div>
+        </div>
+        {/* Matches */}
+        <div style={{ fontSize: 8, color: C.text3, letterSpacing: 2, marginBottom: 6 }}>MATCHES</div>
+        {groupMatches.map((m: any, i: number) => {
+          const opp = groupTeams[m.away]
+          return (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px', marginBottom: 6, borderRadius: 10,
+              background: m.played ? 'rgba(255,255,255,0.02)' : `${C.gold}08`, border: `1px solid ${m.played ? 'rgba(255,255,255,0.05)' : C.gold + '30'}` }}>
+              <span style={{ fontSize: 20 }}>{wcTeam?.flag}</span>
+              <span style={{ flex: 1, fontSize: 10, fontWeight: 700, color: '#fff', textAlign: 'center' }}>
+                {m.played ? `${m.homeGoals} - ${m.awayGoals}` : 'vs'}
+              </span>
+              <span style={{ fontSize: 20 }}>{opp?.flag}</span>
+              <span style={{ fontSize: 9, color: C.text3, width: 50 }}>{opp?.name}</span>
+              {!m.played && (
+                <div onClick={() => wc.playGroupMatch(i)} style={{ padding: '6px 14px', borderRadius: 8, cursor: 'pointer', background: `${C.gold}20`, border: `1px solid ${C.gold}40`, fontSize: 10, fontWeight: 900, color: C.gold, touchAction: 'none' }}>PLAY</div>
+              )}
+              {m.played && <span style={{ fontSize: 9, color: m.homeGoals > m.awayGoals ? C.green : m.homeGoals < m.awayGoals ? C.red : C.gold }}>
+                {m.homeGoals > m.awayGoals ? 'WIN' : m.homeGoals < m.awayGoals ? 'LOSS' : 'DRAW'}
+              </span>}
+            </div>
+          )
+        })}
+        <div onClick={() => wc.abandonTournament()} style={{ marginTop: 16, padding: '8px 20px', borderRadius: 10, cursor: 'pointer', textAlign: 'center', fontSize: 10, color: C.red, touchAction: 'none' }}>Abandon Tournament</div>
+      </div>
+    )
+  }
+
+  // ── Knockout ──
+  if (wcPhase === 'knockout' && wcTournament) {
+    const round = wcTournament.knockoutRound || 0
+    const roundNames = ['Round of 32', 'Round of 16', 'Quarter-Final', 'Semi-Final', 'FINAL']
+    const opp = wcTournament.knockoutOpps?.[round]
+    const results = wcTournament.knockoutResults || []
+    return (
+      <div style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(4,8,18,0.95)', backdropFilter: 'blur(16px)', overflowY: 'auto', padding: 20 }}>
+        <div style={{ textAlign: 'center', marginBottom: 16 }}>
+          <div style={{ fontSize: 10, fontWeight: 800, color: C.gold, letterSpacing: 4 }}>KNOCKOUT STAGE</div>
+          <div style={{ fontSize: 18, fontWeight: 900, color: '#fff', marginTop: 4 }}>{roundNames[round]}</div>
+        </div>
+        {/* Previous results */}
+        {results.length > 0 && (
+          <div style={{ marginBottom: 14 }}>
+            <div style={{ fontSize: 8, color: C.text3, letterSpacing: 2, marginBottom: 4 }}>PREVIOUS ROUNDS</div>
+            {results.map((r: any, i: number) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 8px', marginBottom: 2, borderRadius: 6, background: r.won ? `${C.green}10` : `${C.red}10` }}>
+                <span style={{ fontSize: 9, fontWeight: 800, color: r.won ? C.green : C.red }}>{r.won ? 'WIN' : 'LOSS'}</span>
+                <span style={{ fontSize: 9, color: C.text3 }}>{roundNames[r.round]}</span>
+                <span style={{ fontSize: 9, color: C.text2 }}>{r.myScore}-{r.aiScore}</span>
+              </div>
+            ))}
+          </div>
+        )}
+        {/* Current match */}
+        {opp && (
+          <div style={{ textAlign: 'center', padding: 20, borderRadius: 16, background: `${C.gold}08`, border: `1px solid ${C.gold}30`, marginBottom: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 20 }}>
+              <div><div style={{ fontSize: 48 }}>{wcTeam?.flag}</div><div style={{ fontSize: 10, fontWeight: 800, color: C.cyan }}>{wcTeam?.name}</div></div>
+              <div style={{ fontSize: 20, fontWeight: 900, color: C.gold }}>VS</div>
+              <div><div style={{ fontSize: 48 }}>{opp.flag}</div><div style={{ fontSize: 10, fontWeight: 800, color: C.red }}>{opp.name}</div></div>
+            </div>
+            <div onClick={() => wc.playKnockoutMatch()} style={{ marginTop: 16, padding: '14px 28px', borderRadius: 14, cursor: 'pointer', background: `${C.gold}20`, border: `2px solid ${C.gold}50`, fontSize: 15, fontWeight: 900, color: C.gold, display: 'inline-block', touchAction: 'none' }}>
+              KICK OFF
+            </div>
+          </div>
+        )}
+        <div onClick={() => wc.abandonTournament()} style={{ padding: '8px 20px', borderRadius: 10, cursor: 'pointer', textAlign: 'center', fontSize: 10, color: C.red, touchAction: 'none' }}>Abandon</div>
+      </div>
+    )
+  }
+
+  // ── Result ──
+  if (wcPhase === 'result') {
+    const placement = wcFinalResult || 'group'
+    const emoji = placement === 'gold' ? '🏆' : placement === 'silver' ? '🥈' : placement === 'bronze' ? '🥉' : '📊'
+    const label = placement === 'gold' ? 'WORLD CHAMPION!' : placement === 'silver' ? 'RUNNER-UP' : placement === 'bronze' ? 'THIRD PLACE' : 'GROUP STAGE EXIT'
+    const color = placement === 'gold' ? C.gold : placement === 'silver' ? '#C0C0C0' : placement === 'bronze' ? '#CD7F32' : C.text3
+    return (
+      <div style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(4,8,18,0.95)', backdropFilter: 'blur(16px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ fontSize: 80, marginBottom: 8 }}>{emoji}</div>
+        <div style={{ fontSize: 28, fontWeight: 900, color, textShadow: `0 0 30px ${color}60`, marginBottom: 8 }}>{label}</div>
+        <div style={{ fontSize: 14, color: C.text2, marginBottom: 20 }}>{wcTeam?.flag} {wcTeam?.name}</div>
+        <div onClick={() => wc.claimPrize()} style={{ padding: '14px 32px', borderRadius: 14, cursor: 'pointer', background: `${color}20`, border: `2px solid ${color}50`, fontSize: 16, fontWeight: 900, color, touchAction: 'none' }}>
+          CLAIM PRIZE
+        </div>
+      </div>
+    )
+  }
+
+  return null
 }
