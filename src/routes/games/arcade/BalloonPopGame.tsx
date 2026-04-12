@@ -72,7 +72,7 @@ const getBalloonColor = (pct: number) => pct < 30 ? "#4CAF50" : pct < 50 ? "#8BC
 
 export const BalloonPopGame: React.FC = () => {
   const { gameActive, exitGame } = useGameContext()
-  const { recordGameResult, notify, spawnConfetti, spawnSmoke } = usePlayerContext()
+  const { coins, recordGameResult, notify, spawnConfetti, spawnSmoke } = usePlayerContext()
   const { registerPuffHandlers, bleConnected, mpActive, ssPlayerCount, partyPlayerNames } = useBLEContext()
   const audio = useAudioContext()
   const { playFx } = audio
@@ -771,9 +771,15 @@ export const BalloonPopGame: React.FC = () => {
           <div style={{ fontSize: 8, fontWeight: 600, color: "rgba(255,255,255,0.4)", letterSpacing: 1 }}>
             <span style={{ fontWeight: 800, color: "rgba(255,255,255,0.6)" }}>Powered by <span style={{ fontWeight: 900, letterSpacing: 2 }}>MOOD LAB</span></span>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 2, padding: "2px 7px", borderRadius: 100, background: "rgba(255,217,61,0.06)", border: "1px solid rgba(255,217,61,0.12)" }}>
-            <div style={{ width: 5, height: 5, borderRadius: "50%", background: bleConnected ? C.green : C.orange }} />
-            <span style={{ fontSize: 8, fontWeight: 700, color: bleConnected ? C.green : C.orange }}>{bleConnected ? "Puff" : "Connect"}</span>
+          <div style={{ display: "flex", gap: 5, alignItems: "center" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 3, padding: "2px 8px", borderRadius: 100, background: bleConnected ? "rgba(52,211,153,0.1)" : "rgba(251,146,60,0.1)", border: `1px solid ${bleConnected ? "rgba(52,211,153,0.25)" : "rgba(251,146,60,0.25)"}` }}>
+              <div style={{ width: 5, height: 5, borderRadius: "50%", background: bleConnected ? C.green : C.orange }} />
+              <span style={{ fontSize: 8, fontWeight: 700, color: bleConnected ? C.green : C.orange }}>{bleConnected ? "Puff" : "Connect"}</span>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 2, padding: "2px 7px", borderRadius: 100, background: "rgba(255,217,61,0.06)", border: "1px solid rgba(255,217,61,0.12)" }}>
+              <span style={{ fontSize: 9 }}>🪙</span>
+              <span style={{ fontSize: 10, fontWeight: 800, color: C.gold, fontFamily: "'Courier New',monospace" }}>{coins.toLocaleString()}</span>
+            </div>
           </div>
         </div>
         <div style={{ padding: "2px 12px", display: "flex", alignItems: "center", gap: 6 }}>

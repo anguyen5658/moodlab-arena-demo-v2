@@ -1,5 +1,6 @@
 import React from 'react'
 import { useGameContext } from '../../context/GameContext'
+import { GameChatOverlay } from '../../components/shared/GameChatOverlay'
 import { PuffDerbyGame } from './arcade/PuffDerbyGame'
 import { WildWestGame } from './arcade/WildWestGame'
 import { PuffClockGame } from './arcade/PuffClockGame'
@@ -38,12 +39,8 @@ import {
   TreasureMapGame,
 } from './oracle/RemainingOracleGames'
 
-export const GameOverlayRouter: React.FC = () => {
-  const game = useGameContext()
-  const active = game.gameActive
-  if (!active) return null
-
-  switch (active.id) {
+const dispatchGame = (id: string): React.ReactNode => {
+  switch (id) {
     case 'puffderby': return <PuffDerbyGame />
     case 'wildwest': return <WildWestGame />
     case 'puffclock': return <PuffClockGame />
@@ -83,4 +80,17 @@ export const GameOverlayRouter: React.FC = () => {
     case 'treasuremap': return <TreasureMapGame />
     default: return null
   }
+}
+
+export const GameOverlayRouter: React.FC = () => {
+  const game = useGameContext()
+  const active = game.gameActive
+  if (!active) return null
+
+  return (
+    <>
+      {dispatchGame(active.id)}
+      <GameChatOverlay />
+    </>
+  )
 }
