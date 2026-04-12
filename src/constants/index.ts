@@ -9,12 +9,12 @@
 
 // ── ARENA VIEW IMAGES (place in /assets/arena/) ──
 const ARENA_IMAGES = {
-  hub:      "/assets/arena/hub.png",
-  arcade:   "/assets/arena/arcade.png",
-  stage:    "/assets/arena/stage.png",
-  oracle:   "/assets/arena/oracle.png",
-  wall:     "/assets/arena/wall.png",
-  worldcup: "/assets/arena/worldcup.png",
+  hub:      "/assets/arena/hub.webp",
+  arcade:   "/assets/arena/arcade.webp",
+  stage:    "/assets/arena/stage.webp",
+  oracle:   "/assets/arena/oracle.webp",
+  wall:     "/assets/arena/wall.webp",
+  worldcup: "/assets/arena/worldcup.webp",
 };
 const ARENA_VIDEOS = {
   hub:      "/assets/arena/hub.mp4",
