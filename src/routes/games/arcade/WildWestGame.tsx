@@ -48,7 +48,16 @@ export const WildWestGame: React.FC = () => {
   const player = usePlayerContext()
   const ble = useBLEContext()
   const audio = useAudioContext()
-  const { gameActive, setGameActive } = game
+  const { gameActive, setGameActive, setGameChatMsgs, setGameChatOpen } = game
+
+  const addGameChat = useCallback((name: string, msg: string, color: string) => {
+    setGameChatMsgs(prev => [...prev.slice(-10), { u: name, m: msg, c: color, t: Date.now() }])
+  }, [setGameChatMsgs])
+
+  const duelAutoChat = useCallback((msgs: string[], color?: string) => {
+    const bots = ['DustyDave', 'Cactus_Carl', 'DesertFox', 'SheriffBot', 'TumbleweedTina']
+    addGameChat(pick(bots), pick(msgs), color || C.gold)
+  }, [addGameChat])
 
   // ── State ──
   const [duelPhase, setDuelPhase] = useState<Phase>('menu')
@@ -370,11 +379,13 @@ export const WildWestGame: React.FC = () => {
           player.recordGameResult(true, duelBase, 20, { bleConnected: ble.bleConnected, zone: 'arcade', gameActive })
           setDuelStats(s => ({ ...s, wins: s.wins + 1, streak: s.streak + 1 }))
           player.notify('DUEL WON! +' + duelBase + ' coins!', C.gold)
+          addGameChat('Announcer', 'MATCH WON! STEVE IS THE FASTEST GUN!', C.gold)
         } else {
           audio.playFx('lose')
           player.recordGameResult(false, 12, 8, { bleConnected: ble.bleConnected, zone: 'arcade', gameActive })
           setDuelStats(s => ({ ...s, streak: 0 }))
           player.notify('Duel lost!', C.red)
+          addGameChat('Announcer', (duelOpponentRef.current?.name || 'AI') + ' WINS THE DUEL!', C.red)
         }
       } else {
         setDuelPhase('round_result')
@@ -403,6 +414,7 @@ export const WildWestGame: React.FC = () => {
       audio.playFx('error')
       setDuelStats(s => ({ ...s, fouls: s.fouls + 1 }))
       player.notify('FOUL! Drew too early!', C.red)
+      duelAutoChat(WW_ROASTS_FOUL, C.red)
       handleDuelRoundEnd(false, true, foulResult)
       return
     }
@@ -469,10 +481,13 @@ export const WildWestGame: React.FC = () => {
       if (bonusCoins > 0) player.setCoins((c: number) => c + bonusCoins)
       duelComedy.current.streak++
       player.notify('Round won! ' + reactionMs + 'ms' + (bonusCoins > 0 ? ' +' + bonusCoins : ''), C.green)
+      duelAutoChat(WW_ROASTS_WIN, C.green)
+      if (duelComedy.current.streak >= 2) addGameChat('Announcer', duelComedy.current.streak + ' ROUND WIN STREAK!', C.gold)
     } else {
       audio.playFx('lose')
       duelComedy.current.streak = 0
       player.notify('AI drew faster! ' + aiTime + 'ms', C.red)
+      duelAutoChat(WW_ROASTS_LOSE, C.red)
     }
     handleDuelRoundEnd(win, false, result)
   }
@@ -493,6 +508,7 @@ export const WildWestGame: React.FC = () => {
     setDuelPhase('countdown'); phaseRef.current = 'countdown'
     setDuelCountdown(3)
     audio.playFx('click')
+    if (roundNum > 0) duelAutoChat(['Round ' + (roundNum + 1) + '! HERE WE GO!', 'The tension is UNREAL!', 'Who draws first?!'], C.gold)
 
     schedule(() => { setDuelCountdown(2); audio.playFx('click') }, 900)
     schedule(() => { setDuelCountdown(1); audio.playFx('click') }, 1800)
@@ -518,6 +534,7 @@ export const WildWestGame: React.FC = () => {
       duelSteadyTimerRef.current = setTimeout(() => {
         setDuelStaredownStage(2)
         setDuelStaredownText(pick(['WHO WILL DRAW FIRST?', 'The air CRACKLES...', 'DRAW OR DIE...']))
+        duelAutoChat(['The tension is INSANE!', 'Nobody moves...', "I can't breathe!"], C.orange)
       }, stage2)
 
       setTimeout(() => {
@@ -531,6 +548,7 @@ export const WildWestGame: React.FC = () => {
         duelDrawTime.current = Date.now()
         audio.playFx('whistle')
         setDuelStaredownText('')
+        addGameChat('Announcer', 'DRAW! REACT NOW!', C.red)
 
         duelTimerRef.current = setTimeout(() => {
           if (duelDrawTime.current) {
@@ -578,6 +596,9 @@ export const WildWestGame: React.FC = () => {
     setDuelIntroStage('enter')
     setDuelIntroCount(3)
     audio.playFx('crowd')
+    setGameChatOpen(true)
+    addGameChat('Announcer', 'HIGH NOON SHOWDOWN! ' + opp.name + ' vs Steve!', C.gold)
+    schedule(() => duelAutoChat(['This is gonna be INTENSE!', 'Place your bets!', "My money's on Steve!", 'I got ' + opp.name + ' easy!'], C.cyan), 800)
 
     schedule(() => setDuelIntroStage('stats'), 1200)
     schedule(() => { setDuelIntroStage('countdown'); setDuelIntroCount(3); audio.playFx('whistle') }, 2400)
@@ -775,10 +796,27 @@ export const WildWestGame: React.FC = () => {
                 <div style={{ fontSize: 8, color: C.text3 }}>{wwOpp.rank} {wwOpp.record}</div>
               </div>
             </div>
+            {(duelIntroStage === 'stats' || duelIntroStage === 'countdown' || duelIntroStage === 'go') && (
+              <div style={{ width: '82%', maxWidth: 280, padding: '10px 14px', borderRadius: 14, background: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.08)', marginBottom: 12 }}>
+                <div style={{ fontSize: 8, fontWeight: 800, color: C.gold, marginBottom: 8, textAlign: 'center', letterSpacing: 3 }}>GUNSLINGER STATS</div>
+                {[
+                  [duelStats.fastestDraw < 999 ? duelStats.fastestDraw + 'ms' : '---', 'Fastest Draw', (wwOpp.speed - 50 + Math.floor(Math.random() * 40)) + 'ms'],
+                  [String(duelStats.wins), 'Duels Won', wwOpp.record.split('-')[0]],
+                  [String(duelStats.fouls), 'Fouls', String(Math.floor(Math.random() * 15))],
+                  [String(duelStats.streak), 'Win Streak', String(Math.floor(Math.random() * 8))],
+                ].map(([l, mid, r], i) => (
+                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4, padding: '2px 0', borderBottom: i < 3 ? `1px solid ${C.border}` : 'none' }}>
+                    <span style={{ fontSize: 11, fontWeight: 800, color: C.cyan, minWidth: 35 }}>{l}</span>
+                    <span style={{ fontSize: 8, color: C.text3, flex: 1, textAlign: 'center' }}>{mid}</span>
+                    <span style={{ fontSize: 11, fontWeight: 800, color: C.orange, minWidth: 35, textAlign: 'right' }}>{r}</span>
+                  </div>
+                ))}
+              </div>
+            )}
             {duelIntroStage === 'go' && (
               <div style={{ fontSize: 24, fontWeight: 900, color: C.gold, textShadow: `0 0 30px ${C.gold}60`, textAlign: 'center', letterSpacing: 3 }}>HIGH NOON!</div>
             )}
-            <div style={{ marginTop: 12, fontSize: 8, color: C.text3, letterSpacing: 1 }}>Best of 5</div>
+            <div style={{ marginTop: 12, fontSize: 8, color: C.text3, letterSpacing: 1 }}>{120 + Math.floor(Math.random() * 80)} watching -- Best of 5</div>
           </div>
         )}
 

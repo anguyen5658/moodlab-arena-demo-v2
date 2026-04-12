@@ -263,7 +263,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode; bleConnected?: 
 
   // ── Chat ──
   const [gameChatMsgs, setGameChatMsgs] = useState<any[]>([])
-  const [gameChatOpen, setGameChatOpen] = useState(false)
+  const [gameChatOpen, setGameChatOpen] = useState(true)
   const [gameChatInput, setGameChatInput] = useState("")
 
   // ── UI Overlays ──

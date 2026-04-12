@@ -76,7 +76,13 @@ export const GameChatOverlay: React.FC<GameChatOverlayProps> = ({ controlsSlot }
       )}
 
       {/* Chat frame (collapsible) */}
-      <div style={{ pointerEvents: 'auto' }}>
+      <div style={{
+        pointerEvents: 'auto',
+        background: gameChatOpen
+          ? 'linear-gradient(0deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.6) 55%, rgba(0,0,0,0.15) 85%, transparent 100%)'
+          : 'none',
+        padding: '0 10px 6px',
+      }}>
         {/* Emoji reaction bar + audio toggle + expand */}
         <div
           style={{
@@ -84,11 +90,7 @@ export const GameChatOverlay: React.FC<GameChatOverlayProps> = ({ controlsSlot }
             alignItems: 'center',
             justifyContent: 'center',
             gap: 3,
-            padding: '4px 8px',
-            background: 'rgba(10,14,26,0.88)',
-            backdropFilter: 'blur(10px)',
-            borderTop: '1px solid rgba(255,255,255,0.06)',
-            borderBottom: gameChatOpen ? '1px solid rgba(255,255,255,0.04)' : 'none',
+            padding: '4px 0',
           }}
         >
           {REACTIONS.map((e, i) => (
@@ -143,9 +145,7 @@ export const GameChatOverlay: React.FC<GameChatOverlayProps> = ({ controlsSlot }
         {gameChatOpen && (
           <div
             style={{
-              background: 'rgba(10,14,26,0.88)',
-              backdropFilter: 'blur(10px)',
-              padding: '6px 10px 8px',
+              padding: '4px 0 4px',
               maxHeight: showAllChat ? 180 : 96,
               transition: 'max-height 0.2s',
               display: 'flex',
