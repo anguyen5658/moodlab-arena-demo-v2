@@ -509,7 +509,24 @@ export const HotPotatoGame: React.FC = () => {
 
   useEffect(() => {
     if (game.gameActive?.id !== 'hotpotato') return
-    ble.registerPuffHandlers('hotpotato', () => startPuffHold(), () => stopPuffHold())
+    const down = () => startPuffHold()
+    const up = () => stopPuffHold()
+    ble.registerPuffHandlers('hotpotato', down, up)
+    // Turn-based MP: only bomb holder's device slot fires
+    if (ble.mpActive && (ble.ssPlayerCount || 0) >= 2) {
+      const handlers: { [slot: number]: { down: (() => void) | null; up: (() => void) | null } } = {}
+      const pList = playersRef.current
+      const holder = holderRef.current
+      for (let s = 0; s < (ble.ssPlayerCount || 2); s++) {
+        const p = pList.find(pp => (pp as any).deviceSlot === s)
+        if (p && pList.indexOf(p) === holder && !p.isAI) {
+          handlers[s] = { down, up }
+        } else {
+          handlers[s] = { down: null, up: null }
+        }
+      }
+      ble.registerSlotPuffHandlers(handlers)
+    }
     return () => {
       audio.gameSoundsMuted.current = true
       activeRef.current.v = false
@@ -518,7 +535,7 @@ export const HotPotatoGame: React.FC = () => {
       ble.registerPuffHandlers(null, null, null)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [game.gameActive?.id])
+  }, [game.gameActive?.id, currentHolder, ble.mpActive])
 
   if (!phase || game.gameActive?.id !== 'hotpotato') return null
 

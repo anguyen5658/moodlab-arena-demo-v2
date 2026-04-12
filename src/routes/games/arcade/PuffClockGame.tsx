@@ -429,15 +429,32 @@ export const PuffClockGame: React.FC = () => {
   // ── BLE registration (Rule 3 — lazy wrappers) ──
   useEffect(() => {
     if (game.gameActive?.id !== 'puffclock') return
-    ble.registerPuffHandlers(
-      'puffclock',
-      () => pcStartPuff(),
-      () => pcStopPuff(),
-    )
+    const down = () => pcStartPuff()
+    const up = () => pcStopPuff()
+    ble.registerPuffHandlers('puffclock', down, up)
+    // Simultaneous MP: each slot holds independently
+    if (ble.mpActive && (ble.ssPlayerCount || 0) >= 2) {
+      if (!window._pcMp) {
+        window._pcMp = { holding: [false, false, false, false], startTime: [0, 0, 0, 0] }
+      }
+      const handlers: { [slot: number]: { down: (() => void) | null; up: (() => void) | null } } = {}
+      for (let s = 0; s < (ble.ssPlayerCount || 2); s++) {
+        const slot = s
+        if (slot === 0) {
+          handlers[slot] = { down, up }
+        } else {
+          handlers[slot] = {
+            down: () => { window._pcMp!.holding[slot] = true; window._pcMp!.startTime[slot] = Date.now() },
+            up: () => { window._pcMp!.holding[slot] = false },
+          }
+        }
+      }
+      ble.registerSlotPuffHandlers(handlers)
+    }
     return () => {
       ble.registerPuffHandlers(null, null, null)
     }
-  }, [game.gameActive?.id, ble, pcStartPuff, pcStopPuff])
+  }, [game.gameActive?.id, ble, pcStartPuff, pcStopPuff, ble.mpActive, ble.ssPlayerCount])
 
   // ── Auto-start on mount ──
   useEffect(() => {
@@ -460,6 +477,7 @@ export const PuffClockGame: React.FC = () => {
         pcAnimRef.current = null
       }
       ble.registerPuffHandlers(null, null, null)
+      window._pcMp = undefined
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])

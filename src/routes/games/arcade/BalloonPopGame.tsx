@@ -73,7 +73,7 @@ const getBalloonColor = (pct: number) => pct < 30 ? "#4CAF50" : pct < 50 ? "#8BC
 export const BalloonPopGame: React.FC = () => {
   const { gameActive, exitGame } = useGameContext()
   const { coins, recordGameResult, notify, spawnConfetti, spawnSmoke } = usePlayerContext()
-  const { registerPuffHandlers, bleConnected, mpActive, ssPlayerCount, partyPlayerNames } = useBLEContext()
+  const { registerPuffHandlers, registerSlotPuffHandlers, bleConnected, mpActive, ssPlayerCount, partyPlayerNames } = useBLEContext()
   const audio = useAudioContext()
   const { playFx } = audio
 
@@ -591,9 +591,24 @@ export const BalloonPopGame: React.FC = () => {
     const down = () => bpStartCharge()
     const up = () => bpStopCharge()
     registerPuffHandlers("balloon", down, up)
+    // Turn-based MP: only active turn player's device slot fires
+    if (mpActive && (ssPlayerCount || 0) >= 2) {
+      const handlers: { [slot: number]: { down: (() => void) | null; up: (() => void) | null } } = {}
+      const players = bpPlayersRef.current
+      const curTurn = bpCurrentTurnRef.current
+      for (let s = 0; s < (ssPlayerCount || 2); s++) {
+        const player = players.find(p => (p as any).deviceSlot === s)
+        if (player && players.indexOf(player) === curTurn && !player.isAI) {
+          handlers[s] = { down, up }
+        } else {
+          handlers[s] = { down: null, up: null }
+        }
+      }
+      registerSlotPuffHandlers(handlers)
+    }
     return () => registerPuffHandlers(null, null, null)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gameActive?.id])
+  }, [gameActive?.id, bpCurrentTurn, mpActive])
 
   // ── Start game ──
   const startBalloonPop = () => {

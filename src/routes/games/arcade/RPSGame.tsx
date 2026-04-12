@@ -71,7 +71,7 @@ export const RPSGame: React.FC = () => {
   const audio = useAudioContext()
   const { gameActive, exitGame } = game
   const { recordGameResult, spawnConfetti, notify } = player
-  const { registerPuffHandlers, bleConnected, mpActive } = ble
+  const { registerPuffHandlers, registerSlotPuffHandlers, bleConnected, mpActive, ssPlayerCount } = ble
   const { playFx, gameSoundsMuted } = audio
 
   // ─── State (lifted from monolith ~1662-1679) ────────────────
@@ -466,8 +466,35 @@ export const RPSGame: React.FC = () => {
     const down = () => rpsStartPuff()
     const up = () => rpsStopPuff()
     registerPuffHandlers('rps', down, up)
-    return () => { registerPuffHandlers(null, null, null) }
-  }, [registerPuffHandlers, rpsStartPuff, rpsStopPuff])
+    // 1v1 MP: Slot 0 = P1 (existing), Slot 1 = P2 (puff duration = choice)
+    if (mpActive && (ssPlayerCount || 0) >= 2) {
+      if (!window._rpsP2) {
+        window._rpsP2 = { puffStart: 0, puffDuration: 0, choice: null }
+      }
+      const handlers: { [slot: number]: { down: (() => void) | null; up: (() => void) | null } } = {}
+      handlers[0] = { down, up }
+      handlers[1] = {
+        down: () => { window._rpsP2!.puffStart = Date.now() },
+        up: () => {
+          const dur = (Date.now() - (window._rpsP2!.puffStart || 0)) / 1000
+          window._rpsP2!.puffDuration = dur
+          // short = rock, medium = paper, long = scissors
+          if (dur < 1.0) window._rpsP2!.choice = 'rock'
+          else if (dur < 2.5) window._rpsP2!.choice = 'paper'
+          else window._rpsP2!.choice = 'scissors'
+        },
+      }
+      // Remaining slots get null
+      for (let s = 2; s < (ssPlayerCount || 2); s++) {
+        handlers[s] = { down: null, up: null }
+      }
+      registerSlotPuffHandlers(handlers)
+    }
+    return () => {
+      registerPuffHandlers(null, null, null)
+      window._rpsP2 = undefined
+    }
+  }, [registerPuffHandlers, registerSlotPuffHandlers, rpsStartPuff, rpsStopPuff, mpActive, ssPlayerCount])
 
   if (!rpsPhase) return null
 

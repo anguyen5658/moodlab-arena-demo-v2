@@ -259,15 +259,37 @@ export const FishWarGame: React.FC = () => {
 
   useEffect(() => {
     if (game.gameActive?.id !== 'fishwar') return
-    ble.registerPuffHandlers('fishwar', () => { boostRef.current = true }, () => { boostRef.current = false })
+    const down = () => { boostRef.current = true }
+    const up = () => { boostRef.current = false }
+    ble.registerPuffHandlers('fishwar', down, up)
+    // Simultaneous MP: each slot boosts its own fish
+    if (ble.mpActive && (ble.ssPlayerCount || 0) >= 2) {
+      if (!window._fwMp) {
+        window._fwMp = { boosting: [false, false, false, false] }
+      }
+      const handlers: { [slot: number]: { down: (() => void) | null; up: (() => void) | null } } = {}
+      for (let s = 0; s < (ble.ssPlayerCount || 2); s++) {
+        const slot = s
+        if (slot === 0) {
+          handlers[slot] = { down, up }
+        } else {
+          handlers[slot] = {
+            down: () => { window._fwMp!.boosting[slot] = true },
+            up: () => { window._fwMp!.boosting[slot] = false },
+          }
+        }
+      }
+      ble.registerSlotPuffHandlers(handlers)
+    }
     return () => {
       audio.gameSoundsMuted.current = true
       activeRef.current.v = false
       if (animRef.current) { cancelAnimationFrame(animRef.current); animRef.current = null }
       ble.registerPuffHandlers(null, null, null)
+      window._fwMp = undefined
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [game.gameActive?.id])
+  }, [game.gameActive?.id, ble.mpActive, ble.ssPlayerCount])
 
   const handleMove = (clientX: number, clientY: number, rect: DOMRect) => {
     const rx = ((clientX - rect.left) / rect.width) * FW_W

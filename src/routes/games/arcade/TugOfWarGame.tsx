@@ -382,16 +382,38 @@ export const TugOfWarGame: React.FC = () => {
     return () => cancelAnimationFrame(raf)
   }, [drawCanvas])
 
+  // Pull for the RIGHT team (opponent side) — used by multiplayer slots 2,3
+  const tapPullRight = useCallback(() => {
+    if (phaseRef.current !== 'playing' && phaseRef.current !== 'suddendeath') return
+    const force = 2 + Math.random() * 1
+    posRef.current = Math.max(0, posRef.current - force)
+    setPosition(posRef.current)
+  }, [])
+
   useEffect(() => {
     if (game.gameActive?.id !== 'tugofwar') return
     ble.registerPuffHandlers('tugofwar', () => tapPull(), null)
+    // Team-based MP: slots 0,1 = left (you), slots 2,3 = right (opponent)
+    if (ble.mpActive && (ble.ssPlayerCount || 0) >= 2) {
+      const pc = ble.ssPlayerCount || 2
+      const handlers: { [slot: number]: { down: (() => void) | null; up: (() => void) | null } } = {}
+      // 2P: slot 0=left, slot 1=right. 3P: 0,1=left, 2=right. 4P: 0,1=left, 2,3=right.
+      for (let s = 0; s < pc; s++) {
+        const isRight = pc <= 2 ? s >= 1 : s >= 2
+        handlers[s] = {
+          down: isRight ? () => tapPullRight() : () => tapPull(),
+          up: null,
+        }
+      }
+      ble.registerSlotPuffHandlers(handlers)
+    }
     return () => {
       audio.gameSoundsMuted.current = true
       towCleanup()
       ble.registerPuffHandlers(null, null, null)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [game.gameActive?.id])
+  }, [game.gameActive?.id, ble.mpActive, ble.ssPlayerCount])
 
   if (!phase || game.gameActive?.id !== 'tugofwar') return null
 

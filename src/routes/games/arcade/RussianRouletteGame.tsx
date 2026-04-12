@@ -528,7 +528,24 @@ export const RussianRouletteGame: React.FC = () => {
 
   useEffect(() => {
     if (game.gameActive?.id !== 'russian') return
-    ble.registerPuffHandlers('russian', () => startPuff(), () => stopPuff())
+    const down = () => startPuff()
+    const up = () => stopPuff()
+    ble.registerPuffHandlers('russian', down, up)
+    // Turn-based MP: only current turn player's device slot fires; AI turns get null
+    if (ble.mpActive && (ble.ssPlayerCount || 0) >= 2) {
+      const handlers: { [slot: number]: { down: (() => void) | null; up: (() => void) | null } } = {}
+      const pList = playersRef.current
+      const curTurn = currentTurnRef.current
+      for (let s = 0; s < (ble.ssPlayerCount || 2); s++) {
+        const p = pList.find(pp => (pp as any).deviceSlot === s)
+        if (p && pList.indexOf(p) === curTurn && !p.isAI) {
+          handlers[s] = { down, up }
+        } else {
+          handlers[s] = { down: null, up: null }
+        }
+      }
+      ble.registerSlotPuffHandlers(handlers)
+    }
     return () => {
       audio.gameSoundsMuted.current = true
       activeRef.current.v = false
@@ -536,7 +553,7 @@ export const RussianRouletteGame: React.FC = () => {
       ble.registerPuffHandlers(null, null, null)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [game.gameActive?.id])
+  }, [game.gameActive?.id, currentTurn, ble.mpActive])
 
   if (!phase || game.gameActive?.id !== 'russian') return null
 

@@ -640,12 +640,42 @@ export const WildWestGame: React.FC = () => {
   useEffect(() => {
     if (gameActive?.id !== 'wildwest') return
     ble.registerPuffHandlers('wildwest', () => duelShoot(), () => duelReleasePuff())
+    // Multiplayer 1v1: slot 0 = P1, slot 1 = P2 (replaces AI)
+    if (ble.mpActive && (ble.ssPlayerCount || 0) >= 2) {
+      const duelP2 = { reactionTime: 0, puffStart: 0, puffDuration: 0, fired: false }
+      ;(window as any)._duelP2 = duelP2
+      ble.registerSlotPuffHandlers({
+        0: { down: () => duelShoot(), up: () => duelReleasePuff() },
+        1: {
+          down: () => {
+            // P2 reaction — same logic as P1 but tracks separately
+            if (duelP2.fired) return
+            const p = phaseRef.current
+            if (p === 'staredown' || p === 'countdown') {
+              // P2 foul
+              duelP2.fired = true
+              return
+            }
+            if (p === 'draw' && duelDrawTime.current) {
+              duelP2.reactionTime = Date.now() - duelDrawTime.current
+              duelP2.puffStart = Date.now()
+              duelP2.fired = true
+            }
+          },
+          up: () => {
+            if (duelP2.puffStart > 0) {
+              duelP2.puffDuration = (Date.now() - duelP2.puffStart) / 1000
+            }
+          },
+        },
+      })
+    }
     return () => {
       audio.gameSoundsMuted.current = true
       clearAllTimers()
       if (duelAnimRef.current) { cancelAnimationFrame(duelAnimRef.current); duelAnimRef.current = null }
       ble.registerPuffHandlers(null, null, null)
-      // Allow sounds again after unmount
+      ;(window as any)._duelP2 = null
       setTimeout(() => { audio.gameSoundsMuted.current = false }, 100)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

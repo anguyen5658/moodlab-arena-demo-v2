@@ -559,10 +559,41 @@ export const PuffDerbyGame: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  // Per-slot multiplayer puff: each slot boosts its own horse
+  const mpSlotHolding = useRef<boolean[]>([false, false, false, false])
+  const mpSlotStart = useRef<number[]>([0, 0, 0, 0])
+
+  const puffForSlot = useCallback((slotIdx: number) => {
+    if (phaseRef.current !== 'racing') return
+    mpSlotHolding.current[slotIdx] = false
+    const holdDur = (Date.now() - mpSlotStart.current[slotIdx]) / 1000
+    const isBlinker = holdDur >= 5.0
+    const isPuff = holdDur >= 0.3
+    const boost = isBlinker ? 10 + Math.random() * 3 : isPuff ? 3 + Math.random() * 1.5 : 1.5 + Math.random()
+    setPositions(prev => prev.map((p, i) => i === slotIdx ? Math.min(100, p + boost) : p))
+  }, [])
+
   // ── BLE registration ──
   useEffect(() => {
     if (game.gameActive?.id !== 'puffderby') return
+    // Solo mode: all slots → player's horse
     ble.registerPuffHandlers('puffderby', () => puffStart(), () => puffRelease())
+    // Multiplayer mode: each slot → own horse
+    if (ble.mpActive && (ble.ssPlayerCount || 0) >= 2) {
+      const slotCount = ble.ssPlayerCount || 2
+      const handlers: { [slot: number]: { down: (() => void) | null; up: (() => void) | null } } = {}
+      // Slot 0 = player's horse (existing handlers)
+      handlers[0] = { down: () => puffStart(), up: () => puffRelease() }
+      // Slots 1+ = each boosts their own horse
+      for (let s = 1; s < slotCount; s++) {
+        const slot = s
+        handlers[slot] = {
+          down: () => { mpSlotHolding.current[slot] = true; mpSlotStart.current[slot] = Date.now() },
+          up: () => puffForSlot(slot),
+        }
+      }
+      ble.registerSlotPuffHandlers(handlers)
+    }
     return () => {
       audio.gameSoundsMuted.current = true
       if (aiRef.current) { clearInterval(aiRef.current); aiRef.current = null }
@@ -571,7 +602,7 @@ export const PuffDerbyGame: React.FC = () => {
       ble.registerPuffHandlers(null, null, null)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [game.gameActive?.id])
+  }, [game.gameActive?.id, ble.mpActive, ble.ssPlayerCount])
 
   const handleBack = () => {
     audio.playFx('click')

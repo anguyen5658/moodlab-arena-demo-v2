@@ -45,6 +45,12 @@ interface BLEContextValue {
   connectBle: () => Promise<void>
   disconnectBle: () => void
   registerPuffHandlers: (gameId: string | null, down: (() => void) | null, up: (() => void) | null) => void
+  /**
+   * Register per-slot puff handlers for multiplayer games.
+   * Each slot gets its own down/up callbacks. Slots not in the map get null handlers.
+   * Call this from a game's useEffect when mpActive is true.
+   */
+  registerSlotPuffHandlers: (slotHandlers: { [slot: number]: { down: (() => void) | null; up: (() => void) | null } }) => void
 }
 
 const BLECtx = createContext<BLEContextValue>(null!)
@@ -196,7 +202,7 @@ export const BLEProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Register puff handlers for the currently active game.
   // Called by each game hook via useEffect when its game becomes active.
-  // The full multiplayer routing will be implemented in Phase 2+ when game hooks are added.
+  // Solo mode: all slots get the same down/up handlers.
   const registerPuffHandlers = (
     _gameId: string | null,
     down: (() => void) | null,
@@ -210,6 +216,30 @@ export const BLEProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     })
   }
 
+  // Register per-slot puff handlers for multiplayer games.
+  // Each slot gets its own down/up callbacks.
+  // Slots not in the map get null handlers (disabled).
+  // Called by multiplayer game useEffects when mpActive is true.
+  const registerSlotPuffHandlers = (slotHandlers: { [slot: number]: { down: (() => void) | null; up: (() => void) | null } }) => {
+    bleDevicesRef.current.forEach((dev, idx) => {
+      if (!dev) return
+      const h = slotHandlers[idx]
+      if (h) {
+        dev.down = h.down
+        dev.up = h.up
+      } else {
+        dev.down = null
+        dev.up = null
+      }
+    })
+    // Slot 0 also updates legacy refs for backward compatibility
+    const s0 = slotHandlers[0]
+    if (s0) {
+      btPuffDown.current = s0.down
+      btPuffUp.current = s0.up
+    }
+  }
+
   return (
     <BLECtx.Provider value={{
       bleConnected, bleScanning, btPuffActive, setBtPuffActive,
@@ -217,7 +247,7 @@ export const BLEProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       ssPlayerCount, setSsPlayerCount, mpActive, setMpActive,
       btPuffDown, btPuffUp, btPuffEventDown, btPuffEventUp, prevBleConnected,
       connectBleSlot, disconnectBleSlot, connectBle, disconnectBle,
-      registerPuffHandlers,
+      registerPuffHandlers, registerSlotPuffHandlers,
     }}>
       {children}
     </BLECtx.Provider>

@@ -33,7 +33,7 @@ export const PuffLimboGame: React.FC = () => {
 
   const { gameActive, exitGame } = game
   const { recordGameResult, spawnConfetti } = player
-  const { registerPuffHandlers, bleConnected, bleDevices, bleDevicesRef, mpActive, ssPlayerCount, partyPlayerNames } = ble
+  const { registerPuffHandlers, registerSlotPuffHandlers, bleConnected, bleDevices, bleDevicesRef, mpActive, ssPlayerCount, partyPlayerNames } = ble
   const { playFx, gameSoundsMuted } = audio
 
   // ── State ──
@@ -244,6 +244,7 @@ export const PuffLimboGame: React.FC = () => {
       if (plPuffInterval.current) { clearInterval(plPuffInterval.current); plPuffInterval.current = null }
       if (plAnimRef.current) { cancelAnimationFrame(plAnimRef.current); plAnimRef.current = null }
       plGuardRef.current.v = false
+      window._plMp = undefined
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -251,27 +252,34 @@ export const PuffLimboGame: React.FC = () => {
   // ── BLE puff handlers (Rule 3 — lazy wrappers) ──
   useEffect(() => {
     if (!gameActive || gameActive.id !== 'pufflimbo') return
+    const down = () => plStartPuff()
+    const up = () => plReleasePuff()
+    registerPuffHandlers('pufflimbo', down, up)
+    // Simultaneous MP: each slot holds independently, dead slots get null
     if (mpActive && plMpRef.current && plMpRef.current.count >= 2) {
-      // Route each connected slot to its own handler
-      bleDevicesRef.current.forEach((dev, i) => {
-        if (!dev) return
-        if (i === 0) {
-          dev.down = () => plStartPuff()
-          dev.up = () => plReleasePuff()
+      if (!window._plMp) {
+        window._plMp = { alive: [true, true, true, true], holding: [false, false, false, false], startTime: [0, 0, 0, 0] }
+      }
+      const handlers: { [slot: number]: { down: (() => void) | null; up: (() => void) | null } } = {}
+      for (let s = 0; s < (ssPlayerCount || 2); s++) {
+        const slot = s
+        if (window._plMp && !window._plMp.alive[slot]) {
+          handlers[slot] = { down: null, up: null }
+        } else if (slot === 0) {
+          handlers[slot] = { down, up }
         } else {
-          dev.down = () => plStartPuffSlot(i)
-          dev.up = () => plReleasePuffSlot(i)
+          handlers[slot] = {
+            down: () => plStartPuffSlot(slot),
+            up: () => plReleasePuffSlot(slot),
+          }
         }
-      })
-      // Slot 0 is also legacy
-      registerPuffHandlers('pufflimbo', () => plStartPuff(), () => plReleasePuff())
-    } else {
-      registerPuffHandlers('pufflimbo', () => plStartPuff(), () => plReleasePuff())
+      }
+      registerSlotPuffHandlers(handlers)
     }
     return () => {
       registerPuffHandlers(null, null, null)
     }
-  }, [gameActive, mpActive, bleDevicesRef, registerPuffHandlers, plStartPuff, plReleasePuff, plStartPuffSlot, plReleasePuffSlot])
+  }, [gameActive, mpActive, ssPlayerCount, registerPuffHandlers, registerSlotPuffHandlers, plStartPuff, plReleasePuff, plStartPuffSlot, plReleasePuffSlot])
 
   // ── Canvas draw (ported verbatim, stateful closure) ──
   const plDrawCanvas = useCallback(() => {
