@@ -1130,6 +1130,8 @@ export const TankWarGame: React.FC = () => {
   // ── BLE registration ──
   useEffect(() => {
     if (game.gameActive?.id !== 'tankwar') return
+    // Re-enable sound on every run — cleanup mutes on re-run (twMode change) too, not just unmount.
+    audio.gameSoundsMuted.current = false
     const isDualPuff = twModeRef.current === '1v1'
     if (isDualPuff) {
       ble.registerPuffHandlers('tankwar', () => twPuffStart(), () => twPuffStop())
