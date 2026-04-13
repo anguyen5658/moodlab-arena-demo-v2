@@ -1236,13 +1236,42 @@ const TICKER_ITEMS = [
 ];
 
 
-// ── WEB BLUETOOTH — Cali Clear device UUIDs ──
-const BLE_SERVICE_UUID     = "0000ffe0-0000-1000-8000-00805f9b34fb";
-const BLE_WRITE_CHAR_UUID  = "0000ffe5-0000-1000-8000-00805f9b34fb"; // reserved for future commands
-const BLE_NOTIFY_CHAR_UUID = "0000ffe6-0000-1000-8000-00805f9b34fb";
-// Notification payloads (6 bytes each)
-const BLE_PUFF_START = [0xb4, 0xb4, 0x02, 0x00, 0x04, 0x4b]; // heating   → puff starts
-const BLE_PUFF_STOP  = [0xb4, 0xb5, 0x02, 0x00, 0x05, 0x4b]; // cancelled → puff stops
+// ── WEB BLUETOOTH — Supported device profiles ──
+// Each profile declares its primary service + notify characteristic and a
+// parser that returns "start" | "stop" | null for a given notification payload.
+// To add a new device: append another entry — connectBleSlot auto-detects
+// which profile matches the chosen device after gatt.connect.
+const BLE_PROFILES = [
+  {
+    key: "caliclear",
+    name: "Cali Clear",
+    service: "0000ffe0-0000-1000-8000-00805f9b34fb",
+    notify:  "0000ffe6-0000-1000-8000-00805f9b34fb",
+    parse(b) {
+      // 6-byte fixed frames
+      const START = [0xb4, 0xb4, 0x02, 0x00, 0x04, 0x4b];
+      const STOP  = [0xb4, 0xb5, 0x02, 0x00, 0x05, 0x4b];
+      const eq = t => b.length === t.length && t.every((v,i) => b[i] === v);
+      if (eq(START)) return "start";
+      if (eq(STOP))  return "stop";
+      return null;
+    },
+  },
+  {
+    key: "ac6321a",
+    name: "AC6321A",
+    service: "0000ae30-0000-1000-8000-00805f9b34fb",
+    notify:  "0000ae02-0000-1000-8000-00805f9b34fb",
+    parse(b) {
+      // Frame: [0xC3, 0x40, _, _, _, status, _, 0x3C] — status at index 5: 1=start, 0=stop
+      if (b.length < 7) return null;
+      if (b[0] !== 0xC3 || b[b.length - 1] !== 0x3C) return null;
+      if (b[5] === 0x01) return "start";
+      if (b[5] === 0x00) return "stop";
+      return null;
+    },
+  },
+];
 
 // ═══════════════════════════════════
 // MAIN COMPONENT
@@ -9454,7 +9483,7 @@ export default function MoodLabArena() {
     try {
       setBleScanning(true);
       const device = await navigator.bluetooth.requestDevice({
-        filters: [{ services: [BLE_SERVICE_UUID] }],
+        filters: BLE_PROFILES.map(p => ({ services: [p.service] })),
       });
 
       // For slot 0, also keep backward-compat refs
@@ -9484,25 +9513,34 @@ export default function MoodLabArena() {
       });
 
       const server  = await device.gatt.connect();
-      const service = await server.getPrimaryService(BLE_SERVICE_UUID);
-      const charNotify = await service.getCharacteristic(BLE_NOTIFY_CHAR_UUID);
+      // Auto-detect which supported profile this device exposes.
+      let profile = null, service = null, charNotify = null;
+      for (const p of BLE_PROFILES) {
+        try {
+          const svc = await server.getPrimaryService(p.service);
+          const ch  = await svc.getCharacteristic(p.notify);
+          profile = p; service = svc; charNotify = ch;
+          break;
+        } catch (_) { /* try next profile */ }
+      }
+      if (!profile) throw new Error("No supported BLE profile found on this device");
 
       // For slot 0, keep backward-compat refs
       if (slotIndex === 0) btCharNotify.current = charNotify;
 
       // Store in mutable ref array
       bleDevicesRef.current[slotIndex] = {
-        slot: slotIndex, device, characteristic: charNotify,
+        slot: slotIndex, device, characteristic: charNotify, profile,
         puffTimeout: null, down: null, up: null,
       };
 
       charNotify.addEventListener("characteristicvaluechanged", (e) => {
         const dv = e.target.value;
         const b  = Array.from({ length: dv.byteLength }, (_, i) => dv.getUint8(i));
-        const match = (template) => b.length === template.length && template.every((v, i) => b[i] === v);
         const slotRef = bleDevicesRef.current[slotIndex];
         if (!slotRef) return;
-        if (match(BLE_PUFF_START)) {
+        const ev = profile.parse(b);
+        if (ev === "start") {
           clearTimeout(slotRef.puffTimeout);
           // For slot 0, also fire legacy handlers
           if (slotIndex === 0) {
@@ -9517,7 +9555,7 @@ export default function MoodLabArena() {
           }
           slotRef.down?.();
           slotRef.puffTimeout = setTimeout(() => { slotRef.up?.(); }, 15000);
-        } else if (match(BLE_PUFF_STOP)) {
+        } else if (ev === "stop") {
           clearTimeout(slotRef.puffTimeout);
           if (slotIndex === 0) {
             clearTimeout(btPuffTimeout.current);
@@ -9537,7 +9575,7 @@ export default function MoodLabArena() {
       // Update UI state
       setBleDevices(prev => {
         const filtered = prev.filter(d => d.slot !== slotIndex);
-        return [...filtered, { slot: slotIndex, name: partyPlayerNames[slotIndex], deviceName: device.name || "Cali Clear", connected: true }]
+        return [...filtered, { slot: slotIndex, name: partyPlayerNames[slotIndex], deviceName: device.name || profile.name, connected: true }]
           .sort((a,b) => a.slot - b.slot);
       });
     } catch (err) {
