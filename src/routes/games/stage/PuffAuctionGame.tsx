@@ -4,26 +4,25 @@ import { useGameContext } from '../../../context/GameContext'
 import { usePlayerContext } from '../../../context/PlayerContext'
 import { useBLEContext } from '../../../context/BLEContext'
 import { useAudioContext } from '../../../context/AudioContext'
-import { StageHeader, pick } from './_shared'
+import { StageHeader } from './_shared'
 
-interface AuctionItem { name: string; emoji: string; realValue: number; hint: string }
-
-const ITEMS: AuctionItem[] = [
-  { name: 'Vintage Glass Bong (1970s)', emoji: '🫧', realValue: 1200, hint: 'Rare find' },
-  { name: 'Signed Snoop Dogg Poster', emoji: '📜', realValue: 400, hint: 'Celeb merch' },
-  { name: '1-oz Golden Rolling Tray', emoji: '🏆', realValue: 2500, hint: 'Luxury' },
-  { name: 'Cali Clear Prototype', emoji: '💎', realValue: 800, hint: 'Collector' },
-  { name: 'Glass Pipe Art Piece', emoji: '🎨', realValue: 350, hint: 'Artisan' },
+// Direct lift from monolith line 1186 + 16097
+interface Prize { name: string; value: number; emoji: string; rarity: 'common' | 'rare' | 'legendary' }
+const PA_PRIZES: Prize[] = [
+  { name: '100 Coins', value: 100, emoji: '🪙', rarity: 'common' },
+  { name: '200 Coins', value: 200, emoji: '💰', rarity: 'common' },
+  { name: 'Rare Badge', value: 300, emoji: '🏅', rarity: 'rare' },
+  { name: '500 Coins', value: 500, emoji: '💎', rarity: 'rare' },
+  { name: 'MYSTERY BOX', value: 1000, emoji: '🎁', rarity: 'legendary' },
 ]
+const PA_BLINKER_THRESHOLD = 5.0
+const PA_DANGER_ZONE = 4.5
 
-interface Bot { name: string; emoji: string; color: string }
-const BOTS: Bot[] = [
-  { name: 'CloudMogul', emoji: '💰', color: '#FFD93D' },
-  { name: 'BaronPuff', emoji: '🎩', color: '#C084FC' },
-  { name: 'MoneyHaze', emoji: '💸', color: '#00E5FF' },
-]
+const SPECTATOR_NAMES = ['CloudMogul', 'BaronPuff', 'MoneyHaze', 'VibeKing', 'NeonQueen', 'BlazedPanda', 'PuffDaddy', 'ChillMaster42']
 
-type Phase = 'bidding' | 'reveal' | 'final' | null
+interface Bid { name: string; time: number; disqualified: boolean; isYou?: boolean }
+
+type Phase = 'intro' | 'reveal' | 'bidding' | 'result' | 'final' | null
 
 export const PuffAuctionGame: React.FC = () => {
   const game = useGameContext()
@@ -33,92 +32,165 @@ export const PuffAuctionGame: React.FC = () => {
 
   const [phase, setPhase] = useState<Phase>(null)
   const [round, setRound] = useState(0)
-  const [item, setItem] = useState<AuctionItem | null>(null)
-  const [yourBid, setYourBid] = useState(0)
-  const [bids, setBids] = useState<{ name: string; bid: number; isYou: boolean; color: string }[]>([])
-  const [totalWins, setTotalWins] = useState(0)
-  const [msg, setMsg] = useState('')
+  const [prize, setPrize] = useState<Prize | null>(null)
+  const [bids, setBids] = useState<Bid[]>([])
+  const [winner, setWinner] = useState<Bid | null>(null)
+  const [disqualified, setDisqualified] = useState(false)
+  const [holding, setHolding] = useState(false)
+  const [bidTime, setBidTime] = useState(0)
+  const [totalWon, setTotalWon] = useState(0)
+  const [comment, setComment] = useState('')
+  const [introStep, setIntroStep] = useState(0)
 
+  const roundRef = useRef(0)
+  useEffect(() => { roundRef.current = round }, [round])
+  const totalWonRef = useRef(0)
+  useEffect(() => { totalWonRef.current = totalWon }, [totalWon])
   const startedRef = useRef(false)
   const phaseRef = useRef<Phase>(null)
   useEffect(() => { phaseRef.current = phase }, [phase])
-  const itemsRef = useRef<AuctionItem[]>([])
+  const holdingRef = useRef(false)
+  const puffStartRef = useRef(0)
+  const puffIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const timeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([])
 
-  const startRound = useCallback(() => {
-    const pool = itemsRef.current.length ? itemsRef.current : [...ITEMS].sort(() => Math.random() - 0.5)
-    itemsRef.current = pool
-    const it = pool.shift()!
-    setItem(it)
-    setYourBid(0)
+  const clearTimeouts = () => { timeoutsRef.current.forEach(t => clearTimeout(t)); timeoutsRef.current = [] }
+  const addTimeout = (fn: () => void, ms: number) => {
+    const id = setTimeout(fn, ms)
+    timeoutsRef.current.push(id)
+    return id
+  }
+
+  const startRound = useCallback((rn: number) => {
+    const pz = PA_PRIZES[Math.min(rn, PA_PRIZES.length - 1)]
+    setRound(rn)
+    setPrize(pz)
     setBids([])
-    setPhase('bidding')
-    setMsg(`Bid on the ${it.name}!`)
-    audio.playFx('select')
+    setWinner(null)
+    setDisqualified(false)
+    setHolding(false); holdingRef.current = false
+    setBidTime(0)
+    setPhase('reveal')
+    setComment(`Round ${rn + 1}: ${pz.emoji} ${pz.name}!`)
+    audio.playFx('tap')
+    addTimeout(() => {
+      setPhase('bidding')
+      setComment(`Hold your puff... but stay under ${PA_BLINKER_THRESHOLD}s!`)
+    }, 2000)
   }, [audio])
 
   const startGame = useCallback(() => {
     audio.gameSoundsMuted.current = false
-    itemsRef.current = [...ITEMS].sort(() => Math.random() - 0.5)
-    setRound(0)
-    setTotalWins(0)
-    startRound()
+    clearTimeouts()
+    setRound(0); roundRef.current = 0
+    setBids([])
+    setWinner(null)
+    setDisqualified(false)
+    setHolding(false); holdingRef.current = false
+    setBidTime(0)
+    setTotalWon(0); totalWonRef.current = 0
+    setPrize(null)
+    setComment('')
+    setIntroStep(0)
+    setPhase('intro')
+    audio.playFx('crowd')
+    addTimeout(() => setIntroStep(1), 400)
+    addTimeout(() => setIntroStep(2), 1000)
+    addTimeout(() => setIntroStep(3), 1800)
+    addTimeout(() => { setIntroStep(4); audio.playFx('whistle') }, 2600)
+    addTimeout(() => startRound(0), 3400)
   }, [audio, startRound])
 
-  const submitBid = useCallback((bid: number) => {
-    if (phaseRef.current !== 'bidding' || !item) return
-    setYourBid(bid)
-    // Generate bot bids — biased around realValue with noise
-    const botBids = BOTS.map(b => ({
-      name: b.name,
-      color: b.color,
-      bid: Math.max(50, Math.round(item.realValue * (0.6 + Math.random() * 0.9))),
-      isYou: false,
-    }))
-    const all = [{ name: 'You', bid, isYou: true, color: C.cyan }, ...botBids]
-    all.sort((a, b) => b.bid - a.bid)
-    setBids(all)
-    const youWon = all[0].isYou
-    // Profit if won = realValue - bid (good if bid < realValue)
-    setPhase('reveal')
-    audio.playFx(youWon ? 'whistle' : 'tap')
-    if (youWon) {
-      const profit = item.realValue - bid
-      if (profit > 0) {
-        setTotalWins(w => w + 1)
-        setMsg(`YOU WIN! Profit: $${profit.toLocaleString()}`)
-        audio.playFx('win')
-      } else {
-        setMsg(`You won but overpaid $${Math.abs(profit).toLocaleString()}`)
-        audio.playFx('miss')
-      }
-    } else {
-      setMsg(`${all[0].name} won with $${all[0].bid.toLocaleString()}`)
+  const finishRound = useCallback((myBid: Bid) => {
+    const aiBids: Bid[] = []
+    const numAi = 3 + Math.floor(Math.random() * 4)
+    for (let i = 0; i < numAi; i++) {
+      const aiDur = 1.5 + Math.random() * 3.2
+      aiBids.push({
+        name: SPECTATOR_NAMES[Math.floor(Math.random() * SPECTATOR_NAMES.length)],
+        time: Math.min(aiDur, PA_BLINKER_THRESHOLD - 0.1),
+        disqualified: aiDur >= PA_BLINKER_THRESHOLD,
+      })
     }
-    setTimeout(() => {
-      const nr = round + 1
-      if (nr >= 4) {
-        setPhase('final')
-        setMsg('Auction complete!')
+    const allBids = [myBid, ...aiBids]
+    const valid = allBids.filter(b => !b.disqualified).sort((a, b) => b.time - a.time)
+    const dq = allBids.filter(b => b.disqualified)
+    setBids([...valid, ...dq])
+    const w = valid[0] || null
+    setWinner(w)
+    setPhase('result')
+    audio.playFx('crowd')
+    let lastWonValue = 0
+    if (w && w.isYou && prize) {
+      lastWonValue = prize.value
+      setTotalWon(t => t + prize.value)
+      player.spawnConfetti(30)
+      audio.playFx('win')
+      setComment(`SOLD to the champion puffer! +${prize.value} coins!`)
+    } else if (myBid.disqualified) {
+      setComment('The greed got you! DISQUALIFIED!')
+    } else {
+      setComment(`Better luck next round! Your bid: ${myBid.time.toFixed(2)}s`)
+    }
+    addTimeout(() => {
+      if (roundRef.current < PA_PRIZES.length - 1) {
+        startRound(roundRef.current + 1)
       } else {
-        setRound(nr)
-        startRound()
+        const finalTotal = totalWonRef.current + (w && w.isYou ? lastWonValue : 0)
+        setPhase('final')
+        audio.playFx(finalTotal > 0 ? 'win' : 'lose')
+        player.recordGameResult(finalTotal > 0, finalTotal > 0 ? 60 : 10, finalTotal > 0 ? 20 : 8, { bleConnected: ble.bleConnected, zone: 'stage', gameActive: game.gameActive })
       }
-    }, 2400)
-  }, [item, round, audio, startRound])
+    }, 3000)
+  }, [prize, audio, player, ble.bleConnected, game.gameActive, startRound])
+
+  const finishRef = useRef(finishRound)
+  useEffect(() => { finishRef.current = finishRound }, [finishRound])
+
+  const startBid = useCallback(() => {
+    if (phaseRef.current !== 'bidding' || holdingRef.current) return
+    holdingRef.current = true
+    setHolding(true)
+    setBidTime(0)
+    puffStartRef.current = Date.now()
+    audio.playFx('tap')
+    if (puffIntervalRef.current) clearInterval(puffIntervalRef.current)
+    puffIntervalRef.current = setInterval(() => {
+      const elapsed = (Date.now() - puffStartRef.current) / 1000
+      setBidTime(elapsed)
+      if (elapsed >= PA_BLINKER_THRESHOLD) {
+        if (puffIntervalRef.current) { clearInterval(puffIntervalRef.current); puffIntervalRef.current = null }
+        holdingRef.current = false
+        setHolding(false)
+        setDisqualified(true)
+        setBidTime(elapsed)
+        audio.playFx('miss')
+        setComment(`BLINKER! DISQUALIFIED! Over ${PA_BLINKER_THRESHOLD}s!`)
+        addTimeout(() => finishRef.current({ name: 'You', time: elapsed, disqualified: true, isYou: true }), 1500)
+      }
+    }, 50)
+  }, [audio])
+
+  const endBid = useCallback(() => {
+    if (!holdingRef.current) return
+    if (puffIntervalRef.current) { clearInterval(puffIntervalRef.current); puffIntervalRef.current = null }
+    const dur = (Date.now() - puffStartRef.current) / 1000
+    holdingRef.current = false
+    setHolding(false)
+    if (dur >= PA_BLINKER_THRESHOLD) return
+    setBidTime(dur)
+    finishRef.current({ name: 'You', time: dur, disqualified: false, isYou: true })
+  }, [])
 
   const exitGame = useCallback(() => {
     audio.gameSoundsMuted.current = true
+    if (puffIntervalRef.current) { clearInterval(puffIntervalRef.current); puffIntervalRef.current = null }
+    clearTimeouts()
     setPhase(null)
     game.exitGame()
   }, [audio, game])
 
-  const collect = useCallback(() => {
-    const won = totalWins >= 2
-    const reward = 20 + totalWins * 25
-    player.notify(won ? `🔨 ${totalWins} wins! +${reward} coins` : `🔨 +${reward} coins`, won ? C.green : C.gold)
-    player.recordGameResult(won, reward, won ? 20 : 8, { bleConnected: ble.bleConnected, zone: 'stage', gameActive: game.gameActive })
-    exitGame()
-  }, [totalWins, player, ble, game, exitGame])
+  const collect = useCallback(() => exitGame(), [exitGame])
 
   useEffect(() => {
     if (startedRef.current) return
@@ -130,24 +202,20 @@ export const PuffAuctionGame: React.FC = () => {
 
   useEffect(() => {
     if (game.gameActive?.id !== 'puffauction') return
-    ble.registerPuffHandlers('puffauction', null, null)
+    ble.registerPuffHandlers('puffauction', () => startBid(), () => endBid())
     return () => {
       audio.gameSoundsMuted.current = true
+      if (puffIntervalRef.current) { clearInterval(puffIntervalRef.current); puffIntervalRef.current = null }
+      clearTimeouts()
+      startedRef.current = false
       ble.registerPuffHandlers(null, null, null)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [game.gameActive?.id])
 
   if (!phase || game.gameActive?.id !== 'puffauction') return null
-  const isFinal = phase === 'final'
-  const isReveal = phase === 'reveal'
-
-  const bidOptions = item ? [
-    Math.round(item.realValue * 0.5),
-    Math.round(item.realValue * 0.8),
-    Math.round(item.realValue * 1.0),
-    Math.round(item.realValue * 1.3),
-  ] : []
+  const dangerZone = bidTime >= PA_DANGER_ZONE
+  const barColor = dangerZone ? C.red : bidTime > 3 ? C.orange : C.gold
 
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex', flexDirection: 'column', touchAction: 'none' }}>
@@ -157,45 +225,61 @@ export const PuffAuctionGame: React.FC = () => {
         coins={player.coins}
         bleConnected={ble.bleConnected}
         onBack={exitGame}
-        rightText={`Round ${round + 1}/4 · Wins ${totalWins}`}
+        rightText={`R${round + 1}/${PA_PRIZES.length} · Won ${totalWon}`}
       />
 
       <div style={{ position: 'relative', flex: 1, overflow: 'hidden', background: 'radial-gradient(ellipse at 50% 20%,#2a1f08,#0a0804)' }}>
-        {!isFinal && item && (
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: 20, gap: 14 }}>
-            <div style={{ fontSize: 10, color: C.text3, letterSpacing: 2 }}>{msg}</div>
-            <div style={{ width: '100%', maxWidth: 340, padding: 24, borderRadius: 16, background: `${C.gold}12`, border: `2px solid ${C.gold}35`, textAlign: 'center' }}>
-              <div style={{ fontSize: 56, marginBottom: 8 }}>{item.emoji}</div>
-              <div style={{ fontSize: 14, fontWeight: 900, color: C.gold, marginBottom: 4 }}>{item.name}</div>
-              <div style={{ fontSize: 9, color: C.text3 }}>{item.hint}</div>
+        {comment && (
+          <div style={{ position: 'absolute', top: 8, left: 0, right: 0, textAlign: 'center', zIndex: 10, pointerEvents: 'none' }}>
+            <div style={{ display: 'inline-block', padding: '4px 12px', borderRadius: 100, background: 'rgba(0,0,0,0.5)', fontSize: 9, color: C.gold, fontWeight: 700 }}>{comment}</div>
+          </div>
+        )}
+
+        {phase === 'intro' && (
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 20, gap: 14 }}>
+            <div style={{ fontSize: 56, opacity: introStep >= 1 ? 1 : 0, transition: 'opacity 0.4s' }}>🔨</div>
+            <div style={{ fontSize: 22, fontWeight: 900, color: C.gold, opacity: introStep >= 2 ? 1 : 0, transition: 'opacity 0.4s' }}>PUFF AUCTION</div>
+            <div style={{ fontSize: 11, color: C.text2, opacity: introStep >= 3 ? 1 : 0, transition: 'opacity 0.4s', textAlign: 'center' }}>Longest puff wins... but don't BLINKER!</div>
+            <div style={{ fontSize: 13, fontWeight: 800, color: C.red, opacity: introStep >= 4 ? 1 : 0, transition: 'opacity 0.4s' }}>5.0s = DISQUALIFIED</div>
+          </div>
+        )}
+
+        {(phase === 'reveal' || phase === 'bidding' || phase === 'result') && prize && (
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: 20, paddingTop: 44, gap: 12 }}>
+            <div style={{ width: '100%', maxWidth: 340, padding: 18, borderRadius: 16, background: prize.rarity === 'legendary' ? `${C.gold}20` : prize.rarity === 'rare' ? `${C.purple}15` : `${C.cyan}12`, border: `2px solid ${prize.rarity === 'legendary' ? C.gold : prize.rarity === 'rare' ? C.purple : C.cyan}40`, textAlign: 'center' }}>
+              <div style={{ fontSize: 56, marginBottom: 4 }}>{prize.emoji}</div>
+              <div style={{ fontSize: 14, fontWeight: 900, color: prize.rarity === 'legendary' ? C.gold : prize.rarity === 'rare' ? C.purple : C.cyan }}>{prize.name}</div>
+              <div style={{ fontSize: 9, color: C.text3, letterSpacing: 2, marginTop: 2 }}>{prize.rarity.toUpperCase()}</div>
             </div>
 
             {phase === 'bidding' && (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, width: '100%', maxWidth: 340 }}>
-                {bidOptions.map((b, i) => (
-                  <div key={i}
-                    onClick={() => submitBid(b)}
-                    style={{
-                      padding: '14px 8px', borderRadius: 12, cursor: 'pointer', textAlign: 'center',
-                      background: `${C.gold}15`, border: `1px solid ${C.gold}30`,
-                      fontSize: 14, fontWeight: 900, color: C.gold, touchAction: 'none',
-                    }}>
-                    ${b.toLocaleString()}
-                  </div>
-                ))}
-              </div>
+              <>
+                <div style={{ fontSize: 42, fontWeight: 900, color: barColor, fontFamily: "'Courier New',monospace" }}>{bidTime.toFixed(2)}s</div>
+                <div style={{ width: '100%', maxWidth: 300, height: 10, borderRadius: 5, background: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
+                  <div style={{ width: `${Math.min(100, (bidTime / PA_BLINKER_THRESHOLD) * 100)}%`, height: '100%', background: barColor, transition: 'width 0.05s, background 0.2s' }} />
+                </div>
+                {dangerZone && !disqualified && <div style={{ fontSize: 11, color: C.red, fontWeight: 900, animation: 'pulse 0.5s infinite' }}>⚠️ DANGER ZONE — RELEASE NOW!</div>}
+                <div
+                  onMouseDown={(e) => { e.preventDefault(); startBid() }}
+                  onMouseUp={(e) => { e.preventDefault(); endBid() }}
+                  onTouchStart={(e) => { e.stopPropagation(); e.preventDefault(); startBid() }}
+                  onTouchEnd={(e) => { e.stopPropagation(); e.preventDefault(); endBid() }}
+                  onTouchCancel={(e) => { e.stopPropagation(); e.preventDefault(); endBid() }}
+                  style={{ padding: '18px 32px', borderRadius: 60, cursor: 'pointer', background: holding ? `${barColor}30` : `${C.gold}22`, border: `2px solid ${holding ? barColor : C.gold}70`, fontSize: 14, fontWeight: 900, color: holding ? barColor : C.gold, touchAction: 'none', userSelect: 'none' }}
+                >
+                  {holding ? `💨 BIDDING... ${bidTime.toFixed(1)}s` : '💨 HOLD TO BID'}
+                </div>
+              </>
             )}
 
-            {isReveal && bids.length > 0 && (
+            {phase === 'result' && bids.length > 0 && (
               <div style={{ width: '100%', maxWidth: 340 }}>
-                <div style={{ fontSize: 8, color: C.text3, letterSpacing: 1, marginBottom: 6 }}>FINAL BIDS · REAL VALUE: ${item.realValue.toLocaleString()}</div>
+                <div style={{ fontSize: 8, color: C.text3, letterSpacing: 1, marginBottom: 6, textAlign: 'center' }}>{winner ? `WINNER: ${winner.name} · ${winner.time.toFixed(2)}s` : 'NO WINNER'}</div>
                 {bids.map((b, i) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', marginBottom: 3, borderRadius: 8,
-                    background: b.isYou ? `${C.cyan}12` : 'rgba(255,255,255,0.03)',
-                    border: `1px solid ${i === 0 ? C.gold + '40' : b.isYou ? C.cyan + '25' : 'rgba(255,255,255,0.05)'}` }}>
-                    <span style={{ fontSize: 12, fontWeight: 900, color: i === 0 ? C.gold : C.text3, width: 18 }}>#{i + 1}</span>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: b.isYou ? C.cyan : b.color, flex: 1 }}>{b.name}</span>
-                    <span style={{ fontSize: 11, fontWeight: 800, color: C.gold, fontFamily: 'monospace' }}>${b.bid.toLocaleString()}</span>
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 10px', marginBottom: 3, borderRadius: 8, background: b.isYou ? `${C.cyan}12` : 'rgba(255,255,255,0.03)', border: `1px solid ${i === 0 && !b.disqualified ? C.gold + '40' : b.isYou ? C.cyan + '25' : 'rgba(255,255,255,0.05)'}`, opacity: b.disqualified ? 0.5 : 1 }}>
+                    <span style={{ fontSize: 11, fontWeight: 900, color: i === 0 && !b.disqualified ? C.gold : C.text3, width: 18 }}>{b.disqualified ? '💀' : `#${i + 1}`}</span>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: b.isYou ? C.cyan : '#fff', flex: 1 }}>{b.name}</span>
+                    <span style={{ fontSize: 10, fontWeight: 800, color: b.disqualified ? C.red : C.gold, fontFamily: 'monospace' }}>{b.time.toFixed(2)}s</span>
                   </div>
                 ))}
               </div>
@@ -203,11 +287,11 @@ export const PuffAuctionGame: React.FC = () => {
           </div>
         )}
 
-        {isFinal && (
-          <div style={{ position: 'absolute', inset: 0, zIndex: 30, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(4,8,18,0.88)', backdropFilter: 'blur(8px)' }}>
-            <div style={{ fontSize: 48, marginBottom: 8 }}>{totalWins >= 2 ? '🏆' : '🔨'}</div>
-            <div style={{ fontSize: 28, fontWeight: 900, color: totalWins >= 2 ? C.green : C.gold, marginBottom: 6 }}>AUCTION COMPLETE</div>
-            <div style={{ fontSize: 14, color: C.text2, marginBottom: 12 }}>Items won: {totalWins}/4</div>
+        {phase === 'final' && (
+          <div style={{ position: 'absolute', inset: 0, zIndex: 30, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(4,8,18,0.92)', backdropFilter: 'blur(8px)', padding: 20 }}>
+            <div style={{ fontSize: 48, marginBottom: 8 }}>{totalWon > 0 ? '🏆' : '🔨'}</div>
+            <div style={{ fontSize: 26, fontWeight: 900, color: totalWon > 0 ? C.gold : C.text2, marginBottom: 6 }}>AUCTION COMPLETE</div>
+            <div style={{ fontSize: 14, color: C.text2, marginBottom: 12 }}>Total value won: {totalWon}</div>
             <div onClick={collect} style={{ padding: '12px 28px', borderRadius: 12, cursor: 'pointer', background: `${C.gold}15`, border: `1px solid ${C.gold}30`, fontSize: 14, fontWeight: 800, color: C.gold, touchAction: 'none' }}>Collect</div>
           </div>
         )}
@@ -215,5 +299,3 @@ export const PuffAuctionGame: React.FC = () => {
     </div>
   )
 }
-
-void pick
