@@ -6,19 +6,28 @@ import { useBLEContext } from '../../../context/BLEContext'
 import { useAudioContext } from '../../../context/AudioContext'
 import { StageHeader } from '../stage/_shared'
 
-interface Strain { name: string; emoji: string; desc: string; color: string }
-const STRAINS: Strain[] = [
-  { name: 'Blue Dream', emoji: '🔵', desc: 'Sativa-dominant, sweet berry', color: '#3B82F6' },
-  { name: 'OG Kush', emoji: '🌲', desc: 'Indica, earthy pine', color: '#22C55E' },
-  { name: 'Sour Diesel', emoji: '⛽', desc: 'Sativa, diesel punch', color: '#F59E0B' },
-  { name: 'Purple Haze', emoji: '🟣', desc: 'Sativa, berry haze', color: '#A855F7' },
-  { name: 'Gorilla Glue', emoji: '🦍', desc: 'Hybrid, heavy resin', color: '#6B7280' },
-  { name: 'Pineapple Express', emoji: '🍍', desc: 'Hybrid, tropical', color: '#FBBF24' },
-  { name: 'Wedding Cake', emoji: '🍰', desc: 'Indica, vanilla frost', color: '#EC4899' },
-  { name: 'Girl Scout Cookies', emoji: '🍪', desc: 'Hybrid, mint sweet', color: '#10B981' },
+// Direct lift from monolith line 358
+interface Strain { name: string; emoji: string; thc: number; type: 'Sativa' | 'Indica' | 'Hybrid'; effects: string; flavor: string }
+const SB_STRAINS: Strain[] = [
+  { name: 'OG Kush', emoji: '🌿', thc: 23, type: 'Hybrid', effects: 'Relaxed, Euphoric, Happy', flavor: 'Earthy, Pine, Woody' },
+  { name: 'Blue Dream', emoji: '💙', thc: 21, type: 'Sativa', effects: 'Creative, Euphoric, Uplifted', flavor: 'Berry, Sweet, Herbal' },
+  { name: 'Gorilla Glue', emoji: '🦍', thc: 28, type: 'Hybrid', effects: 'Relaxed, Euphoric, Sleepy', flavor: 'Diesel, Earthy, Pine' },
+  { name: 'Girl Scout Cookies', emoji: '🍪', thc: 25, type: 'Hybrid', effects: 'Happy, Euphoric, Relaxed', flavor: 'Sweet, Earthy, Pungent' },
+  { name: 'Sour Diesel', emoji: '⛽', thc: 22, type: 'Sativa', effects: 'Energetic, Happy, Uplifted', flavor: 'Diesel, Pungent, Earthy' },
+  { name: 'Purple Haze', emoji: '💜', thc: 20, type: 'Sativa', effects: 'Creative, Euphoric, Energetic', flavor: 'Berry, Earthy, Sweet' },
+  { name: 'Wedding Cake', emoji: '🎂', thc: 27, type: 'Indica', effects: 'Relaxed, Happy, Euphoric', flavor: 'Sweet, Vanilla, Earthy' },
+  { name: 'Gelato', emoji: '🍨', thc: 25, type: 'Hybrid', effects: 'Relaxed, Happy, Euphoric', flavor: 'Sweet, Citrus, Fruity' },
+  { name: 'Jack Herer', emoji: '🌲', thc: 20, type: 'Sativa', effects: 'Creative, Energetic, Focused', flavor: 'Pine, Earthy, Woody' },
+  { name: 'Northern Lights', emoji: '🌌', thc: 21, type: 'Indica', effects: 'Relaxed, Sleepy, Happy', flavor: 'Earthy, Pine, Sweet' },
+  { name: 'Pineapple Express', emoji: '🍍', thc: 22, type: 'Hybrid', effects: 'Happy, Uplifted, Energetic', flavor: 'Tropical, Pineapple, Citrus' },
+  { name: 'White Widow', emoji: '🕸️', thc: 20, type: 'Hybrid', effects: 'Euphoric, Energetic, Creative', flavor: 'Earthy, Woody, Pungent' },
+  { name: 'AK-47', emoji: '💥', thc: 22, type: 'Hybrid', effects: 'Relaxed, Happy, Uplifted', flavor: 'Earthy, Pungent, Floral' },
+  { name: 'Granddaddy Purple', emoji: '🍇', thc: 23, type: 'Indica', effects: 'Relaxed, Sleepy, Happy', flavor: 'Grape, Berry, Sweet' },
+  { name: 'Skywalker OG', emoji: '🌠', thc: 26, type: 'Indica', effects: 'Relaxed, Sleepy, Happy', flavor: 'Earthy, Pine, Diesel' },
+  { name: 'Durban Poison', emoji: '☀️', thc: 19, type: 'Sativa', effects: 'Energetic, Uplifted, Creative', flavor: 'Sweet, Earthy, Pine' },
 ]
 
-type Phase = 'voting' | 'reveal' | 'final' | null
+type Phase = 'intro' | 'matchup' | 'results' | 'complete' | null
 
 export const StrainBattleGame: React.FC = () => {
   const game = useGameContext()
@@ -27,119 +36,191 @@ export const StrainBattleGame: React.FC = () => {
   const audio = useAudioContext()
 
   const [phase, setPhase] = useState<Phase>(null)
+  const [matchups, setMatchups] = useState<[Strain, Strain][]>([])
+  const [matchup, setMatchup] = useState<[Strain, Strain] | null>(null)
   const [round, setRound] = useState(0)
-  const [pair, setPair] = useState<[Strain, Strain] | null>(null)
-  const [voted, setVoted] = useState<0 | 1 | null>(null)
-  const [votes, setVotes] = useState<{ a: number; b: number } | null>(null)
-  const [wins, setWins] = useState(0)
-  const startedRef = useRef(false)
+  const [score, setScore] = useState(0)
+  const [vote, setVote] = useState<'left' | 'right' | null>(null)
+  const [results, setResults] = useState<{ left: number; right: number } | null>(null)
 
-  const nextPair = useCallback(() => {
-    const a = STRAINS[Math.floor(Math.random() * STRAINS.length)]
-    let b = a
-    while (b === a) b = STRAINS[Math.floor(Math.random() * STRAINS.length)]
-    setPair([a, b])
-    setVoted(null); setVotes(null)
-    setPhase('voting')
+  const puffStartRef = useRef(0)
+  const startedRef = useRef(false)
+  const phaseRef = useRef<Phase>(null)
+  useEffect(() => { phaseRef.current = phase }, [phase])
+  const matchupRef = useRef<[Strain, Strain] | null>(null)
+  useEffect(() => { matchupRef.current = matchup }, [matchup])
+  const timeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([])
+  const roundRef = useRef(0)
+  useEffect(() => { roundRef.current = round }, [round])
+  const matchupsRef = useRef<[Strain, Strain][]>([])
+  useEffect(() => { matchupsRef.current = matchups }, [matchups])
+
+  const clearTimeouts = () => { timeoutsRef.current.forEach(t => clearTimeout(t)); timeoutsRef.current = [] }
+  const addTimeout = (fn: () => void, ms: number) => {
+    const id = setTimeout(fn, ms)
+    timeoutsRef.current.push(id)
+    return id
+  }
+
+  const nextRound = useCallback(() => {
+    const next = roundRef.current + 1
+    if (next >= 5) {
+      setPhase('complete')
+      audio.playFx('win')
+      player.recordGameResult(score > 0, score > 0 ? 20 : 0, score > 0 ? 20 : 8, { bleConnected: ble.bleConnected, zone: 'oracle', gameActive: game.gameActive })
+      return
+    }
+    const m = matchupsRef.current[next]
+    setMatchup(m)
+    setVote(null)
+    setResults(null)
+    setRound(next)
+    setPhase('matchup')
+  }, [audio, player, ble.bleConnected, game.gameActive, score])
+
+  const nextRef = useRef(nextRound)
+  useEffect(() => { nextRef.current = nextRound }, [nextRound])
+
+  const startGame = useCallback(() => {
+    audio.gameSoundsMuted.current = false
+    clearTimeouts()
+    const shuffled = [...SB_STRAINS].sort(() => Math.random() - 0.5)
+    const ms: [Strain, Strain][] = []
+    for (let i = 0; i < 10; i += 2) ms.push([shuffled[i], shuffled[i + 1]])
+    setMatchups(ms)
+    setRound(0)
+    setScore(0)
+    setVote(null)
+    setResults(null)
+    setMatchup(ms[0])
+    setPhase('intro')
+    audio.playFx('crowd')
+    addTimeout(() => setPhase('matchup'), 1500)
+  }, [audio])
+
+  const handlePuff = useCallback(() => {
+    if (phaseRef.current !== 'matchup') return
+    puffStartRef.current = Date.now()
   }, [])
 
-  const start = useCallback(() => {
-    audio.gameSoundsMuted.current = false
-    setRound(0); setWins(0); nextPair()
-  }, [audio, nextPair])
-
-  const vote = useCallback((idx: 0 | 1) => {
-    if (phase !== 'voting') return
-    setVoted(idx)
+  const handlePuffEnd = useCallback(() => {
+    if (phaseRef.current !== 'matchup' || !puffStartRef.current) return
+    const dur = (Date.now() - puffStartRef.current) / 1000
+    puffStartRef.current = 0
+    const v: 'left' | 'right' = dur < 1.5 ? 'left' : 'right'
+    setVote(v)
+    const leftPct = 30 + Math.floor(Math.random() * 40)
+    const rightPct = 100 - leftPct
+    setResults({ left: leftPct, right: rightPct })
+    setPhase('results')
     audio.playFx('tap')
-    // Simulate crowd vote
-    const youVoteA = idx === 0
-    const aVotes = 30 + Math.floor(Math.random() * 40) + (youVoteA ? 10 : 0)
-    const bVotes = 100 - aVotes
-    setVotes({ a: aVotes, b: bVotes })
-    const winner = aVotes > bVotes ? 0 : 1
-    if (winner === idx) {
-      setWins(w => w + 1)
-      audio.playFx('success')
-    } else {
-      audio.playFx('miss')
-    }
-    setPhase('reveal')
-    setTimeout(() => {
-      const nr = round + 1
-      if (nr >= 5) { setPhase('final') }
-      else { setRound(nr); nextPair() }
-    }, 1800)
-  }, [phase, round, audio, nextPair])
+    const correct = (v === 'left' && leftPct > 50) || (v === 'right' && rightPct > 50)
+    const pts = correct ? 30 : 10
+    setScore(s => s + pts)
+    audio.playFx(correct ? 'win' : 'miss')
+    addTimeout(() => nextRef.current(), 2500)
+  }, [audio])
 
   const exitGame = useCallback(() => {
     audio.gameSoundsMuted.current = true
-    setPhase(null); game.exitGame()
+    clearTimeouts()
+    setPhase(null)
+    game.exitGame()
   }, [audio, game])
 
-  const collect = useCallback(() => {
-    const reward = 15 + wins * 10
-    player.notify(`🌿 ${wins}/5 votes matched · +${reward} coins`, wins >= 3 ? C.green : C.gold)
-    player.recordGameResult(wins >= 3, reward, 10, { bleConnected: ble.bleConnected, zone: 'oracle', gameActive: game.gameActive })
-    exitGame()
-  }, [wins, player, ble, game, exitGame])
+  const collect = useCallback(() => exitGame(), [exitGame])
 
   useEffect(() => {
     if (startedRef.current) return
     if (game.gameActive?.id !== 'strainbattle') return
-    startedRef.current = true; start()
+    startedRef.current = true
+    startGame()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
     if (game.gameActive?.id !== 'strainbattle') return
-    ble.registerPuffHandlers('strainbattle', null, null)
-    return () => { ble.registerPuffHandlers(null, null, null) }
+    ble.registerPuffHandlers('strainbattle', () => handlePuff(), () => handlePuffEnd())
+    return () => {
+      audio.gameSoundsMuted.current = true
+      clearTimeouts()
+      startedRef.current = false
+      ble.registerPuffHandlers(null, null, null)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [game.gameActive?.id])
 
   if (!phase || game.gameActive?.id !== 'strainbattle') return null
-  const isFinal = phase === 'final'
+  const isComplete = phase === 'complete'
 
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex', flexDirection: 'column', touchAction: 'none' }}>
-      <StageHeader title="🌿 STRAIN BATTLE" titleColor="#22C55E" coins={player.coins} bleConnected={ble.bleConnected} onBack={exitGame} rightText={`R${round + 1}/5 · Wins ${wins}`} />
+      <StageHeader title="🌿 STRAIN BATTLE" titleColor="#22C55E" coins={player.coins} bleConnected={ble.bleConnected} onBack={exitGame} rightText={`R${round + 1}/5 · ${score}pts`} />
       <div style={{ position: 'relative', flex: 1, overflow: 'hidden', background: 'radial-gradient(ellipse at 50% 20%,#0a2a14,#050a08)' }}>
-        {!isFinal && pair && (
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: 20, gap: 14 }}>
-            <div style={{ fontSize: 11, color: C.text3, letterSpacing: 2 }}>WHICH STRAIN WILL THE CROWD PICK?</div>
+        {phase === 'intro' && (
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 20, gap: 10 }}>
+            <div style={{ fontSize: 56 }}>🌿</div>
+            <div style={{ fontSize: 20, fontWeight: 900, color: C.green }}>STRAIN BATTLE</div>
+            <div style={{ fontSize: 11, color: C.text2 }}>5 matchups · vote with your puffs</div>
+          </div>
+        )}
+
+        {(phase === 'matchup' || phase === 'results') && matchup && (
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', padding: 16, paddingTop: 18, gap: 10 }}>
+            <div style={{ fontSize: 10, color: C.text3, textAlign: 'center', letterSpacing: 2 }}>WHICH STRAIN WINS?</div>
             {[0, 1].map(i => {
-              const s = pair[i]
-              const v = votes ? (i === 0 ? votes.a : votes.b) : 0
-              const wasVoted = voted === i
+              const s = matchup[i]
+              const side: 'left' | 'right' = i === 0 ? 'left' : 'right'
+              const v = results ? (side === 'left' ? results.left : results.right) : 0
+              const wasVoted = vote === side
+              const col = s.type === 'Sativa' ? '#FBBF24' : s.type === 'Indica' ? '#A855F7' : '#22C55E'
               return (
-                <div key={i}
-                  onClick={() => vote(i as 0 | 1)}
-                  style={{
-                    width: '100%', maxWidth: 340, padding: 16, borderRadius: 16, cursor: phase === 'voting' ? 'pointer' : 'default',
-                    background: `${s.color}12`, border: `2px solid ${wasVoted ? s.color : s.color + '35'}`,
-                    textAlign: 'center', touchAction: 'none',
-                    boxShadow: wasVoted ? `0 0 24px ${s.color}60` : 'none',
-                  }}>
-                  <div style={{ fontSize: 44, marginBottom: 4 }}>{s.emoji}</div>
-                  <div style={{ fontSize: 14, fontWeight: 900, color: s.color }}>{s.name}</div>
-                  <div style={{ fontSize: 10, color: C.text3 }}>{s.desc}</div>
-                  {votes && (
-                    <div style={{ marginTop: 6, height: 8, borderRadius: 4, background: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
-                      <div style={{ width: `${v}%`, height: '100%', background: s.color, transition: 'width 0.6s' }} />
+                <div key={i} style={{
+                  width: '100%', padding: 14, borderRadius: 14,
+                  background: `${col}12`, border: `2px solid ${wasVoted ? col : col + '35'}`,
+                  boxShadow: wasVoted ? `0 0 24px ${col}60` : 'none',
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div style={{ fontSize: 36 }}>{s.emoji}</div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 13, fontWeight: 900, color: col }}>{s.name}</div>
+                      <div style={{ fontSize: 8, color: C.text3 }}>{s.type} · THC {s.thc}%</div>
+                      <div style={{ fontSize: 8, color: C.text3, marginTop: 1 }}>{s.effects}</div>
+                      <div style={{ fontSize: 8, color: C.text3 }}>{s.flavor}</div>
                     </div>
+                    <div style={{ fontSize: 9, fontWeight: 800, color: C.text3 }}>{side === 'left' ? 'SHORT PUFF' : 'LONG PUFF'}</div>
+                  </div>
+                  {results && (
+                    <>
+                      <div style={{ marginTop: 6, height: 8, borderRadius: 4, background: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
+                        <div style={{ width: `${v}%`, height: '100%', background: col, transition: 'width 0.6s' }} />
+                      </div>
+                      <div style={{ fontSize: 11, fontWeight: 800, color: col, marginTop: 2, textAlign: 'right' }}>{v}%</div>
+                    </>
                   )}
-                  {votes && <div style={{ fontSize: 11, fontWeight: 800, color: s.color, marginTop: 2 }}>{v}%</div>}
                 </div>
               )
             })}
+            {phase === 'matchup' && (
+              <div
+                onMouseDown={(e) => { e.preventDefault(); handlePuff() }}
+                onMouseUp={(e) => { e.preventDefault(); handlePuffEnd() }}
+                onTouchStart={(e) => { e.stopPropagation(); e.preventDefault(); handlePuff() }}
+                onTouchEnd={(e) => { e.stopPropagation(); e.preventDefault(); handlePuffEnd() }}
+                onTouchCancel={(e) => { e.stopPropagation(); e.preventDefault(); handlePuffEnd() }}
+                style={{ padding: '14px 28px', borderRadius: 60, cursor: 'pointer', background: '#22C55E20', border: '2px solid #22C55E60', fontSize: 13, fontWeight: 900, color: '#22C55E', touchAction: 'none', userSelect: 'none', textAlign: 'center' }}
+              >
+                💨 HOLD TO VOTE
+              </div>
+            )}
           </div>
         )}
-        {isFinal && (
+
+        {isComplete && (
           <div style={{ position: 'absolute', inset: 0, zIndex: 30, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(4,8,18,0.88)', backdropFilter: 'blur(8px)' }}>
-            <div style={{ fontSize: 48, marginBottom: 8 }}>{wins >= 3 ? '🏆' : '🌿'}</div>
-            <div style={{ fontSize: 24, fontWeight: 900, color: wins >= 3 ? C.green : C.gold, marginBottom: 6 }}>BATTLE OVER</div>
-            <div style={{ fontSize: 12, color: C.text2, marginBottom: 12 }}>{wins} of 5 matched the crowd</div>
+            <div style={{ fontSize: 48, marginBottom: 8 }}>🌿</div>
+            <div style={{ fontSize: 24, fontWeight: 900, color: C.green, marginBottom: 6 }}>BATTLE OVER</div>
+            <div style={{ fontSize: 14, color: C.text2, marginBottom: 12 }}>{score} points</div>
             <div onClick={collect} style={{ padding: '12px 28px', borderRadius: 12, cursor: 'pointer', background: `${C.green}15`, border: `1px solid ${C.green}30`, fontSize: 14, fontWeight: 800, color: C.green, touchAction: 'none' }}>Collect</div>
           </div>
         )}
