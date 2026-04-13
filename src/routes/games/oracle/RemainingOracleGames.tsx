@@ -29,13 +29,20 @@ function useOracleGame(id: string) {
 // ═══════════════════════════════════════════════════════════
 // DAILY PICKS — 3 daily yes/no predictions with streak bonus
 // ═══════════════════════════════════════════════════════════
+// Direct lift from monolith line 388
 const DAILY_QUESTIONS = [
-  '☀️ Will the sun rise on schedule?',
-  '🏆 Will an underdog win today?',
-  '📈 Will crypto moon today?',
-  '🌧️ Will it rain in your city?',
-  '🎮 Will you play more games?',
-  '🍕 Will pizza be eaten tonight?',
+  '🌅 Will the top trending TikTok today be about food?',
+  '🌅 Will Gold price go up today?',
+  '☀️ Will the most-streamed Spotify song today be hip-hop?',
+  '☀️ Will any crypto gain more than 5% today?',
+  "🌙 Will tonight's biggest sports upset actually happen?",
+  '🌙 Will a viral meme break 1M shares tonight?',
+  '🌅 Will the late-night game go to overtime?',
+  '☀️ Will the stock market close green today?',
+  "🌙 Will any team score 5+ goals in tonight's matches?",
+  '🌅 Will tomorrow be warmer than today?',
+  '☀️ Will a celebrity drop surprise news today?',
+  '🌙 Will someone set a new world record tonight?',
 ]
 
 export const DailyPicksGame: React.FC = () => {
