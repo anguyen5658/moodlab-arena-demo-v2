@@ -72,17 +72,26 @@ export const WorldCupZone: React.FC = () => {
         </div>
       </div>
 
-      {/* PLAY TOURNAMENT CTA */}
-      <div style={{ padding: "0 14px", marginBottom: 12 }}>
+      {/* PLAY TOURNAMENT + JOIN AS FAN CTAs */}
+      <div style={{ padding: "0 14px", marginBottom: 12, display: 'flex', gap: 8 }}>
         <div onClick={() => { audio.playFx('crowd'); game.setWcPhase('team_select') }}
-          style={{ padding: '14px 0', borderRadius: 14, cursor: 'pointer', textAlign: 'center',
+          style={{ flex: 1, padding: '14px 0', borderRadius: 14, cursor: 'pointer', textAlign: 'center',
             background: `linear-gradient(135deg, ${C.gold}20, ${C.gold}08)`,
-            border: `2px solid ${C.gold}50`, fontSize: 16, fontWeight: 900, color: C.gold,
+            border: `2px solid ${C.gold}50`, fontSize: 13, fontWeight: 900, color: C.gold,
             boxShadow: `0 0 20px ${C.gold}30`, touchAction: 'none',
           }}>
           ⚽ PLAY TOURNAMENT
         </div>
+        <div onClick={() => { audio.playFx('select'); game.setFanMode('team_select') }}
+          style={{ flex: 1, padding: '14px 0', borderRadius: 14, cursor: 'pointer', textAlign: 'center',
+            background: `linear-gradient(135deg, ${C.cyan}20, ${C.cyan}08)`,
+            border: `2px solid ${C.cyan}50`, fontSize: 13, fontWeight: 900, color: C.cyan,
+            touchAction: 'none',
+          }}>
+          👀 JOIN AS FAN
+        </div>
       </div>
+      {game.fanMode && <FanModeOverlay />}
 
       {/* Feed bar */}
       <div style={{ padding: "0 14px", marginBottom: 8 }}>
@@ -290,7 +299,7 @@ export const WorldCupZone: React.FC = () => {
       <div style={{ height: 80 }} />
 
       {/* ═══ TOURNAMENT FLOW OVERLAY ═══ */}
-      {wcPhase && <WcTournamentOverlay />}
+      {game.wcPhase && <WcTournamentOverlay />}
     </div>
   )
 }
@@ -477,6 +486,125 @@ const WcTournamentOverlay: React.FC = () => {
         <div style={{ fontSize: 14, color: C.text2, marginBottom: 20 }}>{wcTeam?.flag} {wcTeam?.name}</div>
         <div onClick={() => wc.claimPrize()} style={{ padding: '14px 32px', borderRadius: 14, cursor: 'pointer', background: `${color}20`, border: `2px solid ${color}50`, fontSize: 16, fontWeight: 900, color, touchAction: 'none' }}>
           CLAIM PRIZE
+        </div>
+      </div>
+    )
+  }
+
+  return null
+}
+
+// ── Fan mode overlay (team_select → watching) ──
+const FanModeOverlay: React.FC = () => {
+  const game = useGameContext()
+  const audio = useAudioContext()
+  const player = usePlayerContext()
+  const { fanMode, fanTeam } = game
+
+  if (!fanMode) return null
+  const bgStyle: React.CSSProperties = {
+    position: 'absolute', inset: 0,
+    background: 'radial-gradient(ellipse at 50% 20%, rgba(0,229,255,0.06) 0%, transparent 50%), linear-gradient(180deg, #06101E 0%, #0c1a38 40%, #102240 70%, #081830 100%)',
+  }
+
+  // Gather unique confederations from WC_TEAMS
+  const confeds = Array.from(new Set(WC_TEAMS.map((t: any) => t.confederation)))
+
+  if (fanMode === 'team_select') {
+    return (
+      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 110, overflow: 'hidden' }}>
+        <div style={bgStyle} />
+        <div style={{ position: 'relative', zIndex: 2, height: '100%', display: 'flex', flexDirection: 'column', padding: '44px 14px 20px', overflowY: 'auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: 12 }}>
+            <div style={{ fontSize: 28, marginBottom: 4 }}>👀</div>
+            <div style={{ fontSize: 16, fontWeight: 900, color: C.text }}>Join as Fan</div>
+            <div style={{ fontSize: 9, color: C.text3, marginTop: 3 }}>Choose a team to support · Watch live matches</div>
+            <div onClick={() => { audio.playFx('tap'); game.setFanMode(null); game.setFanTeam(null) }} style={{ position: 'absolute', top: 12, right: 14, fontSize: 14, color: C.text3, cursor: 'pointer', padding: '4px 10px', borderRadius: 8, background: 'rgba(0,0,0,0.3)', border: `1px solid ${C.border}` }}>✕</div>
+          </div>
+          {confeds.map(conf => (
+            <div key={conf} style={{ marginBottom: 10 }}>
+              <div style={{ fontSize: 8, fontWeight: 800, color: C.text3, letterSpacing: 1, marginBottom: 4, padding: '0 4px' }}>{conf}</div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 4 }}>
+                {WC_TEAMS.filter((t: any) => t.confederation === conf).map((t: any) => (
+                  <div key={t.id} onClick={() => { audio.playFx('tap'); game.setFanTeam(t) }} style={{
+                    padding: '6px 2px', borderRadius: 8, cursor: 'pointer', textAlign: 'center',
+                    background: fanTeam?.id === t.id ? `${C.cyan}15` : 'rgba(255,255,255,0.02)',
+                    border: `1px solid ${fanTeam?.id === t.id ? C.cyan + '40' : C.border}`,
+                  }}>
+                    <div style={{ fontSize: 18 }}>{t.flag}</div>
+                    <div style={{ fontSize: 6, color: fanTeam?.id === t.id ? C.cyan : C.text3, fontWeight: 600, marginTop: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.name}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+          {fanTeam && (
+            <div style={{ position: 'sticky', bottom: 0, padding: '10px 0', background: 'linear-gradient(0deg, #06101E, transparent)' }}>
+              <div onClick={() => { audio.playFx('crowd'); game.setFanMode('watching') }} style={{
+                padding: '12px 0', borderRadius: 14, textAlign: 'center', cursor: 'pointer',
+                background: `linear-gradient(135deg, ${C.cyan}40, ${C.gold}30)`,
+                border: `2px solid ${C.cyan}60`,
+              }}>
+                <div style={{ fontSize: 13, fontWeight: 900, color: C.cyan }}>SUPPORT {fanTeam.flag} {fanTeam.name.toUpperCase()}</div>
+                <div style={{ fontSize: 8, color: C.text3, marginTop: 2 }}>Next: watch live matches</div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  if (fanMode === 'watching' && fanTeam) {
+    const fn = fanTeam.name || ''
+    const ff = fanTeam.flag || '🏳️'
+    const otherTeams = WC_TEAMS.filter((t: any) => t.id !== fanTeam.id).slice(0, 8)
+    const liveMatches = [
+      { hf: ff, hn: fn, af: otherTeams[0]?.flag, an: otherTeams[0]?.name, score: '1-0', phase: `Group ${fanTeam.group || 'A'} · Match 2`, viewers: 87 },
+      { hf: ff, hn: fn, af: otherTeams[1]?.flag, an: otherTeams[1]?.name, score: '0-0', phase: `Group ${fanTeam.group || 'A'} · Match 1`, viewers: 42 },
+    ]
+    const upcomingMatches = [
+      { hf: ff, hn: fn, af: otherTeams[2]?.flag, an: otherTeams[2]?.name, phase: `Group ${fanTeam.group || 'A'} · Match 3`, time: 'In 25 min' },
+      { hf: ff, hn: fn, af: otherTeams[3]?.flag, an: otherTeams[3]?.name, phase: 'Round of 16', time: 'In 2h' },
+    ]
+    return (
+      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 110, overflow: 'hidden' }}>
+        <div style={bgStyle} />
+        <div style={{ position: 'relative', zIndex: 2, height: '100%', display: 'flex', flexDirection: 'column', padding: '44px 14px 20px', overflowY: 'auto' }}>
+          <div onClick={() => { audio.playFx('tap'); game.setFanMode(null); game.setFanTeam(null) }} style={{ position: 'absolute', top: 12, right: 14, fontSize: 14, color: C.text3, cursor: 'pointer', padding: '4px 10px', borderRadius: 8, background: 'rgba(0,0,0,0.3)', border: `1px solid ${C.border}` }}>✕</div>
+          <div style={{ textAlign: 'center', marginBottom: 12 }}>
+            <div style={{ fontSize: 40, marginBottom: 4 }}>{ff}</div>
+            <div style={{ fontSize: 16, fontWeight: 900, color: C.cyan }}>Fan of {fn}</div>
+            <div style={{ fontSize: 9, color: C.text3, marginTop: 3 }}>👀 SPECTATOR MODE · Watch matches live</div>
+          </div>
+          <div style={{ fontSize: 9, fontWeight: 800, color: C.red, letterSpacing: 1, marginBottom: 6 }}>🔴 LIVE NOW</div>
+          {liveMatches.map((m, i) => (
+            <div key={i} onClick={() => { audio.playFx('select'); player.notify(`👀 Watching ${m.hn} vs ${m.an}`, C.cyan); game.setFanMode(null) }} style={{ padding: 12, marginBottom: 6, borderRadius: 12, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.3)', cursor: 'pointer' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ flex: 1, fontSize: 11, fontWeight: 800, color: '#fff' }}>{m.hf} {m.hn}</div>
+                <div style={{ fontSize: 14, fontWeight: 900, color: C.gold, fontFamily: 'monospace' }}>{m.score}</div>
+                <div style={{ flex: 1, fontSize: 11, fontWeight: 800, color: '#fff', textAlign: 'right' }}>{m.an} {m.af}</div>
+              </div>
+              <div style={{ fontSize: 8, color: C.text3, marginTop: 4, display: 'flex', justifyContent: 'space-between' }}>
+                <span>{m.phase}</span>
+                <span>👁 {m.viewers}</span>
+              </div>
+            </div>
+          ))}
+          <div style={{ fontSize: 9, fontWeight: 800, color: C.gold, letterSpacing: 1, marginTop: 10, marginBottom: 6 }}>⏱ UPCOMING</div>
+          {upcomingMatches.map((m, i) => (
+            <div key={i} style={{ padding: 12, marginBottom: 6, borderRadius: 12, background: 'rgba(255,217,61,0.06)', border: '1px solid rgba(255,217,61,0.2)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ flex: 1, fontSize: 11, fontWeight: 800, color: '#fff' }}>{m.hf} {m.hn}</div>
+                <div style={{ fontSize: 10, fontWeight: 700, color: C.gold }}>VS</div>
+                <div style={{ flex: 1, fontSize: 11, fontWeight: 800, color: '#fff', textAlign: 'right' }}>{m.an} {m.af}</div>
+              </div>
+              <div style={{ fontSize: 8, color: C.text3, marginTop: 4, display: 'flex', justifyContent: 'space-between' }}>
+                <span>{m.phase}</span>
+                <span>{m.time}</span>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     )
