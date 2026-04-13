@@ -6,23 +6,42 @@ import { useBLEContext } from '../../../context/BLEContext'
 import { useAudioContext } from '../../../context/AudioContext'
 import { StageHeader, pick } from './_shared'
 
-interface Stat { label: string; value: number; emoji: string; unit?: string }
+interface Stat { topic: string; value: number; display: string }
 
+// Direct lift from monolith line 2164
 const HL_STATS: Stat[] = [
-  { label: 'Global cannabis users (millions)', value: 200, emoji: '🌍' },
-  { label: 'US legal states (2026)', value: 38, emoji: '🇺🇸' },
-  { label: 'Avg THC in 2020 flower (%)', value: 15, emoji: '🌿', unit: '%' },
-  { label: 'Avg THC in 2024 flower (%)', value: 22, emoji: '🌿', unit: '%' },
-  { label: 'Cannabis strains catalogued', value: 780, emoji: '📚' },
-  { label: 'Largest joint ever (kg)', value: 2.4, emoji: '💨' },
-  { label: 'Days THC stays in hair', value: 90, emoji: '💇' },
-  { label: 'Cannabinoids discovered', value: 113, emoji: '🧪' },
-  { label: 'Years of cannabis history', value: 5000, emoji: '📜' },
-  { label: 'Industry size 2024 ($B)', value: 33, emoji: '💰' },
-  { label: 'Industry size 2030 projected ($B)', value: 72, emoji: '📈' },
-  { label: 'Hemp uses documented', value: 50000, emoji: '🌱' },
-  { label: 'Average edible onset (min)', value: 45, emoji: '🍪' },
-  { label: 'Coffee shops in Amsterdam', value: 166, emoji: '☕' },
+  { topic: "Monthly Google searches for 'cannabis'", value: 4500000, display: '4.5M' },
+  { topic: 'Average price of 1g flower in California', value: 12, display: '$12' },
+  { topic: 'Number of legal dispensaries in the US', value: 14000, display: '14,000' },
+  { topic: 'Instagram posts tagged #420', value: 28000000, display: '28M' },
+  { topic: 'Average blinker duration (seconds)', value: 5.2, display: '5.2s' },
+  { topic: 'THC % in average dispensary flower', value: 22, display: '22%' },
+  { topic: "Snoop Dogg's age", value: 54, display: '54' },
+  { topic: 'Minutes in a FIFA match', value: 90, display: '90' },
+  { topic: 'States with legal recreational cannabis', value: 24, display: '24' },
+  { topic: 'Price of a Storz & Bickel Volcano ($)', value: 479, display: '$479' },
+  { topic: 'CBD market size in billions ($)', value: 7, display: '$7B' },
+  { topic: 'Daily active TikTok users (millions)', value: 1500, display: '1.5B' },
+  { topic: 'Elon Musk Twitter followers (millions)', value: 180, display: '180M' },
+  { topic: 'Cannabis strains on Leafly', value: 5800, display: '5,800' },
+  { topic: 'Average dispensary transaction ($)', value: 55, display: '$55' },
+  { topic: 'Super Bowl LVIII viewers (millions)', value: 123, display: '123M' },
+  { topic: 'Fortnite peak concurrent players (millions)', value: 44, display: '44M' },
+  { topic: 'Amsterdam coffee shops', value: 166, display: '166' },
+  { topic: 'Calories in a bag of Doritos', value: 1400, display: '1,400' },
+  { topic: 'Songs on Spotify (millions)', value: 100, display: '100M' },
+  { topic: 'World Cup 2026 host cities', value: 16, display: '16' },
+  { topic: 'mg of THC in a standard edible', value: 10, display: '10mg' },
+  { topic: 'Seconds to hold a proper hit', value: 3, display: '3s' },
+  { topic: 'Drake Instagram followers (millions)', value: 146, display: '146M' },
+  { topic: 'Price of 1oz in Colorado ($)', value: 150, display: '$150' },
+  { topic: 'NBA teams total', value: 30, display: '30' },
+  { topic: 'Average joint contains (grams)', value: 0.5, display: '0.5g' },
+  { topic: 'YouTube daily video uploads (hours)', value: 720000, display: '720K hrs' },
+  { topic: 'Countries where cannabis is fully legal', value: 4, display: '4' },
+  { topic: 'Average Uber Eats delivery time (min)', value: 35, display: '35 min' },
+  { topic: 'Twitch daily active streamers', value: 240000, display: '240K' },
+  { topic: 'Rolling papers in a RAW pack', value: 32, display: '32' },
 ]
 
 type Phase = 'playing' | 'correct' | 'wrong' | 'result' | null
@@ -179,18 +198,16 @@ export const HigherLowerGame: React.FC = () => {
             <div style={{ fontSize: 10, color: C.text3, letterSpacing: 2 }}>{msg}</div>
 
             <div style={{ width: '100%', maxWidth: 360, padding: '20px 16px', borderRadius: 16, background: `${C.cyan}12`, border: `2px solid ${C.cyan}35`, textAlign: 'center' }}>
-              <div style={{ fontSize: 30, marginBottom: 6 }}>{current.emoji}</div>
-              <div style={{ fontSize: 11, color: C.text2, marginBottom: 6 }}>{current.label}</div>
-              <div style={{ fontSize: 36, fontWeight: 900, color: C.cyan }}>{current.value}{current.unit || ''}</div>
+              <div style={{ fontSize: 11, color: C.text2, marginBottom: 6 }}>{current.topic}</div>
+              <div style={{ fontSize: 32, fontWeight: 900, color: C.cyan }}>{current.display}</div>
             </div>
 
             <div style={{ fontSize: 14, color: C.gold, fontWeight: 800 }}>vs</div>
 
             <div style={{ width: '100%', maxWidth: 360, padding: '20px 16px', borderRadius: 16, background: revealing ? `${C.gold}12` : `${C.purple}12`, border: `2px solid ${revealing ? C.gold : C.purple}35`, textAlign: 'center' }}>
-              <div style={{ fontSize: 30, marginBottom: 6 }}>{next.emoji}</div>
-              <div style={{ fontSize: 11, color: C.text2, marginBottom: 6 }}>{next.label}</div>
-              <div style={{ fontSize: 36, fontWeight: 900, color: revealing ? C.gold : C.purple }}>
-                {revealing ? `${revealNum}${next.unit || ''}` : '???'}
+              <div style={{ fontSize: 11, color: C.text2, marginBottom: 6 }}>{next.topic}</div>
+              <div style={{ fontSize: 32, fontWeight: 900, color: revealing ? C.gold : C.purple }}>
+                {revealing ? (revealNum >= 1000 ? revealNum.toLocaleString() : String(revealNum)) : '???'}
               </div>
             </div>
 
