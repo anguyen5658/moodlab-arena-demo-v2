@@ -300,7 +300,7 @@ export const SurvivalTriviaGame: React.FC = () => {
         )}
 
         {phase === 'intro' && (
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 20, gap: 12 }}>
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 20, paddingBottom: 60, gap: 12 }}>
             <div style={{ fontSize: 56 }}>🏆</div>
             <div style={{ fontSize: 20, fontWeight: 900, color: C.purple }}>SURVIVAL TRIVIA</div>
             <div style={{ fontSize: 11, color: C.text2 }}>100 players enter... only 1 survives!</div>
@@ -308,7 +308,7 @@ export const SurvivalTriviaGame: React.FC = () => {
         )}
 
         {(phase === 'question' || phase === 'reveal') && question && (
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', padding: 14, paddingTop: 40, gap: 10 }}>
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', padding: 14, paddingTop: 40, paddingBottom: 60, gap: 10 }}>
             {/* Avatar grid (10x10) */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(20,1fr)', gap: 2, padding: 4, background: 'rgba(0,0,0,0.3)', borderRadius: 8, maxHeight: 90, overflow: 'hidden' }}>
               {avatars.map(a => (
@@ -347,7 +347,7 @@ export const SurvivalTriviaGame: React.FC = () => {
         )}
 
         {(phase === 'eliminated' || phase === 'winner') && (
-          <div style={{ position: 'absolute', inset: 0, zIndex: 30, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(4,8,18,0.92)', backdropFilter: 'blur(8px)', padding: 20 }}>
+          <div style={{ position: 'absolute', inset: 0, zIndex: 30, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', paddingBottom: 60, background: 'rgba(4,8,18,0.92)', backdropFilter: 'blur(8px)', padding: 20 }}>
             <div style={{ fontSize: 56, marginBottom: 8 }}>{phase === 'winner' ? '👑' : '💀'}</div>
             <div style={{ fontSize: 26, fontWeight: 900, color: phase === 'winner' ? C.gold : C.red, marginBottom: 6 }}>{phase === 'winner' ? 'WINNER!' : 'ELIMINATED'}</div>
             <div style={{ fontSize: 11, color: C.text2, marginBottom: 10, textAlign: 'center' }}>{comment}</div>

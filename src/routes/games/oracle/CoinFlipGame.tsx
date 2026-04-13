@@ -178,7 +178,7 @@ export const CoinFlipGame: React.FC = () => {
             <div style={{ display: 'inline-block', padding: '4px 12px', borderRadius: 100, background: 'rgba(0,0,0,0.5)', fontSize: 9, color: C.gold, fontWeight: 700, maxWidth: '90%' }}>{comment}</div>
           </div>
         )}
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: 20, paddingTop: 40, gap: 16, justifyContent: 'center' }}>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: 20, paddingTop: 40, paddingBottom: 60, gap: 16, justifyContent: 'center' }}>
           <div style={{
             width: 160, height: 160, borderRadius: '50%',
             background: result === 'tails' ? 'radial-gradient(circle at 35% 35%, #fff8 0%, #F59E0B 30%, #92400e 100%)' : 'radial-gradient(circle at 35% 35%, #fff8 0%, #FCD34D 30%, #92400e 100%)',
@@ -228,7 +228,7 @@ export const CoinFlipGame: React.FC = () => {
         </div>
 
         {isComplete && (
-          <div style={{ position: 'absolute', inset: 0, zIndex: 30, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(4,8,18,0.88)', backdropFilter: 'blur(8px)' }}>
+          <div style={{ position: 'absolute', inset: 0, zIndex: 30, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', paddingBottom: 60, background: 'rgba(4,8,18,0.88)', backdropFilter: 'blur(8px)' }}>
             <div style={{ fontSize: 56, marginBottom: 8 }}>🪙</div>
             <div style={{ fontSize: 24, fontWeight: 900, color: '#F59E0B', marginBottom: 6 }}>FLIPS COMPLETE</div>
             <div style={{ fontSize: 14, color: C.text2, marginBottom: 12 }}>Total: {score} coins</div>

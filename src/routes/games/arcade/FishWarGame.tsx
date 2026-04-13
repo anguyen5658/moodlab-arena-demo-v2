@@ -1115,7 +1115,7 @@ export const FishWarGame: React.FC = () => {
   }
 
   return (
-    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 100, overflow: 'hidden', display: 'flex', flexDirection: 'column', touchAction: 'none' }}
+    <div style={{ position: 'fixed', inset: 0, zIndex: 100, overflow: 'hidden', display: 'flex', flexDirection: 'column', touchAction: 'none' }}
       onClick={handleTap}
       onMouseDown={handleDown}
       onMouseUp={handleUp}

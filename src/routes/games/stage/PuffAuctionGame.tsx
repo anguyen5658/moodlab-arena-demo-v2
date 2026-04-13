@@ -236,7 +236,7 @@ export const PuffAuctionGame: React.FC = () => {
         )}
 
         {phase === 'intro' && (
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 20, gap: 14 }}>
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 20, paddingBottom: 60, gap: 14 }}>
             <div style={{ fontSize: 56, opacity: introStep >= 1 ? 1 : 0, transition: 'opacity 0.4s' }}>🔨</div>
             <div style={{ fontSize: 22, fontWeight: 900, color: C.gold, opacity: introStep >= 2 ? 1 : 0, transition: 'opacity 0.4s' }}>PUFF AUCTION</div>
             <div style={{ fontSize: 11, color: C.text2, opacity: introStep >= 3 ? 1 : 0, transition: 'opacity 0.4s', textAlign: 'center' }}>Longest puff wins... but don't BLINKER!</div>
@@ -245,7 +245,7 @@ export const PuffAuctionGame: React.FC = () => {
         )}
 
         {(phase === 'reveal' || phase === 'bidding' || phase === 'result') && prize && (
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: 20, paddingTop: 44, gap: 12 }}>
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: 20, paddingTop: 44, paddingBottom: 60, gap: 12 }}>
             <div style={{ width: '100%', maxWidth: 340, padding: 18, borderRadius: 16, background: prize.rarity === 'legendary' ? `${C.gold}20` : prize.rarity === 'rare' ? `${C.purple}15` : `${C.cyan}12`, border: `2px solid ${prize.rarity === 'legendary' ? C.gold : prize.rarity === 'rare' ? C.purple : C.cyan}40`, textAlign: 'center' }}>
               <div style={{ fontSize: 56, marginBottom: 4 }}>{prize.emoji}</div>
               <div style={{ fontSize: 14, fontWeight: 900, color: prize.rarity === 'legendary' ? C.gold : prize.rarity === 'rare' ? C.purple : C.cyan }}>{prize.name}</div>
@@ -288,7 +288,7 @@ export const PuffAuctionGame: React.FC = () => {
         )}
 
         {phase === 'final' && (
-          <div style={{ position: 'absolute', inset: 0, zIndex: 30, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(4,8,18,0.92)', backdropFilter: 'blur(8px)', padding: 20 }}>
+          <div style={{ position: 'absolute', inset: 0, zIndex: 30, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', paddingBottom: 60, background: 'rgba(4,8,18,0.92)', backdropFilter: 'blur(8px)', padding: 20 }}>
             <div style={{ fontSize: 48, marginBottom: 8 }}>{totalWon > 0 ? '🏆' : '🔨'}</div>
             <div style={{ fontSize: 26, fontWeight: 900, color: totalWon > 0 ? C.gold : C.text2, marginBottom: 6 }}>AUCTION COMPLETE</div>
             <div style={{ fontSize: 14, color: C.text2, marginBottom: 12 }}>Total value won: {totalWon}</div>

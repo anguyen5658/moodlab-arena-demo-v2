@@ -194,7 +194,7 @@ export const HigherLowerGame: React.FC = () => {
 
       <div style={{ position: 'relative', flex: 1, overflow: 'hidden', background: 'linear-gradient(180deg,#0a1428,#0a1f3a)' }}>
         {!isResult && current && next && (
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 20, gap: 16 }}>
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 20, paddingBottom: 60, gap: 16 }}>
             <div style={{ fontSize: 10, color: C.text3, letterSpacing: 2 }}>{msg}</div>
 
             <div style={{ width: '100%', maxWidth: 360, padding: '20px 16px', borderRadius: 16, background: `${C.cyan}12`, border: `2px solid ${C.cyan}35`, textAlign: 'center' }}>
@@ -226,7 +226,7 @@ export const HigherLowerGame: React.FC = () => {
         )}
 
         {isResult && (
-          <div style={{ position: 'absolute', inset: 0, zIndex: 30, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(4,8,18,0.88)', backdropFilter: 'blur(8px)' }}>
+          <div style={{ position: 'absolute', inset: 0, zIndex: 30, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', paddingBottom: 60, background: 'rgba(4,8,18,0.88)', backdropFilter: 'blur(8px)' }}>
             <div style={{ fontSize: 48, marginBottom: 8 }}>{bestStreak >= 5 ? '🏆' : bestStreak >= 3 ? '🔥' : '📊'}</div>
             <div style={{ fontSize: 28, fontWeight: 900, color: bestStreak >= 3 ? C.green : C.red, marginBottom: 6 }}>GAME OVER</div>
             <div style={{ fontSize: 14, color: C.text2, marginBottom: 2 }}>Score: {score}</div>

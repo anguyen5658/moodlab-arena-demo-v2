@@ -27,6 +27,18 @@ const FK_ROASTS_MISS = [
   'Did you sneeze mid-kick? 🤧', 'Even the ball is embarrassed 😳',
 ]
 
+// AI opponents pool (direct lift from monolith line 7087)
+interface AiOpponent { name: string; emoji: string; img: string; rank: string; record: string; taunt: string }
+const AI_OPPONENTS: AiOpponent[] = [
+  { name: 'SmokeBot 3000',   emoji: '🤖',     img: 'https://api.dicebear.com/9.x/bottts-neutral/svg?seed=SmokeBot&backgroundColor=transparent',                      rank: '#47', record: '142-89',  taunt: "I don't even need lungs 💨" },
+  { name: 'Sir Puffs-a-Lot', emoji: '🧐',     img: 'https://api.dicebear.com/9.x/adventurer/svg?seed=SirPuffs&backgroundColor=transparent&skinColor=f2d3b1',            rank: '#23', record: '201-67',  taunt: 'Indubitably, I shall save this' },
+  { name: 'Baked Baker',     emoji: '👨‍🍳',    img: 'https://api.dicebear.com/9.x/adventurer/svg?seed=BakedBaker&backgroundColor=transparent',                          rank: '#88', record: '69-42',   taunt: '420 saves per game bro' },
+  { name: 'Goalkeeper Gary', emoji: '🦸',     img: 'https://api.dicebear.com/9.x/adventurer/svg?seed=GoalkeeperGary&backgroundColor=transparent',                      rank: '#12', record: '310-55',  taunt: "These hands don't miss 🧤" },
+  { name: 'Cloud Nine',      emoji: '☁️',     img: 'https://api.dicebear.com/9.x/adventurer/svg?seed=CloudNine&backgroundColor=transparent',                           rank: '#31', record: '188-101', taunt: 'Floating to victory~' },
+  { name: 'The Lobster',     emoji: '🦞',     img: 'https://api.dicebear.com/9.x/bottts-neutral/svg?seed=Lobster&backgroundColor=transparent',                         rank: '#99', record: '50-50',   taunt: 'I pinch, I save, I win 🦀' },
+]
+const PLAYER_IMG = 'https://api.dicebear.com/9.x/adventurer/svg?seed=Steve420&backgroundColor=transparent&skinColor=f2d3b1'
+
 const pick = <T,>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)]
 
 const getPuffPower = (elapsed: number): number => {
@@ -39,7 +51,9 @@ const getPuffPower = (elapsed: number): number => {
   return 30
 }
 
-type KickState = 'shoot' | 'shoot_x' | 'shoot_y' | 'power' | 'flight' | 'shoot_result' | 'save_ready' | 'save_countdown' | 'save_dive' | 'save_result' | 'final' | null
+type KickState = 'intro' | 'shoot' | 'shoot_x' | 'shoot_y' | 'power' | 'flight' | 'shoot_result' | 'save_ready' | 'save_countdown' | 'save_dive' | 'save_result' | 'final' | null
+type IntroStage = 'enter' | 'stats' | 'countdown' | 'go'
+interface MatchIntro { stage: IntroStage; count: number }
 
 interface BallFlight { sx: number; sy: number; ex: number; ey: number; t: number; dur: number; result: string }
 interface KeeperAnim { x: number; diving: boolean; diveDir: number }
@@ -60,6 +74,9 @@ export const FinalKickGame: React.FC = () => {
   useEffect(() => { isFK3Ref.current = isFK3 }, [isFK3])
 
   const [kickState, setKickState] = useState<KickState>(null)
+  const [matchIntro, setMatchIntro] = useState<MatchIntro | null>(null)
+  const opponentRef = useRef<AiOpponent>(AI_OPPONENTS[0])
+  const introTimeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([])
   const [round, setRound] = useState(0)
   const [score, setScore] = useState({ you: 0, ai: 0 })
   const [aim, setAim] = useState<number | null>(null)
@@ -439,15 +456,14 @@ export const FinalKickGame: React.FC = () => {
 
   useEffect(() => { advanceRoundRef.current = advanceRound }, [advanceRound])
 
-  const startGame = useCallback(() => {
-    audio.gameSoundsMuted.current = false
-    activeRef.current = { v: true }
-    setScore({ you: 0, ai: 0 })
-    setStats({ goals: 0, saves: 0, perfects: 0, misses: 0 })
-    setAim(null); setPower(0); setAiZone(null); setSaveZone(null); setBallResult(null)
-    setFk2X(0); setFk2Y(0); setFk2XDone(false)
+  // ── Match intro state machine (direct lift from monolith line 7038) ──
+  const clearIntroTimeouts = useCallback(() => {
+    introTimeoutsRef.current.forEach(t => clearTimeout(t))
+    introTimeoutsRef.current = []
+  }, [])
+
+  const beginGameplay = useCallback(() => {
     const ss = randomizeSweetSpot()
-    setRound(0)
     if (isExpertRef.current) {
       setKickState('shoot_x')
       setComment(`Double puff mode! Aim LEFT or RIGHT! 👆`)
@@ -455,16 +471,49 @@ export const FinalKickGame: React.FC = () => {
       setKickState('shoot')
       setComment(`Let's gooo 🔥 Sweet spot: ${ss.holdMin}-${ss.holdMax}s`)
     }
-  }, [audio, randomizeSweetSpot])
+  }, [randomizeSweetSpot])
+
+  const startMatchIntro = useCallback(() => {
+    clearIntroTimeouts()
+    const push = (fn: () => void, ms: number) => {
+      introTimeoutsRef.current.push(setTimeout(fn, ms))
+    }
+    setKickState('intro')
+    setMatchIntro({ stage: 'enter', count: 3 })
+    setComment('The players are entering the field... 🏟️')
+    audio.playFx('crowd')
+    push(() => { setMatchIntro({ stage: 'stats', count: 3 }); setComment("Let's see the stats! Who has the edge? 📊") }, 1200)
+    push(() => { setMatchIntro({ stage: 'countdown', count: 3 }); setComment('HERE WE GO!'); audio.playFx('whistle') }, 2400)
+    push(() => setMatchIntro(p => (p ? { ...p, count: 2 } : null)), 3100)
+    push(() => setMatchIntro(p => (p ? { ...p, count: 1 } : null)), 3800)
+    push(() => { setMatchIntro({ stage: 'go', count: 0 }); setComment('⚽ KICK OFF! Let the game begin!'); ui.setScreenFlash('goal'); setTimeout(() => ui.setScreenFlash(null), 400); audio.playFx('crowd') }, 4500)
+    push(() => { setMatchIntro(null); beginGameplay() }, 5200)
+  }, [audio, ui, beginGameplay, clearIntroTimeouts])
+
+  const startGame = useCallback(() => {
+    audio.gameSoundsMuted.current = false
+    activeRef.current = { v: true }
+    clearIntroTimeouts()
+    setScore({ you: 0, ai: 0 })
+    setStats({ goals: 0, saves: 0, perfects: 0, misses: 0 })
+    setAim(null); setPower(0); setAiZone(null); setSaveZone(null); setBallResult(null)
+    setFk2X(0); setFk2Y(0); setFk2XDone(false)
+    setRound(0)
+    // Pick a fresh opponent for this match
+    opponentRef.current = pick(AI_OPPONENTS)
+    startMatchIntro()
+  }, [audio, startMatchIntro, clearIntroTimeouts])
 
   const exitGame = useCallback(() => {
     audio.gameSoundsMuted.current = true
     activeRef.current.v = false
     if (chargeInterval.current) { clearInterval(chargeInterval.current); chargeInterval.current = null }
     if (animRef.current) { cancelAnimationFrame(animRef.current); animRef.current = null }
+    clearIntroTimeouts()
+    setMatchIntro(null)
     setKickState(null)
     game.exitGame()
-  }, [audio, game])
+  }, [audio, game, clearIntroTimeouts])
 
   const kickEndGame = useCallback(() => {
     const ga = game.gameActive as any
@@ -1117,6 +1166,68 @@ export const FinalKickGame: React.FC = () => {
       <div style={{ position: 'relative', flex: 1, overflow: 'hidden' }}>
         <canvas ref={canvasRef} width={Math.round(FK_W * FK_DPR)} height={Math.round(FK_H * FK_DPR)} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }} />
 
+        {/* ═══ MATCH INTRO / VS ANNOUNCEMENT OVERLAY ═══ */}
+        {matchIntro && (() => {
+          const opp = opponentRef.current
+          const variantBadge = isFK3 ? 'FK3 3D VIEW' : isFK2 ? 'FK2 DOUBLE PUFF' : 'FINAL KICK'
+          return (
+            <div style={{ position: 'absolute', inset: 0, zIndex: 220, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', paddingBottom: 60, background: 'rgba(4,8,18,0.92)', backdropFilter: 'blur(12px)' }}>
+              <div style={{ marginBottom: 16, padding: '4px 16px', borderRadius: 20, background: `${C.gold}12`, border: `1px solid ${C.gold}30` }}>
+                <span style={{ fontSize: 9, fontWeight: 800, color: C.gold, letterSpacing: 3 }}>{variantBadge}</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 20, marginBottom: 16 }}>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ width: 70, height: 70, borderRadius: 16, border: `2px solid ${C.cyan}60`, background: `${C.cyan}10`, margin: '0 auto 6px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 36, overflow: 'hidden' }}>
+                    <img
+                      src={PLAYER_IMG}
+                      alt=""
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 14 }}
+                      onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; const parent = (e.target as HTMLImageElement).parentElement; if (parent) parent.textContent = '😎' }}
+                    />
+                  </div>
+                  <div style={{ fontSize: 14, fontWeight: 900, color: C.cyan }}>Steve</div>
+                </div>
+                <div style={{ textAlign: 'center', minWidth: 60 }}>
+                  {matchIntro.stage === 'countdown' ? (
+                    <div style={{ fontSize: 60, fontWeight: 900, color: C.gold, textShadow: `0 0 30px ${C.gold}80` }}>{matchIntro.count}</div>
+                  ) : matchIntro.stage === 'go' ? (
+                    <div style={{ fontSize: 24, fontWeight: 900, color: C.green, textShadow: `0 0 30px ${C.green}80` }}>KICK OFF!</div>
+                  ) : (
+                    <div style={{ fontSize: 26, fontWeight: 900, color: C.gold, animation: 'pulse 1.5s infinite' }}>VS</div>
+                  )}
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ width: 70, height: 70, borderRadius: 16, border: `2px solid ${C.red}60`, background: `${C.red}10`, margin: '0 auto 6px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 36, overflow: 'hidden' }}>
+                    <img
+                      src={opp.img}
+                      alt=""
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 14 }}
+                      onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; const parent = (e.target as HTMLImageElement).parentElement; if (parent) parent.textContent = opp.emoji }}
+                    />
+                  </div>
+                  <div style={{ fontSize: 14, fontWeight: 900, color: C.red }}>{opp.name}</div>
+                </div>
+              </div>
+              {matchIntro.stage === 'stats' && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '8px 16px', borderRadius: 12, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', fontSize: 10 }}>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ color: C.cyan, fontWeight: 800 }}>Rank #24</div>
+                    <div style={{ color: C.text3, fontSize: 8 }}>W-L · 180-94</div>
+                  </div>
+                  <div style={{ color: C.gold, fontSize: 8 }}>——</div>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ color: C.red, fontWeight: 800 }}>Rank {opp.rank}</div>
+                    <div style={{ color: C.text3, fontSize: 8 }}>W-L · {opp.record}</div>
+                  </div>
+                </div>
+              )}
+              {matchIntro.stage === 'enter' && (
+                <div style={{ fontSize: 10, color: C.text3, fontStyle: 'italic', marginTop: 4 }}>"{opp.taunt}"</div>
+              )}
+            </div>
+          )
+        })()}
+
         {isFK3 && <div ref={threeContainerRef} style={{ position: 'absolute', inset: 0, zIndex: 1, pointerEvents: 'none' }} />}
         {isFK3 && isSavePhase && (
           <div
@@ -1162,7 +1273,7 @@ export const FinalKickGame: React.FC = () => {
           const youSaved = isSavePhase && !isGoal && !isMiss
           const good = youScored || youSaved
           return (
-            <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 30,
+            <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', paddingBottom: 60, zIndex: 30,
               background: good ? 'radial-gradient(circle, rgba(0,255,136,0.15), rgba(0,0,0,0.6))' : 'radial-gradient(circle, rgba(255,68,68,0.1), rgba(0,0,0,0.6))' }}>
               <div style={{ fontSize: 56, filter: `drop-shadow(0 0 40px ${good ? C.green : C.red}80)` }}>
                 {isMiss ? '💀' : youScored ? '⚽' : youSaved ? '🧤' : isShootPhase ? '🧤' : '⚽'}
@@ -1178,7 +1289,7 @@ export const FinalKickGame: React.FC = () => {
         })()}
 
         {!isResult && !isFinal && (
-          <div style={{ position: 'absolute', bottom: 12, left: 0, right: 0, zIndex: 20, padding: '6px 12px' }}>
+          <div style={{ position: 'absolute', bottom: 56, left: 0, right: 0, zIndex: 20, padding: '6px 12px' }}>
             {!isFK2 && kickState === 'shoot' && (
               <div style={{ textAlign: 'center', padding: '6px 0' }}>
                 <span style={{ fontSize: 13, fontWeight: 800, color: C.cyan }}>TAP a zone to aim your kick</span>
@@ -1303,7 +1414,7 @@ export const FinalKickGame: React.FC = () => {
           const resultColor = won ? C.green : draw ? C.gold : C.red
           const baseReward = won ? (isFK2 ? 100 : 80) : draw ? 30 : 10
           return (
-            <div style={{ position: 'absolute', inset: 0, zIndex: 30, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+            <div style={{ position: 'absolute', inset: 0, zIndex: 30, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', paddingBottom: 60,
               background: 'rgba(4,8,18,0.88)', backdropFilter: 'blur(8px)' }}>
               <div style={{ fontSize: 40, marginBottom: 8 }}>{won ? '🏆' : draw ? '🤝' : '💀'}</div>
               <div style={{ fontSize: 28, fontWeight: 900, color: resultColor, marginBottom: 6, textShadow: `0 0 30px ${resultColor}60` }}>

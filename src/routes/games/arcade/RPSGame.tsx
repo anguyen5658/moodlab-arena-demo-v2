@@ -516,7 +516,7 @@ export const RPSGame: React.FC = () => {
     const bonusMult = 1 + ((rpsResolveRef.current?.playerPwrInfo?.bonus || 0) / 100)
     const baseR = won ? Math.round(80 * bonusMult) : draw ? 40 : 20
     return (
-      <div style={{ position: 'absolute', inset: 0, zIndex: 60, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(4,8,18,0.88)', backdropFilter: 'blur(12px)' }}>
+      <div style={{ position: 'absolute', inset: 0, zIndex: 60, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', paddingBottom: 60, background: 'rgba(4,8,18,0.88)', backdropFilter: 'blur(12px)' }}>
         <div style={{ fontSize: 50, marginBottom: 8 }}>{won ? '\uD83C\uDFC6' : lost ? '\uD83D\uDC80' : '\uD83E\uDD1D'}</div>
         <div style={{ fontSize: 24, fontWeight: 900, color: won ? C.green : lost ? C.red : C.gold }}>{won ? 'CHAMPION!' : lost ? 'DEFEATED' : 'DRAW!'}</div>
         <div style={{ fontSize: 12, color: C.text2, marginTop: 4 }}>{won ? 'You dominated the Puff Dojo!' : lost ? (opp.name + ' was too strong!') : 'Equal warriors in the dojo!'}</div>

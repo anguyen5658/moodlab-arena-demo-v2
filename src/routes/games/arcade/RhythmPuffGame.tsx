@@ -458,7 +458,7 @@ export const RhythmPuffGame: React.FC = () => {
           const won = score > 500
           const baseR = won ? 80 : 12
           return (
-            <div style={{ position: 'absolute', inset: 0, zIndex: 60, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(4,8,18,0.88)', backdropFilter: 'blur(12px)' }}>
+            <div style={{ position: 'absolute', inset: 0, zIndex: 60, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', paddingBottom: 60, background: 'rgba(4,8,18,0.88)', backdropFilter: 'blur(12px)' }}>
               <div style={{ fontSize: 50, marginBottom: 8 }}>{won ? '🏆' : '🎤'}</div>
               <div style={{ fontSize: 24, fontWeight: 900, letterSpacing: 4, color: won ? C.gold : C.purple }}>{won ? 'ENCORE!' : 'SHOW OVER'}</div>
               <div style={{ fontSize: 36, fontWeight: 900, color: C.gold, marginTop: 8 }}>{score.toLocaleString()}</div>

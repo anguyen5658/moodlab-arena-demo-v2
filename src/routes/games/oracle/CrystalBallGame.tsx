@@ -180,7 +180,7 @@ export const CrystalBallGame: React.FC = () => {
     <div style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex', flexDirection: 'column', touchAction: 'none' }}>
       <StageHeader title="🔮 CRYSTAL BALL" titleColor="#9333EA" coins={player.coins} bleConnected={ble.bleConnected} onBack={exitGame} rightText={`R${round + 1}/5 · ${score}pts · 🔥${streak}`} />
       <div style={{ position: 'relative', flex: 1, overflow: 'hidden', background: 'radial-gradient(ellipse at 50% 40%,#2d1b4e,#0a0014)' }}>
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: 20, gap: 14 }}>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: 20, paddingBottom: 60, gap: 14 }}>
           <div style={{
             width: 150, height: 150, borderRadius: '50%',
             background: 'radial-gradient(circle at 35% 35%, #fff5 0%, #9333EA66 30%, #4c1d95 70%, #1e0a3a 100%)',
@@ -239,7 +239,7 @@ export const CrystalBallGame: React.FC = () => {
           )}
 
           {isComplete && (
-            <div style={{ position: 'absolute', inset: 0, zIndex: 30, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(4,8,18,0.88)', backdropFilter: 'blur(8px)' }}>
+            <div style={{ position: 'absolute', inset: 0, zIndex: 30, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', paddingBottom: 60, background: 'rgba(4,8,18,0.88)', backdropFilter: 'blur(8px)' }}>
               <div style={{ fontSize: 56, marginBottom: 8 }}>🔮</div>
               <div style={{ fontSize: 24, fontWeight: 900, color: '#A855F7', marginBottom: 6 }}>ORACLE COMPLETE</div>
               <div style={{ fontSize: 14, color: C.text2, marginBottom: 4 }}>Final score: {score}</div>

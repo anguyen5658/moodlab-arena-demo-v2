@@ -96,7 +96,7 @@ export const DailyPicksGame: React.FC = () => {
       <StageHeader title="📅 DAILY PICKS" titleColor="#F97316" coins={player.coins} bleConnected={ble.bleConnected} onBack={exitGame} rightText={`${round + 1}/3 · ${correct}✓`} />
       <div style={{ position: 'relative', flex: 1, overflow: 'hidden', background: 'radial-gradient(ellipse at 50% 20%,#3a1f0a,#0a0604)' }}>
         {phase !== 'final' && (
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: 20, gap: 18, justifyContent: 'center' }}>
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: 20, paddingBottom: 60, gap: 18, justifyContent: 'center' }}>
             <div style={{ fontSize: 10, color: C.text3, letterSpacing: 2 }}>PICK {round + 1} OF 3</div>
             <div style={{ padding: 20, borderRadius: 16, background: '#F9731612', border: '2px solid #F9731640', fontSize: 16, fontWeight: 800, color: '#fff', textAlign: 'center', maxWidth: 340 }}>{q}</div>
             <div style={{ display: 'flex', gap: 14 }}>
@@ -116,7 +116,7 @@ export const DailyPicksGame: React.FC = () => {
           </div>
         )}
         {phase === 'final' && (
-          <div style={{ position: 'absolute', inset: 0, zIndex: 30, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(4,8,18,0.88)', backdropFilter: 'blur(8px)' }}>
+          <div style={{ position: 'absolute', inset: 0, zIndex: 30, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', paddingBottom: 60, background: 'rgba(4,8,18,0.88)', backdropFilter: 'blur(8px)' }}>
             <div style={{ fontSize: 48, marginBottom: 8 }}>{correct === 3 ? '🏆' : '📅'}</div>
             <div style={{ fontSize: 24, fontWeight: 900, color: C.orange, marginBottom: 6 }}>DAILY DONE</div>
             <div style={{ fontSize: 12, color: C.text2, marginBottom: 12 }}>{correct}/3 correct</div>
@@ -205,7 +205,7 @@ export const PuffBlackjackGame: React.FC = () => {
     <div style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex', flexDirection: 'column', touchAction: 'none' }}>
       <StageHeader title="🃏 PUFF BLACKJACK" titleColor="#22C55E" coins={player.coins} bleConnected={ble.bleConnected} onBack={exitGame} />
       <div style={{ position: 'relative', flex: 1, overflow: 'hidden', background: 'radial-gradient(ellipse at 50% 30%,#0a2a18,#0a1408)' }}>
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: 20, gap: 24 }}>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: 20, paddingBottom: 60, gap: 24 }}>
           <div style={{ width: '100%', maxWidth: 340, textAlign: 'center' }}>
             <div style={{ fontSize: 10, color: C.text3, marginBottom: 6 }}>DEALER — {phase === 'playing' ? '?' : dT}</div>
             <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
@@ -304,7 +304,7 @@ export const CrapsNCloudsGame: React.FC = () => {
     <div style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex', flexDirection: 'column', touchAction: 'none' }}>
       <StageHeader title="🎲 CRAPS & CLOUDS" titleColor="#EF4444" coins={player.coins} bleConnected={ble.bleConnected} onBack={exitGame} rightText={`Won: ${won}`} />
       <div style={{ position: 'relative', flex: 1, overflow: 'hidden', background: 'radial-gradient(ellipse at 50% 30%,#2a0a0a,#0a0404)' }}>
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: 20, gap: 20, justifyContent: 'center' }}>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: 20, paddingBottom: 60, gap: 20, justifyContent: 'center' }}>
           <div style={{ display: 'flex', gap: 20 }}>
             {dice.map((d, i) => (
               <div key={i} style={{ width: 90, height: 90, borderRadius: 16, background: '#fff', color: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 56, fontWeight: 900, boxShadow: '0 0 20px #EF444460', animation: phase === 'rolling' ? 'shake 0.12s infinite' : 'none' }}>
@@ -389,7 +389,7 @@ export const MysteryBoxGame: React.FC = () => {
     <div style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex', flexDirection: 'column', touchAction: 'none' }}>
       <StageHeader title="🎁 MYSTERY BOX" titleColor="#FFD700" coins={player.coins} bleConnected={ble.bleConnected} onBack={exitGame} />
       <div style={{ position: 'relative', flex: 1, overflow: 'hidden', background: 'radial-gradient(ellipse at 50% 30%,#3a2a0a,#0a0800)' }}>
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: 20, gap: 24, justifyContent: 'center' }}>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: 20, paddingBottom: 60, gap: 24, justifyContent: 'center' }}>
           <div style={{ fontSize: 12, color: C.text3, letterSpacing: 2 }}>PICK A BOX</div>
           <div style={{ display: 'flex', gap: 16 }}>
             {boxes.map((b, i) => {
@@ -476,7 +476,7 @@ export const ScratchPuffGame: React.FC = () => {
     <div style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex', flexDirection: 'column', touchAction: 'none' }}>
       <StageHeader title="🎫 SCRATCH & PUFF" titleColor="#EC4899" coins={player.coins} bleConnected={ble.bleConnected} onBack={exitGame} />
       <div style={{ position: 'relative', flex: 1, overflow: 'hidden', background: 'radial-gradient(ellipse at 50% 30%,#3a0a1f,#0a040a)' }}>
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: 20, gap: 20, justifyContent: 'center' }}>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: 20, paddingBottom: 60, gap: 20, justifyContent: 'center' }}>
           <div style={{ fontSize: 11, color: C.text3, letterSpacing: 2 }}>TAP TO SCRATCH · MATCH 3 WINS</div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, width: '100%', maxWidth: 340 }}>
             {tiles.map((t, i) => (
@@ -547,7 +547,7 @@ export const FortuneCookieGame: React.FC = () => {
     <div style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex', flexDirection: 'column', touchAction: 'none' }}>
       <StageHeader title="🥠 FORTUNE COOKIE" titleColor="#F97316" coins={player.coins} bleConnected={ble.bleConnected} onBack={exitGame} />
       <div style={{ position: 'relative', flex: 1, overflow: 'hidden', background: 'radial-gradient(ellipse at 50% 30%,#3a1f0a,#0a0604)' }}>
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: 20, gap: 24, justifyContent: 'center' }}>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: 20, paddingBottom: 60, gap: 24, justifyContent: 'center' }}>
           <div style={{ fontSize: 140, filter: 'drop-shadow(0 0 24px #F97316)' }}>🥠</div>
           {phase === 'idle' && (
             <div onClick={crack} style={{ padding: '16px 32px', borderRadius: 14, cursor: 'pointer', background: '#F9731620', border: '2px solid #F9731650', fontSize: 15, fontWeight: 900, color: '#F97316', touchAction: 'none' }}>CRACK IT OPEN</div>
@@ -631,7 +631,7 @@ export const TreasureMapGame: React.FC = () => {
     <div style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex', flexDirection: 'column', touchAction: 'none' }}>
       <StageHeader title="🗺️ TREASURE MAP" titleColor="#FFD700" coins={player.coins} bleConnected={ble.bleConnected} onBack={exitGame} rightText={`💎 ${found}/3`} />
       <div style={{ position: 'relative', flex: 1, overflow: 'hidden', background: 'radial-gradient(ellipse at 50% 30%,#3a2a08,#0a0804)' }}>
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: 20, gap: 14 }}>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: 20, paddingBottom: 60, gap: 14 }}>
           <div style={{ fontSize: 10, color: C.text3, letterSpacing: 2 }}>FIND 3 TREASURES · AVOID 3 BOMBS</div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 6, width: '100%', maxWidth: 340 }}>
             {tiles.map((t, i) => (

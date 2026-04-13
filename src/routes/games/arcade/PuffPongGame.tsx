@@ -534,7 +534,7 @@ export const PuffPongGame: React.FC = () => {
 
         {/* Result overlay */}
         {phase === 'result' && (
-          <div style={{ position: 'absolute', inset: 0, zIndex: 30, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(5,5,16,0.85)', backdropFilter: 'blur(10px)' }}>
+          <div style={{ position: 'absolute', inset: 0, zIndex: 30, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', paddingBottom: 60, background: 'rgba(5,5,16,0.85)', backdropFilter: 'blur(10px)' }}>
             <div style={{ fontSize: 24, fontWeight: 900, color: score.you > score.ai ? C.cyan : '#FF5A5A', textShadow: '0 0 20px currentColor', letterSpacing: 3, marginBottom: 4 }}>{score.you > score.ai ? 'YOU WIN! 🏆' : 'AI WINS 🤖'}</div>
             <div style={{ fontSize: 32, fontWeight: 900, marginBottom: 4 }}>
               <span style={{ color: C.cyan }}>{score.you}</span>

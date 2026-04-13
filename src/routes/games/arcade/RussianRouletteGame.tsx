@@ -613,7 +613,7 @@ export const RussianRouletteGame: React.FC = () => {
           const rrWon = winner && winner.isYou
           const baseR = rrWon ? 30 : 5
           return (
-            <div style={{ position: 'absolute', inset: 0, zIndex: 60, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(4,8,18,0.88)', backdropFilter: 'blur(12px)' }}>
+            <div style={{ position: 'absolute', inset: 0, zIndex: 60, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', paddingBottom: 60, background: 'rgba(4,8,18,0.88)', backdropFilter: 'blur(12px)' }}>
               <div style={{ fontSize: 50, marginBottom: 8 }}>{rrWon ? '👑' : '💀'}</div>
               <div style={{ fontSize: 24, fontWeight: 900, color: rrWon ? C.green : C.red }}>{rrWon ? 'SOLE SURVIVOR!' : winner ? `${winner.name} WINS!` : 'Game Over!'}</div>
               <div style={{ fontSize: 11, color: C.text2, marginTop: 6 }}>+{baseR} coins</div>

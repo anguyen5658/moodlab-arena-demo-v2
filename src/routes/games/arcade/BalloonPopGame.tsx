@@ -716,7 +716,7 @@ export const BalloonPopGame: React.FC = () => {
   const bpWonFinal = !!(bpWinner && bpWinner.isYou)
   const bpBaseCoins = bpWonFinal ? 80 : 10
   const bpResultOverlay = bpPhase === "result" ? (
-    <div style={{ position: "absolute", inset: 0, zIndex: 60, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: "rgba(4,8,18,0.88)", backdropFilter: "blur(12px)", animation: "fadeIn 0.5s ease" }}>
+    <div style={{ position: "absolute", inset: 0, zIndex: 60, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", paddingBottom: 60, background: "rgba(4,8,18,0.88)", backdropFilter: "blur(12px)", animation: "fadeIn 0.5s ease" }}>
       <div style={{ fontSize: 50, marginBottom: 8 }}>{bpWonFinal ? "👑" : "💀"}</div>
       <div style={{ fontSize: 24, fontWeight: 900, color: bpWonFinal ? C.green : C.red }}>{bpWonFinal ? "LAST ONE STANDING!" : bpWinner ? bpWinner.name + " WINS!" : "Game Over!"}</div>
       <div style={{ fontSize: 11, color: C.text2, marginTop: 6 }}>+{bpBaseCoins} coins</div>
@@ -763,7 +763,7 @@ export const BalloonPopGame: React.FC = () => {
   ) : null
 
   const bpIntroOverlay = isIntro ? (
-    <div style={{ position: "absolute", inset: 0, zIndex: 50, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: "rgba(4,4,18,0.92)", backdropFilter: "blur(16px)", animation: "fadeIn 0.3s ease" }}>
+    <div style={{ position: "absolute", inset: 0, zIndex: 50, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", paddingBottom: 60, background: "rgba(4,4,18,0.92)", backdropFilter: "blur(16px)", animation: "fadeIn 0.3s ease" }}>
       <div style={{ fontSize: 56, marginBottom: 8 }}>🎈</div>
       <div style={{ fontSize: 28, fontWeight: 900, letterSpacing: 6, background: "linear-gradient(135deg, " + C.pink + ", " + C.gold + ", " + C.cyan + ")", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", textAlign: "center" }}>BALLOON POP</div>
       <div style={{ fontSize: 12, color: C.text2, marginTop: 8, letterSpacing: 3, fontWeight: 700 }}>DON'T POP IT!</div>
@@ -779,7 +779,7 @@ export const BalloonPopGame: React.FC = () => {
   ) : null
 
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 100, display: "flex", flexDirection: "column", touchAction: "none" }}>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 100, display: "flex", flexDirection: "column", touchAction: "none" }}>
       {/* Header */}
       <div style={{ position: "relative", zIndex: 50, flexShrink: 0, background: "rgba(6,16,30,0.98)", borderBottom: "1px solid " + (dangerZone ? "rgba(255,50,50,0.15)" : "rgba(255,77,141,0.1)") }}>
         <div style={{ padding: "6px 12px 2px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>

@@ -178,7 +178,7 @@ export const PuffSlotsGame: React.FC = () => {
             <div style={{ display: 'inline-block', padding: '4px 12px', borderRadius: 100, background: 'rgba(0,0,0,0.5)', fontSize: 9, color: C.gold, fontWeight: 700 }}>{comment}</div>
           </div>
         )}
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: 20, paddingTop: 40, gap: 18, justifyContent: 'center' }}>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: 20, paddingTop: 40, paddingBottom: 60, gap: 18, justifyContent: 'center' }}>
           <div style={{ display: 'flex', gap: 10, padding: '18px 16px', borderRadius: 16, background: bonus ? 'rgba(255,107,157,0.1)' : 'rgba(255,215,0,0.08)', border: `3px solid ${bonus ? '#FF6B9D' : '#FFD700'}`, boxShadow: `0 0 30px ${bonus ? '#FF6B9D' : '#FFD700'}40` }}>
             {reels.map((r, i) => (
               <div key={i} style={{ width: 70, height: 88, borderRadius: 10, background: '#1a1408', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 44, border: `2px solid ${bonus ? '#FF6B9D80' : '#FFD70080'}`, animation: spinning ? 'pulse 0.2s infinite' : 'none' }}>
@@ -211,7 +211,7 @@ export const PuffSlotsGame: React.FC = () => {
         </div>
 
         {isComplete && (
-          <div style={{ position: 'absolute', inset: 0, zIndex: 30, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(4,8,18,0.88)', backdropFilter: 'blur(8px)' }}>
+          <div style={{ position: 'absolute', inset: 0, zIndex: 30, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', paddingBottom: 60, background: 'rgba(4,8,18,0.88)', backdropFilter: 'blur(8px)' }}>
             <div style={{ fontSize: 56, marginBottom: 8 }}>🎰</div>
             <div style={{ fontSize: 24, fontWeight: 900, color: C.gold, marginBottom: 6 }}>SLOTS COMPLETE</div>
             <div style={{ fontSize: 14, color: C.text2, marginBottom: 4 }}>Total won: {score}</div>

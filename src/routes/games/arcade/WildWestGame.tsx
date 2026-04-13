@@ -801,7 +801,7 @@ export const WildWestGame: React.FC = () => {
 
         {/* Intro */}
         {duelIntroStage && (
-          <div style={{ position: 'absolute', inset: 0, zIndex: 50, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(4,8,18,0.94)', backdropFilter: 'blur(16px)' }}>
+          <div style={{ position: 'absolute', inset: 0, zIndex: 50, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', paddingBottom: 60, background: 'rgba(4,8,18,0.94)', backdropFilter: 'blur(16px)' }}>
             <div style={{ marginBottom: 16, padding: '4px 18px', borderRadius: 20, background: `${C.gold}12`, border: `1px solid ${C.gold}30` }}>
               <span style={{ fontSize: 10, fontWeight: 800, color: C.gold, letterSpacing: 4, textTransform: 'uppercase' }}>HIGH NOON SHOWDOWN</span>
             </div>
@@ -928,7 +928,7 @@ export const WildWestGame: React.FC = () => {
 
         {/* Final */}
         {wwPhase === 'final' && (
-          <div style={{ position: 'absolute', inset: 0, zIndex: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(4,8,18,0.85)', backdropFilter: 'blur(8px)' }}>
+          <div style={{ position: 'absolute', inset: 0, zIndex: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', paddingBottom: 60, background: 'rgba(4,8,18,0.85)', backdropFilter: 'blur(8px)' }}>
             <div style={{ textAlign: 'center', padding: '20px', maxWidth: 320, width: '90%' }}>
               <div style={{ fontSize: 40, marginBottom: 4 }}>{duelScore.you >= 3 ? '\uD83C\uDFC6' : '\uD83D\uDC80'}</div>
               <div style={{ fontSize: 26, fontWeight: 900, color: duelScore.you >= 3 ? C.gold : C.red, textShadow: `0 0 40px ${duelScore.you >= 3 ? C.gold : C.red}50`, marginBottom: 4, letterSpacing: 3 }}>

@@ -186,7 +186,7 @@ export const VibeCheckGame: React.FC = () => {
 
       <div style={{ position: 'relative', flex: 1, overflow: 'hidden', background: 'radial-gradient(ellipse at 50% 20%,#2a1f08,#0a0a1a)' }}>
         {phase === 'intro' && (
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 20, gap: 12 }}>
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 20, paddingBottom: 60, gap: 12 }}>
             <div style={{ fontSize: 56 }}>🧠</div>
             <div style={{ fontSize: 20, fontWeight: 900, color: C.gold }}>VIBE CHECK</div>
             <div style={{ fontSize: 11, color: C.text2 }}>{players} contestants · 8 questions · survive to win</div>
@@ -194,7 +194,7 @@ export const VibeCheckGame: React.FC = () => {
         )}
 
         {(phase === 'question' || phase === 'reveal') && q && (
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: 20, paddingTop: 18, gap: 12 }}>
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: 20, paddingTop: 18, paddingBottom: 60, gap: 12 }}>
             <div style={{ display: 'inline-block', padding: '3px 10px', borderRadius: 100, background: `${C.purple}15`, fontSize: 8, fontWeight: 800, color: C.purple, letterSpacing: 1 }}>{q.cat.toUpperCase()}</div>
             <div style={{ width: '100%', maxWidth: 360, padding: 18, borderRadius: 16, background: `${C.gold}12`, border: `2px solid ${C.gold}35`, textAlign: 'center' }}>
               <div style={{ fontSize: 13, fontWeight: 700, color: '#fff', lineHeight: 1.4 }}>{q.q}</div>
@@ -224,7 +224,7 @@ export const VibeCheckGame: React.FC = () => {
         )}
 
         {isResult && (
-          <div style={{ position: 'absolute', inset: 0, zIndex: 30, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(4,8,18,0.9)', backdropFilter: 'blur(8px)', padding: 20 }}>
+          <div style={{ position: 'absolute', inset: 0, zIndex: 30, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', paddingBottom: 60, background: 'rgba(4,8,18,0.9)', backdropFilter: 'blur(8px)', padding: 20 }}>
             <div style={{ fontSize: 48, marginBottom: 8 }}>{eliminated ? '💀' : score >= 400 ? '🏆' : '🧠'}</div>
             <div style={{ fontSize: 26, fontWeight: 900, color: eliminated ? C.red : score >= 400 ? C.green : C.gold, marginBottom: 6 }}>{eliminated ? 'ELIMINATED' : score >= 400 ? 'VIBE KING!' : 'SHOW OVER'}</div>
             <div style={{ fontSize: 14, color: C.text2, marginBottom: 4 }}>Score: {score}</div>

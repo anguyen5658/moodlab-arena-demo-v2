@@ -156,7 +156,7 @@ export const MatchPredictorGame: React.FC = () => {
       <StageHeader title="📊 MATCH PREDICTOR" titleColor="#3B82F6" coins={player.coins} bleConnected={ble.bleConnected} onBack={exitGame} rightText={`R${round + 1}/5 · ${score}pts`} />
       <div style={{ position: 'relative', flex: 1, overflow: 'hidden', background: 'radial-gradient(ellipse at 50% 20%,#0a1a3a,#050a14)' }}>
         {phase === 'intro' && (
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 20, gap: 10 }}>
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 20, paddingBottom: 60, gap: 10 }}>
             <div style={{ fontSize: 56 }}>📊</div>
             <div style={{ fontSize: 20, fontWeight: 900, color: '#3B82F6' }}>MATCH PREDICTOR</div>
             <div style={{ fontSize: 11, color: C.text2 }}>Call the winner. Puff your prediction!</div>
@@ -164,7 +164,7 @@ export const MatchPredictorGame: React.FC = () => {
         )}
 
         {(phase === 'match' || phase === 'prediction' || phase === 'result') && match && (
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: 20, paddingTop: 24, gap: 14 }}>
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: 20, paddingTop: 24, paddingBottom: 60, gap: 14 }}>
             <div style={{ fontSize: 9, color: C.text3, letterSpacing: 2 }}>GROUP {match.group} · {match.time}</div>
             <div style={{ width: '100%', maxWidth: 340, padding: 18, borderRadius: 16, background: 'rgba(59,130,246,0.1)', border: '2px solid rgba(59,130,246,0.4)' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -210,7 +210,7 @@ export const MatchPredictorGame: React.FC = () => {
         )}
 
         {isComplete && (
-          <div style={{ position: 'absolute', inset: 0, zIndex: 30, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(4,8,18,0.88)', backdropFilter: 'blur(8px)' }}>
+          <div style={{ position: 'absolute', inset: 0, zIndex: 30, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', paddingBottom: 60, background: 'rgba(4,8,18,0.88)', backdropFilter: 'blur(8px)' }}>
             <div style={{ fontSize: 48, marginBottom: 8 }}>📊</div>
             <div style={{ fontSize: 24, fontWeight: 900, color: '#3B82F6', marginBottom: 6 }}>PREDICTIONS CLOSED</div>
             <div style={{ fontSize: 14, color: C.text2, marginBottom: 12 }}>Score: {score}</div>

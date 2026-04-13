@@ -1169,7 +1169,7 @@ export const TankWarGame: React.FC = () => {
   }
 
   return (
-    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 100, overflow: 'hidden', display: 'flex', flexDirection: 'column', touchAction: 'none', animation: ui.screenShake ? 'shake 0.4s ease' : 'none' }}>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 100, overflow: 'hidden', display: 'flex', flexDirection: 'column', touchAction: 'none', animation: ui.screenShake ? 'shake 0.4s ease' : 'none' }}>
       {/* Background */}
       <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, #06101E 0%, #0c1a38 30%, #102240 60%, #081830 100%)', zIndex: 0 }} />
       {ui.screenFlash && <div style={{ position: 'absolute', inset: 0, zIndex: 200, pointerEvents: 'none', opacity: 0, background: ui.screenFlash === 'goal' ? 'rgba(255,215,0,0.3)' : 'rgba(255,50,50,0.2)', animation: 'flashOverlay 0.4s ease forwards' }} />}
@@ -1373,7 +1373,7 @@ export const TankWarGame: React.FC = () => {
 
         {/* AI progress bar */}
         {showAIBar && (
-          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 30, background: 'linear-gradient(0deg, rgba(3,7,5,0.9), rgba(5,11,8,0.6))', borderTop: '1px solid rgba(255,255,255,0.05)', padding: '12px 16px', textAlign: 'center' }}>
+          <div style={{ position: 'absolute', bottom: 48, left: 0, right: 0, zIndex: 30, background: 'linear-gradient(0deg, rgba(3,7,5,0.9), rgba(5,11,8,0.6))', borderTop: '1px solid rgba(255,255,255,0.05)', padding: '12px 16px', textAlign: 'center' }}>
             <div style={{ fontSize: 11, fontWeight: 800, color: '#ccc', marginBottom: 6 }}>{twPhase === 'boss_attack' ? (twBoss?.name + ' attacks!') : (twTanks[twTurnIdx]?.name + ' aiming...')}</div>
             <div style={{ height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
               <div style={{ height: '100%', width: '100%', borderRadius: 2, background: 'linear-gradient(90deg, ' + C.gold + ', transparent)', animation: 'aiProgress 1.5s ease infinite' }} />
@@ -1383,7 +1383,7 @@ export const TankWarGame: React.FC = () => {
 
         {/* LOBBY — 3-tab system */}
         {(twPhase === 'intro' || twPhase === 'modeselect') && (
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', zIndex: 20, padding: '16px 14px', overflowY: 'auto', background: 'radial-gradient(ellipse 80% 50% at 50% 0%, rgba(0,229,255,0.04) 0%, transparent 70%), linear-gradient(180deg, #06101E, #0c1a38 50%, #081830)' }}>
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', zIndex: 20, padding: '16px 14px 60px', overflowY: 'auto', background: 'radial-gradient(ellipse 80% 50% at 50% 0%, rgba(0,229,255,0.04) 0%, transparent 70%), linear-gradient(180deg, #06101E, #0c1a38 50%, #081830)' }}>
             {/* Header */}
             <div style={{ textAlign: 'center', marginBottom: 10 }}>
               <div style={{ fontSize: 36, marginBottom: 4 }}>🔫</div>
@@ -1549,7 +1549,7 @@ export const TankWarGame: React.FC = () => {
 
         {/* COMPLETE */}
         {twPhase === 'complete' && (
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 20, padding: 20, background: 'rgba(0,0,0,0.7)' }}>
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 20, padding: 20, paddingBottom: 60, background: 'rgba(0,0,0,0.7)' }}>
             <div style={{ fontSize: 48, marginBottom: 8 }}>{twTanks.find(t => t.isPlayer)?.alive ? '🏆' : '💀'}</div>
             <div style={{ fontSize: 24, fontWeight: 900, color: twTanks.find(t => t.isPlayer)?.alive ? C.gold : C.red, marginBottom: 8 }}>{twTanks.find(t => t.isPlayer)?.alive ? 'VICTORY!' : 'DEFEATED'}</div>
             <div style={{ fontSize: 14, fontWeight: 800, color: '#fff' }}>Score: {twScore}</div>

@@ -553,7 +553,7 @@ export const RooftopPuffGame: React.FC = () => {
   const roofGC = '#00E5FF'
 
   return (
-    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 100, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 100, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
       <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, #050515 0%, #0a0a25 30%, #151025 60%, #0a0a20 100%)', zIndex: 0 }} />
 
       {/* Header */}
@@ -605,7 +605,7 @@ export const RooftopPuffGame: React.FC = () => {
 
         {/* Mode Select */}
         {phase === 'modeselect' && (
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', zIndex: 20, padding: '16px 14px', overflowY: 'auto', background: 'radial-gradient(ellipse 80% 50% at 50% 0%, rgba(0,229,255,0.04) 0%, transparent 70%), linear-gradient(180deg, #050515, #0a0a25 50%, #0a0a20)' }}>
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', zIndex: 20, padding: '16px 14px 60px', overflowY: 'auto', background: 'radial-gradient(ellipse 80% 50% at 50% 0%, rgba(0,229,255,0.04) 0%, transparent 70%), linear-gradient(180deg, #050515, #0a0a25 50%, #0a0a20)' }}>
             <div style={{ textAlign: 'center', marginBottom: 10 }}>
               <div style={{ fontSize: 36, marginBottom: 4 }}>🏃</div>
               <div style={{ fontSize: 16, fontWeight: 900, letterSpacing: 3, background: 'linear-gradient(135deg, #00E5FF, #66FFCC)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>ROOFTOP PUFF</div>
@@ -699,7 +699,7 @@ export const RooftopPuffGame: React.FC = () => {
 
         {/* Complete */}
         {phase === 'complete' && (
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 20, padding: 20, background: 'rgba(0,0,0,0.7)' }}>
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 20, padding: 20, paddingBottom: 60, background: 'rgba(0,0,0,0.7)' }}>
             <div style={{ fontSize: 48, marginBottom: 8 }}>{alive ? '🏆' : '💀'}</div>
             <div style={{ fontSize: 24, fontWeight: 900, color: alive ? C.gold : C.red, marginBottom: 8 }}>{alive ? 'VICTORY!' : 'GAME OVER'}</div>
             <div style={{ fontSize: 14, fontWeight: 800, color: '#fff' }}>Score: {score}</div>

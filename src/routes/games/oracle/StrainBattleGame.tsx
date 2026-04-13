@@ -158,7 +158,7 @@ export const StrainBattleGame: React.FC = () => {
       <StageHeader title="🌿 STRAIN BATTLE" titleColor="#22C55E" coins={player.coins} bleConnected={ble.bleConnected} onBack={exitGame} rightText={`R${round + 1}/5 · ${score}pts`} />
       <div style={{ position: 'relative', flex: 1, overflow: 'hidden', background: 'radial-gradient(ellipse at 50% 20%,#0a2a14,#050a08)' }}>
         {phase === 'intro' && (
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 20, gap: 10 }}>
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 20, paddingBottom: 60, gap: 10 }}>
             <div style={{ fontSize: 56 }}>🌿</div>
             <div style={{ fontSize: 20, fontWeight: 900, color: C.green }}>STRAIN BATTLE</div>
             <div style={{ fontSize: 11, color: C.text2 }}>5 matchups · vote with your puffs</div>
@@ -166,7 +166,7 @@ export const StrainBattleGame: React.FC = () => {
         )}
 
         {(phase === 'matchup' || phase === 'results') && matchup && (
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', padding: 16, paddingTop: 18, gap: 10 }}>
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', padding: 16, paddingTop: 18, paddingBottom: 60, gap: 10 }}>
             <div style={{ fontSize: 10, color: C.text3, textAlign: 'center', letterSpacing: 2 }}>WHICH STRAIN WINS?</div>
             {[0, 1].map(i => {
               const s = matchup[i]
@@ -217,7 +217,7 @@ export const StrainBattleGame: React.FC = () => {
         )}
 
         {isComplete && (
-          <div style={{ position: 'absolute', inset: 0, zIndex: 30, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(4,8,18,0.88)', backdropFilter: 'blur(8px)' }}>
+          <div style={{ position: 'absolute', inset: 0, zIndex: 30, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', paddingBottom: 60, background: 'rgba(4,8,18,0.88)', backdropFilter: 'blur(8px)' }}>
             <div style={{ fontSize: 48, marginBottom: 8 }}>🌿</div>
             <div style={{ fontSize: 24, fontWeight: 900, color: C.green, marginBottom: 6 }}>BATTLE OVER</div>
             <div style={{ fontSize: 14, color: C.text2, marginBottom: 12 }}>{score} points</div>

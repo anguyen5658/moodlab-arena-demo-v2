@@ -484,7 +484,7 @@ export const TugOfWarGame: React.FC = () => {
           const won = position > 50
           const baseR = won ? 60 : 10
           return (
-            <div style={{ position: 'absolute', inset: 0, zIndex: 60, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(4,8,18,0.88)', backdropFilter: 'blur(12px)' }}>
+            <div style={{ position: 'absolute', inset: 0, zIndex: 60, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', paddingBottom: 60, background: 'rgba(4,8,18,0.88)', backdropFilter: 'blur(12px)' }}>
               <div style={{ fontSize: 50, marginBottom: 8 }}>{won ? '🏆' : '😤'}</div>
               <div style={{ fontSize: 24, fontWeight: 900, color: won ? C.green : C.red }}>{won ? 'YOUR TEAM WINS!' : 'AI TEAM WINS!'}</div>
               <div style={{ fontSize: 11, color: C.text2, marginTop: 6 }}>Position: {Math.round(position)}% | Pulls: {puffs}</div>
