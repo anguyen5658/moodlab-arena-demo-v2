@@ -1347,7 +1347,7 @@ export const TankWarGame: React.FC = () => {
                 <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: twPower + '%', background: twPower >= twSS.mn && twPower <= twSS.mx ? C.green : '#66BB6A', transition: 'width 0.02s', opacity: 0.5 }} />
                 <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <span style={{ fontSize: 11, fontWeight: 900, color: 'rgba(255,255,255,0.8)', letterSpacing: 2 }}>
-                    {twPhase === 'heal_charging' ? Math.round(twPower) + '%' : 'HOLD TO HEAL'}
+                    {(twPhase as Phase) === 'heal_charging' ? Math.round(twPower) + '%' : 'HOLD TO HEAL'}
                   </span>
                 </div>
               </div>

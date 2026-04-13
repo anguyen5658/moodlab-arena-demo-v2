@@ -19,6 +19,9 @@ export type GameId =
 export interface ActiveGame {
   id: GameId
   wcMode?: boolean
+  wcKnockout?: boolean
+  wcMatchIdx?: number
+  wcOpponent?: any
   mode?: string
   role?: string
   opponent?: any

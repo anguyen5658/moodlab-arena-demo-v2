@@ -360,4 +360,3 @@ export const SurvivalTriviaGame: React.FC = () => {
   )
 }
 
-void eliminated
