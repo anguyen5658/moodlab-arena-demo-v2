@@ -1,8 +1,7 @@
 import React, { createContext, useContext, useRef, useState } from 'react'
-import { BLE_SERVICE_UUID, BLE_PUFF_START, BLE_PUFF_STOP, C } from '../constants'
+import { BLE_PROFILES, C } from '../constants'
+import type { BleProfile } from '../constants'
 import { useAudioContext } from './AudioContext'
-
-const BLE_NOTIFY_CHAR_UUID = "0000ffe6-0000-1000-8000-00805f9b34fb"
 
 interface BLEDeviceUI {
   slot: number
@@ -15,6 +14,7 @@ interface BLEDeviceRef {
   slot: number
   device: any
   characteristic: any
+  profile: BleProfile
   puffTimeout: ReturnType<typeof setTimeout> | null
   down: (() => void) | null
   up: (() => void) | null
@@ -93,7 +93,7 @@ export const BLEProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     try {
       setBleScanning(true)
       const device = await (navigator as any).bluetooth.requestDevice({
-        filters: [{ services: [BLE_SERVICE_UUID] }],
+        filters: BLE_PROFILES.map(p => ({ services: [p.service] })),
       })
 
       if (slotIndex === 0) btDeviceRef.current = device
@@ -118,23 +118,34 @@ export const BLEProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       })
 
       const server = await device.gatt.connect()
-      const service = await server.getPrimaryService(BLE_SERVICE_UUID)
-      const charNotify = await service.getCharacteristic(BLE_NOTIFY_CHAR_UUID)
+      // Auto-detect which supported profile this device exposes.
+      let profile: BleProfile | null = null
+      let charNotify: any = null
+      for (const p of BLE_PROFILES) {
+        try {
+          const svc = await server.getPrimaryService(p.service)
+          const ch  = await svc.getCharacteristic(p.notify)
+          profile = p; charNotify = ch
+          break
+        } catch (_) { /* try next profile */ }
+      }
+      if (!profile) throw new Error("No supported BLE profile found on this device")
 
       if (slotIndex === 0) btCharNotify.current = charNotify
 
       bleDevicesRef.current[slotIndex] = {
-        slot: slotIndex, device, characteristic: charNotify,
+        slot: slotIndex, device, characteristic: charNotify, profile,
         puffTimeout: null, down: null, up: null,
       }
 
+      const activeProfile = profile
       charNotify.addEventListener("characteristicvaluechanged", (e: any) => {
         const dv = e.target.value
         const b = Array.from({ length: dv.byteLength }, (_: any, i: number) => dv.getUint8(i)) as number[]
-        const match = (template: number[]) => b.length === template.length && template.every((v, i) => b[i] === v)
         const slotRef = bleDevicesRef.current[slotIndex]
         if (!slotRef) return
-        if (match(BLE_PUFF_START as number[])) {
+        const ev = activeProfile.parse(b)
+        if (ev === "start") {
           clearTimeout(slotRef.puffTimeout!)
           if (slotIndex === 0) {
             setBtPuffActive(true)
@@ -148,7 +159,7 @@ export const BLEProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           }
           slotRef.down?.()
           slotRef.puffTimeout = setTimeout(() => { slotRef.up?.() }, 15000)
-        } else if (match(BLE_PUFF_STOP as number[])) {
+        } else if (ev === "stop") {
           clearTimeout(slotRef.puffTimeout!)
           if (slotIndex === 0) {
             clearTimeout(btPuffTimeout.current!)
@@ -169,7 +180,7 @@ export const BLEProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         const filtered = prev.filter(d => d.slot !== slotIndex)
         return [...filtered, {
           slot: slotIndex, name: partyPlayerNames[slotIndex],
-          deviceName: device.name || "Cali Clear", connected: true
+          deviceName: device.name || profile.name, connected: true
         }].sort((a, b) => a.slot - b.slot)
       })
     } catch (err: any) {

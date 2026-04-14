@@ -1237,13 +1237,60 @@ const TICKER_ITEMS = [
 ];
 
 
-// ── WEB BLUETOOTH — Cali Clear device UUIDs ──
-const BLE_SERVICE_UUID     = "0000ffe0-0000-1000-8000-00805f9b34fb";
-const BLE_WRITE_CHAR_UUID  = "0000ffe5-0000-1000-8000-00805f9b34fb"; // reserved for future commands
-const BLE_NOTIFY_CHAR_UUID = "0000ffe6-0000-1000-8000-00805f9b34fb";
-// Notification payloads (6 bytes each)
-const BLE_PUFF_START = [0xb4, 0xb4, 0x02, 0x00, 0x04, 0x4b]; // heating   → puff starts
-const BLE_PUFF_STOP  = [0xb4, 0xb5, 0x02, 0x00, 0x05, 0x4b]; // cancelled → puff stops
+// ── WEB BLUETOOTH — Supported device profiles ──
+// Each profile declares its primary service + notify characteristic and a
+// parser that returns "start" | "stop" | null for a given notification payload.
+// To add a new device: append another entry — connectBleSlot auto-detects
+// which profile matches the chosen device after gatt.connect.
+export interface BleProfile {
+  key: string;
+  name: string;
+  service: string;
+  notify: string;
+  parse: (b: number[]) => "start" | "stop" | null;
+}
+const BLE_PROFILES: BleProfile[] = [
+  {
+    key: "moodiPro",
+    name: "Moodi Pro",
+    service: "0000ffe0-0000-1000-8000-00805f9b34fb",
+    notify:  "0000ffe6-0000-1000-8000-00805f9b34fb",
+    parse(b) {
+      const START = [0xb4, 0xb4, 0x02, 0x00, 0x04, 0x4b];
+      const STOP  = [0xb4, 0xb5, 0x02, 0x00, 0x05, 0x4b];
+      const eq = (t: number[]) => b.length === t.length && t.every((v, i) => b[i] === v);
+      if (eq(START)) return "start";
+      if (eq(STOP))  return "stop";
+      return null;
+    },
+  },
+  {
+    key: "bigChoice",
+    name: "Choice Big",
+    service: "0000ae30-0000-1000-8000-00805f9b34fb",
+    notify:  "0000ae02-0000-1000-8000-00805f9b34fb",
+    parse(b) {
+      if (b.length < 7) return null;
+      if (b[0] !== 0xC3 || b[b.length - 1] !== 0x3C) return null;
+      if (b[5] === 0x01) return "start";
+      if (b[5] === 0x00) return "stop";
+      return null;
+    },
+  },
+  {
+    key: "skyMin",
+    name: "Sky Min",
+    service: "0000ae40-0000-1000-8000-00805f9b34fb",
+    notify:  "0000ae12-0000-1000-8000-00805f9b34fb",
+    parse(b) {
+      if (b.length < 7) return null;
+      if (b[0] !== 0xC3 || b[b.length - 1] !== 0x3C) return null;
+      if (b[5] === 0x01) return "start";
+      if (b[5] === 0x00) return "stop";
+      return null;
+    },
+  },
+];
 
 
 export {
@@ -1268,6 +1315,5 @@ export {
   HOOK_FISH, SP_PUFF_TYPES, SP_COMEDY, PA_PRIZES,
   CHAT_BOTS, CHAT_MSGS, INPUT_MODES, INPUT_TYPES,
   DEVICE_MODELS, DEVICE_POOLS, KICK_ZONES, USER, TICKER_ITEMS,
-  BLE_SERVICE_UUID, BLE_WRITE_CHAR_UUID, BLE_NOTIFY_CHAR_UUID,
-  BLE_PUFF_START, BLE_PUFF_STOP,
+  BLE_PROFILES,
 };
