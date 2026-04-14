@@ -1243,8 +1243,8 @@ const TICKER_ITEMS = [
 // which profile matches the chosen device after gatt.connect.
 const BLE_PROFILES = [
   {
-    key: "caliclear",
-    name: "Cali Clear",
+    key: "moodiPro",
+    name: "Moodi Pro",
     service: "0000ffe0-0000-1000-8000-00805f9b34fb",
     notify:  "0000ffe6-0000-1000-8000-00805f9b34fb",
     parse(b) {
@@ -1258,10 +1258,24 @@ const BLE_PROFILES = [
     },
   },
   {
-    key: "ac6321a",
-    name: "AC6321A",
+    key: "bigChoice",
+    name: "Choice Big",
     service: "0000ae30-0000-1000-8000-00805f9b34fb",
     notify:  "0000ae02-0000-1000-8000-00805f9b34fb",
+    parse(b) {
+      // Frame: [0xC3, 0x40, _, _, _, status, _, 0x3C] — status at index 5: 1=start, 0=stop
+      if (b.length < 7) return null;
+      if (b[0] !== 0xC3 || b[b.length - 1] !== 0x3C) return null;
+      if (b[5] === 0x01) return "start";
+      if (b[5] === 0x00) return "stop";
+      return null;
+    },
+  },
+  {
+    key: "skyMin",
+    name: "Sky Min",
+    service: "0000ae40-0000-1000-8000-00805f9b34fb",
+    notify:  "0000ae12-0000-1000-8000-00805f9b34fb",
     parse(b) {
       // Frame: [0xC3, 0x40, _, _, _, status, _, 0x3C] — status at index 5: 1=start, 0=stop
       if (b.length < 7) return null;
