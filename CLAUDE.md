@@ -20,6 +20,11 @@ npx tsc --noEmit      # typecheck only, no build
 
 `tsconfig` is **strict: false**, **allowJs: true** — TypeScript is used as a safety net, not a guardrail. Expect `any` interop with the legacy monolith shapes.
 
+**Build is the gate, not dev.** `npm run build` runs `tsc -b` (project references), which catches type errors that `tsc --noEmit` and the dev server silently pass. Always run `npm run build` before declaring work done.
+
+### Deploy
+Firebase Hosting is configured ([firebase.json](firebase.json), [.firebaserc](.firebaserc)) to serve `dist/` with SPA rewrites to `index.html`. Deploy with `firebase deploy --only hosting` after `npm run build`.
+
 ### Testing/verification
 There are no unit tests. Verification is done end-to-end via Playwright MCP against a running Vite instance. Pattern:
 1. `npm run dev` in background
@@ -139,10 +144,16 @@ Reference for the read: monolith `startXxxGame` engine function AND the full ren
 
 Puff streak: real puff only. Cap ×5 (+10% max). Dry holds streak. Tap breaks streak.
 
-### BLE protocol
-- Service UUID: `0000ffe0-0000-1000-8000-00805f9b34fb`
-- PUFF_START: `[0xb4, 0xb4, 0x02, 0x00, 0x04, 0x4b]`
-- PUFF_STOP: `[0xb4, 0xb5, 0x02, 0x00, 0x05, 0x4b]`
+### BLE protocol — multi-profile
+Supported devices are declared in `BLE_PROFILES` in [src/constants/index.ts](src/constants/index.ts). Each profile owns its `service` UUID, `notify` characteristic UUID, and a `parse(bytes) → "start" | "stop" | null` function. Currently supported:
+
+| Profile | Service | Frame |
+|---|---|---|
+| Moodi Pro (original Cali Clear) | `0000ffe0-…` | 6-byte `[0xb4, 0xb4/0xb5, 0x02, 0x00, 0x04/0x05, 0x4b]` |
+| Choice Big | `0000ae30-…` | `0xC3 … status@[5] … 0x3C` (1=start, 0=stop) |
+| Sky Min | `0000ae40-…` | `0xC3 … status@[5] … 0x3C` (1=start, 0=stop) |
+
+`connectBleSlot` in [src/context/BLEContext.tsx](src/context/BLEContext.tsx) auto-detects the profile after `gatt.connect` by trying each `getPrimaryService` in turn, stores the matched profile on the slot's `BLEDeviceRef`, and dispatches notifications via `profile.parse(b)`. **Adding a new device = append one entry to `BLE_PROFILES`** — no handler changes needed. Mixed profiles across slots are supported.
 
 ### Multi-device BLE (up to 4 Cali Clear devices)
 - `bleDevices` state: `[{slot, name, connected}]`
