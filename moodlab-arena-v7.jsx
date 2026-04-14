@@ -8,12 +8,12 @@ import { useState, useRef, useEffect, useCallback } from "react";
 
 // ── ARENA VIEW IMAGES (place in assets/arena/) ──
 const ARENA_IMAGES = {
-  hub:      "assets/arena/hub.png",
-  arcade:   "assets/arena/arcade.png",
-  stage:    "assets/arena/stage.png",
-  oracle:   "assets/arena/oracle.png",
-  wall:     "assets/arena/wall.png",
-  worldcup: "assets/arena/worldcup.png",
+  hub:      "assets/arena/hub.webp",
+  arcade:   "assets/arena/arcade.webp",
+  stage:    "assets/arena/stage.webp",
+  oracle:   "assets/arena/oracle.webp",
+  wall:     "assets/arena/wall.webp",
+  worldcup: "assets/arena/worldcup.webp",
 };
 const ARENA_VIDEOS = {
   hub:      "assets/arena/hub.mp4",
@@ -8981,15 +8981,15 @@ export default function MoodLabArena() {
     { tag:"TOURNAMENT", tagColor:C.cyan, title:"⚽ Final Kick WC Tournament", sub:"64 players · Your rank: #12 · Round of 16", cta:"Play Match", ctaColor:C.cyan, act:()=>{setZone("arcade");setArenaView("hub");notify("🚀 Tournament — Coming in V3!",C.gold);}, bg:`radial-gradient(ellipse at 30% 40%, ${C.cyan}12, transparent 60%), radial-gradient(ellipse at 70% 60%, ${C.blue}10, transparent 60%)` },
   ];
 
-  /* ── Invisible tap zones — positioned exactly over neon sign text in hub.png ──
+  /* ── Invisible tap zones — positioned exactly over neon sign text in hub.webp ──
      Coordinates are % within a 52vh-tall container that starts after jumbotron.
      Container top ≈ 27% of viewport (250px on 932px screen). */
   const HUB_TAP_ZONES = [
-    { key:"arcade",   top:"38%", left:"0%",   width:"18%", height:"24%" },
-    { key:"stage",    top:"38%", right:"0%",  width:"19%", height:"24%" },
-    { key:"wall",     top:"42%", left:"18%",  width:"16%", height:"18%" },
-    { key:"oracle",   top:"40%", right:"16%", width:"16%", height:"18%" },
-    { key:"worldcup", top:"42%", left:"28%",  width:"28%", height:"22%" },
+    { key: "arcade",   top: "43%", left: "3%",   width: "18%", height: "24%" },
+    { key: "stage",    top: "44%", right: "3%",  width: "19%", height: "24%" },
+    { key: "wall",     top: "47%", left: "24%",  width: "13%", height: "18%" },
+    { key: "oracle",   top: "48%", right: "24%", width: "13%", height: "18%" },
+    { key: "worldcup", top: "43%", left: "39%",  width: "22%", height: "22%" },
   ];
 
   /* ── Glass floating buttons ── */
@@ -10380,7 +10380,7 @@ export default function MoodLabArena() {
             {/* Inner bright glow */}
             <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:"18vw",maxWidth:80,height:"12vw",maxHeight:55,borderRadius:"50%",background:`radial-gradient(ellipse, ${C.gold}25, transparent 70%)`,animation:"breathe 4s ease-in-out 1s infinite"}}/>
             {/* Logo */}
-            <img src="assets/arena/cali-clear-logo.png" alt="" style={{
+            <img src="assets/arena/cali-clear-logo.webp" alt="" style={{
               position:"relative",width:"15vw",maxWidth:65,height:"auto",display:"block",
               filter:`drop-shadow(0 0 8px ${C.gold}80) drop-shadow(0 0 16px ${C.gold}50) drop-shadow(0 0 32px ${C.gold}25)`,
             }}/>
