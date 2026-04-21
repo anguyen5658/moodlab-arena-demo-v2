@@ -2,7 +2,7 @@
 
 **Version:** 6.2
 **Last Updated:** March 2026
-**Codebase:** `moodlab-arena-v6.jsx` (21,608 lines)
+**Codebase:** `moodlab-arena-v7.jsx` (21,608 lines)
 **Deployment:** [moodlab-arena-demo-v2.vercel.app](https://moodlab-arena-demo-v2.vercel.app)
 
 ---
@@ -43,17 +43,17 @@ This is a **demo application** designed to showcase the concept to stakeholders 
 
 ### Tech Stack
 
-| Component | Technology |
-|---|---|
-| UI Framework | React 18 (production UMD build via CDN) |
-| Transpilation | Babel Standalone (in-browser JSX compilation) |
-| 3D Rendering | Three.js 0.160 (CDN, used for Final Kick 3D) |
-| Audio | Web Audio API (synthesized) + 3 audio files |
-| Device Control | Web Bluetooth API (BLE) |
-| Styling | Inline styles + CSS-in-JS via `<style>` tag |
-| Animations | 87 `@keyframes` declarations (CSS-only, no animation libraries) |
-| Build Step | **None** -- Babel compiles JSX directly in the browser |
-| State Management | React `useState` (530 hooks) + `useRef` (95 hooks) |
+| Component        | Technology                                                      |
+| ---------------- | --------------------------------------------------------------- |
+| UI Framework     | React 18 (production UMD build via CDN)                         |
+| Transpilation    | Babel Standalone (in-browser JSX compilation)                   |
+| 3D Rendering     | Three.js 0.160 (CDN, used for Final Kick 3D)                    |
+| Audio            | Web Audio API (synthesized) + 3 audio files                     |
+| Device Control   | Web Bluetooth API (BLE)                                         |
+| Styling          | Inline styles + CSS-in-JS via `<style>` tag                     |
+| Animations       | 87 `@keyframes` declarations (CSS-only, no animation libraries) |
+| Build Step       | **None** -- Babel compiles JSX directly in the browser          |
+| State Management | React `useState` (530 hooks) + `useRef` (95 hooks)              |
 
 ### Deployment
 
@@ -67,29 +67,29 @@ This is a **demo application** designed to showcase the concept to stakeholders 
 
 ### Single-File Architecture
 
-The entire application lives in **one file**: `moodlab-arena-v6.jsx` at 21,608 lines. This is a deliberate choice for the demo -- no module splitting, no imports beyond React hooks, no routing library. Everything is inline.
+The entire application lives in **one file**: `moodlab-arena-v7.jsx` at 21,608 lines. This is a deliberate choice for the demo -- no module splitting, no imports beyond React hooks, no routing library. Everything is inline.
 
 **File breakdown by section:**
 
-| Line Range | Content |
-|---|---|
-| 1--8 | Header comment, version info |
-| 9--25 | `ARENA_IMAGES` and `ARENA_VIDEOS` asset paths |
-| 28--52 | `Z` (zone configs), `FORTUNE_LEVELS`, `C` (color palette) |
-| 54--77 | Spectator system data (`SPECTATOR_NAMES`, `EMOJIS`, `TICKER_MSGS`) |
-| 79--130 | Glass morphism design system (`GLASS_CLEAR`, `GLASS_CARD`, `LG`) |
-| 132--230 | Game data arrays (`PLAY_GAMES`, `SHOW_GAMES`, `MC_LINES`, `ORACLE_GAMES`, etc.) |
-| 232--328 | Supporting data (strains, questions, predictions, leaderboard, badges) |
-| 330--504 | Wall data, achievements, ranks, streak rewards |
-| 506--564 | `WC_TEAMS` -- 50 national teams |
-| 567--672 | `GAME_TEAMS` -- themed teams per game (13 games x 6 teams) |
-| 674--779 | `GAME_TOURNAMENTS` -- unique tournament format per game |
-| 781--786 | `WC_GROUPS` -- 12 groups (A--L) |
-| 808--839 | `WC_LIVE_MATCHES` -- simulated live match data |
-| 857--876 | Universal Puff Config + power zones |
-| 877--886 | `HOOK_FISH` -- 8 fish types for Hooked game |
-| 889--952 | Additional game constants (Simon Puffs, Puff Auction, chat, input modes, devices) |
-| 957--21609 | `MoodLabArena()` -- the main React component |
+| Line Range | Content                                                                           |
+| ---------- | --------------------------------------------------------------------------------- |
+| 1--8       | Header comment, version info                                                      |
+| 9--25      | `ARENA_IMAGES` and `ARENA_VIDEOS` asset paths                                     |
+| 28--52     | `Z` (zone configs), `FORTUNE_LEVELS`, `C` (color palette)                         |
+| 54--77     | Spectator system data (`SPECTATOR_NAMES`, `EMOJIS`, `TICKER_MSGS`)                |
+| 79--130    | Glass morphism design system (`GLASS_CLEAR`, `GLASS_CARD`, `LG`)                  |
+| 132--230   | Game data arrays (`PLAY_GAMES`, `SHOW_GAMES`, `MC_LINES`, `ORACLE_GAMES`, etc.)   |
+| 232--328   | Supporting data (strains, questions, predictions, leaderboard, badges)            |
+| 330--504   | Wall data, achievements, ranks, streak rewards                                    |
+| 506--564   | `WC_TEAMS` -- 50 national teams                                                   |
+| 567--672   | `GAME_TEAMS` -- themed teams per game (13 games x 6 teams)                        |
+| 674--779   | `GAME_TOURNAMENTS` -- unique tournament format per game                           |
+| 781--786   | `WC_GROUPS` -- 12 groups (A--L)                                                   |
+| 808--839   | `WC_LIVE_MATCHES` -- simulated live match data                                    |
+| 857--876   | Universal Puff Config + power zones                                               |
+| 877--886   | `HOOK_FISH` -- 8 fish types for Hooked game                                       |
+| 889--952   | Additional game constants (Simon Puffs, Puff Auction, chat, input modes, devices) |
+| 957--21609 | `MoodLabArena()` -- the main React component                                      |
 
 ### index.html -- The Loader
 
@@ -98,9 +98,10 @@ The `index.html` file (79 lines) handles:
 1. **Phone frame container**: `#root` div at 430x932px (iPhone 14 Pro Max viewport), centered on desktop with rounded corners and shadow, full-screen on mobile
 2. **Back button**: `#back-btn` positioned outside the React DOM at `z-index: 2147483647` (max). Calls `window.__moodlabGoBack()` which is set by the React component
 3. **CDN loading**: React 18, ReactDOM 18, Three.js 0.160, Babel Standalone
-4. **JSX compilation**: Fetches `moodlab-arena-v6.jsx` with cache-busting (`?v=Date.now()`), strips the ES module `import` statement and replaces it with destructured `React` globals, transforms via Babel, executes via `new Function()`, and renders with `ReactDOM.createRoot()`
+4. **JSX compilation**: Fetches `moodlab-arena-v7.jsx` with cache-busting (`?v=Date.now()`), strips the ES module `import` statement and replaces it with destructured `React` globals, transforms via Babel, executes via `new Function()`, and renders with `ReactDOM.createRoot()`
 
 **Import transformation performed in index.html:**
+
 ```
 // This line in the JSX:
 import { useState, useRef, useEffect, useCallback } from "react";
@@ -116,7 +117,7 @@ const { useState, useRef, useEffect, useCallback } = React;
 ```
 project-root/
   index.html              # Loader + phone frame
-  moodlab-arena-v6.jsx    # Entire app (21,608 lines)
+  moodlab-arena-v7.jsx    # Entire app (21,608 lines)
   serve.sh                # Local dev server (Python, port 8093)
   assets/
     arena/
@@ -154,7 +155,7 @@ State is organized into logical groups via comments:
 
 There is no `package.json`, no `node_modules`, no webpack/vite/esbuild. The workflow is:
 
-1. Edit `moodlab-arena-v6.jsx` in any editor
+1. Edit `moodlab-arena-v7.jsx` in any editor
 2. Push to the git repo
 3. Vercel deploys the static files
 4. Babel compiles JSX to JS in the browser on page load
@@ -169,25 +170,25 @@ For local development, run `./serve.sh` and visit `localhost:8093`.
 
 ```javascript
 const C = {
-  bg:     "#050510",   // Primary background (near-black)
-  bg2:    "#0a0a20",   // Secondary background
-  bg3:    "#0f0f2a",   // Tertiary background
-  card:   "#12123a",   // Card background
-  border: "rgba(255,255,255,0.06)",   // Subtle border
-  border2:"rgba(255,255,255,0.12)",   // Visible border
-  text:   "#F0EEFF",   // Primary text (lavender white)
-  text2:  "#A8A3D0",   // Secondary text (muted purple)
-  text3:  "#6E6A95",   // Tertiary text (dim)
-  cyan:   "#00E5FF",   // Arcade zone, primary accent
-  gold:   "#FFD93D",   // Stage/Fortune/WC zone accent
-  pink:   "#FF4D8D",   // Accent pink
-  purple: "#C084FC",   // Accent purple
-  orange: "#FB923C",   // Wall zone accent
-  red:    "#FF4444",   // Error / Russian Roulette
-  green:  "#34D399",   // Success / Puff Pong
-  lime:   "#7FFF00",   // Perfect puff zone
-  blue:   "#60A5FA",   // Accent blue
-  glass:  "rgba(255,255,255,0.03)",      // Glass background
+  bg: "#050510", // Primary background (near-black)
+  bg2: "#0a0a20", // Secondary background
+  bg3: "#0f0f2a", // Tertiary background
+  card: "#12123a", // Card background
+  border: "rgba(255,255,255,0.06)", // Subtle border
+  border2: "rgba(255,255,255,0.12)", // Visible border
+  text: "#F0EEFF", // Primary text (lavender white)
+  text2: "#A8A3D0", // Secondary text (muted purple)
+  text3: "#6E6A95", // Tertiary text (dim)
+  cyan: "#00E5FF", // Arcade zone, primary accent
+  gold: "#FFD93D", // Stage/Fortune/WC zone accent
+  pink: "#FF4D8D", // Accent pink
+  purple: "#C084FC", // Accent purple
+  orange: "#FB923C", // Wall zone accent
+  red: "#FF4444", // Error / Russian Roulette
+  green: "#34D399", // Success / Puff Pong
+  lime: "#7FFF00", // Perfect puff zone
+  blue: "#60A5FA", // Accent blue
+  glass: "rgba(255,255,255,0.03)", // Glass background
   glassBorder: "rgba(255,255,255,0.08)", // Glass border
 };
 ```
@@ -196,16 +197,17 @@ const C = {
 
 Four levels of glass morphism, used consistently throughout the UI:
 
-| Style | Usage | Background Opacity | Blur |
-|---|---|---|---|
-| `GLASS_CLEAR` | Nav bar, side buttons, small UI elements | `rgba(255,255,255,0.06)` | `blur(50px)` |
-| `GLASS_CARD` | Jumbotron, info cards, content panels | `rgba(8,8,25,0.72)` | `blur(40px)` |
-| `LG.base` | Overlays, generic cards | `rgba(255,255,255,0.05)` | `blur(40px)` |
-| `LG.thick` | Panels, sheets, modals | `rgba(10,10,32,0.45)` | `blur(60px)` |
-| `LG.pill` | Small buttons, tags, pills | `rgba(255,255,255,0.06)` | `blur(24px)` |
-| `LG.tinted(color)` | Zone-colored glass (dynamic) | `${color}08` | `blur(40px)` |
+| Style              | Usage                                    | Background Opacity       | Blur         |
+| ------------------ | ---------------------------------------- | ------------------------ | ------------ |
+| `GLASS_CLEAR`      | Nav bar, side buttons, small UI elements | `rgba(255,255,255,0.06)` | `blur(50px)` |
+| `GLASS_CARD`       | Jumbotron, info cards, content panels    | `rgba(8,8,25,0.72)`      | `blur(40px)` |
+| `LG.base`          | Overlays, generic cards                  | `rgba(255,255,255,0.05)` | `blur(40px)` |
+| `LG.thick`         | Panels, sheets, modals                   | `rgba(10,10,32,0.45)`    | `blur(60px)` |
+| `LG.pill`          | Small buttons, tags, pills               | `rgba(255,255,255,0.06)` | `blur(24px)` |
+| `LG.tinted(color)` | Zone-colored glass (dynamic)             | `${color}08`             | `blur(40px)` |
 
 All glass styles include:
+
 - `backdropFilter` + `-webkit-` prefix for Safari
 - `saturate()` and `brightness()` for vibrancy
 - Inset highlights (top: white 0.08--0.15, bottom: white 0.02--0.04)
@@ -214,6 +216,7 @@ All glass styles include:
 ### Typography
 
 System fonts only -- no custom font loading:
+
 ```css
 font-family: -apple-system, sans-serif;
 ```
@@ -226,11 +229,46 @@ Each zone has a consistent theme object:
 
 ```javascript
 const Z = {
-  arcade:   { primary:"#00E5FF", glow:"rgba(0,229,255,0.35)",   dim:"rgba(0,229,255,0.08)", name:"The Arcade",     icon:"🎮", sub:"16 Action Games" },
-  stage:    { primary:"#FFD93D", glow:"rgba(255,217,61,0.35)",   dim:"rgba(255,217,61,0.08)", name:"The Stage",      icon:"🎪", sub:"6 Live Shows" },
-  oracle:   { primary:"#FFD93D", glow:"rgba(255,217,61,0.35)",   dim:"rgba(255,217,61,0.08)", name:"The Fortune",    icon:"🔮", sub:"16 Fortune Games" },
-  wall:     { primary:"#FB923C", glow:"rgba(251,146,60,0.35)",   dim:"rgba(251,146,60,0.08)", name:"The Wall",       icon:"🏆", sub:"Rankings & Glory" },
-  worldcup: { primary:"#FFD93D", glow:"rgba(255,217,61,0.35)",   dim:"rgba(255,217,61,0.08)", name:"World Cup 2026", icon:"⚽", sub:"Limited Event" },
+  arcade: {
+    primary: "#00E5FF",
+    glow: "rgba(0,229,255,0.35)",
+    dim: "rgba(0,229,255,0.08)",
+    name: "The Arcade",
+    icon: "🎮",
+    sub: "16 Action Games",
+  },
+  stage: {
+    primary: "#FFD93D",
+    glow: "rgba(255,217,61,0.35)",
+    dim: "rgba(255,217,61,0.08)",
+    name: "The Stage",
+    icon: "🎪",
+    sub: "6 Live Shows",
+  },
+  oracle: {
+    primary: "#FFD93D",
+    glow: "rgba(255,217,61,0.35)",
+    dim: "rgba(255,217,61,0.08)",
+    name: "The Fortune",
+    icon: "🔮",
+    sub: "16 Fortune Games",
+  },
+  wall: {
+    primary: "#FB923C",
+    glow: "rgba(251,146,60,0.35)",
+    dim: "rgba(251,146,60,0.08)",
+    name: "The Wall",
+    icon: "🏆",
+    sub: "Rankings & Glory",
+  },
+  worldcup: {
+    primary: "#FFD93D",
+    glow: "rgba(255,217,61,0.35)",
+    dim: "rgba(255,217,61,0.08)",
+    name: "World Cup 2026",
+    icon: "⚽",
+    sub: "Limited Event",
+  },
 };
 ```
 
@@ -256,12 +294,12 @@ All animations are pure CSS -- no Framer Motion, no GSAP, no animation libraries
 
 The bottom navigation is a floating pill dock using `GLASS_CLEAR` styling, hidden on the Arena hub view. Four tabs:
 
-| Tab | Icon | Color | Status |
-|---|---|---|---|
-| Control | 🎛 | Cyan | Active -- device controls |
-| Arena | 🎮 | Cyan | Active -- main game hub |
-| Live | 📡 | Pink | Demo-only (shows "Coming Soon") |
-| Me | 👤 | Purple | Demo-only (shows "Coming Soon") |
+| Tab     | Icon | Color  | Status                          |
+| ------- | ---- | ------ | ------------------------------- |
+| Control | 🎛   | Cyan   | Active -- device controls       |
+| Arena   | 🎮   | Cyan   | Active -- main game hub         |
+| Live    | 📡   | Pink   | Demo-only (shows "Coming Soon") |
+| Me      | 👤   | Purple | Demo-only (shows "Coming Soon") |
 
 Only the **Arena** tab is fully functional in the demo. The others show a "Coming Soon -- Arena Demo Only" notification when tapped.
 
@@ -282,6 +320,7 @@ hub (Arena Home)
 ```
 
 **Key state variables:**
+
 - `tab` -- current main tab ("arena", "live", "me", "control")
 - `zone` -- current zone (null = hub, "arcade" | "stage" | "oracle" | "wall" | "worldcup")
 - `arenaView` -- current zone view for zone focus screens ("hub" | zone key)
@@ -308,6 +347,7 @@ The back handler implements smart step-back logic with this priority:
 11. **At arena home** -- do nothing
 
 The back button visibility is managed via direct DOM access:
+
 ```javascript
 const btn = document.getElementById('back-btn');
 if(btn) btn.style.display = (gameActive || matchmaking || selectedGame || ...) ? 'block' : 'none';
@@ -316,6 +356,7 @@ if(btn) btn.style.display = (gameActive || matchmaking || selectedGame || ...) ?
 ### Zone Header
 
 Each zone renders a header via `renderZoneHeader(zKey)` at line 7181, which displays:
+
 - A "< Lobby" button to return to the arena hub
 - The zone icon and name
 - The zone tagline
@@ -373,19 +414,20 @@ The Stage is a live show format zone with MC commentary and elimination mechanic
 The Fortune zone combines luck-based mini-games with a sportsbook-style prediction system.
 
 **Tabs:**
+
 - **Sportsbook** -- World Cup match predictions (6 featured matches + specials: WC winner, top scorer, dark horse, group of death)
 - **Fortune Games** -- 12 gambling/luck games
 
 **Fortune Level System** (`FORTUNE_LEVELS`, line 36):
 
-| Level | Title | Min Wager | Color |
-|---|---|---|---|
-| 1 | Bronze Gambler 🥉 | 0 | #CD7F32 |
-| 2 | Silver Gambler 🥈 | 1,000 | #C0C0C0 |
-| 3 | Gold Gambler 🥇 | 5,000 | #FFD700 |
-| 4 | Platinum Player 💎 | 15,000 | #E5E4E2 |
-| 5 | Diamond Dealer 💠 | 50,000 | #B9F2FF |
-| 6 | High Roller 👑 | 200,000 | #FFD700 |
+| Level | Title              | Min Wager | Color   |
+| ----- | ------------------ | --------- | ------- |
+| 1     | Bronze Gambler 🥉  | 0         | #CD7F32 |
+| 2     | Silver Gambler 🥈  | 1,000     | #C0C0C0 |
+| 3     | Gold Gambler 🥇    | 5,000     | #FFD700 |
+| 4     | Platinum Player 💎 | 15,000    | #E5E4E2 |
+| 5     | Diamond Dealer 💠  | 50,000    | #B9F2FF |
+| 6     | High Roller 👑     | 200,000   | #FFD700 |
 
 **Daily Jackpot:** Growing counter display with a Lucky Hour mechanic (random 2x multiplier period).
 
@@ -398,6 +440,7 @@ The Fortune zone combines luck-based mini-games with a sportsbook-style predicti
 The Wall is the leaderboard and social hub.
 
 **Tabs:**
+
 - **Rankings** -- Filterable by: All, Arcade, Stage, Oracle, Tournament (each with 15 players in `WALL_LEADERBOARD`)
 - **Records** -- 8 records with holders (`WALL_RECORDS`, line 417)
 - **Activity** -- Live feed of player activities (`WALL_ACTIVITY`, line 427)
@@ -415,12 +458,14 @@ The Wall is the leaderboard and social hub.
 A complete FIFA World Cup 2026 simulation with 50 national teams.
 
 **Tabs:**
+
 - **Games** -- Play FK1/FK2/FK3 as your chosen nation
 - **Live Matches** -- Simulated live match view with minute-by-minute events
 - **Groups** -- 12 groups with standings tables
 - **Bracket** -- Tournament bracket from Round of 32 to Final
 
 **50 National Teams** (`WC_TEAMS`, line 506):
+
 - CONCACAF: USA, Mexico, Canada
 - CONMEBOL: Brazil, Argentina, Colombia, Uruguay, Ecuador, Peru, Paraguay
 - UEFA: Germany, France, England, Spain, Portugal, Netherlands, Belgium, Italy, Croatia, Denmark, Switzerland, Austria, Serbia, Poland, Scotland, Wales, Turkey, Ukraine
@@ -432,6 +477,7 @@ A complete FIFA World Cup 2026 simulation with 50 national teams.
 Each team has: `id`, `name`, `flag` (emoji), `group` (A--L), `rating` (1--5), `confederation`.
 
 **12 Groups** (`WC_GROUPS`, line 781):
+
 ```
 A: USA, Mexico, Canada, Ivory Coast
 B: England, Italy, Australia, New Zealand
@@ -448,6 +494,7 @@ L: Paraguay, Scotland, Wales, Bahrain
 ```
 
 **Tournament Format:**
+
 - Pick a team, play through Group Stage -> Knockout (R32 -> R16 -> QF -> SF -> Final)
 - 6-hour cooldown between tournament runs
 - Prizes: Champion 50K pts, Runner-Up 25K, Third 10K, Fourth 5K
@@ -483,8 +530,8 @@ Each round randomizes a "sweet spot" window within the puff bar:
 
 ```javascript
 const randomizeSweetSpot = () => {
-  const min = 40 + Math.random() * 25;  // 40--65% starting point
-  const max = min + 15 + Math.random() * 15;  // +15--30% window width
+  const min = 40 + Math.random() * 25; // 40--65% starting point
+  const max = min + 15 + Math.random() * 15; // +15--30% window width
   return { min: Math.round(min), max: Math.min(95, Math.round(max)) };
 };
 ```
@@ -509,6 +556,7 @@ Hitting the sweet spot = PERFECT puff = maximum effectiveness. The sweet spot sh
 ### Universal Puff Action Bar
 
 Rendered by `renderUniversalPuffBar(power, charging, opts)` at line 4694. Displays:
+
 - Power meter fill with color zones
 - Sweet spot highlighted zone
 - Current zone label
@@ -528,20 +576,20 @@ const getUniversalPuffResult = (power) => {
 
 ### Input Modes (line 910)
 
-| Mode | Icon | Description |
-|---|---|---|
-| Auto | 🤖 | App auto-selects optimal input per game & device |
-| Fixed | 📌 | Always use one input type you choose |
-| Ask | ❓ | Prompts before each game |
+| Mode  | Icon | Description                                      |
+| ----- | ---- | ------------------------------------------------ |
+| Auto  | 🤖   | App auto-selects optimal input per game & device |
+| Fixed | 📌   | Always use one input type you choose             |
+| Ask   | ❓   | Prompts before each game                         |
 
 ### Input Types (line 915)
 
-| Type | Icon | Description |
-|---|---|---|
-| Puff | 💨 | Real puff -- MIC + Heating ON |
-| Dry Puff | 🌀 | MIC detect only -- Heating OFF |
-| Button | 🔘 | Physical button press -- BLE signal |
-| Tap | 👆 | Screen tap (fallback, no device needed) |
+| Type     | Icon | Description                             |
+| -------- | ---- | --------------------------------------- |
+| Puff     | 💨   | Real puff -- MIC + Heating ON           |
+| Dry Puff | 🌀   | MIC detect only -- Heating OFF          |
+| Button   | 🔘   | Physical button press -- BLE signal     |
+| Tap      | 👆   | Screen tap (fallback, no device needed) |
 
 ---
 
@@ -550,57 +598,67 @@ const getUniversalPuffResult = (power) => {
 ### ARCADE GAMES (16)
 
 #### 1. Final Kick (FK1) ⚽
+
 **Type:** Skill | **Players:** 2 | **Time:** 1--2m | **Color:** Cyan
 **Inputs:** puff, button, tap
 
 Penalty kick 1v1. Best of 5 rounds, alternating shooter/keeper roles.
 
 **Shoot phase:**
+
 - Tap one of 6 goal zones (3 columns x 2 rows) to aim
 - Puff to charge power (sweet spot = best chance to score)
 - AI keeper dives to a random zone
 - Same zone + failed puff = saved; different zone + perfect puff = GOAL
 
 **Save phase:**
+
 - Keeper POV -- see the AI's shot angle
 - Tap a zone to dive
 - Reaction time matters
 
 **Scoring logic (kickExecute, line 4898):**
+
 - Perfect puff zone: real chance to score (based on device pool save rate)
 - Non-perfect puff: automatic fail (saved or missed)
 - Blinker: always miss (ball "leaves the planet")
 - TAP/SHORT: comedic miss commentary
 
 #### 2. Final Kick 2 (FK2) ⚽🔥
+
 **Type:** Precision | **Players:** 2 | **Time:** 2--3m | **Color:** Gold
 **Inputs:** puff, button
 
 Double puff system: Puff 1 controls horizontal aim (X-axis), Puff 2 controls vertical aim (Y-axis). The X+Y coordinates map to one of the 6 goal zones (3 cols x 2 rows). Both puffs in the sweet spot = "DOUBLE SWEET SPOT" bonus. Out of bounds detection if both puffs miss badly.
 
 #### 3. Final Kick 3D (FK3) ⚽🌐
+
 **Type:** 3D Precision | **Players:** 2 | **Time:** 2--3m | **Color:** Purple
 **Inputs:** puff, button
 
 Three.js-powered 3D behind-the-ball camera view. Same double-puff mechanics as FK2 but rendered in 3D perspective. The save phase shows a keeper's-eye-view with glove movement animation.
 
 #### 4. Hot Potato 💣
+
 **Type:** Luck | **Players:** 3--8 | **Time:** 1--3m | **Color:** Orange
 **Inputs:** puff, button
 
 A bomb jumps randomly between players. Puff to pass it to someone else. Timer decreases each round (making the game faster). When the timer expires, whoever holds the bomb is eliminated. Last alive wins.
 
 #### 5. Russian Roulette 🎲
+
 **Type:** Luck | **Players:** 2--6 | **Time:** 1--2m | **Color:** Red
 **Inputs:** puff, button
 
 Players take turns. 1 bullet in 6 chambers. Puff to pull the trigger. A power puff reduces your chance of being hit (dodge mechanic). Tension builds with each empty chamber click.
 
 #### 6. Wild West Duel 🤠
+
 **Type:** Reaction | **Players:** 2 | **Time:** 1--2m | **Color:** Gold
 **Inputs:** puff, button, tap
 
 Best of 5 showdown with full cinematic intro sequence:
+
 1. **Enter** -- duelists approach (1.2s)
 2. **Stats** -- compare records (1.2s)
 3. **Countdown** -- 3... 2... 1... (2.1s)
@@ -609,73 +667,83 @@ Best of 5 showdown with full cinematic intro sequence:
 Per round: Staredown (tension builds with progressive stages 0--3) -> "DRAW!" -> Puff as fast as possible. Reaction time measured in ms. Puff meter fills for bonus points (quick/power/legendary tiers). 6 AI opponents with different speeds (280ms--450ms): Sheriff Puffington, Quick Draw McGraw, Cactus Jack, Dusty Rhodes, Dynamite Dan, Whiskey Wilma.
 
 #### 7. Balloon Pop 🎈
+
 **Type:** Strategy | **Players:** 2--8 | **Time:** 1--3m | **Color:** Pink
 **Inputs:** puff, button
 
 Take turns inflating a balloon with puffs. Balloon has a hidden pop threshold. Each puff inflates it. Release to lock. The player who pops the balloon is eliminated. Last player standing wins. Strategy: small puffs are safe but slow, big puffs are risky.
 
 #### 8. Puff Pong 🏓
+
 **Type:** Skill | **Players:** 2 | **Time:** 1--2m | **Color:** Green
 **Inputs:** puff, tap
 
 Real-time pong at 60fps (uses `requestAnimationFrame`). Puff = move paddle up. Release = paddle falls with gravity. Rally counter for bonus points. Ball speed increases over time. First to 5 points wins.
 
 #### 9. Rhythm Puff 🎵
+
 **Type:** Rhythm | **Players:** 1--4 | **Time:** 1--3m | **Color:** Purple
 **Inputs:** puff, button
 
 Guitar Hero-style note highway. Notes fall in 3 lanes (Short, Medium, Long puffs). Puff on beat = points. Ratings: Perfect / Great / Good / Miss. Combo multiplier builds with consecutive hits. Blinker puff = mega bonus.
 
 #### 10. Tug of War 💪
+
 **Type:** Team | **Players:** 2--8 | **Time:** 30s--1m | **Color:** Blue
 **Inputs:** puff, button
 
 Two teams puff continuously. Each puff moves the rope. Rope position tracked 0--100 (50 = center). Physics simulation with surge mechanic (power puffs move more). Sudden death if tied at timer end.
 
 #### 11. Hooked 🎣
+
 **Type:** Skill | **Players:** 1 | **Time:** 2--5m | **Color:** Blue
 **Inputs:** puff, button
 
 Stack fishing game with 8 fish types (`HOOK_FISH`, line 877):
 
-| Fish | Rarity | Points | Zone Width | Resistance |
-|---|---|---|---|---|
-| Blue Snap 🐟 | Common | 10 | 35 | 0.8 |
-| Lunar Carp 🐠 | Common | 10 | 33 | 0.9 |
-| Pond Darter 🐡 | Common | 10 | 38 | 0.7 |
-| Neon Koi 🎏 | Rare | 25 | 22 | 1.2 |
-| Glitch Fin 🦈 | Rare | 25 | 20 | 1.4 |
-| Gold Pike 🐊 | Rare | 25 | 24 | 1.1 |
-| Void Eel 🐉 | Legendary | 60 | 13 | 1.8 |
-| Abyssal Ray 🦑 | Legendary | 60 | 12 | 2.0 |
+| Fish           | Rarity    | Points | Zone Width | Resistance |
+| -------------- | --------- | ------ | ---------- | ---------- |
+| Blue Snap 🐟   | Common    | 10     | 35         | 0.8        |
+| Lunar Carp 🐠  | Common    | 10     | 33         | 0.9        |
+| Pond Darter 🐡 | Common    | 10     | 38         | 0.7        |
+| Neon Koi 🎏    | Rare      | 25     | 22         | 1.2        |
+| Glitch Fin 🦈  | Rare      | 25     | 20         | 1.4        |
+| Gold Pike 🐊   | Rare      | 25     | 24         | 1.1        |
+| Void Eel 🐉    | Legendary | 60     | 13         | 1.8        |
+| Abyssal Ray 🦑 | Legendary | 60     | 12         | 2.0        |
 
 Puff to reel in fish. Keep the reel marker inside the "zone" -- going outside increases line tension. Too much tension = fish escapes. Higher rarity fish have smaller zones and higher resistance.
 
 #### 12. Puff RPS ✊
+
 **Type:** Strategy | **Players:** 2 | **Time:** 1--2m | **Color:** Purple
 **Inputs:** puff, button
 
 Rock Paper Scissors with puff power. Choose your move (R/P/S), then puff for power. Higher puff power = bonus points on win. Best of 5.
 
 #### 13. Beat Drop 🎧
+
 **Type:** Music | **Players:** 1 | **Time:** 3--5m | **Color:** Pink
 **Inputs:** puff
 
 Hold your puff while the beat builds. Release exactly when the beat drops. Scoring based on timing accuracy: PERFECT (within 0.2s), GREAT (0.5s), GOOD (1.0s), LATE, EARLY. Blinker during a good drop = +50 bonus. Uses Web Audio API oscillators for the music buildup.
 
 #### 14. Puff Clock ⏱️
+
 **Type:** Precision | **Players:** 1--100+ | **Time:** 3--5m | **Color:** Orange
 **Inputs:** puff
 
 Puff for EXACTLY the target duration (e.g., 2.00s, 3.50s, 4.20s). Closest to target wins. The 4.20s round is a special bonus round (worth double in tournaments). No visual timer shown -- pure internal clock.
 
 #### 15. Puff Limbo 🎪
+
 **Type:** Endurance | **Players:** 1--50 | **Time:** 3--5m | **Color:** Orange
 **Inputs:** puff
 
 Target puff duration increases each round (3.0s -> 3.5s -> 4.0s -> 4.2s -> 4.5s -> 4.7s -> 5.0s). Fall short of the target = eliminated. Survive the 5.0s blinker round to win. Tournament format has 7 rounds.
 
 #### 16. Puff Derby 🏇
+
 **Type:** Racing | **Players:** 6 | **Time:** 2--3m | **Color:** Green
 **Inputs:** puff
 
@@ -686,31 +754,37 @@ Pick one of 6 horses. Spam puff to make your horse run. Each puff advances the h
 All stage shows use the **elimination engine** (8 players, 7 AI contestants), **MC commentary system** (template strings with dynamic substitution), and the **role system** (contestant vs audience).
 
 #### 1. Vibe Check 🧠
+
 **Type:** Trivia | **Time:** 5--15m
 
 Multiple choice trivia. 10-second timer per question. Wrong answer = eliminated. Questions drawn from `VC_QUESTIONS_V2` (line 280) covering football, WC history, stadiums, and records.
 
 #### 2. Higher or Lower 📊
+
 **Type:** Knowledge | **Time:** 5--10m
 
 A number is shown. Is the next number higher or lower? Streak bonus multiplier for consecutive correct answers. Elimination on wrong guess.
 
 #### 3. Price is Puff 💰
+
 **Type:** Knowledge | **Time:** 5--10m
 
 Guess product prices using your puff to control a price slider. Puff duration maps to the price range. Closest guess wins the round.
 
 #### 4. Survival Trivia 🏆
+
 **Type:** Trivia | **Time:** 5--15m
 
 Trivia with progressive elimination. Questions get harder each round. Last one standing wins. Unlike Vibe Check, this uses the full elimination bracket.
 
 #### 5. Simon Puffs 🔴
+
 **Type:** Memory | **Time:** 3--8m
 
 Memory pattern game. Watch a sequence of puffs: Short (< 1s, cyan), Medium (1--2.5s, gold), Long (2.5s+, pink). Repeat the pattern with your own puffs. Sequence grows each round. Comedy commentary per round from `SP_COMEDY` (line 891).
 
 #### 6. Puff Auction 🔨
+
 **Type:** Strategy | **Time:** 3--8m
 
 Bid on prizes with puff duration. Biggest puff wins the item. But puff over the threshold and you're disqualified! Strategy: bid high enough to win but not so high you bust. Prizes range from 100 coins (common) to MYSTERY BOX 1000 coins (legendary) from `PA_PRIZES` (line 899).
@@ -720,39 +794,51 @@ Bid on prizes with puff duration. Biggest puff wins the item. But puff over the 
 All fortune/luck based. Use puff for interaction. Win or lose coins.
 
 #### 1. Crystal Ball 🔮
+
 Yes/No predictions on fun questions. Puff to shake the crystal ball. Ball reveals answer with mystical animation.
 
 #### 2. Strain Battle 🌿
+
 Vote between two cannabis strains in bracket-style matchups. 16 strains (`SB_STRAINS`, line 232) with THC%, type (Indica/Sativa/Hybrid), effects, and flavor profiles.
 
 #### 3. Match Predictor 📊
+
 Predict World Cup match outcomes (Win/Draw/Lose). 6 featured matches from `ORACLE_WC_MATCHES` (line 187) + 4 special predictions (WC winner, top scorer, dark horse, group of death).
 
 #### 4. Daily Picks 📅
+
 3 daily prediction questions with streak multipliers. Categories: morning/afternoon/night. Questions from `DP_QUESTIONS` (line 262) -- yes/no or A/B format covering crypto, cannabis, sports, and culture.
 
 #### 5. Puff Slots 🎰
+
 3-reel slot machine. Puff to spin the reels. Match symbols to win multiplied coins.
 
 #### 6. Puff Blackjack 🃏
+
 Classic blackjack. Puff = hit, hold = stand. Standard blackjack rules with dealer AI.
 
 #### 7. Coin Flip 🪙
+
 50/50 coin flip. Puff confidence (duration) determines the multiplier on your bet.
 
 #### 8. Craps & Clouds 🎲
+
 Dice game. Puff controls the roll force, which affects (cosmetically) the dice result.
 
 #### 9. Mystery Box 🎁
+
 3 mystery boxes. Pick one. Puff to reveal the prize inside. Prizes vary from small coins to jackpots.
 
 #### 10. Scratch & Puff 🎫
+
 6 scratch areas. Puff to scratch each one. Match 3 identical symbols to win.
 
 #### 11. Fortune Cookie 🥠
+
 Crack open fortune cookies. Each cookie contains wisdom text + coins. Blinker puff = golden cookie (rare, high reward).
 
 #### 12. Treasure Map 🗺️
+
 16-tile grid. Find 3 hidden treasures. Avoid 3 hidden bombs. X-ray power-up reveals adjacent tiles. Strategy meets luck.
 
 ---
@@ -770,41 +856,41 @@ Crack open fortune cookies. Each cookie contains wisdom text + coins. Blinker pu
 
 **Prizes:**
 
-| Finish | Points | Coins |
-|---|---|---|
-| Champion 🏆 | 50,000 | -- |
-| Runner-Up 🥈 | 25,000 | -- |
-| Third Place 🥉 | 10,000 | -- |
-| Fourth Place | 5,000 | -- |
+| Finish         | Points | Coins |
+| -------------- | ------ | ----- |
+| Champion 🏆    | 50,000 | --    |
+| Runner-Up 🥈   | 25,000 | --    |
+| Third Place 🥉 | 10,000 | --    |
+| Fourth Place   | 5,000  | --    |
 
 ### Game-Specific Tournaments (`GAME_TOURNAMENTS`, line 674)
 
 Each non-FK game has its own unique tournament format with themed teams:
 
-| Game | Tournament Name | Format | Duration |
-|---|---|---|---|
-| Wild West | The Outlaw Circuit 🤠 | 16-player Single Elimination | ~30 min |
-| Russian Roulette | The Underground 🎲 | Survival Series (4 Tables -> Final) | ~20 min |
-| Balloon Pop | Puff Fest 🎈 | Party Rounds (3 Heats + Final) | ~15 min |
-| Puff Pong | Neon League 🏓 | Swiss System (4 Rounds + Final) | ~25 min |
-| Rhythm Puff | Tour de Puff 🎵 | Score Chase (3 Songs) | ~15 min |
-| Tug of War | The Puff Games 💪 | Round Robin Teams (4 Teams) | ~20 min |
-| Hot Potato | Bomb Squad Cup 💣 | Heats + Grand Final | ~15 min |
-| Puff RPS | Dojo Championship ✊ | Double Elimination (16 Players) | ~30 min |
-| Hooked | Deep Sea Masters 🎣 | Catch Competition (3 Sessions) | ~10 min |
-| Beat Drop | The Drop Zone 🎧 | Score Chase (3 Songs) | ~15 min |
-| Puff Clock | Time Masters ⏱️ | Precision Tournament (5 Rounds) | ~20 min |
-| Puff Limbo | Limbo Legends 🎪 | Survival (7 Rounds) | ~15 min |
-| Puff Derby | Grand Derby 🏇 | Race Series (3 Races) | ~10 min |
+| Game             | Tournament Name       | Format                              | Duration |
+| ---------------- | --------------------- | ----------------------------------- | -------- |
+| Wild West        | The Outlaw Circuit 🤠 | 16-player Single Elimination        | ~30 min  |
+| Russian Roulette | The Underground 🎲    | Survival Series (4 Tables -> Final) | ~20 min  |
+| Balloon Pop      | Puff Fest 🎈          | Party Rounds (3 Heats + Final)      | ~15 min  |
+| Puff Pong        | Neon League 🏓        | Swiss System (4 Rounds + Final)     | ~25 min  |
+| Rhythm Puff      | Tour de Puff 🎵       | Score Chase (3 Songs)               | ~15 min  |
+| Tug of War       | The Puff Games 💪     | Round Robin Teams (4 Teams)         | ~20 min  |
+| Hot Potato       | Bomb Squad Cup 💣     | Heats + Grand Final                 | ~15 min  |
+| Puff RPS         | Dojo Championship ✊  | Double Elimination (16 Players)     | ~30 min  |
+| Hooked           | Deep Sea Masters 🎣   | Catch Competition (3 Sessions)      | ~10 min  |
+| Beat Drop        | The Drop Zone 🎧      | Score Chase (3 Songs)               | ~15 min  |
+| Puff Clock       | Time Masters ⏱️       | Precision Tournament (5 Rounds)     | ~20 min  |
+| Puff Limbo       | Limbo Legends 🎪      | Survival (7 Rounds)                 | ~15 min  |
+| Puff Derby       | Grand Derby 🏇        | Race Series (3 Races)               | ~10 min  |
 
 All tournaments award the same prize structure:
 
-| Place | Points | Coins | Example Label (varies per game) |
-|---|---|---|---|
-| Gold | 30,000 | 800 | Sheriff's Badge / Diamond Chip / Golden Rod |
-| Silver | 15,000 | 400 | Deputy Star / Gold Chip / Silver Hook |
-| Bronze | 7,500 | 200 | Wanted Poster / Silver Chip / Bronze Reel |
-| Fourth | 3,000 | 100 | Bounty Hunter / Survivor / Deckhand |
+| Place  | Points | Coins | Example Label (varies per game)             |
+| ------ | ------ | ----- | ------------------------------------------- |
+| Gold   | 30,000 | 800   | Sheriff's Badge / Diamond Chip / Golden Rod |
+| Silver | 15,000 | 400   | Deputy Star / Gold Chip / Silver Hook       |
+| Bronze | 7,500  | 200   | Wanted Poster / Silver Chip / Bronze Reel   |
+| Fourth | 3,000  | 100   | Bounty Hunter / Survivor / Deckhand         |
 
 ### Themed Teams (`GAME_TEAMS`, line 567)
 
@@ -823,6 +909,7 @@ Each game has 6 themed teams players can join. Examples:
 ### Live Spectator System
 
 40 spectator names (`SPECTATOR_NAMES`, line 55) like "Puff_Master_420", "Blinker_Betty", "CloudChaser99" appear in:
+
 - Live ticker messages scrolling across the screen
 - Spectator overlay during games
 - Chat messages
@@ -852,40 +939,40 @@ Live puff reactions during games -- floating bubbles showing puff intensity and 
 
 12 achievements, 5 common + 7 rare:
 
-| Achievement | Description | Emoji | Rare? |
-|---|---|---|---|
-| First Puff | Puff for the first time | 💨 | No |
-| Winner! | Win your first game | 🏆 | No |
-| Blinker King | Hit 10 blinkers | 💀 | No |
-| Sweet Spot Merchant | Hit 50 perfect puffs | 🎯 | No |
-| Puff Marathon | Puff for 420 total seconds | 🏃 | Yes |
-| Weekly Warrior | 7-day puff streak | 🔥 | Yes |
-| Arcade Master | Play all 16 games | 🎮 | Yes |
-| Champion | Win any tournament | 👑 | Yes |
-| Crowd Surfer | Trigger 10 Puff Waves | 🌊 | Yes |
-| Living Legend | Reach Legendary rank | ⭐ | Yes |
-| The 420 | Have exactly 420 total puffs | 🌿 | Yes |
-| Iron Lungs | Hit 100 blinkers | 🫁 | Yes |
+| Achievement         | Description                  | Emoji | Rare? |
+| ------------------- | ---------------------------- | ----- | ----- |
+| First Puff          | Puff for the first time      | 💨    | No    |
+| Winner!             | Win your first game          | 🏆    | No    |
+| Blinker King        | Hit 10 blinkers              | 💀    | No    |
+| Sweet Spot Merchant | Hit 50 perfect puffs         | 🎯    | No    |
+| Puff Marathon       | Puff for 420 total seconds   | 🏃    | Yes   |
+| Weekly Warrior      | 7-day puff streak            | 🔥    | Yes   |
+| Arcade Master       | Play all 16 games            | 🎮    | Yes   |
+| Champion            | Win any tournament           | 👑    | Yes   |
+| Crowd Surfer        | Trigger 10 Puff Waves        | 🌊    | Yes   |
+| Living Legend       | Reach Legendary rank         | ⭐    | Yes   |
+| The 420             | Have exactly 420 total puffs | 🌿    | Yes   |
+| Iron Lungs          | Hit 100 blinkers             | 🫁    | Yes   |
 
 ### Rank System (`RANKS`, line 488)
 
-| Rank | Emoji | Color | Min XP |
-|---|---|---|---|
-| Bronze | 🥉 | #CD7F32 | 0 |
-| Silver | 🥈 | #C0C0C0 | 500 |
-| Gold | 🥇 | #FFD700 | 2,000 |
-| Platinum | 💎 | #E5E4E2 | 5,000 |
-| Diamond | 💠 | #B9F2FF | 15,000 |
-| Legendary | ⭐ | #FFD700 | 50,000 |
+| Rank      | Emoji | Color   | Min XP |
+| --------- | ----- | ------- | ------ |
+| Bronze    | 🥉    | #CD7F32 | 0      |
+| Silver    | 🥈    | #C0C0C0 | 500    |
+| Gold      | 🥇    | #FFD700 | 2,000  |
+| Platinum  | 💎    | #E5E4E2 | 5,000  |
+| Diamond   | 💠    | #B9F2FF | 15,000 |
+| Legendary | ⭐    | #FFD700 | 50,000 |
 
 ### Streak Rewards (`STREAK_REWARDS`, line 498)
 
-| Days | Coins | Label |
-|---|---|---|
-| 3 | 100 | 3-Day Bonus |
-| 7 | 500 | Weekly Warrior |
-| 14 | 1,500 | Two-Week Terror |
-| 30 | 5,000 | Monthly Monster |
+| Days | Coins | Label           |
+| ---- | ----- | --------------- |
+| 3    | 100   | 3-Day Bonus     |
+| 7    | 500   | Weekly Warrior  |
+| 14   | 1,500 | Two-Week Terror |
+| 30   | 5,000 | Monthly Monster |
 
 ### Badges (`BADGES`, line 322)
 
@@ -918,6 +1005,7 @@ Two helper functions inside `playFx`:
 ### Sound Categories
 
 **Universal UI:**
+
 - `tap` / `button_tap` -- Short high-frequency click (800Hz + 1200Hz sine)
 - `select` -- Two-tone selection (600Hz + 900Hz sine)
 - `nav` -- Ascending frequency ramp (440 -> 660Hz sine)
@@ -932,6 +1020,7 @@ Two helper functions inside `playFx`:
 - `success` -- Two ascending tones (C5 -> G5)
 
 **Football / Kick:**
+
 - `kick` -- Low thud (150Hz triangle descending) + noise
 - `goal` -- Three ascending square tones (C5 -> E5 -> G5)
 - `save` -- Two ascending triangle tones (400Hz -> 600Hz)
@@ -940,6 +1029,7 @@ Two helper functions inside `playFx`:
 - `crowd` / `crowd_cheer` -- White noise + low sawtooth
 
 **Game-Specific:**
+
 - Wild West: `gunshot`, `gun_click`, `gun_bang`, `revolver_spin`
 - Balloon Pop: `balloon_inflate`, `balloon_pop`
 - Puff Pong: `pong_hit`, `pong_wall`, `pong_score`
@@ -966,7 +1056,10 @@ Sets `screenFlash` to a type string ("goal", "miss", "save", "blinker") for 400m
 Spawns an array of colored particle objects with random positions, sizes, colors, and rotations. Animated via `confettiFall` keyframe -- particles fall 400px with rotation over their lifetime.
 
 ```javascript
-const spawnConfetti = (count=30, colors=[C.cyan, C.gold, C.green, C.pink, C.orange]) => {
+const spawnConfetti = (
+  count = 30,
+  colors = [C.cyan, C.gold, C.green, C.pink, C.orange],
+) => {
   // Creates particles with: id, x (0-100%), y (-10 to -20%), size (4-8px), color, rotation
 };
 ```
@@ -990,6 +1083,7 @@ Random audience reaction bubbles that float up during games. Animated via `bubbl
 ### Match Intro Sequence (`startMatchIntro`, line 4516)
 
 Four-phase cinematic intro before Final Kick matches:
+
 1. **Enter** -- opponent walks on screen
 2. **Stats** -- show player vs opponent stats
 3. **Countdown** -- 3... 2... 1...
@@ -1010,6 +1104,7 @@ Screen dims during puff charging for dramatic focus. Applied as an overlay that 
 ### Web Bluetooth API
 
 The app uses the Web Bluetooth API to connect to BLE-enabled vape devices. Connection flow:
+
 1. User selects a device model from `DEVICE_MODELS`
 2. BLE popup shows connection UI (`renderBlePopup`, line 20752)
 3. After connection, device optimization screen shows calibration (`renderDeviceOptimize`, line 20842)
@@ -1017,30 +1112,31 @@ The app uses the Web Bluetooth API to connect to BLE-enabled vape devices. Conne
 
 ### Device Models (`DEVICE_MODELS`, line 921)
 
-| ID | Name | Short | Pool | Emoji |
-|---|---|---|---|---|
-| cc_s1 | Cali Clear Season 1 | CC S1 | Standard | 📱 |
-| cc_s2 | Cali Clear Season 2 | CC S2 | Standard | 📱 |
-| cc_s3 | Cali Clear Season 3 | CC S3 | Standard | 📱 |
-| cc_sel1 | Cali Clear Select S1 | CC Select S1 | Select | ✨ |
-| cc_sel2 | Cali Clear Select S2 | CC Select S2 | Select | ✨ |
-| none | No Device | Tap Only | Open | 👆 |
+| ID      | Name                 | Short        | Pool     | Emoji |
+| ------- | -------------------- | ------------ | -------- | ----- |
+| cc_s1   | Cali Clear Season 1  | CC S1        | Standard | 📱    |
+| cc_s2   | Cali Clear Season 2  | CC S2        | Standard | 📱    |
+| cc_s3   | Cali Clear Season 3  | CC S3        | Standard | 📱    |
+| cc_sel1 | Cali Clear Select S1 | CC Select S1 | Select   | ✨    |
+| cc_sel2 | Cali Clear Select S2 | CC Select S2 | Select   | ✨    |
+| none    | No Device            | Tap Only     | Open     | 👆    |
 
 ### Device Pools (`DEVICE_POOLS`, line 929)
 
 Pools determine matchmaking fairness and reward multipliers:
 
-| Pool | Label | Color | AI Save Rate | AI Score Rate | Reward Multiplier |
-|---|---|---|---|---|---|
-| Select | Select Pool | Gold | 0.38 | 0.58 | 2x |
-| Standard | Standard Pool | Cyan | 0.30 | 0.50 | 1.5x |
-| Open | Open Pool | Gray | 0.20 | 0.40 | 1x |
+| Pool     | Label         | Color | AI Save Rate | AI Score Rate | Reward Multiplier |
+| -------- | ------------- | ----- | ------------ | ------------- | ----------------- |
+| Select   | Select Pool   | Gold  | 0.38         | 0.58          | 2x                |
+| Standard | Standard Pool | Cyan  | 0.30         | 0.50          | 1.5x              |
+| Open     | Open Pool     | Gray  | 0.20         | 0.40          | 1x                |
 
 **Select Pool** devices get harder AI (higher save rate) but double rewards. **Open Pool** (no device) gets easiest AI but base rewards only.
 
 ### Input Resolution
 
 The `resolveInputForGame()` function determines which input type to use for each game based on:
+
 1. The selected input mode (Auto/Fixed/Ask)
 2. The connected device
 3. The game's supported input types
@@ -1054,132 +1150,132 @@ Once a player selects an input type for a session, it is remembered and reused f
 
 ## 13. Key Functions Reference Table
 
-| Function | Line | Purpose |
-|---|---|---|
-| `MoodLabArena()` | 957 | Main React component -- the entire app |
-| `startMatch(game, mode)` | 2727 | Game dispatcher -- handles matchmaking flow and routes to game-specific initializer |
-| `startKick(gameId)` | 4590 | Initializes Final Kick game (FK1/FK2/FK3) |
-| `kickSelectZone(zone)` | 4620 | Handles zone aim selection in FK |
-| `kickExecute(zone, power, wasBlinker, holdTime)` | 4898 | Executes an FK shot -- calculates goal/save/miss outcome |
-| `startDuel()` | 2739 | Initializes Wild West Duel game |
-| `startDuelRound(roundNum)` | 2784 | Starts a duel round with staredown + draw sequence |
-| `playFx(type, vol)` | 3101 | Sound engine -- synthesized audio or file playback |
-| `triggerFlash(type)` | 3556 | Screen flash effect |
-| `triggerShake()` | 3557 | Screen shake effect |
-| `spawnConfetti(count, colors)` | 3558 | Spawn confetti particle burst |
-| `spawnSmoke(count)` | 3566 | Spawn smoke particle cloud |
-| `triggerPuffWave()` | 3574 | Full-screen puff wave sweep |
-| `startMatchIntro(opponent)` | 4516 | Cinematic match intro sequence |
-| `getPuffPower(elapsed)` | 4643 | Maps puff hold duration (seconds) to power percentage (0--100) |
-| `getPuffZone(power)` | 4654 | Maps power to zone label (tap/short/good/perfect/long) |
-| `getUniversalPuffZone(power)` | 4667 | Maps power to universal zone with sweet spot awareness |
-| `getUniversalPuffResult(power)` | 4676 | Returns full puff result object (zone, multiplier, label, color, emoji) |
-| `renderUniversalPuffBar(power, charging, opts)` | 4694 | Renders the universal puff action bar UI |
-| `renderAtmosphere()` | 5851 | Renders atmospheric visual effects for current zone |
-| `renderTicker()` | 5876 | Renders scrolling news ticker |
-| `renderGlassButtons()` | 5919 | Renders floating glass side buttons |
-| `renderInlineChat()` | 5938 | Renders inline chat panel |
-| `renderFocusContent(viewKey)` | 5975 | Renders zone focus/welcome screen content |
-| `renderZoneFocus(viewKey)` | 6146 | Renders full zone focus view with background image/video |
-| `renderPuffEvent()` | 6425 | Renders puff event overlay |
-| `renderHalftime()` | 6693 | Renders halftime mini-game screen |
-| `renderArenaHub()` | 6949 | Renders the main arena hub (all 5 zones) |
-| `renderZoneHeader(zKey)` | 7181 | Renders zone header with back button and tagline |
-| `renderArcade()` | 7217 | Renders the Arcade zone (16 games) |
-| `renderStage()` | 7505 | Renders the Stage zone (6 shows) |
-| `renderOracle()` | 8703 | Renders the Fortune zone (sportsbook + 12 games) |
-| `renderWorldCupHub()` | 9046 | Renders the World Cup zone (teams, groups, bracket, live) |
-| `renderWall()` | 9357 | Renders the Wall zone (rankings, records, activity, achievements) |
-| `window.__moodlabGoBack()` | 9679 | Smart back navigation (registered on window for HTML button) |
-| `cleanupAllGames()` | 9730 | Clears all game intervals, timeouts, refs, and animation frames |
-| `STAGE_CONTESTANTS` | 9824 | AI contestant data for Stage elimination engine |
-| `initStageElim()` | 9834 | Initializes 8-player Stage elimination bracket |
-| `elimRound(yourScore)` | 9840 | Processes an elimination round (scores, eliminates, advances) |
-| `renderContestantGrid()` | 9871 | Renders the contestant status grid during Stage shows |
-| `startSimonPuffs()` | 10983 | Initializes Simon Puffs memory game |
-| `renderGameChatPanel(gameName)` | 11342 | Renders in-game chat panel |
-| `renderSpectatorOverlay()` | 11378 | Renders live spectator overlay |
-| `renderGameOverlay()` | 11443 | Master game overlay renderer -- dispatches to per-game renderers |
-| `renderFanMode()` | 19291 | Renders fan mode overlay |
-| `renderWorldCup()` | 19750 | Renders World Cup tournament flow (team select -> group -> knockout) |
-| `renderVibeCheck()` | 20403 | Renders Vibe Check game show |
-| `renderSpin()` | 20630 | Renders Spin & Win fortune wheel |
-| `renderBlePopup()` | 20752 | Renders BLE device connection popup |
-| `renderDeviceOptimize()` | 20842 | Renders device optimization/calibration screen |
-| `renderPuffLock()` | 20959 | Renders puff lock-in animation |
-| `renderInputPanel()` | 20976 | Renders input type selection panel |
-| `renderControl()` | 21016 | Renders Control tab (device settings) |
-| `renderLive()` | 21060 | Renders Live tab (coming soon) |
-| `renderProfileOverlay()` | 21146 | Renders player profile overlay |
-| `renderAchievementsOverlay()` | 21231 | Renders achievements gallery overlay |
-| `renderMe()` | 21266 | Renders Me tab (stats, badges, settings) |
+| Function                                         | Line  | Purpose                                                                             |
+| ------------------------------------------------ | ----- | ----------------------------------------------------------------------------------- |
+| `MoodLabArena()`                                 | 957   | Main React component -- the entire app                                              |
+| `startMatch(game, mode)`                         | 2727  | Game dispatcher -- handles matchmaking flow and routes to game-specific initializer |
+| `startKick(gameId)`                              | 4590  | Initializes Final Kick game (FK1/FK2/FK3)                                           |
+| `kickSelectZone(zone)`                           | 4620  | Handles zone aim selection in FK                                                    |
+| `kickExecute(zone, power, wasBlinker, holdTime)` | 4898  | Executes an FK shot -- calculates goal/save/miss outcome                            |
+| `startDuel()`                                    | 2739  | Initializes Wild West Duel game                                                     |
+| `startDuelRound(roundNum)`                       | 2784  | Starts a duel round with staredown + draw sequence                                  |
+| `playFx(type, vol)`                              | 3101  | Sound engine -- synthesized audio or file playback                                  |
+| `triggerFlash(type)`                             | 3556  | Screen flash effect                                                                 |
+| `triggerShake()`                                 | 3557  | Screen shake effect                                                                 |
+| `spawnConfetti(count, colors)`                   | 3558  | Spawn confetti particle burst                                                       |
+| `spawnSmoke(count)`                              | 3566  | Spawn smoke particle cloud                                                          |
+| `triggerPuffWave()`                              | 3574  | Full-screen puff wave sweep                                                         |
+| `startMatchIntro(opponent)`                      | 4516  | Cinematic match intro sequence                                                      |
+| `getPuffPower(elapsed)`                          | 4643  | Maps puff hold duration (seconds) to power percentage (0--100)                      |
+| `getPuffZone(power)`                             | 4654  | Maps power to zone label (tap/short/good/perfect/long)                              |
+| `getUniversalPuffZone(power)`                    | 4667  | Maps power to universal zone with sweet spot awareness                              |
+| `getUniversalPuffResult(power)`                  | 4676  | Returns full puff result object (zone, multiplier, label, color, emoji)             |
+| `renderUniversalPuffBar(power, charging, opts)`  | 4694  | Renders the universal puff action bar UI                                            |
+| `renderAtmosphere()`                             | 5851  | Renders atmospheric visual effects for current zone                                 |
+| `renderTicker()`                                 | 5876  | Renders scrolling news ticker                                                       |
+| `renderGlassButtons()`                           | 5919  | Renders floating glass side buttons                                                 |
+| `renderInlineChat()`                             | 5938  | Renders inline chat panel                                                           |
+| `renderFocusContent(viewKey)`                    | 5975  | Renders zone focus/welcome screen content                                           |
+| `renderZoneFocus(viewKey)`                       | 6146  | Renders full zone focus view with background image/video                            |
+| `renderPuffEvent()`                              | 6425  | Renders puff event overlay                                                          |
+| `renderHalftime()`                               | 6693  | Renders halftime mini-game screen                                                   |
+| `renderArenaHub()`                               | 6949  | Renders the main arena hub (all 5 zones)                                            |
+| `renderZoneHeader(zKey)`                         | 7181  | Renders zone header with back button and tagline                                    |
+| `renderArcade()`                                 | 7217  | Renders the Arcade zone (16 games)                                                  |
+| `renderStage()`                                  | 7505  | Renders the Stage zone (6 shows)                                                    |
+| `renderOracle()`                                 | 8703  | Renders the Fortune zone (sportsbook + 12 games)                                    |
+| `renderWorldCupHub()`                            | 9046  | Renders the World Cup zone (teams, groups, bracket, live)                           |
+| `renderWall()`                                   | 9357  | Renders the Wall zone (rankings, records, activity, achievements)                   |
+| `window.__moodlabGoBack()`                       | 9679  | Smart back navigation (registered on window for HTML button)                        |
+| `cleanupAllGames()`                              | 9730  | Clears all game intervals, timeouts, refs, and animation frames                     |
+| `STAGE_CONTESTANTS`                              | 9824  | AI contestant data for Stage elimination engine                                     |
+| `initStageElim()`                                | 9834  | Initializes 8-player Stage elimination bracket                                      |
+| `elimRound(yourScore)`                           | 9840  | Processes an elimination round (scores, eliminates, advances)                       |
+| `renderContestantGrid()`                         | 9871  | Renders the contestant status grid during Stage shows                               |
+| `startSimonPuffs()`                              | 10983 | Initializes Simon Puffs memory game                                                 |
+| `renderGameChatPanel(gameName)`                  | 11342 | Renders in-game chat panel                                                          |
+| `renderSpectatorOverlay()`                       | 11378 | Renders live spectator overlay                                                      |
+| `renderGameOverlay()`                            | 11443 | Master game overlay renderer -- dispatches to per-game renderers                    |
+| `renderFanMode()`                                | 19291 | Renders fan mode overlay                                                            |
+| `renderWorldCup()`                               | 19750 | Renders World Cup tournament flow (team select -> group -> knockout)                |
+| `renderVibeCheck()`                              | 20403 | Renders Vibe Check game show                                                        |
+| `renderSpin()`                                   | 20630 | Renders Spin & Win fortune wheel                                                    |
+| `renderBlePopup()`                               | 20752 | Renders BLE device connection popup                                                 |
+| `renderDeviceOptimize()`                         | 20842 | Renders device optimization/calibration screen                                      |
+| `renderPuffLock()`                               | 20959 | Renders puff lock-in animation                                                      |
+| `renderInputPanel()`                             | 20976 | Renders input type selection panel                                                  |
+| `renderControl()`                                | 21016 | Renders Control tab (device settings)                                               |
+| `renderLive()`                                   | 21060 | Renders Live tab (coming soon)                                                      |
+| `renderProfileOverlay()`                         | 21146 | Renders player profile overlay                                                      |
+| `renderAchievementsOverlay()`                    | 21231 | Renders achievements gallery overlay                                                |
+| `renderMe()`                                     | 21266 | Renders Me tab (stats, badges, settings)                                            |
 
 ---
 
 ## 14. Data Constants Reference
 
-| Constant | Line | Description | Size |
-|---|---|---|---|
-| `ARENA_IMAGES` | 10 | Zone background image paths | 6 entries |
-| `ARENA_VIDEOS` | 18 | Zone background video paths | 6 entries |
-| `Z` | 28 | Zone theme configs (primary, glow, dim, name, icon, sub) | 5 zones |
-| `FORTUNE_LEVELS` | 36 | Fortune tier system | 6 tiers |
-| `C` | 45 | Color palette | 20 colors |
-| `SPECTATOR_NAMES` | 55 | Live spectator usernames | 40 names |
-| `SPECTATOR_EMOJIS` | 65 | Spectator emoji reactions | 20 emojis |
-| `SPECTATOR_TICKER_MSGS` | 66 | Ticker message templates | 10 messages |
-| `GLASS_CLEAR` | 82 | Glass style for nav/buttons | 1 style object |
-| `GLASS_CARD` | 90 | Glass style for content panels | 1 style object |
-| `LG` | 97 | Liquid Glass system (base, thick, pill, tinted) | 4 variants |
-| `PLAY_GAMES` | 133 | Arcade game definitions | 16 games |
-| `SHOW_GAMES` | 152 | Stage show definitions | 6 shows |
-| `MC_LINES` | 162 | MC commentary templates | 7 categories |
-| `ORACLE_GAMES` | 172 | Fortune game definitions | 12 games |
-| `ORACLE_WC_MATCHES` | 187 | WC prediction matches | 6 matches |
-| `ORACLE_WC_SPECIALS` | 196 | WC special predictions | 4 specials |
-| `ORACLE_FUN_PREDS` | 203 | Fun prediction questions | 8 questions |
-| `CB_PREDICTIONS` | 214 | Crystal Ball predictions | 15 predictions |
-| `SB_STRAINS` | 232 | Cannabis strain data | 16 strains |
-| `MP_MATCHES` | 251 | Match Predictor matches | 8 matches |
-| `DP_QUESTIONS` | 262 | Daily Picks questions | 15 questions |
-| `VC_QUESTIONS_V2` | 280 | Vibe Check trivia (English) | 8 questions |
-| `PREDICT_TYPES` | 291 | Prediction type definitions | 6 types |
-| `MATCHES` | 300 | Quick match data | 3 matches |
-| `LEADERBOARD` | 306 | Quick leaderboard | 7 players |
-| `TOURNAMENTS` | 316 | Featured tournaments | 3 tournaments |
-| `BADGES` | 322 | Player badges | 8 badges |
-| `WALL_LEADERBOARD` | 330 | Full leaderboard data (all/arcade/stage/oracle/tournament) | 5 categories x 15 players |
-| `WALL_RECORDS` | 417 | Records with holders | 8 records |
-| `WALL_ACTIVITY` | 427 | Live activity feed | ~10 activities |
-| `WALL_ACHIEVEMENTS_RECENT` | 441 | Recent achievement showcases | ~5 entries |
-| `WALL_ACHIEVEMENTS_RARE` | 448 | Rare achievement showcases | ~5 entries |
-| `WALL_CHAMPIONS` | 465 | Tournament champions spotlight | 3 champions |
-| `ACHIEVEMENTS` | 472 | Achievement definitions | 12 achievements |
-| `RANKS` | 488 | Rank tier definitions | 6 ranks |
-| `STREAK_REWARDS` | 498 | Daily streak reward tiers | 4 tiers |
-| `WC_TEAMS` | 506 | World Cup national teams | 50 teams |
-| `GAME_TEAMS` | 567 | Themed tournament teams per game | 13 games x 6 teams |
-| `GAME_TOURNAMENTS` | 674 | Unique tournament format per game | 13 tournaments |
-| `WC_GROUPS` | 781 | World Cup group assignments | 12 groups |
-| `WC_LIVE_MATCHES` | 808 | Simulated live match data | 2 live matches |
-| `WC_2026_GROUPS` | 842 | WC group standings (simplified) | 4 groups |
-| `VC_QUESTIONS` | 849 | Vibe Check trivia (Vietnamese) | 5 questions |
-| `UNIVERSAL_PUFF_CONFIG` | 858 | Puff bar config + sweet spot randomizer | 1 config |
-| `HOOK_FISH` | 877 | Fish types for Hooked game | 8 fish |
-| `SP_PUFF_TYPES` | 890 | Simon Puffs puff type definitions | 3 types |
-| `SP_COMEDY` | 891 | Simon Puffs round commentary | 10 lines |
-| `PA_PRIZES` | 899 | Puff Auction prize pool | 5 prizes |
-| `CHAT_BOTS` | 907 | Chat bot usernames | 7 bots |
-| `CHAT_MSGS` | 908 | Chat message templates | 10 messages |
-| `INPUT_MODES` | 910 | Input mode definitions | 3 modes |
-| `INPUT_TYPES` | 915 | Input type definitions | 3 types |
-| `DEVICE_MODELS` | 921 | BLE device model definitions | 6 models |
-| `DEVICE_POOLS` | 929 | Device matchmaking pool configs | 3 pools |
-| `KICK_ZONES` | 934 | Goal zone grid (3x2) | 6 zones |
-| `USER` | 939 | Default user profile | 1 object |
-| `TICKER_ITEMS` | 942 | News ticker messages | 8 messages |
-| `DUEL_OPPONENTS` | 1035 | Wild West AI opponents | 6 opponents |
-| `STAGE_CONTESTANTS` | 9824 | Stage show AI contestants | 7 contestants |
+| Constant                   | Line | Description                                                | Size                      |
+| -------------------------- | ---- | ---------------------------------------------------------- | ------------------------- |
+| `ARENA_IMAGES`             | 10   | Zone background image paths                                | 6 entries                 |
+| `ARENA_VIDEOS`             | 18   | Zone background video paths                                | 6 entries                 |
+| `Z`                        | 28   | Zone theme configs (primary, glow, dim, name, icon, sub)   | 5 zones                   |
+| `FORTUNE_LEVELS`           | 36   | Fortune tier system                                        | 6 tiers                   |
+| `C`                        | 45   | Color palette                                              | 20 colors                 |
+| `SPECTATOR_NAMES`          | 55   | Live spectator usernames                                   | 40 names                  |
+| `SPECTATOR_EMOJIS`         | 65   | Spectator emoji reactions                                  | 20 emojis                 |
+| `SPECTATOR_TICKER_MSGS`    | 66   | Ticker message templates                                   | 10 messages               |
+| `GLASS_CLEAR`              | 82   | Glass style for nav/buttons                                | 1 style object            |
+| `GLASS_CARD`               | 90   | Glass style for content panels                             | 1 style object            |
+| `LG`                       | 97   | Liquid Glass system (base, thick, pill, tinted)            | 4 variants                |
+| `PLAY_GAMES`               | 133  | Arcade game definitions                                    | 16 games                  |
+| `SHOW_GAMES`               | 152  | Stage show definitions                                     | 6 shows                   |
+| `MC_LINES`                 | 162  | MC commentary templates                                    | 7 categories              |
+| `ORACLE_GAMES`             | 172  | Fortune game definitions                                   | 12 games                  |
+| `ORACLE_WC_MATCHES`        | 187  | WC prediction matches                                      | 6 matches                 |
+| `ORACLE_WC_SPECIALS`       | 196  | WC special predictions                                     | 4 specials                |
+| `ORACLE_FUN_PREDS`         | 203  | Fun prediction questions                                   | 8 questions               |
+| `CB_PREDICTIONS`           | 214  | Crystal Ball predictions                                   | 15 predictions            |
+| `SB_STRAINS`               | 232  | Cannabis strain data                                       | 16 strains                |
+| `MP_MATCHES`               | 251  | Match Predictor matches                                    | 8 matches                 |
+| `DP_QUESTIONS`             | 262  | Daily Picks questions                                      | 15 questions              |
+| `VC_QUESTIONS_V2`          | 280  | Vibe Check trivia (English)                                | 8 questions               |
+| `PREDICT_TYPES`            | 291  | Prediction type definitions                                | 6 types                   |
+| `MATCHES`                  | 300  | Quick match data                                           | 3 matches                 |
+| `LEADERBOARD`              | 306  | Quick leaderboard                                          | 7 players                 |
+| `TOURNAMENTS`              | 316  | Featured tournaments                                       | 3 tournaments             |
+| `BADGES`                   | 322  | Player badges                                              | 8 badges                  |
+| `WALL_LEADERBOARD`         | 330  | Full leaderboard data (all/arcade/stage/oracle/tournament) | 5 categories x 15 players |
+| `WALL_RECORDS`             | 417  | Records with holders                                       | 8 records                 |
+| `WALL_ACTIVITY`            | 427  | Live activity feed                                         | ~10 activities            |
+| `WALL_ACHIEVEMENTS_RECENT` | 441  | Recent achievement showcases                               | ~5 entries                |
+| `WALL_ACHIEVEMENTS_RARE`   | 448  | Rare achievement showcases                                 | ~5 entries                |
+| `WALL_CHAMPIONS`           | 465  | Tournament champions spotlight                             | 3 champions               |
+| `ACHIEVEMENTS`             | 472  | Achievement definitions                                    | 12 achievements           |
+| `RANKS`                    | 488  | Rank tier definitions                                      | 6 ranks                   |
+| `STREAK_REWARDS`           | 498  | Daily streak reward tiers                                  | 4 tiers                   |
+| `WC_TEAMS`                 | 506  | World Cup national teams                                   | 50 teams                  |
+| `GAME_TEAMS`               | 567  | Themed tournament teams per game                           | 13 games x 6 teams        |
+| `GAME_TOURNAMENTS`         | 674  | Unique tournament format per game                          | 13 tournaments            |
+| `WC_GROUPS`                | 781  | World Cup group assignments                                | 12 groups                 |
+| `WC_LIVE_MATCHES`          | 808  | Simulated live match data                                  | 2 live matches            |
+| `WC_2026_GROUPS`           | 842  | WC group standings (simplified)                            | 4 groups                  |
+| `VC_QUESTIONS`             | 849  | Vibe Check trivia (Vietnamese)                             | 5 questions               |
+| `UNIVERSAL_PUFF_CONFIG`    | 858  | Puff bar config + sweet spot randomizer                    | 1 config                  |
+| `HOOK_FISH`                | 877  | Fish types for Hooked game                                 | 8 fish                    |
+| `SP_PUFF_TYPES`            | 890  | Simon Puffs puff type definitions                          | 3 types                   |
+| `SP_COMEDY`                | 891  | Simon Puffs round commentary                               | 10 lines                  |
+| `PA_PRIZES`                | 899  | Puff Auction prize pool                                    | 5 prizes                  |
+| `CHAT_BOTS`                | 907  | Chat bot usernames                                         | 7 bots                    |
+| `CHAT_MSGS`                | 908  | Chat message templates                                     | 10 messages               |
+| `INPUT_MODES`              | 910  | Input mode definitions                                     | 3 modes                   |
+| `INPUT_TYPES`              | 915  | Input type definitions                                     | 3 types                   |
+| `DEVICE_MODELS`            | 921  | BLE device model definitions                               | 6 models                  |
+| `DEVICE_POOLS`             | 929  | Device matchmaking pool configs                            | 3 pools                   |
+| `KICK_ZONES`               | 934  | Goal zone grid (3x2)                                       | 6 zones                   |
+| `USER`                     | 939  | Default user profile                                       | 1 object                  |
+| `TICKER_ITEMS`             | 942  | News ticker messages                                       | 8 messages                |
+| `DUEL_OPPONENTS`           | 1035 | Wild West AI opponents                                     | 6 opponents               |
+| `STAGE_CONTESTANTS`        | 9824 | Stage show AI contestants                                  | 7 contestants             |
 
 ---
 
@@ -1190,8 +1286,9 @@ Once a player selects an input type for a session, it is remembered and reused f
 **Production URL:** `moodlab-arena-demo-v2.vercel.app`
 
 Deployment is standard Vercel static hosting. No build command needed -- Vercel serves the files as-is. The project root contains:
+
 - `index.html` -- entry point
-- `moodlab-arena-v6.jsx` -- loaded at runtime
+- `moodlab-arena-v7.jsx` -- loaded at runtime
 - `assets/` -- images, videos, sounds
 
 Push to the Git repo and Vercel auto-deploys.
@@ -1240,14 +1337,14 @@ On desktop (viewport > 430px), a phone-shaped frame with rounded corners (40px) 
 The JSX file is fetched with a timestamp query parameter to bust caches:
 
 ```javascript
-fetch('moodlab-arena-v6.jsx?v=' + Date.now())
+fetch("moodlab-arena-v7.jsx?v=" + Date.now());
 ```
 
 This ensures fresh code on every page load during development, with no stale cached versions.
 
 ### No Build Step Workflow
 
-1. Edit `moodlab-arena-v6.jsx` in your preferred editor
+1. Edit `moodlab-arena-v7.jsx` in your preferred editor
 2. Save the file
 3. Refresh the browser (Babel recompiles on load)
 4. For production: `git push` -- Vercel deploys automatically
@@ -1266,25 +1363,25 @@ There is no `npm install`, no `npm run build`, no bundling step. The tradeoff is
 
 ## Appendix: File Statistics
 
-| Metric | Value |
-|---|---|
-| Total lines of code | 21,608 |
-| useState hooks | 530 |
-| useRef hooks | 95 |
-| @keyframes animations | 87 |
-| Total games | 34 (16 arcade + 6 stage + 12 fortune) |
-| National teams | 50 |
-| WC groups | 12 |
-| Tournament formats | 13 |
-| Themed team sets | 13 x 6 = 78 teams |
-| Sound effects | 90+ synthesized + 3 audio files |
-| AI opponents (duel) | 6 |
-| AI contestants (stage) | 7 |
-| Fish types | 8 |
-| Cannabis strains | 16 |
-| Spectator names | 40 |
-| Achievements | 12 |
-| Rank tiers | 6 |
-| Fortune levels | 6 |
-| Asset files | 15 (6 PNG + 6 MP4 + 3 M4A) |
-| Total asset size | ~52 MB |
+| Metric                 | Value                                 |
+| ---------------------- | ------------------------------------- |
+| Total lines of code    | 21,608                                |
+| useState hooks         | 530                                   |
+| useRef hooks           | 95                                    |
+| @keyframes animations  | 87                                    |
+| Total games            | 34 (16 arcade + 6 stage + 12 fortune) |
+| National teams         | 50                                    |
+| WC groups              | 12                                    |
+| Tournament formats     | 13                                    |
+| Themed team sets       | 13 x 6 = 78 teams                     |
+| Sound effects          | 90+ synthesized + 3 audio files       |
+| AI opponents (duel)    | 6                                     |
+| AI contestants (stage) | 7                                     |
+| Fish types             | 8                                     |
+| Cannabis strains       | 16                                    |
+| Spectator names        | 40                                    |
+| Achievements           | 12                                    |
+| Rank tiers             | 6                                     |
+| Fortune levels         | 6                                     |
+| Asset files            | 15 (6 PNG + 6 MP4 + 3 M4A)            |
+| Total asset size       | ~52 MB                                |
