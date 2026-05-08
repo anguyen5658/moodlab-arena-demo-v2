@@ -48,23 +48,30 @@ All cross-game state is split across 5 React contexts in `src/context/`:
 
 `useGame()` in `src/hooks/useGame.ts` returns all five at once — use sparingly; prefer calling only the contexts a component actually needs.
 
-### Games as overlays, NOT routes
-Games are fixed-position overlays keyed on `GameContext.gameActive.id`. Each zone route (`src/routes/arena/*`) renders its game dispatcher as a child of the zone. This preserves the "arena stays alive beneath the game" feel and avoids route-based unmounting of zone state.
+### Games as overlays + URL-synced per-game routes
+Games are fixed-position overlays keyed on `GameContext.gameActive.id` — the zone component stays mounted beneath the game (preserving zone state). The URL is kept in sync via [src/hooks/useGameRouteSync.ts](src/hooks/useGameRouteSync.ts), which each zone calls with its games list:
+
+- URL→state: when the path is `/arena/{zone}/{gameId}`, the hook calls `setSelectedGame` so the start-screen overlay opens.
+- state→URL: when `selectedGame`/`gameActive` changes, the hook navigates (push when state gains a game, replace when it clears).
+- Loop-breaking guards: an early-return when URL and state already match, and a `lastStateRef` skip on first mount with null state so URL→state can populate first. Stale state from a different zone is ignored so URL→state can correct it.
+
+Game card click handlers still call `setSelectedGame` (or `notify("...coming soon!")` for stub games like `highcard`) — the URL follows. `exitGame()` and `closeOverlay()` clear state; the hook navigates back to `/arena/{zone}`.
 
 ### Router structure
 ```
-/              → redirect to /arena
-/arena         → ArenaHub
-/arena/arcade  → ArcadeZone  (renders the 19 arcade game overlays)
-/arena/stage   → StageZone
-/arena/oracle  → OracleZone
-/arena/wall    → WallZone
-/arena/worldcup → WorldCupZone  (tournament flow + Fan Mode overlay)
-/control /live /me
+/                            → redirect to /arena
+/arena                       → ArenaHub
+/arena/arcade[/:gameId]      → ArcadeZone   (19 arcade games)
+/arena/stage[/:gameId]       → StageZone    (6 live shows)
+/arena/fortune[/:gameId]     → FortuneZone  (the renamed Oracle zone)
+/arena/wall                  → WallZone     (no games)
+/arena/worldcup[/:gameId]    → WorldCupZone (tournament + Fan Mode overlays)
+/control  /live  /me
 ```
+Deep links like `/arena/fortune/puffblackjack` open the start screen for that game directly. The legacy `/arena/oracle` URL is no longer routed.
 
 ### Game component pattern
-Every game is a single `.tsx` component in `src/routes/games/{arcade,stage,oracle}/`. They follow a canonical structure (see `TankWarGame.tsx`, `FishWarGame.tsx` as references):
+Every game is a single `.tsx` component in `src/routes/games/{arcade,stage,fortune}/`. They follow a canonical structure (see `TankWarGame.tsx`, `FishWarGame.tsx`, `PuffBlackjackGame.tsx` as references):
 
 1. **State + refs** — lifted 1:1 from monolith `startXxxGame()` functions
 2. **Draw callback** — `useCallback` with fresh state in deps (Rule 4)
@@ -174,7 +181,7 @@ Supported devices are declared in `BLE_PROFILES` in [src/constants/index.ts](src
 |---|---|---|---|
 | Arcade | Cyan `#00E5FF` | 19 (incl. FK2/FK3) | FinalKick, WildWest, TankWar, FishWar, RooftopPuff |
 | Stage | Gold `#FFD93D` | 6 | VibeCheck, SurvivalTrivia, PriceIsPuff, PuffAuction, SimonPuffs, HigherLower |
-| Oracle/Fortune | Purple `#C084FC` | 12 | CrystalBall, StrainBattle, PuffSlots, CoinFlip, MatchPredictor, ... |
+| Fortune (formerly "Oracle") | Gold `#FFD93D` | 12 functional + `highcard` stub | CrystalBall, StrainBattle, PuffSlots, CoinFlip, MatchPredictor, PuffBlackjack, ... |
 | Wall | Orange `#FB923C` | — | Leaderboards |
 | World Cup | Gold | — | FIFA 2026 tournament (Play + Fan Mode) |
 | Live | Green `#22C55E` | — | Streams, spectating |
@@ -321,6 +328,7 @@ src/
 │   ├── useGame.ts                            — returns all 5 contexts
 │   ├── useGameEffects.ts                     — shared puff power utilities
 │   ├── useGameChat.ts                        — bot chat generator
+│   ├── useGameRouteSync.ts                   — URL ↔ selectedGame/gameActive sync per zone
 │   └── useWcTournament.ts                    — WC tournament state machine
 ├── components/
 │   ├── layout/                               — AppShell, Header, XPBar, Ticker, BottomNav
@@ -332,7 +340,7 @@ src/
     │   ├── GameOverlayRouter.tsx             — id → component switch
     │   ├── arcade/                           — 19 .tsx files (incl. FK1/FK2/FK3)
     │   ├── stage/                            — 6 .tsx files + _shared.tsx (StageHeader)
-    │   └── oracle/                           — 6 individual + RemainingOracleGames.tsx (6 bundled)
+    │   └── fortune/                          — 7 individual (incl. PuffBlackjackGame) + RemainingFortuneGames.tsx (6 bundled)
     ├── control/, live/, me/                  — top-tab routes
 ```
 
@@ -352,3 +360,10 @@ moodlab-arena-v7.jsx                          — legacy monolith, spec for port
 - **TankWar HOLD TO FIRE dead (Phase 9):** RAF ref collision between draw loop and bullet flight + race condition on `phaseRef` check. Fix: split into `twDrawRafRef` / `twBulletRafRef`, gate only on sync `twCharging.current`.
 - **TankWar silent in-game sound (Phase 9):** BLE effect's cleanup fired on every `twMode` change, muting permanently. Fix: `audio.gameSoundsMuted.current = false` at top of effect body.
 - **PuffDerby double pick UI** (monolith-era): canvas and HTML both drew pick buttons. Fix: canvas returns early during pick phase.
+- **PuffBlackjack shipped as a single-round stub:** original Vite port had no bet, no DOUBLE DOWN, no 7-hand session, no puff input. Replaced with full monolith parity ([PuffBlackjackGame.tsx](src/routes/games/fortune/PuffBlackjackGame.tsx)). Pulled the simplified version out of `RemainingFortuneGames.tsx` and gave it its own file for clarity.
+- **`highcard` is a stub in the monolith:** `notify("High Card Puff coming soon!", C.red)` — the Fortune zone card list keeps it visible but `launchGame` short-circuits on `g.id === "highcard"`.
+
+## Recent refactors worth knowing
+
+- **Oracle → Fortune rename (2026-05-08):** zone slug, ZoneId, folder `src/routes/games/oracle/` → `fortune/`, asset filenames, ARENA_IMAGES/Z keys, `zone: 'oracle'` → `'fortune'` everywhere. Old `/arena/oracle` URL is gone — no redirect was added (intentional).
+- **Per-game routes (2026-05-08):** added `/arena/{zone}/:gameId` for arcade/stage/fortune/worldcup. Wall has no games so was left unchanged. URL/state sync via `useGameRouteSync` — see "Games as overlays + URL-synced per-game routes" above.
