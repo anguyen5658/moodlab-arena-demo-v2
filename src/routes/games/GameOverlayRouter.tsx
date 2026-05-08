@@ -30,9 +30,9 @@ import { CoinFlipGame } from './fortune/CoinFlipGame'
 import { PuffSlotsGame } from './fortune/PuffSlotsGame'
 import { StrainBattleGame } from './fortune/StrainBattleGame'
 import { MatchPredictorGame } from './fortune/MatchPredictorGame'
+import { PuffBlackjackGame } from './fortune/PuffBlackjackGame'
 import {
   DailyPicksGame,
-  PuffBlackjackGame,
   CrapsNCloudsGame,
   MysteryBoxGame,
   ScratchPuffGame,
