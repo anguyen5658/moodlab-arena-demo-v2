@@ -83,6 +83,11 @@ export const FortuneZone: React.FC = () => {
   const slide = heroSlides[slideIdx]
 
   const launchGame = (g: { id: string; name: string; emoji: string; color: string; desc: string; type: string }) => {
+    if (g.id === "highcard") {
+      audio.playFx("tap")
+      player.notify("High Card Puff coming soon!", C.red)
+      return
+    }
     audio.playFx("select")
     game.setSelectedGame({ id: g.id, name: g.name, emoji: g.emoji, color: g.color, desc: g.desc, type: g.type })
   }
