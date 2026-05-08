@@ -61,7 +61,7 @@ const FocusContent: React.FC<{ zoneKey: string; onEnter: () => void }> = ({ zone
       </div>
     )
   }
-  if (zoneKey === "oracle") {
+  if (zoneKey === "fortune") {
     return (
       <div>
         <div style={{ textAlign: "center", marginBottom: 6 }}>

@@ -8,7 +8,7 @@ import { ZoneHeader } from './ZoneHeader'
 const wallGlass = { borderRadius: 14, background: "rgba(255,255,255,0.025)", border: `1px solid rgba(255,255,255,0.06)`, backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)" }
 const wallGlassGold = { ...wallGlass, border: `1px solid ${C.gold}25`, boxShadow: `0 0 24px ${C.gold}10` }
 const rankColors: Record<string, string> = { Diamond: C.cyan, Platinum: "#E5E4E2", Gold: C.gold, Silver: "#C0C0C0", Bronze: "#CD7F32", Legendary: "#FF6B35" }
-const zoneTabColors: Record<string, string> = { all: C.gold, arcade: C.cyan, stage: "#FFD93D", oracle: C.gold, tournament: C.orange }
+const zoneTabColors: Record<string, string> = { all: C.gold, arcade: C.cyan, stage: "#FFD93D", fortune: C.gold, tournament: C.orange }
 
 export const WallZone: React.FC = () => {
   const game = useGameContext()
@@ -113,7 +113,7 @@ export const WallZone: React.FC = () => {
             </div>
             {/* Zone tab pills */}
             <div style={{ display: "flex", gap: 5, marginBottom: 10, overflowX: "auto", paddingBottom: 2 }}>
-              {[{ id: "all", l: "All", e: "🌐" }, { id: "arcade", l: "Arcade", e: "🎮" }, { id: "stage", l: "Stage", e: "🎪" }, { id: "oracle", l: "Fortune", e: "🔮" }, { id: "tournament", l: "Tournament", e: "🏆" }].map(t => {
+              {[{ id: "all", l: "All", e: "🌐" }, { id: "arcade", l: "Arcade", e: "🎮" }, { id: "stage", l: "Stage", e: "🎪" }, { id: "fortune", l: "Fortune", e: "🔮" }, { id: "tournament", l: "Tournament", e: "🏆" }].map(t => {
                 const tc = zoneTabColors[t.id] || C.gold
                 const sel = wallTab === t.id
                 return (

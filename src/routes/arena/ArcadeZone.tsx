@@ -3,6 +3,7 @@ import { C, PLAY_GAMES } from '../../constants'
 import { useGameContext } from '../../context/GameContext'
 import { usePlayerContext } from '../../context/PlayerContext'
 import { useAudioContext } from '../../context/AudioContext'
+import { useGameRouteSync } from '../../hooks/useGameRouteSync'
 import { ZoneHeader } from './ZoneHeader'
 
 const playerCounts: Record<string, number> = {
@@ -32,6 +33,7 @@ export const ArcadeZone: React.FC = () => {
   const player = usePlayerContext()
   const audio = useAudioContext()
   const [tab, setTab] = useState("games")
+  useGameRouteSync('arcade', PLAY_GAMES)
 
   const totalPlaying = Object.values(playerCounts).reduce((a, b) => a + b, 0)
   const hotIdx = Math.floor(Date.now() / 4000) % Math.max(PLAY_GAMES.filter(g => g.hot).length, 1)

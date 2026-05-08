@@ -1,7 +1,7 @@
 // ── MoodLab Arena — TypeScript Interfaces ──
 
 export type TabId = 'control' | 'arena' | 'live' | 'me'
-export type ZoneId = 'arcade' | 'stage' | 'oracle' | 'wall' | 'worldcup'
+export type ZoneId = 'arcade' | 'stage' | 'fortune' | 'wall' | 'worldcup'
 
 export type GameId =
   | 'finalkick' | 'finalkick2' | 'finalkick3'

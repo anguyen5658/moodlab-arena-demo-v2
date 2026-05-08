@@ -7,7 +7,7 @@ import { useAudioContext } from '../../../context/AudioContext'
 import { StageHeader } from '../stage/_shared'
 
 // Shared hook for boilerplate: lifecycle, exit, collect
-function useOracleGame(id: string) {
+function useFortuneGame(id: string) {
   const game = useGameContext()
   const player = usePlayerContext()
   const ble = useBLEContext()
@@ -46,7 +46,7 @@ const DAILY_QUESTIONS = [
 ]
 
 export const DailyPicksGame: React.FC = () => {
-  const { game, player, ble, audio, startedRef, exitGame } = useOracleGame('dailypicks')
+  const { game, player, ble, audio, startedRef, exitGame } = useFortuneGame('dailypicks')
   const [phase, setPhase] = useState<'pick' | 'reveal' | 'final' | null>(null)
   const [round, setRound] = useState(0)
   const [q, setQ] = useState('')
@@ -85,7 +85,7 @@ export const DailyPicksGame: React.FC = () => {
   const collect = () => {
     const reward = 15 + correct * 15 + (correct === 3 ? 20 : 0)
     player.notify(`📅 ${correct}/3 · +${reward}`, correct >= 2 ? C.green : C.gold)
-    player.recordGameResult(correct >= 2, reward, 10, { bleConnected: ble.bleConnected, zone: 'oracle', gameActive: game.gameActive })
+    player.recordGameResult(correct >= 2, reward, 10, { bleConnected: ble.bleConnected, zone: 'fortune', gameActive: game.gameActive })
     exitGame()
   }
 
@@ -136,7 +136,7 @@ const drawCard = () => Math.floor(Math.random() * 13) + 1
 const cardDisplay = (v: number) => v === 1 ? 'A' : v === 11 ? 'J' : v === 12 ? 'Q' : v === 13 ? 'K' : String(v)
 
 export const PuffBlackjackGame: React.FC = () => {
-  const { game, player, ble, audio, startedRef, exitGame } = useOracleGame('puffblackjack')
+  const { game, player, ble, audio, startedRef, exitGame } = useFortuneGame('puffblackjack')
   const [phase, setPhase] = useState<'playing' | 'dealer' | 'result' | null>(null)
   const [playerCards, setPlayerCards] = useState<number[]>([])
   const [dealerCards, setDealerCards] = useState<number[]>([])
@@ -193,7 +193,7 @@ export const PuffBlackjackGame: React.FC = () => {
     const won = outcome === 'win'
     const reward = won ? 50 : outcome === 'push' ? 20 : 10
     player.notify(`🃏 ${outcome?.toUpperCase()} · +${reward}`, won ? C.green : C.gold)
-    player.recordGameResult(won, reward, 10, { bleConnected: ble.bleConnected, zone: 'oracle', gameActive: game.gameActive })
+    player.recordGameResult(won, reward, 10, { bleConnected: ble.bleConnected, zone: 'fortune', gameActive: game.gameActive })
     exitGame()
   }
 
@@ -250,7 +250,7 @@ export const PuffBlackjackGame: React.FC = () => {
 // CRAPS & CLOUDS — roll 2 dice, predict over/under/exact 7
 // ═══════════════════════════════════════════════════════════
 export const CrapsNCloudsGame: React.FC = () => {
-  const { game, player, ble, audio, startedRef, exitGame } = useOracleGame('crapsnclouds')
+  const { game, player, ble, audio, startedRef, exitGame } = useFortuneGame('crapsnclouds')
   const [phase, setPhase] = useState<'idle' | 'rolling' | 'reveal' | null>(null)
   const [dice, setDice] = useState<[number, number]>([1, 1])
   const [bet, setBet] = useState<'under' | 'seven' | 'over' | null>(null)
@@ -293,7 +293,7 @@ export const CrapsNCloudsGame: React.FC = () => {
   const collect = () => {
     const reward = Math.max(10, won)
     player.notify(`🎲 Won ${won} over ${rolls} rolls · +${reward}`, won > 0 ? C.green : C.gold)
-    player.recordGameResult(won > 0, reward, 10, { bleConnected: ble.bleConnected, zone: 'oracle', gameActive: game.gameActive })
+    player.recordGameResult(won > 0, reward, 10, { bleConnected: ble.bleConnected, zone: 'fortune', gameActive: game.gameActive })
     exitGame()
   }
 
@@ -349,7 +349,7 @@ const BOX_PRIZES = [
 ]
 
 export const MysteryBoxGame: React.FC = () => {
-  const { game, player, ble, audio, startedRef, exitGame } = useOracleGame('mysterybox')
+  const { game, player, ble, audio, startedRef, exitGame } = useFortuneGame('mysterybox')
   const [phase, setPhase] = useState<'pick' | 'reveal' | null>(null)
   const [boxes, setBoxes] = useState<{ emoji: string; label: string; value: number }[]>([])
   const [picked, setPicked] = useState<number | null>(null)
@@ -379,7 +379,7 @@ export const MysteryBoxGame: React.FC = () => {
     const prize = picked !== null ? boxes[picked] : null
     const reward = prize?.value ?? 10
     player.notify(`🎁 ${prize?.label ?? 'done'} · +${reward}`, reward >= 50 ? C.gold : C.text2)
-    player.recordGameResult(reward >= 50, reward, 8, { bleConnected: ble.bleConnected, zone: 'oracle', gameActive: game.gameActive })
+    player.recordGameResult(reward >= 50, reward, 8, { bleConnected: ble.bleConnected, zone: 'fortune', gameActive: game.gameActive })
     exitGame()
   }
 
@@ -419,7 +419,7 @@ export const MysteryBoxGame: React.FC = () => {
 // SCRATCH & PUFF — 6 scratch tiles, match 3 wins
 // ═══════════════════════════════════════════════════════════
 export const ScratchPuffGame: React.FC = () => {
-  const { game, player, ble, audio, startedRef, exitGame } = useOracleGame('scratchpuff')
+  const { game, player, ble, audio, startedRef, exitGame } = useFortuneGame('scratchpuff')
   const [phase, setPhase] = useState<'playing' | 'result' | null>(null)
   const [tiles, setTiles] = useState<{ symbol: string; revealed: boolean }[]>([])
   const [won, setWon] = useState(false)
@@ -466,7 +466,7 @@ export const ScratchPuffGame: React.FC = () => {
   const collect = () => {
     const reward = won ? 80 : 10
     player.notify(`🎫 ${won ? 'WINNER!' : 'no match'} · +${reward}`, won ? C.pink : C.text3)
-    player.recordGameResult(won, reward, 10, { bleConnected: ble.bleConnected, zone: 'oracle', gameActive: game.gameActive })
+    player.recordGameResult(won, reward, 10, { bleConnected: ble.bleConnected, zone: 'fortune', gameActive: game.gameActive })
     exitGame()
   }
 
@@ -510,7 +510,7 @@ const FORTUNES = [
 ]
 
 export const FortuneCookieGame: React.FC = () => {
-  const { game, player, ble, audio, startedRef, exitGame } = useOracleGame('fortunecookie')
+  const { game, player, ble, audio, startedRef, exitGame } = useFortuneGame('fortunecookie')
   const [phase, setPhase] = useState<'idle' | 'cracked' | null>(null)
   const [fortune, setFortune] = useState<typeof FORTUNES[0] | null>(null)
 
@@ -537,7 +537,7 @@ export const FortuneCookieGame: React.FC = () => {
   const collect = () => {
     const reward = fortune?.coins ?? 15
     player.notify(`🥠 +${reward} coins`, reward >= 100 ? C.gold : C.orange)
-    player.recordGameResult(reward >= 50, reward, 8, { bleConnected: ble.bleConnected, zone: 'oracle', gameActive: game.gameActive })
+    player.recordGameResult(reward >= 50, reward, 8, { bleConnected: ble.bleConnected, zone: 'fortune', gameActive: game.gameActive })
     exitGame()
   }
 
@@ -573,7 +573,7 @@ export const FortuneCookieGame: React.FC = () => {
 interface Tile { kind: 'treasure' | 'bomb' | 'empty'; revealed: boolean }
 
 export const TreasureMapGame: React.FC = () => {
-  const { game, player, ble, audio, startedRef, exitGame } = useOracleGame('treasuremap')
+  const { game, player, ble, audio, startedRef, exitGame } = useFortuneGame('treasuremap')
   const [phase, setPhase] = useState<'playing' | 'result' | null>(null)
   const [tiles, setTiles] = useState<Tile[]>([])
   const [found, setFound] = useState(0)
@@ -620,7 +620,7 @@ export const TreasureMapGame: React.FC = () => {
     const won = !hit && found >= 3
     const reward = won ? 100 : found * 20 + 5
     player.notify(`🗺️ ${found} 💎 · ${hit ? '💣' : ''}${won ? ' WIN' : ''} · +${reward}`, won ? C.gold : C.orange)
-    player.recordGameResult(won, reward, 12, { bleConnected: ble.bleConnected, zone: 'oracle', gameActive: game.gameActive })
+    player.recordGameResult(won, reward, 12, { bleConnected: ble.bleConnected, zone: 'fortune', gameActive: game.gameActive })
     exitGame()
   }
 

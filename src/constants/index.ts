@@ -12,7 +12,7 @@ const ARENA_IMAGES = {
   hub:      "/assets/arena/hub.webp",
   arcade:   "/assets/arena/arcade.webp",
   stage:    "/assets/arena/stage.webp",
-  oracle:   "/assets/arena/oracle.webp",
+  fortune:  "/assets/arena/fortune.webp",
   wall:     "/assets/arena/wall.webp",
   worldcup: "/assets/arena/worldcup.webp",
 };
@@ -20,7 +20,7 @@ const ARENA_VIDEOS = {
   hub:      "/assets/arena/hub.mp4",
   arcade:   "/assets/arena/arcade.mp4",
   stage:    "/assets/arena/stage.mp4",
-  oracle:   "/assets/arena/oracle.mp4",
+  fortune:  "/assets/arena/fortune.mp4",
   wall:     "/assets/arena/wall.mp4",
   worldcup: "/assets/arena/worldcup.mp4",
 };
@@ -29,7 +29,7 @@ const ARENA_VIDEOS = {
 const Z = {
   arcade: { primary:"#00E5FF", glow:"rgba(0,229,255,0.35)", dim:"rgba(0,229,255,0.08)", name:"The Arcade", icon:"🎮", sub:"16 Action Games" },
   stage:  { primary:"#FFD93D", glow:"rgba(255,217,61,0.35)", dim:"rgba(255,217,61,0.08)", name:"The Stage", icon:"🎪", sub:"6 Live Shows" },
-  oracle: { primary:"#FFD93D", glow:"rgba(255,217,61,0.35)", dim:"rgba(255,217,61,0.08)", name:"The Fortune", icon:"🔮", sub:"16 Fortune Games" },
+  fortune: { primary:"#FFD93D", glow:"rgba(255,217,61,0.35)", dim:"rgba(255,217,61,0.08)", name:"The Fortune", icon:"🔮", sub:"16 Fortune Games" },
   wall:   { primary:"#FB923C", glow:"rgba(251,146,60,0.35)", dim:"rgba(251,146,60,0.08)", name:"The Wall", icon:"🏆", sub:"Rankings & Glory" },
   worldcup:{ primary:"#FFD93D", glow:"rgba(255,217,61,0.35)", dim:"rgba(255,217,61,0.08)", name:"World Cup 2026", icon:"⚽", sub:"Limited Event" },
 };
@@ -506,7 +506,7 @@ const WALL_LEADERBOARD = {
     {name:"DabQueen",emoji:"👸",rank:"Bronze",value:11,metric:"wins",trend:"down"},
     {name:"PuffDaddy_Jr",emoji:"💨",rank:"Bronze",value:9,metric:"wins",trend:"up"},
   ],
-  oracle:[
+  fortune:[
     {name:"OracleKing",emoji:"🔮",rank:"Diamond",value:92,metric:"winpct",trend:"up"},
     {name:"CloudChaser99",emoji:"😎",rank:"Platinum",value:87,metric:"winpct",trend:"up"},
     {name:"The420Master",emoji:"🌿",rank:"Gold",value:83,metric:"winpct",trend:"down"},

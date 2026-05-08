@@ -3,6 +3,7 @@ import { C } from '../../constants'
 import { useGameContext } from '../../context/GameContext'
 import { useAudioContext } from '../../context/AudioContext'
 import { usePlayerContext } from '../../context/PlayerContext'
+import { useGameRouteSync } from '../../hooks/useGameRouteSync'
 import { ZoneHeader } from './ZoneHeader'
 
 const FORTUNE_GAMES = [
@@ -62,11 +63,12 @@ const GameCard: React.FC<{ g: { id: string; name: string; emoji: string; color: 
   </div>
 )
 
-export const OracleZone: React.FC = () => {
+export const FortuneZone: React.FC = () => {
   const game = useGameContext()
   const audio = useAudioContext()
   const player = usePlayerContext()
   const [tab, setTab] = useState("sportsbook")
+  useGameRouteSync('fortune', FORTUNE_GAMES)
 
   const slideIdx = Math.floor(game.tick / 4) % 4
   const fortuneFeedIdx = Math.floor(game.tick / 3) % fortuneFeedItems.length
@@ -101,7 +103,7 @@ export const OracleZone: React.FC = () => {
       ))}
       <div style={{ position: "absolute", top: -40, left: "50%", transform: "translateX(-50%)", width: 320, height: 220, borderRadius: "50%", background: `radial-gradient(circle, ${C.gold}14, transparent 70%)`, pointerEvents: "none" }} />
 
-      <ZoneHeader zoneKey="oracle" />
+      <ZoneHeader zoneKey="fortune" />
 
       {/* Hero slider */}
       <div onClick={() => { if (slide.badge === "PLAY") launchGame(featGame); else if (slide.badge === "HOT") launchGame(FORTUNE_GAMES[0]) }} style={{ padding: "0 14px", marginBottom: 10, cursor: "pointer", touchAction: "none" }}>

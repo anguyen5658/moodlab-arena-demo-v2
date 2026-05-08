@@ -3,6 +3,7 @@ import { C, SHOW_GAMES } from '../../constants'
 import { useGameContext } from '../../context/GameContext'
 import { usePlayerContext } from '../../context/PlayerContext'
 import { useAudioContext } from '../../context/AudioContext'
+import { useGameRouteSync } from '../../hooks/useGameRouteSync'
 import { ZoneHeader } from './ZoneHeader'
 
 export const StageZone: React.FC = () => {
@@ -10,6 +11,7 @@ export const StageZone: React.FC = () => {
   const player = usePlayerContext()
   const audio = useAudioContext()
   const [tab, setTab] = useState("shows")
+  useGameRouteSync('stage', SHOW_GAMES)
 
   const showIdx = Math.floor(Date.now() / 120000) % SHOW_GAMES.length
   const liveShow = SHOW_GAMES[showIdx]

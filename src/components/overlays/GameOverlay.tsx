@@ -47,7 +47,7 @@ export const GameOverlay: React.FC = () => {
   const zone = pathMatch ? pathMatch[1] : null
   const zoneName = zone === "arcade" ? "Arcade"
     : zone === "stage" ? "Stage"
-    : zone === "oracle" ? "Fortune"
+    : zone === "fortune" ? "Fortune"
     : zone === "wall" ? "Hall of Fame"
     : zone === "worldcup" ? "World Cup"
     : "Arena"

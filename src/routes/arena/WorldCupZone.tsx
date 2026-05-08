@@ -4,6 +4,7 @@ import { C, PLAY_GAMES, ORACLE_WC_MATCHES, ORACLE_WC_SPECIALS, WC_TEAMS } from '
 import { useGameContext } from '../../context/GameContext'
 import { usePlayerContext } from '../../context/PlayerContext'
 import { useAudioContext } from '../../context/AudioContext'
+import { useGameRouteSync } from '../../hooks/useGameRouteSync'
 import { ZoneHeader } from './ZoneHeader'
 import { useWcTournament } from '../../hooks/useWcTournament'
 
@@ -39,6 +40,7 @@ export const WorldCupZone: React.FC = () => {
   const player = usePlayerContext()
   const audio = useAudioContext()
   const [tab, setTab] = useState("games")
+  useGameRouteSync('worldcup', PLAY_GAMES)
 
   const feedIdx = Math.floor(game.tick / 3) % wcFeedItems.length
   const wcMyStats = { team: "🇧🇷 Brazil", played: 12, predictions: 47, coins: 3200 }

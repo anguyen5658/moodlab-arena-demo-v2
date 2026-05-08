@@ -25,11 +25,11 @@ import { PuffAuctionGame } from './stage/PuffAuctionGame'
 import { PriceIsPuffGame } from './stage/PriceIsPuffGame'
 import { SurvivalTriviaGame } from './stage/SurvivalTriviaGame'
 import { VibeCheckGame } from './stage/VibeCheckGame'
-import { CrystalBallGame } from './oracle/CrystalBallGame'
-import { CoinFlipGame } from './oracle/CoinFlipGame'
-import { PuffSlotsGame } from './oracle/PuffSlotsGame'
-import { StrainBattleGame } from './oracle/StrainBattleGame'
-import { MatchPredictorGame } from './oracle/MatchPredictorGame'
+import { CrystalBallGame } from './fortune/CrystalBallGame'
+import { CoinFlipGame } from './fortune/CoinFlipGame'
+import { PuffSlotsGame } from './fortune/PuffSlotsGame'
+import { StrainBattleGame } from './fortune/StrainBattleGame'
+import { MatchPredictorGame } from './fortune/MatchPredictorGame'
 import {
   DailyPicksGame,
   PuffBlackjackGame,
@@ -38,7 +38,7 @@ import {
   ScratchPuffGame,
   FortuneCookieGame,
   TreasureMapGame,
-} from './oracle/RemainingOracleGames'
+} from './fortune/RemainingFortuneGames'
 
 const dispatchGame = (id: string): React.ReactNode => {
   switch (id) {

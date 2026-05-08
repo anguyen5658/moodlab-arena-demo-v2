@@ -5,13 +5,13 @@ import { useAudioContext } from '../../context/AudioContext'
 import { useGameContext } from '../../context/GameContext'
 
 interface ZoneHeaderProps {
-  zoneKey: 'arcade' | 'stage' | 'oracle' | 'wall' | 'worldcup'
+  zoneKey: 'arcade' | 'stage' | 'fortune' | 'wall' | 'worldcup'
 }
 
 const TAGLINES: Record<string, string> = {
   arcade: "PLAY · COMPETE · WIN",
   stage: "WATCH · PLAY · WIN",
-  oracle: "PUFF YOUR FORTUNE",
+  fortune: "PUFF YOUR FORTUNE",
   wall: "YOUR LEGACY · YOUR GLORY",
   worldcup: "PLAY · PREDICT · CELEBRATE",
 }

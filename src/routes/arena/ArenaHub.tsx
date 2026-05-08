@@ -10,7 +10,7 @@ const HUB_TAP_ZONES = [
   { key: "arcade",   top: "43%", left: "3%",   width: "18%", height: "24%" },
   { key: "stage",    top: "44%", right: "3%",  width: "19%", height: "24%" },
   { key: "wall",     top: "47%", left: "24%",  width: "13%", height: "18%" },
-  { key: "oracle",   top: "48%", right: "24%", width: "13%", height: "18%" },
+  { key: "fortune",  top: "48%", right: "24%", width: "13%", height: "18%" },
   { key: "worldcup", top: "43%", left: "39%",  width: "22%", height: "22%" },
 ] as const
 
@@ -97,7 +97,7 @@ export const ArenaHub: React.FC = () => {
 
       {/* Jumbotron */}
       <div style={{ position: "absolute", top: 72, left: 18, right: 18, zIndex: 10, animation: "arenaFadeIn 0.6s ease 0.1s both" }}>
-        <div style={{ borderRadius: 22, overflow: "hidden", cursor: "pointer", ...GLASS_CARD }} onClick={() => { audio.playFx("nav"); handleWalkTo(game.mainStage === 0 ? "worldcup" : game.mainStage === 1 ? "arcade" : "oracle") }}>
+        <div style={{ borderRadius: 22, overflow: "hidden", cursor: "pointer", ...GLASS_CARD }} onClick={() => { audio.playFx("nav"); handleWalkTo(game.mainStage === 0 ? "worldcup" : game.mainStage === 1 ? "arcade" : "fortune") }}>
           <div style={{ position: "absolute", top: -40, right: -40, width: 160, height: 160, borderRadius: "50%", background: "radial-gradient(circle, rgba(255,255,255,0.04), transparent 60%)", pointerEvents: "none" }} />
           <div style={{ position: "relative", padding: "18px 18px 16px" }}>
             <div style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "3px 10px", borderRadius: 100, background: `${s.tagColor}15`, marginBottom: 8 }}>

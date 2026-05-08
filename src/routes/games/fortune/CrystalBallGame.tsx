@@ -78,7 +78,7 @@ export const CrystalBallGame: React.FC = () => {
     if (next >= 5) {
       setPhase('complete')
       audio.playFx(scoreRef.current > 0 ? 'win' : 'lose')
-      player.recordGameResult(scoreRef.current > 0, scoreRef.current > 0 ? 20 : 0, scoreRef.current > 0 ? 20 : 8, { bleConnected: ble.bleConnected, zone: 'oracle', gameActive: game.gameActive })
+      player.recordGameResult(scoreRef.current > 0, scoreRef.current > 0 ? 20 : 0, scoreRef.current > 0 ? 20 : 8, { bleConnected: ble.bleConnected, zone: 'fortune', gameActive: game.gameActive })
       return
     }
     const q = pickQuestion()
